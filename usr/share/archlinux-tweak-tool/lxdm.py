@@ -79,7 +79,7 @@ def set_lxdm_value(self, lists, username, gtk_theme, lxdm_theme, state, pane):
 def pop_gtk_theme_names_lxdm(combo):
     """populate gtk theme names"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
     if fn.path.isfile(fn.lxdm_conf):
         for item in fn.listdir("/usr/share/themes/"):
@@ -95,15 +95,15 @@ def pop_gtk_theme_names_lxdm(combo):
 
         coms.sort()
         for i, item in enumerate(coms):
-            combo.append_text(item)
+            combo.get_model().append(item)
             if theme_name.lower() == item.lower():
-                combo.set_active(i)
+                combo.set_selected(i)
 
 
 def pop_lxdm_theme_greeter(combo):
     """Populate the lxdm theme"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
     if fn.path.exists("/usr/share/lxdm/themes") and fn.path.exists(fn.lxdm_conf):
         for items in fn.listdir("/usr/share/lxdm/themes/"):
@@ -117,6 +117,6 @@ def pop_lxdm_theme_greeter(combo):
 
         coms.sort()
         for i, item in enumerate(coms):
-            combo.append_text(item)
+            combo.get_model().append(item)
             if name.lower() == item.lower():
-                combo.set_active(i)
+                combo.set_selected(i)

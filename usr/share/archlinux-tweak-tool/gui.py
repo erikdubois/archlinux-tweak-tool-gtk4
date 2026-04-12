@@ -61,7 +61,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     self.notification_label = Gtk.Label()
 
     pb_panel = GdkPixbuf.Pixbuf.new_from_file(base_dir + "/images/panel.png")
-    panel = Gtk.Image.new_from_pixbuf(pb_panel)
+    texture_panel = Gdk.Texture.new_for_pixbuf(pb_panel)
+    panel = Gtk.Picture.new_for_paintable(texture_panel)
+    panel.set_content_fit(Gtk.ContentFit.CONTAIN)
 
     overlayframe = Gtk.Overlay()
     overlayframe.set_child(panel)
@@ -363,7 +365,9 @@ themes</i> you can customize <b>fastfetch</b>"
     pbp = GdkPixbuf.Pixbuf.new_from_file_at_size(
         fn.path.join(base_dir, "images/support.png"), 58, 58
     )
-    pimage = Gtk.Image.new_from_pixbuf(pbp)
+    texture_support = Gdk.Texture.new_for_pixbuf(pbp)
+    pimage = Gtk.Picture.new_for_paintable(texture_support)
+    pimage.set_content_fit(Gtk.ContentFit.CONTAIN)
     pimage.set_cursor(Gdk.Cursor.new_from_name("pointer"))
     pimage.set_tooltip_text("Support or get support")
 

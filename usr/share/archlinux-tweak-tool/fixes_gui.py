@@ -166,7 +166,7 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
     hbox12 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox12_label = Gtk.Label(xalign=0)
     hbox12_label.set_text("Choose the number of parallel downloads for pacman")
-    self.parallel_downloads = Gtk.ComboBoxText()
+    self.parallel_downloads = Gtk.DropDown.new_from_strings([])
     numbers = [
         "1",
         "2",
@@ -207,9 +207,9 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
 
     if fn.check_content("ParallelDownloads", fn.pacman):
         for number in numbers:
-            self.parallel_downloads.append_text(number)  # string
+            self.parallel_downloads.get_model().append(number)  # string
         act_number = fixes.pop_parallel_downloads(self)
-        self.parallel_downloads.set_active(act_number)
+        self.parallel_downloads.set_selected(act_number)
 
     else:
         btn_apply_parallel_downloads.set_sensitive(False)
@@ -228,7 +228,7 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
     hbox13 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox13_label = Gtk.Label(xalign=0)
     hbox13_label.set_text("Choose your cursor globally - /usr/share/icons/default")
-    self.cursor_themes = Gtk.ComboBoxText()
+    self.cursor_themes = Gtk.DropDown.new_from_strings([])
     fixes.pop_gtk_cursor_names(self.cursor_themes)
     btn_apply_cursor = Gtk.Button(label="Apply")
     btn_apply_cursor.connect("clicked", self.on_click_apply_global_cursor)

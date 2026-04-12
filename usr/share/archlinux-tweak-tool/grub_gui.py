@@ -89,14 +89,14 @@ def gui(self, Gtk, vboxstack4, fn):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         wallpaper_list = fn.get_grub_wallpapers()
-        self.grub_theme_combo = Gtk.ComboBoxText()
+        self.grub_theme_combo = Gtk.DropDown.new_from_strings([])
         self.pop_themes_grub(self.grub_theme_combo, wallpaper_list, True)
         self.fb.set_valign(Gtk.Align.START)
         self.fb.set_max_children_per_line(6)
         self.fb.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.fb.connect("child-activated", self.on_grub_item_clicked)
         scrolled.set_child(self.fb)
-        self.grub_theme_combo.connect("changed", self.on_grub_theme_change)
+        self.grub_theme_combo.connect("notify::selected", self.on_grub_theme_change)
 
         hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         install_rebornos_grub = Gtk.Button(

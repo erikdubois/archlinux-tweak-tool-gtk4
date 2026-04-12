@@ -5,6 +5,7 @@
 
 def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
     """create a gui"""
+    from gi.repository import Gdk
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -44,12 +45,10 @@ the nemesis repo"
     # button_arco_repo.connect("clicked", self.on_arco_repo_clicked)
     # button_arco_repo.set_margin_top(30)
 
-    self.d_combo = Gtk.ComboBoxText()
+    self.d_combo = Gtk.DropDown.new_from_strings(list(desktopr.desktops))
     self.d_combo.set_size_request(180, 0)
-    self.d_combo.connect("changed", self.on_d_combo_changed)
-    for x in desktopr.desktops:
-        self.d_combo.append_text(x)
-    self.d_combo.set_active(0)
+    self.d_combo.set_selected(0)
+    self.d_combo.connect("notify::selected", self.on_d_combo_changed)
     # removed in GTK4: set_wrap_width
 
     dropbox.append(label_warning)
@@ -147,13 +146,15 @@ Hyprland, Wayfire and Niri are Wayland desktops!"
     # =======================================
     try:
         pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-            base_dir + "/desktop_data/" + self.d_combo.get_active_text() + ".jpg",
+            base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",
             345,
             345,
         )
-        self.image_DE.set_from_pixbuf(pixbuf3)
+        texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
+        self.image_DE.set_paintable(texture)
     except:
         pass
+    self.image_DE.set_content_fit(Gtk.ContentFit.CONTAIN)
     frame = Gtk.Frame(label="Preview")
     frame.set_child(self.image_DE)
 

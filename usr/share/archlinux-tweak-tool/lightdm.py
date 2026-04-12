@@ -157,7 +157,7 @@ def pop_box_sessions_lightdm(self, combo):
     """populate sessions in lightdm"""
     if fn.distr != "artix":
         coms = []
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
         if fn.os.path.isfile(fn.lightdm_conf) and fn.os.path.exists(
             "/usr/share/xsessions"
@@ -182,16 +182,16 @@ def pop_box_sessions_lightdm(self, combo):
 
             coms.sort()
             for i, item in enumerate(coms):
-                combo.append_text(item)
+                combo.get_model().append(item)
                 if name.lower() == item.lower():
-                    combo.set_active(i)
+                    combo.set_selected(i)
 
 
 def pop_gtk_theme_names_lightdm(self, combo):
     """populate theme names in lightdm"""
     if fn.distr != "artix":
         coms = []
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
         if fn.os.path.isfile(fn.lightdm_greeter):
             for item in fn.os.listdir("/usr/share/themes/"):
@@ -208,16 +208,16 @@ def pop_gtk_theme_names_lightdm(self, combo):
 
             coms.sort()
             for i, item in enumerate(coms):
-                combo.append_text(item)
+                combo.get_model().append(item)
                 if theme_name.lower() == item.lower():
-                    combo.set_active(i)
+                    combo.set_selected(i)
 
 
 def pop_gtk_icon_names_lightdm(self, combo):
     """populate icon names lightdm"""
     if fn.distr != "artix":
         coms = []
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
         if fn.os.path.isfile(fn.lightdm_greeter):
             for item in fn.os.listdir("/usr/share/icons/"):
@@ -234,16 +234,16 @@ def pop_gtk_icon_names_lightdm(self, combo):
 
             coms.sort()
             for i, item in enumerate(coms):
-                combo.append_text(item)
+                combo.get_model().append(item)
                 if icon_theme_name.lower() == item.lower():
-                    combo.set_active(i)
+                    combo.set_selected(i)
 
 
 def pop_gtk_cursor_names(self, combo):
     """populate cursor names from"""
     if fn.distr != "artix":
         coms = []
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
         if fn.os.path.isfile(fn.lightdm_greeter):
             for item in fn.os.listdir("/usr/share/icons/"):
@@ -260,6 +260,6 @@ def pop_gtk_cursor_names(self, combo):
 
             coms.sort()
             for i, item in enumerate(coms):
-                combo.append_text(item)
+                combo.get_model().append(item)
                 if cursor_theme.lower() == item.lower():
-                    combo.set_active(i)
+                    combo.set_selected(i)

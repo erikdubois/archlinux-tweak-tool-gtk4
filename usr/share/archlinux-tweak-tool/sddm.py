@@ -199,7 +199,7 @@ def get_sddm_lines(files):
 def pop_box(self, combo):
     """populate sddm box"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
     """
     On Sway:
@@ -234,15 +234,15 @@ def pop_box(self, combo):
 
     coms.sort()
     for i, item in enumerate(coms):
-        combo.append_text(item)
+        combo.get_model().append(item)
         if name.lower() == item.lower():
-            combo.set_active(i)
+            combo.set_selected(i)
 
 
 def pop_theme_box(self, combo):
     """populate theme box"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
     if (
         fn.path.exists("/usr/share/sddm")
@@ -260,15 +260,15 @@ def pop_theme_box(self, combo):
 
         coms.sort()
         for i, item in enumerate(coms):
-            combo.append_text(item)
+            combo.get_model().append(item)
             if name.lower() == item.lower():
-                combo.set_active(i)
+                combo.set_selected(i)
 
 
 def pop_gtk_cursor_names(self, combo):
     """populate cursor names"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
     if fn.path.isfile(fn.sddm_default_d2):
         for item in fn.listdir("/usr/share/icons/"):
@@ -284,19 +284,19 @@ def pop_gtk_cursor_names(self, combo):
 
         coms.sort()
         for i, item in enumerate(coms):
-            combo.append_text(item)
+            combo.get_model().append(item)
             if cursor_theme.lower() == item.lower():
-                combo.set_active(i)
+                combo.set_selected(i)
 
 
 def pop_login_managers_combo(self, combo):
     """find with the active loginmanager"""
     options = ["sddm", "lightdm", "lxdm"]
     for option in options:
-        self.login_managers_combo.append_text(option)
+        self.login_managers_combo.get_model().append(option)
         if fn.check_content("sddm", "/etc/systemd/system/display-manager.service"):
-            self.login_managers_combo.set_active(0)
+            self.login_managers_combo.set_selected(0)
         if fn.check_content("lightdm", "/etc/systemd/system/display-manager.service"):
-            self.login_managers_combo.set_active(1)
+            self.login_managers_combo.set_selected(1)
         if fn.check_content("lxdm", "/etc/systemd/system/display-manager.service"):
-            self.login_managers_combo.set_active(2)
+            self.login_managers_combo.set_selected(2)

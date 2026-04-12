@@ -13,7 +13,7 @@ import settings
 def get_themes(combo):
     """get themes"""
     if fn.path.isdir(fn.home + "/.config/termite/themes/"):
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
         themes = fn.listdir(fn.home + "/.config/termite/themes/")
         with open(fn.termite_config, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -41,9 +41,9 @@ def get_themes(combo):
                     active = themes
             # TODO:enumerate
             for i in range(len(coms)):
-                combo.append_text(coms[i])
+                combo.get_model().append(coms[i])
                 if active == coms[i]:
-                    combo.set_active(i)
+                    combo.set_selected(i)
         except:
             pass
 

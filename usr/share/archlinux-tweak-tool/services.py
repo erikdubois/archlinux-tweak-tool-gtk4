@@ -8,7 +8,7 @@ from functions import GLib
 
 def choose_nsswitch(self):
     """choose a nsswitch"""
-    choice = self.nsswitch_choices.get_active_text()
+    choice = fn.get_combo_text(self.nsswitch_choices)
 
     # options = ['ArcoLinux', 'Garuda', 'Arch Linux', 'EndeavourOS']
     if choice == "ArcoLinux":  # alci #carli
@@ -39,7 +39,7 @@ def choose_nsswitch(self):
 
 def choose_smb_conf(self):
     """choose_smb_conf"""
-    choice = self.samba_choices.get_active_text()
+    choice = fn.get_combo_text(self.samba_choices)
 
     if choice == "ArcoLinux":
         fn.copy_samba("arco")

@@ -137,7 +137,7 @@ class Main(Gtk.ApplicationWindow):
         self.timeout_id = None
 
         self.desktop_status = Gtk.Label()
-        self.image_DE = Gtk.Image()
+        self.image_DE = Gtk.Picture()
 
         self.grub_image_path = ""
         self.login_wallpaper_path = ""
@@ -1656,37 +1656,40 @@ class Main(Gtk.ApplicationWindow):
     #    #                       DESKTOPR
     #    #====================================================================
 
-    def on_d_combo_changed(self, widget):
+    def on_d_combo_changed(self, widget, pspec=None):
+        from gi.repository import Gdk
+
         try:
             pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                base_dir + "/desktop_data/" + self.d_combo.get_active_text() + ".jpg",
+                base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",
                 345,
                 345,
             )
-            self.image_DE.set_from_pixbuf(pixbuf3)
+            texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
+            self.image_DE.set_paintable(texture)
         except:
-            self.image_DE.set_from_pixbuf(None)
-        if desktopr.check_desktop(self.d_combo.get_active_text()):
+            self.image_DE.set_paintable(None)
+        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)):
             self.desktop_status.set_text("This desktop is installed")
         else:
             self.desktop_status.set_text("This desktop is NOT installed")
 
     def on_install_clicked(self, widget, state):
         fn.create_log(self)
-        print("installing " + self.d_combo.get_active_text())
-        desktopr.check_lock(self, self.d_combo.get_active_text(), state)
+        print("installing " + fn.get_combo_text(self.d_combo))
+        desktopr.check_lock(self, fn.get_combo_text(self.d_combo), state)
 
     def on_default_clicked(self, widget):
         fn.create_log(self)
-        if desktopr.check_desktop(self.d_combo.get_active_text()) is True:
+        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)) is True:
             secs = settings.read_section()
             if "DESKTOP" in secs:
                 settings.write_settings(
-                    "DESKTOP", "default", self.d_combo.get_active_text()
+                    "DESKTOP", "default", fn.get_combo_text(self.d_combo)
                 )
             else:
                 settings.new_settings(
-                    "DESKTOP", {"default": self.d_combo.get_active_text()}
+                    "DESKTOP", {"default": fn.get_combo_text(self.d_combo)}
                 )
         else:
             fn.show_in_app_notification(self, "That desktop is not installed")
@@ -2016,7 +2019,7 @@ class Main(Gtk.ApplicationWindow):
         self.btn_run_rate_mirrors.set_sensitive(True)
 
     def on_click_apply_global_cursor(self, widget):
-        cursor = self.cursor_themes.get_active_text()
+        cursor = fn.get_combo_text(self.cursor_themes)
         fixes.set_global_cursor(self, cursor)
         print("Cursor is saved in /usr/share/icons/default")
         GLib.idle_add(
@@ -2187,7 +2190,7 @@ class Main(Gtk.ApplicationWindow):
 
     def pop_themes_grub(self, combo, lists, start):
         if fn.path.isfile(fn.grub_theme_conf):
-            combo.get_model().clear()
+            _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
             with open(fn.grub_theme_conf, "r", encoding="utf-8") as f:
                 listss = f.readlines()
                 f.close()
@@ -2210,14 +2213,14 @@ class Main(Gtk.ApplicationWindow):
                 pimage.set_from_pixbuf(pb)
                 self.fb.append(pimage)
 
-    def on_grub_theme_change(self, widget):
+    def on_grub_theme_change(self, widget, pspec=None):
         try:
             pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                "/boot/grub/themes/Vimix/" + widget.get_active_text(),
+                "/boot/grub/themes/Vimix/" + fn.get_combo_text(widget),
                 645,
                 645,
             )
-            print(widget.get_active_text())
+            print(fn.get_combo_text(widget))
             self.image_grub.set_from_pixbuf(pixbuf3)
         except Exception as error:
             print(error)
@@ -2376,13 +2379,13 @@ class Main(Gtk.ApplicationWindow):
         # for autologin, user and session
         if (
             (
-                self.sessions_lightdm.get_active_text() is not None
+                self.sessions_lightdm.get_selected_item() is not None
                 and self.autologin_lightdm.get_active() is True
             )
             or self.autologin_lightdm.get_active() is False
-            and self.gtk_theme_names_lightdm.get_active_text() is not None
-            and self.gtk_icon_names_lightdm.get_active_text() is not None
-            and self.cursor_themes_lightdm.get_active_text() is not None
+            and self.gtk_theme_names_lightdm.get_selected_item() is not None
+            and self.gtk_icon_names_lightdm.get_selected_item() is not None
+            and self.cursor_themes_lightdm.get_selected_item() is not None
         ):
             t1 = fn.threading.Thread(
                 target=lightdm.set_lightdm_value,
@@ -2390,7 +2393,7 @@ class Main(Gtk.ApplicationWindow):
                     self,
                     fn.get_lines(fn.lightdm_conf),
                     fn.sudo_username,
-                    self.sessions_lightdm.get_active_text(),
+                    fn.get_combo_text(self.sessions_lightdm),
                     self.autologin_lightdm.get_active(),
                 ),
             )
@@ -2403,18 +2406,18 @@ class Main(Gtk.ApplicationWindow):
 
         # for theme,icon and cursor - lightdm greeter
         if (
-            (self.gtk_theme_names_lightdm.get_active_text() is not None)
-            and self.gtk_icon_names_lightdm.get_active_text() is not None
-            and self.cursor_themes_lightdm.get_active_text() is not None
+            (self.gtk_theme_names_lightdm.get_selected_item() is not None)
+            and self.gtk_icon_names_lightdm.get_selected_item() is not None
+            and self.cursor_themes_lightdm.get_selected_item() is not None
         ):
             t1 = fn.threading.Thread(
                 target=lightdm.set_lightdm_icon_theme_cursor,
                 args=(
                     self,
                     fn.get_lines(fn.lightdm_greeter),
-                    self.gtk_theme_names_lightdm.get_active_text(),
-                    self.gtk_icon_names_lightdm.get_active_text(),
-                    self.cursor_themes_lightdm.get_active_text(),
+                    fn.get_combo_text(self.gtk_theme_names_lightdm),
+                    fn.get_combo_text(self.gtk_icon_names_lightdm),
+                    fn.get_combo_text(self.cursor_themes_lightdm),
                 ),
             )
             t1.daemon = True
@@ -2426,17 +2429,17 @@ class Main(Gtk.ApplicationWindow):
 
         # for theme,icon and cursor - slick greeter
         if (
-            (self.gtk_theme_names_lightdm.get_active_text() is not None)
-            and self.gtk_icon_names_lightdm.get_active_text() is not None
-            and self.cursor_themes_lightdm.get_active_text() is not None
+            (self.gtk_theme_names_lightdm.get_selected_item() is not None)
+            and self.gtk_icon_names_lightdm.get_selected_item() is not None
+            and self.cursor_themes_lightdm.get_selected_item() is not None
         ):
             t1 = fn.threading.Thread(
                 target=lightdm.set_lightdm_icon_theme_cursor_slick,
                 args=(
                     self,
                     fn.get_lines(fn.lightdm_slick_greeter),
-                    self.gtk_theme_names_lightdm.get_active_text(),
-                    self.gtk_icon_names_lightdm.get_active_text(),
+                    fn.get_combo_text(self.gtk_theme_names_lightdm),
+                    fn.get_combo_text(self.gtk_icon_names_lightdm),
                 ),
             )
             t1.daemon = True
@@ -2622,8 +2625,8 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_lxdm_apply(self, widget):
         if (
-            self.lxdm_gtk_theme.get_active_text() is not None
-            and self.lxdm_theme_greeter.get_active_text() is not None
+            self.lxdm_gtk_theme.get_selected_item() is not None
+            and self.lxdm_theme_greeter.get_selected_item() is not None
         ):
             t1 = fn.threading.Thread(
                 target=lxdm.set_lxdm_value,
@@ -2631,8 +2634,8 @@ class Main(Gtk.ApplicationWindow):
                     self,
                     fn.get_lines(fn.lxdm_conf),
                     fn.sudo_username,
-                    self.lxdm_gtk_theme.get_active_text(),
-                    self.lxdm_theme_greeter.get_active_text(),
+                    fn.get_combo_text(self.lxdm_gtk_theme),
+                    fn.get_combo_text(self.lxdm_theme_greeter),
                     self.autologin_lxdm.get_active(),
                     self.panel_lxdm.get_active(),
                 ),
@@ -3287,14 +3290,14 @@ class Main(Gtk.ApplicationWindow):
     def on_click_sddm_apply(self, widget):
         fn.create_sddm_k_dir()
         if (
-            self.sessions_sddm.get_active_text() is not None
-            and self.theme_sddm.get_active_text() is not None
+            self.sessions_sddm.get_selected_item() is not None
+            and self.theme_sddm.get_selected_item() is not None
             and self.autologin_sddm.get_active() is True
-            and self.sddm_cursor_themes.get_active_text() is not None
+            and self.sddm_cursor_themes.get_selected_item() is not None
         ) or (
             self.autologin_sddm.get_active() is False
-            and self.theme_sddm.get_active_text() is not None
-            and self.sddm_cursor_themes.get_active_text() is not None
+            and self.theme_sddm.get_selected_item() is not None
+            and self.sddm_cursor_themes.get_selected_item() is not None
         ):
             if fn.path.isfile(fn.sddm_default_d2):
                 t1 = fn.threading.Thread(
@@ -3303,10 +3306,10 @@ class Main(Gtk.ApplicationWindow):
                         self,
                         sddm.get_sddm_lines(fn.sddm_default_d2),
                         fn.sudo_username,
-                        self.sessions_sddm.get_active_text(),
+                        fn.get_combo_text(self.sessions_sddm),
                         self.autologin_sddm.get_active(),
-                        self.theme_sddm.get_active_text(),
-                        self.sddm_cursor_themes.get_active_text(),
+                        fn.get_combo_text(self.theme_sddm),
+                        fn.get_combo_text(self.sddm_cursor_themes),
                     ),
                 )
                 t1.daemon = True
@@ -3319,7 +3322,7 @@ class Main(Gtk.ApplicationWindow):
                         self,
                         sddm.get_sddm_lines(fn.sddm_default_d1),
                         fn.sudo_username,
-                        self.sessions_sddm.get_active_text(),
+                        fn.get_combo_text(self.sessions_sddm),
                         self.autologin_sddm.get_active(),
                     ),
                 )
@@ -3950,11 +3953,11 @@ class Main(Gtk.ApplicationWindow):
             fn.shutil.copy(fn.i3wm_config, fn.i3wm_config + ".bak")
 
         themer.set_i3_themes(
-            themer.get_list(fn.i3wm_config), self.i3_combo.get_active_text()
+            themer.get_list(fn.i3wm_config), fn.get_combo_text(self.i3_combo)
         )
         if not themer.check_polybar(themer.get_list(fn.i3wm_config)):
             themer.set_i3_themes_bar(
-                themer.get_list(fn.i3wm_config), self.i3_combo.get_active_text()
+                themer.get_list(fn.i3wm_config), fn.get_combo_text(self.i3_combo)
             )
         print("Theme applied successfully")
         fn.show_in_app_notification(self, "Theme applied successfully")
@@ -3973,7 +3976,7 @@ class Main(Gtk.ApplicationWindow):
             fn.shutil.copy(fn.qtile_config, fn.qtile_config + ".bak")
 
         themer.set_qtile_themes(
-            themer.get_list(fn.qtile_config), self.qtile_combo.get_active_text()
+            themer.get_list(fn.qtile_config), fn.get_combo_text(self.qtile_combo)
         )
         print("Theme applied successfully")
         fn.show_in_app_notification(self, "Theme applied successfully")
@@ -3988,36 +3991,36 @@ class Main(Gtk.ApplicationWindow):
             themer.get_qtile_themes(self.qtile_combo, qtile_list)
 
     def leftwm_apply_clicked(self, widget):
-        themer.set_leftwm_themes(self.leftwm_combo.get_active_text())
-        print("Theme " + self.leftwm_combo.get_active_text() + " applied successfully")
+        themer.set_leftwm_themes(fn.get_combo_text(self.leftwm_combo))
+        print("Theme " + fn.get_combo_text(self.leftwm_combo) + " applied successfully")
         fn.show_in_app_notification(
             self,
-            "Theme " + self.leftwm_combo.get_active_text() + " applied successfully",
+            "Theme " + fn.get_combo_text(self.leftwm_combo) + " applied successfully",
         )
         self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
 
     def leftwm_reset_clicked(self, widget):
-        themer.reset_leftwm_themes(self.leftwm_combo.get_active_text())
+        themer.reset_leftwm_themes(fn.get_combo_text(self.leftwm_combo))
         print("Reverting back to candy as fall-back")
-        print("Theme " + self.leftwm_combo.get_active_text() + " reset successfully")
+        print("Theme " + fn.get_combo_text(self.leftwm_combo) + " reset successfully")
         fn.show_in_app_notification(
-            self, "Theme " + self.leftwm_combo.get_active_text() + " reset successfully"
+            self, "Theme " + fn.get_combo_text(self.leftwm_combo) + " reset successfully"
         )
         self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
 
     def leftwm_remove_clicked(self, widget):
-        themer.remove_leftwm_themes(self.leftwm_combo.get_active_text())
+        themer.remove_leftwm_themes(fn.get_combo_text(self.leftwm_combo))
         print("Reverting back to candy as fall-back")
-        print("Theme " + self.leftwm_combo.get_active_text() + " removed successfully")
+        print("Theme " + fn.get_combo_text(self.leftwm_combo) + " removed successfully")
         fn.show_in_app_notification(
             self,
-            "Theme " + self.leftwm_combo.get_active_text() + " removed successfully",
+            "Theme " + fn.get_combo_text(self.leftwm_combo) + " removed successfully",
         )
 
-    def on_leftwm_combo_changed(self, widget):
+    def on_leftwm_combo_changed(self, widget, pspec=None):
         link_theme = fn.path.basename(readlink(fn.leftwm_config_theme_current))
         # print(link_theme)
-        theme = self.leftwm_combo.get_active_text()
+        theme = fn.get_combo_text(self.leftwm_combo)
         if fn.path_check(fn.leftwm_config_theme + theme):
             self.status_leftwm.set_markup("<b>Theme is installed</b>")
         else:
@@ -4143,9 +4146,9 @@ class Main(Gtk.ApplicationWindow):
         GLib.idle_add(fn.show_in_app_notification, self, "Termite themes removed")
 
     def on_term_apply(self, widget):
-        if self.term_themes.get_active_text() is not None:
+        if self.term_themes.get_selected_item() is not None:
             widget.set_sensitive(False)
-            terminals.set_config(self, self.term_themes.get_active_text())
+            terminals.set_config(self, fn.get_combo_text(self.term_themes))
             widget.set_sensitive(True)
 
     def on_term_reset(self, widget):
@@ -4184,7 +4187,7 @@ class Main(Gtk.ApplicationWindow):
         fn.reset_login_wallpaper(self, self.login_wallpaper_path)
 
     def pop_login_wallpapers(self, combo, lists, start):
-        combo.get_model().clear()
+        _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
 
         child = self.flowbox_wall.get_first_child()
         while child is not None:
@@ -4201,14 +4204,14 @@ class Main(Gtk.ApplicationWindow):
             pimage.set_from_pixbuf(pb)
             self.flowbox_wall.append(pimage)
 
-    def on_login_wallpaper_change(self, widget):
+    def on_login_wallpaper_change(self, widget, pspec=None):
         try:
             pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                fn.login_backgrounds + widget.get_active_text(),
+                fn.login_backgrounds + fn.get_combo_text(widget),
                 645,
                 645,
             )
-            print(widget.get_active_text())
+            print(fn.get_combo_text(widget))
             self.image_grub.set_from_pixbuf(pixbuf3)
         except Exception as error:
             print(error)
@@ -4456,9 +4459,9 @@ class Main(Gtk.ApplicationWindow):
             fn.shutil.copy(fn.zshrc_arco, fn.zsh_config)
             fn.permissions(fn.home + "/.zshrc")
 
-        if self.zsh_themes.get_active_text() is not None:
+        if self.zsh_themes.get_selected_item() is not None:
             # widget.set_sensitive(False)
-            zsh_theme.set_config(self, self.zsh_themes.get_active_text())
+            zsh_theme.set_config(self, fn.get_combo_text(self.zsh_themes))
             widget.set_sensitive(True)
             print("Applying zsh theme")
 
@@ -4492,6 +4495,8 @@ class Main(Gtk.ApplicationWindow):
     def update_image(
         self, widget, image, theme_type, att_base, image_width, image_height
     ):
+        from gi.repository import Gdk
+
         sample_path = ""
         preview_path = ""
         random_option = False
@@ -4501,46 +4506,46 @@ class Main(Gtk.ApplicationWindow):
         #    match "zsh":
         #        case 'zsh':
         #            sample_path = att_base+"/images/zsh-sample.jpg"
-        #            preview_path = att_base+"/images/zsh_previews/"+widget.get_active_text() + ".jpg"
+        #            preview_path = att_base+"/images/zsh_previews/"+fn.get_combo_text(widget) + ".jpg"
         #        case 'qtile':
         #            sample_path = att_base+"/images/zsh-sample.jpg"
-        #            previe_path = att_base+"/images/zsh_previews/"+widget.get_active_text() + ".jpg"
+        #            previe_path = att_base+"/images/zsh_previews/"+fn.get_combo_text(widget) + ".jpg"
         #        case 'i3':
         #            sample_path = att_base+"/images/i3-sample.jpg"
-        #            preview_path = att_base+"/themer_data/i3/"+widget.get_active_text() + ".jpg"
+        #            preview_path = att_base+"/themer_data/i3/"+fn.get_combo_text(widget) + ".jpg"
         #        case 'awesome':
         #            sample_path = att_base+"/images/i3-sample.jpg"
-        #            preview_path = att_base+"/themer_data/awesomewm/"+widget.get_active_text() + ".jpg"
+        #            preview_path = att_base+"/themer_data/awesomewm/"+fn.get_combo_text(widget) + ".jpg"
         #        case 'neofetch':
-        #            sample_path = att_base + widget.get_active_text()
-        #            preview_path = att_base + widget.get_active_text()
+        #            sample_path = att_base + fn.get_combo_text(widget)
+        #            preview_path = att_base + fn.get_combo_text(widget)
         #        case unknown_command:
         #            print("Function update_image passed an incorrect value for theme_type. Value passed was: " + theme_type)
         #            print("Remember that the order for using this function is: self, widget, image, theme_type, att_base_path, image_width, image_height.")
         if theme_type == "zsh":
             sample_path = att_base + "/images/zsh-sample.jpg"
             preview_path = (
-                att_base + "/images/zsh_previews/" + widget.get_active_text() + ".jpg"
+                att_base + "/images/zsh_previews/" + fn.get_combo_text(widget) + ".jpg"
             )
-            if widget.get_active_text() == "random":
+            if fn.get_combo_text(widget) == "random":
                 random_option = True
         elif theme_type == "qtile":
             sample_path = att_base + "/images/qtile-sample.jpg"
             preview_path = (
-                att_base + "/themer_data/qtile/" + widget.get_active_text() + ".jpg"
+                att_base + "/themer_data/qtile/" + fn.get_combo_text(widget) + ".jpg"
             )
         elif theme_type == "leftwm":
             sample_path = att_base + "/images/leftwm-sample.jpg"
             preview_path = (
-                att_base + "/themer_data/leftwm/" + widget.get_active_text() + ".jpg"
+                att_base + "/themer_data/leftwm/" + fn.get_combo_text(widget) + ".jpg"
             )
         elif theme_type == "i3":
             sample_path = att_base + "/images/i3-sample.jpg"
             preview_path = (
-                att_base + "/themer_data/i3/" + widget.get_active_text() + ".jpg"
+                att_base + "/themer_data/i3/" + fn.get_combo_text(widget) + ".jpg"
             )
         elif theme_type == "awesome":
-            # Awesome section doesn't use a ComboBoxText, but a ComboBox - which has different properties.
+            # Awesome section doesn't use a DropDown, but a ComboBox - which has different properties.
             tree_iter = self.awesome_combo.get_active_iter()
             if tree_iter is not None:
                 model = self.awesome_combo.get_model()
@@ -4549,8 +4554,8 @@ class Main(Gtk.ApplicationWindow):
             sample_path = att_base + "/images/awesome-sample.jpg"
             preview_path = att_base + "/themer_data/awesomewm/" + name + ".jpg"
         elif theme_type == "neofetch":
-            sample_path = att_base + widget.get_active_text()
-            preview_path = att_base + widget.get_active_text()
+            sample_path = att_base + fn.get_combo_text(widget)
+            preview_path = att_base + fn.get_combo_text(widget)
         else:
             # If we are doing our job correctly, this should never be shown to users. If it does, we have done something wrong as devs.
             print(
@@ -4569,7 +4574,8 @@ class Main(Gtk.ApplicationWindow):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 sample_path, image_width, image_height
             )
-        image.set_from_pixbuf(pixbuf)
+        texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+        image.set_paintable(texture)
 
     def remove_oh_my_zsh(self, widget):
         fn.remove_package(self, "oh-my-zsh-git")

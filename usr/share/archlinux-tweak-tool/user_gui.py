@@ -60,11 +60,8 @@ def gui(self, Gtk, vboxStack10, user, fn):
     self.hbox_confirm_password = Gtk.Entry()
     self.hbox_confirm_password.set_visibility(False)
 
-    self.combo_account_type = Gtk.ComboBoxText()
-    # TODO: enumerate
-    for i in range(len(fn.account_list)):
-        self.combo_account_type.append_text(fn.account_list[i])
-    self.combo_account_type.set_active(1)
+    self.combo_account_type = Gtk.DropDown.new_from_strings(list(fn.account_list))
+    self.combo_account_type.set_selected(1)
 
     grid = Gtk.Grid()
     grid.attach(label_username, 0, 0, 2, 1)
@@ -130,7 +127,7 @@ audio, video, network, storage, rfkill, wheel, autologin, sambashare"
         label="Remove the selected user and the home folder"
     )
     button_delete_all_user.connect("clicked", self.on_click_delete_all_user)
-    self.cbt_users = Gtk.ComboBoxText()
+    self.cbt_users = Gtk.DropDown.new_from_strings([])
     user.pop_cbt_users(self, self.cbt_users)
     hbox8_label.set_margin_start(10)
     hbox8_label.set_margin_end(10)

@@ -323,14 +323,14 @@ def check_lock(self, desktop, state):
             # print("YES")
             t1 = fn.threading.Thread(
                 target=install_desktop,
-                args=(self, self.d_combo.get_active_text(), state),
+                args=(self, fn.get_combo_text(self.d_combo), state),
             )
             t1.daemon = True
             t1.start()
     else:
         # print("NO FILE")
         t1 = fn.threading.Thread(
-            target=install_desktop, args=(self, self.d_combo.get_active_text(), state)
+            target=install_desktop, args=(self, fn.get_combo_text(self.d_combo), state)
         )
         t1.daemon = True
         t1.start()
@@ -452,7 +452,7 @@ def install_desktop(self, desktop, state):
     # print(list(np.append(com1, command)))
     GLib.idle_add(
         self.desktopr_stat.set_text,
-        "Installing " + self.d_combo.get_active_text() + "...",
+        "Installing " + fn.get_combo_text(self.d_combo) + "...",
     )
 
     for line in command:

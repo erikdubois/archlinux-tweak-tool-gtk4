@@ -98,7 +98,7 @@ def check_polybar(lines):
 
 def get_i3_themes(combo, lines):
     """get i3 themes"""
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
     try:
         menu = [x for x in fn.os.listdir(fn.home + "/.config/i3") if ".theme" in x]
 
@@ -113,8 +113,8 @@ def get_i3_themes(combo, lines):
         for i in range(len(sorted_menu)):
             if theme_name in sorted_menu[i]:
                 active = i
-            combo.append_text(sorted_menu[i].replace(".theme", ""))
-        combo.set_active(active)
+            combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+        combo.set_selected(active)
     except Exception as error:
         print(error)
 
@@ -201,7 +201,7 @@ def set_awesome_theme(lines, val):
 
 def get_qtile_themes(combo, lines):
     """get qtile themes"""
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-qtile-git"):
         try:
             menu = [
@@ -220,8 +220,8 @@ def get_qtile_themes(combo, lines):
             for i in range(len(sorted_menu)):
                 if theme_name in sorted_menu[i]:
                     active = i
-                combo.append_text(sorted_menu[i].replace(".theme", ""))
-            combo.set_active(active)
+                combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+            combo.set_selected(active)
         except Exception as error:
             print(error)
 
@@ -259,7 +259,7 @@ def set_qtile_themes(lines, theme):
 
 def get_leftwm_themes(combo, lines):
     """get leftwm themes"""
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-leftwm-git"):
         try:
             menu = [
@@ -278,8 +278,8 @@ def get_leftwm_themes(combo, lines):
             for i in range(len(sorted_menu)):
                 if theme_name in sorted_menu[i]:
                     active = i
-                combo.append_text(sorted_menu[i].replace(".theme", ""))
-            combo.set_active(active)
+                combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+            combo.set_selected(active)
         except Exception as error:
             print(error)
 

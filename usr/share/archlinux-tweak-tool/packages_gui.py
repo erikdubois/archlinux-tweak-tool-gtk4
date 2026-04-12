@@ -46,7 +46,7 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         hsep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         hsep.set_hexpand(True)
-        hsep.set_vexpand(True)
+        hsep.set_vexpand(False)
         hbox_sep.append(hsep)
 
         button_export_packages = Gtk.Button(label="Export Packages")

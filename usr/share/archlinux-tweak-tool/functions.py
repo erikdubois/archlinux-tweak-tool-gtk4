@@ -281,6 +281,12 @@ logger.addHandler(ch)
 # =====================================================
 
 
+def get_combo_text(combo):
+    """Get selected text from a Gtk.DropDown with Gtk.StringList model."""
+    item = combo.get_selected_item()
+    return item.get_string() if item is not None else None
+
+
 def get_lines(files):
     try:
         if path.isfile(files):
@@ -1183,7 +1189,7 @@ def set_grub_wallpaper(self, image):
 
 def set_login_wallpaper(self, image):
     # if sddm
-    if self.login_managers_combo.get_active_text() == "sddm":
+    if get_combo_text(self.login_managers_combo) == "sddm":
         if path.isfile(sddm_default_d2):
             try:
                 with open(sddm_default_d2, "r", encoding="utf-8") as f:
@@ -1240,7 +1246,7 @@ def set_login_wallpaper(self, image):
             show_in_app_notification(self, "Use the ATT sddm configuration")
 
     # if lightdm
-    if self.login_managers_combo.get_active_text() == "lightdm":
+    if get_combo_text(self.login_managers_combo) == "lightdm":
         if path.isfile(lightdm_greeter):
             try:
                 with open(lightdm_greeter, "r", encoding="utf-8") as f:
@@ -1288,7 +1294,7 @@ def set_login_wallpaper(self, image):
             )
 
     # if lxdm
-    if self.login_managers_combo.get_active_text() == "lxdm":
+    if get_combo_text(self.login_managers_combo) == "lxdm":
         if path.isfile(lxdm_conf):
             try:
                 with open(lxdm_conf, "r", encoding="utf-8") as f:

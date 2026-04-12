@@ -15,7 +15,7 @@ def create_user(self):
     # if not empty fields
     username = self.hbox_username.get_text()
     name = self.hbox_name.get_text()
-    atype = self.combo_account_type.get_active_text()
+    atype = fn.get_combo_text(self.combo_account_type)
     password = self.hbox_password.get_text()
     confirm_password = self.hbox_confirm_password.get_text()
     if (
@@ -71,7 +71,7 @@ def create_user(self):
 
 def on_click_delete_user(self):
     """delete user"""
-    username = self.cbt_users.get_active_text()
+    username = fn.get_combo_text(self.cbt_users)
     if username is not None:
         userdel = "userdel " + username
 
@@ -82,7 +82,7 @@ def on_click_delete_user(self):
 
 def on_click_delete_all_user(self):
     """delete also home dir"""
-    username = self.cbt_users.get_active_text()
+    username = fn.get_combo_text(self.cbt_users)
     if username is not None:
         userdel = "userdel -r -f " + username
 
@@ -95,8 +95,8 @@ def on_click_delete_all_user(self):
 
 def pop_cbt_users(self, combo):
     """populate with users - 1000 is default user - not included"""
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
     users = fn.list_users("/etc/passwd")
     for user in users:
-        self.cbt_users.append_text(user)
-        self.cbt_users.set_active(0)
+        self.cbt_users.get_model().append(user)
+        self.cbt_users.set_selected(0)

@@ -245,7 +245,7 @@ colors, presets of Xfce4-terminal"
     hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label19 = Gtk.Label()
     label19.set_markup("Choose your <b>Termite</b> theme")
-    self.term_themes = Gtk.ComboBoxText()
+    self.term_themes = Gtk.DropDown.new_from_strings([])
     termite.get_themes(self.term_themes)
     label19.set_margin_start(10)
     label19.set_margin_end(10)

@@ -5,6 +5,7 @@
 
 def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
     """create a gui"""
+    from gi.repository import Gdk
 
     hbox1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox1_lbl = Gtk.Label(xalign=0)
@@ -81,7 +82,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         )
         hbox7_lbl.set_margin_start(10)
         hbox7_lbl.set_margin_end(10)
-        hbox7_lbl.set_hexpand(True)
+        hbox7_lbl.set_hexpand(False)
         hbox7.append(hbox7_lbl)
         install_bash_completion.set_margin_start(10)
         install_bash_completion.set_margin_end(10)
@@ -210,7 +211,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         )
         hbox26_lbl.set_margin_start(10)
         hbox26_lbl.set_margin_end(10)
-        hbox26_lbl.set_hexpand(True)
+        hbox26_lbl.set_hexpand(False)
         hbox26.append(hbox26_lbl)
         self.install_zsh_completions.set_margin_start(10)
         self.install_zsh_completions.set_margin_end(10)
@@ -235,7 +236,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         )
         hbox27_lbl.set_margin_start(10)
         hbox27_lbl.set_margin_end(10)
-        hbox27_lbl.set_hexpand(True)
+        hbox27_lbl.set_hexpand(False)
         hbox27.append(hbox27_lbl)
         self.install_zsh_syntax_highlighting.set_margin_start(10)
         self.install_zsh_syntax_highlighting.set_margin_end(10)
@@ -256,7 +257,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         self.remove_zsh_omz.connect("clicked", self.remove_oh_my_zsh)
         hbox28_lbl.set_margin_start(10)
         hbox28_lbl.set_margin_end(10)
-        hbox28_lbl.set_hexpand(True)
+        hbox28_lbl.set_hexpand(False)
         hbox28.append(hbox28_lbl)
         self.install_zsh_omz.set_margin_start(10)
         self.install_zsh_omz.set_margin_end(10)
@@ -274,7 +275,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         self.zsh_reset.connect("clicked", self.on_zshrc_reset_clicked)
         hbox25_lbl.set_margin_start(10)
         hbox25_lbl.set_margin_end(10)
-        hbox25_lbl.set_hexpand(True)
+        hbox25_lbl.set_hexpand(False)
         hbox25.append(hbox25_lbl)
         self.arcolinux_zsh.set_margin_start(10)
         self.arcolinux_zsh.set_margin_end(10)
@@ -286,12 +287,12 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         hbox21_lbl = Gtk.Label()
         hbox21_lbl.set_markup("Zsh themes")
-        self.zsh_themes = Gtk.ComboBoxText()
+        self.zsh_themes = Gtk.DropDown.new_from_strings([])
         self.zsh_themes.set_size_request(300, 20)
         zsh_theme.get_themes(self.zsh_themes)
         hbox21_lbl.set_margin_start(10)
         hbox21_lbl.set_margin_end(10)
-        hbox21_lbl.set_hexpand(True)
+        hbox21_lbl.set_hexpand(False)
         hbox21.append(hbox21_lbl)
         self.zsh_themes.set_margin_start(10)
         self.zsh_themes.set_margin_end(10)
@@ -313,28 +314,32 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/images/zsh-sample.jpg", image_width, image_height
         )
-        if self.zsh_themes.get_active_text() is None:
+        if self.zsh_themes.get_selected_item() is None:
             pass
         elif fn.path.isfile(
             base_dir
             + "/images/zsh_previews/"
-            + self.zsh_themes.get_active_text()
+            + fn.get_combo_text(self.zsh_themes)
             + ".jpg"
         ):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 base_dir
                 + "/images/zsh_previews/"
-                + self.zsh_themes.get_active_text()
+                + fn.get_combo_text(self.zsh_themes)
                 + ".jpg",
                 image_width,
                 image_height,
             )
-        image = Gtk.Image.new_from_pixbuf(pixbuf)
+        texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+        image = Gtk.Picture.new_for_paintable(texture)
+        image.set_content_fit(Gtk.ContentFit.CONTAIN)
         image.set_margin_top(0)
+        image.set_hexpand(True)
+        image.set_vexpand(True)
 
         self.zsh_themes.connect(
-            "changed",
-            self.update_image,
+            "notify::selected",
+            lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
             image,
             "zsh",
             base_dir,
@@ -450,7 +455,7 @@ If you just switched shell, log-out first</b>\n"
         remove_fish.connect("clicked", self.on_remove_only_fish_clicked)
         hbox32_lbl.set_margin_start(10)
         hbox32_lbl.set_margin_end(10)
-        hbox32_lbl.set_hexpand(True)
+        hbox32_lbl.set_hexpand(False)
         hbox32.append(hbox32_lbl)
         install_fish.set_margin_start(10)
         install_fish.set_margin_end(10)
@@ -473,7 +478,7 @@ If you just switched shell, log-out first</b>\n"
         self.arcolinux_fish.connect("clicked", self.on_arcolinux_fish_package_clicked)
         hbox33_lbl.set_margin_start(10)
         hbox33_lbl.set_margin_end(10)
-        hbox33_lbl.set_hexpand(True)
+        hbox33_lbl.set_hexpand(False)
         hbox33.append(hbox33_lbl)
         self.arcolinux_fish.set_margin_start(10)
         self.arcolinux_fish.set_margin_end(10)
@@ -593,7 +598,7 @@ Activate the necessary repos"
     hbox51_lbl.set_margin_top(20)
     hbox51_lbl.set_margin_start(10)
     hbox51_lbl.set_margin_end(10)
-    hbox51_lbl.set_hexpand(True)
+    hbox51_lbl.set_hexpand(False)
     hbox51.append(hbox51_lbl)
     self.select_all.set_margin_start(10)
     self.select_all.set_margin_end(10)

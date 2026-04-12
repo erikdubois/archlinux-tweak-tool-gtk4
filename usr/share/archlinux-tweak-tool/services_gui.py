@@ -70,18 +70,15 @@ def gui(self, Gtk, vboxstack14, fn):
     hbox3.append(hbox3_label)
 
     hbox30 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.nsswitch_choices = Gtk.ComboBoxText()
-    options = [
+    self.nsswitch_choices = Gtk.DropDown.new_from_strings([
         "ArcoLinux",
         "ArchLinux",
         "BigLinux",
         "EndeavourOS",
         "Garuda",
         "Manjaro",
-    ]
-    for option in options:
-        self.nsswitch_choices.append_text(option)
-    self.nsswitch_choices.set_active(0)
+    ])
+    self.nsswitch_choices.set_selected(0)
     button_apply_nsswitch = Gtk.Button(label="Apply selected nsswitch.conf")
     button_apply_nsswitch.connect("clicked", self.on_click_apply_nsswitch)
     button_reset_nsswitch = Gtk.Button(label="Reset to default nsswitch")
@@ -138,18 +135,15 @@ Follow the instruction numbers below - <b>we recommend the easy configuration</b
     hbox4bis = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox4bis_label = Gtk.Label(xalign=0)
     hbox4bis_label.set_text("2. Apply the /etc/samba/smb.conf of your choice")
-    self.samba_choices = Gtk.ComboBoxText()
-    options_samba = [
+    self.samba_choices = Gtk.DropDown.new_from_strings([
         "Easy",
         "Usershares",
         "Windows",
         "ArcoLinux",
         "Original",
         "BigLinux",
-    ]
-    for option in options_samba:
-        self.samba_choices.append_text(option)
-    self.samba_choices.set_active(0)
+    ])
+    self.samba_choices.set_selected(0)
     button_apply_samba = Gtk.Button(label="Apply selected samba.conf")
     button_apply_samba.connect("clicked", self.on_click_apply_samba)
     button_reset_samba = Gtk.Button(label="Reset to default samba.conf")
@@ -159,12 +153,12 @@ Follow the instruction numbers below - <b>we recommend the easy configuration</b
     hbox4bis_label.set_hexpand(True)
     hbox4bis.append(hbox4bis_label)
     self.samba_choices.set_hexpand(True)
-    self.samba_choices.set_vexpand(True)
+    self.samba_choices.set_vexpand(False)
     self.samba_choices.set_margin_start(10)
     self.samba_choices.set_margin_end(10)
     hbox4bis.append(self.samba_choices)
     button_apply_samba.set_hexpand(True)
-    button_apply_samba.set_vexpand(True)
+    button_apply_samba.set_vexpand(False)
     button_apply_samba.set_margin_start(10)
     button_apply_samba.set_margin_end(10)
     hbox4bis.append(button_apply_samba)

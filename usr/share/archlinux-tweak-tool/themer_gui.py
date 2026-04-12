@@ -6,6 +6,8 @@
 
 def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     """create a gui"""
+    from gi.repository import Gdk
+
     # Image Dimensions. Change once here - apply to ALL the items in this GUI.
     image_width = 645
     image_height = 645
@@ -36,9 +38,17 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
     vboxstack1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack1.set_hexpand(True)
+    vboxstack1.set_vexpand(True)
     vboxstack2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack2.set_hexpand(True)
+    vboxstack2.set_vexpand(True)
     vboxstack3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack3.set_hexpand(True)
+    vboxstack3.set_vexpand(True)
     vboxstack4 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack4.set_hexpand(True)
+    vboxstack4.set_vexpand(True)
 
     stack = Gtk.Stack()
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
@@ -61,7 +71,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     )
 
     label = Gtk.Label(label="Select theme")
-    self.i3_combo = Gtk.ComboBoxText()
+    self.i3_combo = Gtk.DropDown.new_from_strings([])
     self.i3_combo.set_size_request(280, 0)
     if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed(
         "edu-i3-git"
@@ -107,21 +117,26 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
         base_dir + "/images/i3-sample.jpg", image_width, image_height
     )
-    if self.i3_combo.get_active_text() is None:
+    if self.i3_combo.get_selected_item() is None:
         pass
     elif fn.os.path.isfile(
-        base_dir + "/themer_data/i3" + self.i3_combo.get_active_text() + ".jpg"
+        base_dir + "/themer_data/i3" + fn.get_combo_text(self.i3_combo) + ".jpg"
     ):
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-            base_dir + "/themer_data/i3/" + self.i3_combo.get_active_text() + ".jpg",
+            base_dir + "/themer_data/i3/" + fn.get_combo_text(self.i3_combo) + ".jpg",
             image_width,
             image_height,
         )
-    i3_image = Gtk.Image.new_from_pixbuf(pixbuf)
+    texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+    i3_image = Gtk.Picture.new_for_paintable(texture)
+    i3_image.set_content_fit(Gtk.ContentFit.CONTAIN)
+    i3_image.set_size_request(image_width, image_height)
+    i3_image.set_hexpand(True)
+    i3_image.set_vexpand(True)
 
     self.i3_combo.connect(
-        "changed",
-        self.update_image,
+        "notify::selected",
+        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
         i3_image,
         "i3",
         base_dir,
@@ -196,6 +211,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     vbox4 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox5.set_hexpand(True)
+    hbox5.set_vexpand(True)
 
     vbox3.append(self.awesome_combo)
     label2.set_margin_start(10)
@@ -216,8 +233,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         # row_id is used for image
         row_id, name = model[tree_iter][:2]
 
-    self.image = Gtk.Image()
-
     image_width = 598
     image_height = 598
 
@@ -225,21 +240,37 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         "edu-awesome-git"
     ):
         try:
+            if tree_iter is not None:
+                pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    base_dir + "/themer_data/awesomewm/" + name + ".jpg",
+                    image_width,
+                    image_height,
+                )
+            else:
+                pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    base_dir + "/themer_data/awesomewm/multicolor.jpg",
+                    image_width,
+                    image_height,
+                )
+        except:
             pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                base_dir + "/themer_data/awesomewm/" + name + ".jpg",
+                base_dir + "/themer_data/awesomewm/multicolor.jpg",
                 image_width,
                 image_height,
             )
-            self.image.set_from_pixbuf(pimage)
-        except:
-            pass
     else:
         pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/themer_data/awesomewm/multicolor.jpg",
             image_width,
             image_height,
         )
-        self.image.set_from_pixbuf(pimage)
+
+    texture = Gdk.Texture.new_for_pixbuf(pimage)
+    self.image = Gtk.Picture.new_for_paintable(texture)
+    self.image.set_content_fit(Gtk.ContentFit.CONTAIN)
+    self.image.set_size_request(image_width, image_height)
+    self.image.set_hexpand(True)
+    self.image.set_vexpand(True)
 
     self.awesome_combo.connect(
         "changed",
@@ -298,7 +329,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     )
 
     labelqt = Gtk.Label(label="Select theme")
-    self.qtile_combo = Gtk.ComboBoxText()
+    self.qtile_combo = Gtk.DropDown.new_from_strings([])
     self.qtile_combo.set_size_request(280, 0)
     if fn.os.path.isfile(fn.qtile_config_theme) and fn.check_package_installed(
         "edu-qtile-git"
@@ -342,24 +373,29 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     qtile_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
         base_dir + "/images/qtile-sample.jpg", image_width, image_height
     )
-    if self.qtile_combo.get_active_text() is None:
+    if self.qtile_combo.get_selected_item() is None:
         pass
     elif fn.os.path.isfile(
-        base_dir + "/themer_data/qtile/" + self.qtile_combo.get_active_text() + ".jpg"
+        base_dir + "/themer_data/qtile/" + fn.get_combo_text(self.qtile_combo) + ".jpg"
     ):
         qtile_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir
             + "/themer_data/qtile/"
-            + self.qtile_combo.get_active_text()
+            + fn.get_combo_text(self.qtile_combo)
             + ".jpg",
             image_width,
             image_height,
         )
-    qtile_image = Gtk.Image.new_from_pixbuf(qtile_pixbuf)
+    texture = Gdk.Texture.new_for_pixbuf(qtile_pixbuf)
+    qtile_image = Gtk.Picture.new_for_paintable(texture)
+    qtile_image.set_content_fit(Gtk.ContentFit.CONTAIN)
+    qtile_image.set_size_request(image_width, image_height)
+    qtile_image.set_hexpand(True)
+    qtile_image.set_vexpand(True)
 
     self.qtile_combo.connect(
-        "changed",
-        self.update_image,
+        "notify::selected",
+        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
         qtile_image,
         "qtile",
         base_dir,
@@ -395,17 +431,15 @@ install them in one go"
     )
 
     labellft = Gtk.Label(label="Select theme - candy is the default theme")
-    self.leftwm_combo = Gtk.ComboBoxText()
+    self.leftwm_combo = Gtk.DropDown.new_from_strings(list(fn.leftwm_themes_list))
     self.leftwm_combo.set_size_request(280, 0)
-    for theme in fn.leftwm_themes_list:
-        self.leftwm_combo.append_text(theme)
-    self.leftwm_combo.connect("changed", self.on_leftwm_combo_changed)
+    self.leftwm_combo.connect("notify::selected", self.on_leftwm_combo_changed)
     if fn.path_check(fn.leftwm_config_theme_current):
         link_theme = fn.os.path.basename(fn.readlink(fn.leftwm_config_theme_current))
         # TODO: enumerate
         for i in range(len(fn.leftwm_themes_list)):
             if link_theme == fn.leftwm_themes_list[i]:
-                self.leftwm_combo.set_active(i)
+                self.leftwm_combo.set_selected(i)
     else:
         self.leftwm_combo.set_sensitive(False)
 
@@ -441,24 +475,29 @@ install them in one go"
     leftwm_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
         base_dir + "/images/leftwm-sample.jpg", image_width, image_height
     )
-    if self.leftwm_combo.get_active_text() is None:
+    if self.leftwm_combo.get_selected_item() is None:
         pass
     elif fn.os.path.isfile(
-        base_dir + "/themer_data/leftwm/" + self.leftwm_combo.get_active_text() + ".jpg"
+        base_dir + "/themer_data/leftwm/" + fn.get_combo_text(self.leftwm_combo) + ".jpg"
     ):
         leftwm_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir
             + "/themer_data/leftwm/"
-            + self.leftwm_combo.get_active_text()
+            + fn.get_combo_text(self.leftwm_combo)
             + ".jpg",
             image_width,
             image_height,
         )
-    leftwm_image = Gtk.Image.new_from_pixbuf(leftwm_pixbuf)
+    texture = Gdk.Texture.new_for_pixbuf(leftwm_pixbuf)
+    leftwm_image = Gtk.Picture.new_for_paintable(texture)
+    leftwm_image.set_content_fit(Gtk.ContentFit.CONTAIN)
+    leftwm_image.set_size_request(image_width, image_height)
+    leftwm_image.set_hexpand(True)
+    leftwm_image.set_vexpand(True)
 
     self.leftwm_combo.connect(
-        "changed",
-        self.update_image,
+        "notify::selected",
+        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
         leftwm_image,
         "leftwm",
         base_dir,

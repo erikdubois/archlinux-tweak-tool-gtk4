@@ -60,7 +60,7 @@ def set_global_cursor(self, cursor):
 def pop_gtk_cursor_names(combo):
     """populate cursor names"""
     coms = []
-    combo.get_model().clear()
+    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
     for item in fn.listdir("/usr/share/icons/"):
         if fn.path_check("/usr/share/icons/" + item + "/cursors/"):
             coms.append(item)
@@ -73,9 +73,9 @@ def pop_gtk_cursor_names(combo):
 
     coms.sort()
     for i, item in enumerate(coms):
-        combo.append_text(item)
+        combo.get_model().append(item)
         if cursor_theme.lower() == item.lower():
-            combo.set_active(i)
+            combo.set_selected(i)
 
 
 def set_parallel_downloads(self, widget):
@@ -85,7 +85,7 @@ def set_parallel_downloads(self, widget):
             with open(fn.pacman, "r", encoding="utf-8") as f:
                 lines = f.readlines()
                 f.close()
-            par_downloads = self.parallel_downloads.get_active_text()
+            par_downloads = fn.get_combo_text(self.parallel_downloads)
             pos_par_down = fn.get_position(lines, "ParallelDownloads")
             lines[pos_par_down] = "ParallelDownloads = " + par_downloads + "\n"
 
