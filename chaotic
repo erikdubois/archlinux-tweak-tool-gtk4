@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-URL="https://chaoticmirror.com/chaotic-aur/chaotic-aur/x86_64/"
+URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
 DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/garuda/packages/keyring/"
 PACKAGES=("chaotic-keyring")
 
@@ -37,7 +37,7 @@ done
 
 
 # Configuration
-URL="https://chaoticmirror.com/chaotic-aur/chaotic-aur/x86_64/"
+URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
 DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/garuda/packages/mirrorlist/"
 PACKAGES=("chaotic-mirrorlist")
 
