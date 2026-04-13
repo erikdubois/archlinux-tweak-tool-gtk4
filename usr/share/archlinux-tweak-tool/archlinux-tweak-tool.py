@@ -4745,33 +4745,33 @@ class Main(Gtk.ApplicationWindow):
 
     def on_reload_att_clicked(self, widget):
         # login
-        if fn.check_package_installed("sddm"):
+        if fn.check_package_installed("sddm") and hasattr(self, "sessions_sddm"):
             sddm.pop_box(self, self.sessions_sddm)
-        if fn.check_package_installed("lightdm"):
+        if fn.check_package_installed("lightdm") and hasattr(self, "sessions_lightdm"):
             lightdm.pop_box_sessions_lightdm(self, self.sessions_lightdm)
         # terminal
-        if fn.check_package_installed("termite"):
+        if fn.check_package_installed("termite") and hasattr(self, "term_themes"):
             terminals.get_themes(self.term_themes)
         # themes
-        if fn.check_package_installed("arcolinux-leftwm-git"):
+        if fn.check_package_installed("arcolinux-leftwm-git") and hasattr(self, "term_themes"):
             terminals.get_themes(self.term_themes)
         # populate all cursors dropdowns
-        if fn.check_package_installed("sddm"):
+        if fn.check_package_installed("sddm") and hasattr(self, "sddm_cursor_themes"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
+        if fn.check_package_installed("lightdm") and hasattr(self, "cursor_themes_lightdm"):
             lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         fixes.pop_gtk_cursor_names(self.cursor_themes)
         # populate cursor themes - some themes include a cursor
-        if fn.check_package_installed("sddm"):
+        if fn.check_package_installed("sddm") and hasattr(self, "sddm_cursor_themes"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
+        if fn.check_package_installed("lightdm") and hasattr(self, "cursor_themes_lightdm"):
             lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         fixes.pop_gtk_cursor_names(self.cursor_themes)
         # populate lightdm page
-        if fn.check_package_installed("lightdm"):
+        if fn.check_package_installed("lightdm") and hasattr(self, "gtk_theme_names_lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
         # populate lxdm page
-        if fn.check_package_installed("lxdm"):
+        if fn.check_package_installed("lxdm") and hasattr(self, "lxdm_gtk_theme"):
             lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
         print("Reloaded")
 
@@ -4823,15 +4823,20 @@ class ATTApplication(Gtk.Application):
             with open("/tmp/att.pid", "w", encoding="utf-8") as f:
                 f.write(str(fn.getpid()))
 
-            # apply saved dark theme preference
+            # apply saved dark theme preference (default: on)
             try:
-                if "APPEARANCE" in settings.read_section():
+                secs = settings.read_section()
+                if "APPEARANCE" in secs:
                     dark = settings.read_settings("APPEARANCE", "dark_theme") == "True"
-                    Gtk.Settings.get_default().set_property(
-                        "gtk-application-prefer-dark-theme", dark
-                    )
+                else:
+                    dark = True
+                Gtk.Settings.get_default().set_property(
+                    "gtk-application-prefer-dark-theme", dark
+                )
             except Exception:
-                pass
+                Gtk.Settings.get_default().set_property(
+                    "gtk-application-prefer-dark-theme", True
+                )
 
             style_provider = Gtk.CssProvider()
             style_provider.load_from_path(base_dir + "/att.css")

@@ -388,8 +388,8 @@ themes</i> you can customize <b>fastfetch</b>"
     btn_dark_theme = Gtk.Button()
     btn_dark_theme.set_size_request(100, 30)
 
-    # read saved preference and set initial state
-    dark_state = [False]
+    # read saved preference and set initial state (default: on)
+    dark_state = [True]
     try:
         secs = settings.read_section()
         if "APPEARANCE" in secs:
@@ -436,7 +436,7 @@ themes</i> you can customize <b>fastfetch</b>"
 
     ivbox.append(hbox1)
     ivbox.append(hbox2)
-    ivbox.append(hbox6)
+    # ivbox.append(hbox6)  # dark theme button - hidden for now
     ivbox.append(hbox5)
     ivbox.append(hbox3)
     ivbox.append(hbox4)
