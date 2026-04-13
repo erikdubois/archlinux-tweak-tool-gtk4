@@ -26,17 +26,17 @@ echo "[INFO]: DESKTOP SESSION = $DESKTOP_SESSION"
 function start_in_wayland() {
   echo "[INFO]: Starting in Wayland session"
   xauth gen $DISPLAY &> /dev/null
-  pkexec env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
 
 function start_in_x11() {
   echo "[INFO]: Starting in X11 session"
-  pkexec env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
 
 function start_in_tty() {
   echo "[INFO]: Starting in TTY session"
-  pkexec env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
 
 case "$SESSION" in
