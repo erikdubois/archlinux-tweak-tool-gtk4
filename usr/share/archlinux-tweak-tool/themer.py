@@ -106,7 +106,6 @@ def get_i3_themes(combo, lines):
         theme_name = (
             lines[current_theme].split(":")[1].strip().lower().replace(" ", "-")
         )  # noqa
-        # print(theme_name)
         active = 0
         sorted_menu = sorted(menu)
         # TODO: enumerate

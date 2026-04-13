@@ -408,8 +408,6 @@ class Packages:
                         break
 
                     for line in process.stdout:
-                        # print(line.strip())
-
                         self.messages_queue.put(line)
 
                         output.append(line)

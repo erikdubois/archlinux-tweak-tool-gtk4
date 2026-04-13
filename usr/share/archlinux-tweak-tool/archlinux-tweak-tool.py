@@ -54,10 +54,6 @@ def _log_writer(_level, fields, _n_fields, _user_data):
 GLib.log_set_writer_func(_log_writer, None)
 from os import readlink
 
-# from time import sleep
-# from subprocess import PIPE, STDOUT, call
-# import polybar
-
 
 base_dir = fn.path.dirname(fn.path.realpath(__file__))
 pmf = pacman_functions
@@ -420,16 +416,6 @@ class Main(Gtk.ApplicationWindow):
                 except Exception as error:
                     print(error)
 
-        # # ensuring we have a backup or the xerolinux mirrorlist
-        # if fn.path.isfile(fn.xerolinux_mirrorlist):
-        #     if not fn.path.isfile(fn.xerolinux_mirrorlist + ".bak"):
-        #         try:
-        #             fn.shutil.copy(
-        #                 fn.xerolinux_mirrorlist, fn.xerolinux_mirrorlist + ".bak"
-        #             )
-        #         except Exception as error:
-        #             print(error)
-
         # ensuring we have a backup of the archlinux mirrorlist
         if fn.path.isfile(fn.mirrorlist):
             if not fn.path.isfile(fn.mirrorlist + ".bak"):
@@ -650,17 +636,6 @@ class Main(Gtk.ApplicationWindow):
         if att == 0:
             fn.permissions(fn.home + "/.config/archlinux-tweak-tool")
             print("Fixing archlinux-tweak-tool permissions...")
-
-        # polybar
-        # if not fn.path_check(fn.config_dir + "images"):
-        #     fn.makedirs(fn.config_dir + "images", 0o766)
-        #     for x in fn.listdir(base_dir + "/polybar_data/"):
-        #         fn.copy_func(base_dir + "/polybar_data/" + x, fn.config_dir + "images", False)
-        #     fn.permissions(fn.config_dir + "images")
-        # else:
-        #     for x in fn.listdir(base_dir + "/polybar_data/"):
-        #         fn.copy_func(base_dir + "/polybar_data/" + x, fn.config_dir + "images", False)
-        #     fn.permissions(fn.config_dir + "images")
 
         if not fn.path.isfile(fn.config):
             key = {"theme": ""}
@@ -2212,8 +2187,6 @@ class Main(Gtk.ApplicationWindow):
     def on_remove_wallpaper(self, widget):
         widget.set_sensitive(False)
         if fn.path.isfile(self.grub_image_path):
-            # if fn.path.isfile('/boot/grub/themes/Vimix/' +
-            #                   self.grub_theme_combo.get_active_text()):
             excludes = [
                 "archlinux03.jpg",
                 "archlinux04.jpg",
@@ -2241,10 +2214,7 @@ class Main(Gtk.ApplicationWindow):
                 "background.png",
             ]
 
-            # if not self.grub_theme_combo.get_active_text() in excludes:
             if not fn.path.basename(self.grub_image_path) in excludes:
-                # fn.unlink('/boot/grub/themes/Vimix/' +
-                #           self.grub_theme_combo.get_active_text())
                 fn.unlink(self.grub_image_path)
                 self.pop_themes_grub(
                     self.grub_theme_combo, fn.get_grub_wallpapers(), True
@@ -2460,7 +2430,6 @@ class Main(Gtk.ApplicationWindow):
             except Exception as error:
                 print(error)
 
-            # print("We added the group autologin or checked that it exists")
             self.sessions_lightdm.set_sensitive(True)
         else:
             self.sessions_lightdm.set_sensitive(False)
@@ -2648,10 +2617,6 @@ class Main(Gtk.ApplicationWindow):
     def on_reset_fast(self, widget):
         if fn.path.isfile(fn.fastfetch_config + ".bak"):
             fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
-
-            #        backend = fastfetch.check_backend()
-            #        if backend == "ascii":
-            #            self.asci.set_active(True)
 
             fastfetch.get_checkboxes(self)
             print("fastfetch default settings applied")
@@ -3297,12 +3262,6 @@ class Main(Gtk.ApplicationWindow):
             if fn.check_package_installed("arcolinux-desktop-trasher-git") is True:
                 self.button_adt.set_label("Remove the ArcoLinux Desktop Trasher")
                 self.adt_installed = True
-        # try:
-        #    subprocess.Popen("/usr/local/bin/arcolinux-desktop-trasher")
-        #    fn.show_in_app_notification(self, "ArcoLinux Desktop Trasher launched")
-        #    print("We started ADT")
-        # except:
-        #    pass
 
     def on_click_apply_parallel_downloads(self, widget):
         fixes.set_parallel_downloads(self, widget)
@@ -3341,9 +3300,6 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_create_samba_user(self, widget):
         services.create_samba_user(self)
-
-    # def on_click_delete_user(self, widget):
-    #     services.delete_user(self)
 
     def on_click_restart_smb(self, widget):
         services.restart_smb(self)
@@ -3392,9 +3348,6 @@ class Main(Gtk.ApplicationWindow):
     def on_click_switch_to_pulseaudio(self, widget):
         print("Installing pulseaudio")
 
-        # if fn.distr == "manjaro":
-        #     fn.remove_package_dd(self, "manjaro-pulse")
-
         if fn.check_package_installed("pipewire-pulse"):
             fn.remove_package_dd(self, "pipewire-pulse")
             fn.remove_package_dd(self, "wireplumber")
@@ -3417,9 +3370,6 @@ class Main(Gtk.ApplicationWindow):
             fn.install_package(self, "gst-plugins-bad")
             fn.install_package(self, "gst-plugins-base")
             fn.install_package(self, "gst-plugins-ugly")
-
-            # if blueberry_installed:
-            #     fn.install_package(self, "blueberry")
 
             # add line for autoconnect
             services.add_autoconnect_pulseaudio(self)
@@ -3488,14 +3438,6 @@ class Main(Gtk.ApplicationWindow):
             self.enable_bt.set_sensitive(False)
             self.disable_bt.set_sensitive(False)
             self.restart_bt.set_sensitive(False)
-
-    # def on_click_install_gnome_bt(self, widget):
-    #     print("Installing gnome-bluetooth")
-    #     fn.install_package(self, "gnome-bluetooth")
-
-    # def on_click_remove_gnome_bt(self, widget):
-    #     print("Removing gnome-bluetooth")
-    #     fn.remove_package_dd(self, "gnome-bluetooth")
 
     def on_click_install_blueberry(self, widget):
         print("Installing blueberry")
@@ -3787,7 +3729,6 @@ class Main(Gtk.ApplicationWindow):
 
     def on_leftwm_combo_changed(self, widget, pspec=None):
         link_theme = fn.path.basename(readlink(fn.leftwm_config_theme_current))
-        # print(link_theme)
         theme = fn.get_combo_text(self.leftwm_combo)
         if fn.path_check(fn.leftwm_config_theme + theme):
             self.status_leftwm.set_markup("<b>Theme is installed</b>")

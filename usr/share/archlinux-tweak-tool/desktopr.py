@@ -8,13 +8,6 @@ from gi.repository import GLib, Gtk  # noqa
 import functions as fn
 import os
 
-# import Settings
-# import gi
-# import distro
-# import os
-
-# gi.require_version('Gtk', '3.0')
-
 default_app = ["nano", "ttf-hack"]
 
 # =================================================================
@@ -347,7 +340,6 @@ def check_lock(self, desktop, state):
 
         if result_holder[0] in (Gtk.ResponseType.OK, Gtk.ResponseType.YES):
             fn.unlink("/var/lib/pacman/db.lck")
-            # print("YES")
             t1 = fn.threading.Thread(
                 target=install_desktop,
                 args=(self, fn.get_combo_text(self.d_combo), state),
@@ -355,7 +347,6 @@ def check_lock(self, desktop, state):
             t1.daemon = True
             t1.start()
     else:
-        # print("NO FILE")
         t1 = fn.threading.Thread(
             target=install_desktop, args=(self, fn.get_combo_text(self.d_combo), state)
         )
@@ -482,7 +473,6 @@ def install_desktop(self, desktop, state):
     else:
         com1 = pkexec
 
-    # print(list(np.append(com1, command)))
     GLib.idle_add(
         self.desktopr_stat.set_text,
         "Installing " + fn.get_combo_text(self.d_combo) + "...",
@@ -595,7 +585,6 @@ def install_desktop(self, desktop, state):
                 if fn.path.isdir(x) or fn.path.isfile(x):
                     print(x)
                     dest = x.replace("/etc/skel", fn.home)
-                    # print(dest)
                     if fn.path.isdir(x):
                         dest = fn.path.split(dest)[0]
                     l1 = np.append(copy, [x])

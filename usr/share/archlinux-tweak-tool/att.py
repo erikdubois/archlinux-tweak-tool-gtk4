@@ -2,7 +2,6 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
-# import os
 import functions as fn
 
 #    #====================================================================

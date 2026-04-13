@@ -355,14 +355,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         applyqtile.set_sensitive(False)
         resetqtile.set_sensitive(False)
 
-    #   Commented out for now. TODO: implement theming for polybar under Qtile
-    #   lbls = Gtk.Label(label="Toggle polybar")
-    #   self.poly = Gtk.Switch()
-    #   if fn.os.path.isfile(fn.i3wm_config):
-    #       if themer.check_polybar(themer.get_list(fn.i3wm_config)):
-    #           self.poly.set_active(True)
-    #   self.poly.connect("notify::active", self.on_polybar_toggle)
-
     labelqt.set_margin_start(10)
     labelqt.set_margin_end(10)
     labelqt.set_hexpand(True)

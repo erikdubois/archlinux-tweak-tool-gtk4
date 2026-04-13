@@ -424,12 +424,6 @@ def write_configs(utility, util_enabled, lolcat_enabled):
  
 
 
-    # Remove or comment out the following lines to stop the debug output
-    # with open(config, "r", encoding="utf-8") as f:
-    #     updated_content = f.read()
-    #     print(f"Updated fastfetch lines: {[line for line in updated_content.split('\n') if 'fastfetch' in line]}")
-
-
 def get_term_rc(value):
     """get term value"""
     config_file = ""

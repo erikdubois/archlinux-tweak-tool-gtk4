@@ -113,15 +113,6 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
     if not fn.path.exists("/usr/bin/rate-mirrors"):
         self.btn_run_rate_mirrors.set_sensitive(False)
 
-    # hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    # hbox5_label = Gtk.Label(xalign=0)
-    # hbox5_label.set_text("Get the original ArcoLinux /etc/sddm.conf\
-    # and /etc/sddm.conf.d/kde_settings.conf")
-    # button_Apply_Mirrors = Gtk.Button(label="Reset sddm.conf (online source)")
-    # button_Apply_Mirrors.connect ("clicked", self.on_click_fix_sddm_conf)
-    # hbox5.pack_start(hbox5_label, False, False, 10)
-    # hbox5.pack_end(button_Apply_Mirrors, False, False, 10)
-
     hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox6_label = Gtk.Label(xalign=0)
     hbox6_label.set_text("Get the original ArcoLinux /etc/pacman.conf")

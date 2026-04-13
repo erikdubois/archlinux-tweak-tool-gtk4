@@ -5,8 +5,6 @@
 
 import functions as fn
 
-# from types import FunctionType
-# import crypt
 from functions import GLib
 
 

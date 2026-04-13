@@ -4,8 +4,6 @@
 # pylint:disable=C0103,C0116,C0411,C0413,I1101,R1705,W0621,W0611,W0622
 import gi
 
-# from yaml import DirectiveToken
-
 gi.require_version("Gtk", "4.0")
 
 from os import rmdir, unlink, walk, execl, getpid, system, stat, readlink
@@ -442,10 +440,8 @@ def path_check(path):
 def is_empty_directory(path):
     if os.path.exists(path) and not os.path.isfile(path):
         if not os.listdir(path):
-            # print("Empty directory")
             return True
         else:
-            # print("Not empty directory")
             return False
 
 
@@ -497,10 +493,8 @@ def check_service(service):  # noqa
         )
         status = output.stdout.decode().strip()
         if status == "active":
-            # print("Service is active")
             return True
         else:
-            # print("Service is inactive")
             return False
     except Exception:
         return False
@@ -518,10 +512,8 @@ def check_socket(socket):  # noqa
         )
         status = output.stdout.decode().strip()
         if status == "active":
-            # print("Service is active")
             return True
         else:
-            # print("Service is inactive")
             return False
     except Exception:
         return False
@@ -959,7 +951,6 @@ def add_autologin_group(self):
         stdout=subprocess.PIPE,
     )
     groups = com.stdout.decode().strip().split(" ")
-    # print(groups)
     if "autologin" not in groups:
         command = "groupadd autologin"
         try:
@@ -1095,20 +1086,6 @@ def change_distro_label(name):  # noqa
         name = "CachyOS"
     return name
 
-
-# ====================================================================
-#                      GET DESKTOP
-# ====================================================================
-
-# def get_desktop(self):
-#     base_dir = path.dirname(path.realpath(__file__))
-
-#     desktop = subprocess.run(["sh", base_dir + "/get_desktop.sh", "-n"],
-#                              shell=False,
-#                              stdout=subprocess.PIPE,
-#                              stderr=subprocess.STDOUT)
-#     dsk = desktop.stdout.decode().strip().split("\n")
-#     self.desktop = dsk[-1].strip()
 
 # ====================================================================
 #                      GRUB
@@ -1382,25 +1359,6 @@ def set_grub_timeout(self, number):
     except Exception as error:
         print(error)
 
-
-# =====================================================
-#               GTK3 CONF
-# =====================================================
-
-# def gtk_check_value(my_list, value):
-#     data = [string for string in my_list if value in string]
-#     if len(data) >= 1:
-#         data1 = [string for string in data if "#" in string]
-#         for i in data1:
-#             if i[:4].find('#') != -1:
-#                 data.remove(i)
-#     return data
-
-
-# def gtk_get_position(my_list, value):
-#     data = [string for string in my_list if value in string]
-#     position = my_list.index(data[0])
-#     return position
 
 # =====================================================
 #               HBLOCK CONF
@@ -1925,16 +1883,12 @@ def install_arcolinux(self):
 
 def test(dst):
     for root, dirs, filesr in walk(dst):
-        # print(root)
         for folder in dirs:
             pass
-            # print(dst + "/" + folder)
             for file in filesr:
                 pass
-                # print(dst + "/" + folder + "/" + file)
         for file in filesr:
             pass
-            # print(dst + "/" + file)
 
 
 def permissions(dst):
@@ -2619,8 +2573,6 @@ def update_repos(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        # print("Getting the databases in from all repositories")
-        # show_in_app_notification(self, "Dowloading repo libraries")
     except Exception as error:
         print(error)
 

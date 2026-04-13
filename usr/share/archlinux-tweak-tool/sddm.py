@@ -122,7 +122,6 @@ def set_sddm_value(self, lists, value, session, state, theme, cursor):
             stdout=fn.subprocess.PIPE,
         )
         groups = com.stdout.decode().strip().split(" ")
-        # print(groups)
         if "autologin" not in groups:
             fn.subprocess.run(
                 ["gpasswd", "-a", fn.sudo_username, "autologin"],
@@ -163,10 +162,8 @@ def set_user_autologin_value(self, lists, value, session, state):
     try:
         fn.add_autologin_group(self)
         pos_session = fn.get_positions(lists, "Session=")
-        # print(pos_session)
         pos_session = pos_session[-1]
         pos_user = fn.get_position(lists, "User=" + value)
-        # print(pos_user)
 
         if state:
             lists[pos_user] = "User=" + value + "\n"
