@@ -56,7 +56,7 @@ the right setting - the right config - the right application - at the right plac
 
         label2 = Gtk.Label()
         label2.set_justify(Gtk.Justification.CENTER)
-        label2.set_markup("Support <b>ArcoLinux</b> - support this app")
+        label2.set_markup("Support this app")
 
         logo = GdkPixbuf.Pixbuf.new_from_file_at_size(
             fn.path.join(base_dir, "images/archlinux-tweak-tool.png"), 100, 100
