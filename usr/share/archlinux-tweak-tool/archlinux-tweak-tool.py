@@ -41,6 +41,21 @@ import utilities
 
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, GdkPixbuf, Gtk, Pango, GLib, Gio
+
+# suppress harmless D-Bus session bus warning when running via pkexec
+def _log_writer(_level, fields, _n_fields, _user_data):
+    try:
+        for field in fields:
+            if field.key == "MESSAGE" and "Unable to acquire session bus" in (
+                field.value if isinstance(field.value, str)
+                else field.value.decode("utf-8", errors="replace")
+            ):
+                return GLib.LogWriterOutput.HANDLED
+    except Exception:
+        pass
+    return GLib.LogWriterOutput.UNHANDLED
+
+GLib.log_set_writer_func(_log_writer, None)
 from os import readlink
 
 # from time import sleep
@@ -3543,37 +3558,13 @@ class Main(Gtk.ApplicationWindow):
         fn.save_samba_config(self)
 
     def on_click_install_arco_thunar_plugin(self, widget):
-        if fn.path.isfile(fn.arcolinux_mirrorlist):
-            if fn.check_arco_repos_active() is True:
-                fn.install_arco_thunar_plugin(self, widget)
-            else:
-                print("First activate the nemesis repo")
-                fn.show_in_app_notification(self, "First activate the nemesis repo")
-        else:
-            print("Install the ArcoLinux keys and mirrors")
-            fn.show_in_app_notification(self, "Install the ArcoLinux keys and mirrors")
+        fn.install_arco_thunar_plugin(self, widget)
 
     def on_click_install_arco_caja_plugin(self, widget):
-        if fn.path.isfile(fn.arcolinux_mirrorlist):
-            if fn.check_arco_repos_active() is True:
-                fn.install_arco_caja_plugin(self, widget)
-            else:
-                print("First activate the nemesis repo")
-                fn.show_in_app_notification(self, "First activate the nemesis repo")
-        else:
-            print("Install the ArcoLinux keys and mirrors")
-            fn.show_in_app_notification(self, "Install the ArcoLinux keys and mirrors")
+        fn.install_arco_caja_plugin(self, widget)
 
     def on_click_install_arco_nemo_plugin(self, widget):
-        if fn.path.isfile(fn.arcolinux_mirrorlist):
-            if fn.check_arco_repos_active() is True:
-                fn.install_arco_nemo_plugin(self, widget)
-            else:
-                print("First activate the nemesis repo")
-                fn.show_in_app_notification(self, "First activate the nemesis repo")
-        else:
-            print("Install the ArcoLinux keys and mirrors")
-            fn.show_in_app_notification(self, "Install the ArcoLinux keys and mirrors")
+        fn.install_arco_nemo_plugin(self, widget)
 
     def on_click_apply_samba(self, widget):
         services.choose_smb_conf(self)
@@ -3851,9 +3842,9 @@ class Main(Gtk.ApplicationWindow):
         if self.ripgrep.get_active():
             fn.install_package(self, "ripgrep")
         if self.yay.get_active():
-            fn.install_arco_package(self, "yay-bin")
+            fn.install_arco_package(self, "yay-git")
         if self.paru.get_active():
-            fn.install_arco_package(self, "paru-bin")
+            fn.install_arco_package(self, "paru-git")
         if self.bat.get_active():
             fn.install_package(self, "bat")
         if self.downgrade.get_active():
@@ -3872,9 +3863,9 @@ class Main(Gtk.ApplicationWindow):
             self.expac.set_active(False)
         if fn.check_package_installed("ripgrep") is False:
             self.ripgrep.set_active(False)
-        if fn.check_package_installed("yay-bin") is False:
+        if fn.check_package_installed("yay-git") is False:
             self.yay.set_active(False)
-        if fn.check_package_installed("paru-bin") is False:
+        if fn.check_package_installed("paru-git") is False:
             self.paru.set_active(False)
         if fn.check_package_installed("bat") is False:
             self.bat.set_active(False)

@@ -92,7 +92,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox7.append(remove_bash_completion)  # pack_end
 
         hbox8 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox8_lbl = Gtk.Label()
+        hbox8_lbl = Gtk.Label(xalign=0)
         hbox8_lbl.set_markup("Overwrite your ~/.bashrc with the ATT bashrc")
         self.arcolinux_bash = Gtk.Button(label="Install the ATT bashrc configuration")
         self.arcolinux_bash.connect("clicked", self.on_arcolinux_bash_clicked)
@@ -609,8 +609,8 @@ Activate the necessary repos"
 
     self.expac = Gtk.CheckButton(label="expac")
     self.ripgrep = Gtk.CheckButton(label="ripgrep")
-    self.yay = Gtk.CheckButton(label="yay")
-    self.paru = Gtk.CheckButton(label="paru")
+    self.yay = Gtk.CheckButton(label="yay-git")
+    self.paru = Gtk.CheckButton(label="paru-git")
     self.bat = Gtk.CheckButton(label="bat")
     self.downgrade = Gtk.CheckButton(label="downgrade")
     self.hw_probe = Gtk.CheckButton(label="hw-probe")
@@ -640,8 +640,9 @@ Activate the necessary repos"
     vboxstack4.append(hbox51)
     # vboxstack4.pack_start(hbox52, False, False, 0)
     vboxstack4.append(flowbox)
-    extra_shell_applications.set_hexpand(False)
-    vboxstack4.append(extra_shell_applications)
+    hbox_extra_btn = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_extra_btn.append(extra_shell_applications)
+    vboxstack4.append(hbox_extra_btn)
     # vboxstack4.pack_start(install_only_fish, False, False, 0)
 
     # ==================================================================

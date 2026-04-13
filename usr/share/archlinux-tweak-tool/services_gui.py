@@ -313,8 +313,6 @@ All computers in your network must have a unique name /etc/hostname"
         "Printing can be a challenge. We recommend reading the Arch wiki cups page. Check before you buy.\n\
 There are also printer specific pages. Lastly the AUR might contain the driver you need."
     )
-    hbox15_label.set_margin_start(10)
-    hbox15_label.set_margin_end(10)
     hbox15.append(hbox15_label)
 
     hbox8 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -768,8 +766,6 @@ Report them if that is the case"
     vboxstack4.append(hbox48)  # pack_end
 
     # bluetooth
-    hbox50.set_margin_start(10)
-    hbox50.set_margin_end(10)
     vboxstack5.append(hbox50)
     vboxstack5.append(hbox51)
     vboxstack5.append(hbox53)
