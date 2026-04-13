@@ -38,8 +38,9 @@ def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
 - see Pacman tab</b>\n\nSome of the desktops can only be installed if we can access \n\
 the nemesis repo"
     )
-    label = Gtk.Label(xalign=0)
-    label.set_text("Select a desktop")
+    label = Gtk.Label(xalign=0.5)
+    label.set_text("\n\n\nSelect a desktop")
+    label.set_halign(Gtk.Align.CENTER)
 
     # button_arco_repo = Gtk.Button(label="Activate ArcoLinux repositories")
     # button_arco_repo.connect("clicked", self.on_arco_repo_clicked)
@@ -53,9 +54,8 @@ the nemesis repo"
 
     dropbox.append(label_warning)
     # dropbox.pack_start(button_arco_repo, False, False, 0)
-    label.set_margin_start(20)
-    label.set_margin_end(20)
     dropbox.append(label)
+    self.d_combo.set_halign(Gtk.Align.CENTER)
     dropbox.append(self.d_combo)
 
     # =======================================
@@ -144,8 +144,8 @@ Hyprland, Wayfire and Niri are Wayland desktops!"
     # =======================================
     #               FRAME PREVIEW
     # =======================================
-    image_width = 345
-    image_height = 345
+    image_width = 450
+    image_height = 450
     try:
         pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",

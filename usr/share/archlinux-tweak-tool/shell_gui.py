@@ -82,7 +82,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         )
         hbox7_lbl.set_margin_start(10)
         hbox7_lbl.set_margin_end(10)
-        hbox7_lbl.set_hexpand(False)
+        hbox7_lbl.set_hexpand(True)
         hbox7.append(hbox7_lbl)
         install_bash_completion.set_margin_start(10)
         install_bash_completion.set_margin_end(10)
@@ -369,7 +369,6 @@ If you just switched shell, log-out first</b>\n"
         tofish.connect("clicked", self.tofish_apply)
         termreset.connect("clicked", self.on_zsh_reset)
 
-        tozsh.set_hexpand(True)
         hbox24.append(tozsh)
         hbox24.append(tobash)
         if not fn.distr == "archcraft":
@@ -532,7 +531,6 @@ if you installed the ATT Fish configuration\n\n<b>If you just switched shell, lo
         remove_fish_all.connect("clicked", self.on_remove_fish_all)
 
         if not fn.distr == "archcraft":
-            tofish.set_hexpand(True)
             hbox35.append(tofish)
         hbox35.append(tobash)
         hbox35.append(tozsh)
@@ -642,6 +640,7 @@ Activate the necessary repos"
     vboxstack4.append(hbox51)
     # vboxstack4.pack_start(hbox52, False, False, 0)
     vboxstack4.append(flowbox)
+    extra_shell_applications.set_hexpand(False)
     vboxstack4.append(extra_shell_applications)
     # vboxstack4.pack_start(install_only_fish, False, False, 0)
 

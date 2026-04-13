@@ -393,8 +393,6 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
 
     vboxstack19.append(hbox1)
     vboxstack19.append(hbox0)
-    hbox10.set_margin_start(20)
-    hbox10.set_margin_end(20)
     vboxstack19.append(hbox10)
     vboxstack19.append(hbox14)
     # vboxstack19.pack_start(hbox11, False, False, 0)

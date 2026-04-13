@@ -31,6 +31,7 @@ desktops = [
     "i3",
     "leftwm",
     "mate",
+    "ohmychadwm",
     "plasma",
     "qtile",
     "xfce",
@@ -71,7 +72,7 @@ if fn.distr:
         "thunar-volman",
         "ttf-hack",
         "vicious",
-        "volumeicon",
+        "volctl",
         "xfce4-terminal",
     ]
     bspwm = [
@@ -79,7 +80,7 @@ if fn.distr:
         "edu-bspwm-git",
         "edu-xfce-git",
         "edu-polybar-git",
-        "archlinux-logout-git",
+        "archlinux-logout-gtk4-git",
         "edu-rofi-git",
         "edu-rofi-themes-git",
         "awesome-terminal-fonts",
@@ -96,7 +97,7 @@ if fn.distr:
         "thunar-archive-plugin",
         "thunar-volman",
         "ttf-hack",
-        "volumeicon",
+        "volctl",
         "xfce4-terminal",
     ]
     budgie = [
@@ -118,7 +119,7 @@ if fn.distr:
     ]
     chadwm = [
         "alacritty",
-        "archlinux-logout-git",
+        "archlinux-logout-gtk4-git",
         "edu-chadwm-git",
         "edu-rofi-git",
         "edu-rofi-themes-git",
@@ -135,8 +136,7 @@ if fn.distr:
         "thunar-volman",
         "ttf-hack",
         "ttf-jetbrains-mono-nerd",
-        "ttf-meslo-nerd-font-powerlevel10k",
-        "volumeicon",
+        "volctl",
         "xfce4-notifyd",
         "xfce4-power-manager",
         "xfce4-screenshooter",
@@ -156,7 +156,7 @@ if fn.distr:
     i3 = [
         "alacritty",
         "edu-i3-git",
-        "archlinux-logout-git",
+        "archlinux-logout-gtk4-git",
         "edu-rofi-git",
         "edu-rofi-themes-git",
         "edu-xfce-git",
@@ -175,12 +175,12 @@ if fn.distr:
         "thunar-archive-plugin",
         "thunar-volman",
         "ttf-hack",
-        "volumeicon",
+        "volctl",
         "xfce4-terminal",
     ]
     leftwm = [
         "alacritty",
-        "archlinux-logout-git",
+        "archlinux-logout-gtk4-git",
         "edu-leftwm-git",
         "edu-polybar-git",
         "edu-rofi-git",
@@ -203,7 +203,7 @@ if fn.distr:
         "ttf-iosevka-nerd",
         "ttf-material-design-iconic-font",
         "ttf-meslo-nerd-font-powerlevel10k",
-        "volumeicon",
+        "volctl",
         "xfce4-appfinder",
         "xfce4-screenshooter",
         "xfce4-taskmanager",
@@ -213,6 +213,33 @@ if fn.distr:
         "mate",
         "mate-extra",
         "mate-tweak",
+    ]
+    ohmychadwm = [
+        "alacritty",
+        "archlinux-logout-gtk4-git",
+        "ohmychadwm-git",
+        "edu-rofi-git",
+        "edu-rofi-themes-git",
+        "edu-xfce-git",
+        "dmenu",
+        "feh",
+        "lxappearance",
+        "picom-git",
+        "polkit-gnome",
+        "rofi",
+        "sxhkd",
+        "thunar",
+        "thunar-archive-plugin",
+        "thunar-volman",
+        "ttf-hack",
+        "ttf-jetbrains-mono-nerd",
+        "volctl",
+        "xfce4-notifyd",
+        "xfce4-power-manager",
+        "xfce4-screenshooter",
+        "xfce4-settings",
+        "xfce4-taskmanager",
+        "xfce4-terminal",
     ]
     plasma = [
         "plasma",
@@ -242,7 +269,7 @@ if fn.distr:
     ]
     qtile = [
         "alacritty",
-        "archlinux-logout-git",
+        "archlinux-logout-gtk4-git",
         "edu-qtile-git",
         "edu-rofi-git",
         "edu-rofi-themes-git",
@@ -261,7 +288,7 @@ if fn.distr:
         "thunar-archive-plugin",
         "thunar-volman",
         "ttf-hack",
-        "volumeicon",
+        "volctl",
         "xfce4-terminal",
     ]
     xfce = [
@@ -408,6 +435,12 @@ def install_desktop(self, desktop, state):
         check_package_and_remove(self, "arcolinux-rofi-git")
         command = list(np.append(leftwm, default_app))
         src.append("/etc/skel/.config/leftwm")
+        twm = True
+    elif desktop == "ohmychadwm":
+        check_package_and_remove(self, "arconet-xfce")
+        check_package_and_remove(self, "arcolinux-rofi-git")
+        command = list(np.append(ohmychadwm, default_app))
+        src.append("/etc/skel/.config/ohmychadwm")
         twm = True
     elif desktop == "mate":
         command = mate
@@ -592,7 +625,7 @@ def install_desktop(self, desktop, state):
                     fn.permissions(dest)
 
         GLib.idle_add(self.desktopr_stat.set_text, "")
-        GLib.idle_add(self.desktop_status.set_text, "This desktop is installed")
+        GLib.idle_add(self.desktop_status.set_markup, '<span size="x-large"><b>This desktop is installed</b></span>')
         GLib.idle_add(
             fn.show_in_app_notification, self, desktop + " has been installed"
         )
@@ -601,7 +634,7 @@ def install_desktop(self, desktop, state):
         print("----------------------------------------------------------------")
     else:
         GLib.idle_add(
-            self.desktop_status.set_markup, "This desktop is <b>NOT</b> installed"
+            self.desktop_status.set_markup, '<span size="x-large"><b>This desktop is NOT installed</b></span>'
         )
         GLib.idle_add(
             self.desktopr_error.set_text, "Install " + desktop + " via terminal"

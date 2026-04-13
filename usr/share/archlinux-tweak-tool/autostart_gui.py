@@ -81,7 +81,9 @@ def gui(self, Gtk, vboxstack13, fn):
     vbox4.append(lbl3)
     vbox4.append(self.txtbox3)
 
+    vbox5.append(Gtk.Label(label=""))
     vbox5.append(bbutton)  # pack_end
+    vbox6.append(Gtk.Label(label=""))
     vbox6.append(self.abutton)  # pack_end
 
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)

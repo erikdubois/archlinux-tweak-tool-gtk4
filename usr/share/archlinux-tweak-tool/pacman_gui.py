@@ -400,11 +400,7 @@ def gui(self, Gtk, vboxstack1, fn):
         hboxstack11.append(self.chaotics_switch)  # pack_end
 
     vboxstack4 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    hboxstack13.set_margin_start(10)
-    hboxstack13.set_margin_end(10)
     vboxstack4.append(hboxstack13)
-    hboxstack11.set_margin_start(10)
-    hboxstack11.set_margin_end(10)
     hboxstack11.set_margin_bottom(20)
     vboxstack4.append(hboxstack11)
 

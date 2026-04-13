@@ -701,8 +701,6 @@ Report them if that is the case"
     # ====================================================================
 
     # network
-    hbox2.set_margin_start(10)
-    hbox2.set_margin_end(10)
     vboxstack1.append(hbox2)
     vboxstack1.append(hbox3)
     vboxstack1.append(hbox30)

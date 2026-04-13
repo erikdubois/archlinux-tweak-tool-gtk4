@@ -1670,9 +1670,9 @@ class Main(Gtk.ApplicationWindow):
         except:
             self.image_DE.set_paintable(None)
         if desktopr.check_desktop(fn.get_combo_text(self.d_combo)):
-            self.desktop_status.set_text("This desktop is installed")
+            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is installed</b></span>')
         else:
-            self.desktop_status.set_text("This desktop is NOT installed")
+            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is NOT installed</b></span>')
 
     def on_install_clicked(self, widget, state):
         fn.create_log(self)
