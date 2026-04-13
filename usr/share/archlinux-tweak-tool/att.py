@@ -1152,27 +1152,6 @@ def set_att_checkboxes_theming_surfn_icons_all(self):
     self.surfn_plasma_dark_tela.set_active(True)
     self.surfn_plasma_light.set_active(True)
 
-
-# def set_att_checkboxes_theming_surfn_icons_normal(self):
-#     """set the state of the checkboxes"""
-#     self.surfn_icons_git_att.set_active(True)
-#     self.surfn_arc_breeze_icons_git.set_active(True)
-#     self.surfn_mint_y_icons_git.set_active(True)
-#     self.surfn_plasma_dark.set_active(False)
-#     self.surfn_plasma_dark_tela.set_active(False)
-#     self.surfn_plasma_light.set_active(False)
-
-
-# def set_att_checkboxes_theming_surfn_icons_minimal(self):
-#     """set the state of the checkboxes"""
-#     self.surfn_icons_git_att.set_active(True)
-#     self.surfn_arc_breeze_icons_git.set_active(False)
-#     self.surfn_mint_y_icons_git.set_active(False)
-#     self.surfn_plasma_dark.set_active(True)
-#     self.surfn_plasma_dark_tela.set_active(True)
-#     self.surfn_plasma_light.set_active(True)
-
-
 def set_att_checkboxes_theming_surfn_icons_none(self):
     """set the state of the checkboxes"""
     self.surfn_icons_git_att.set_active(False)

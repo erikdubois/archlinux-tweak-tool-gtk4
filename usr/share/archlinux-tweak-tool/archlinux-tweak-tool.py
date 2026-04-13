@@ -7,11 +7,9 @@
 # pylint:disable=C0301,C0302 #line too long
 
 import zsh_theme
-import utilities
 import user
 import themer
 import design
-import terminals
 import support
 import splash
 import settings
@@ -36,8 +34,6 @@ import datetime
 import functions as fn
 import gi
 import fastfetch_gui
-import utilities
-
 
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, GdkPixbuf, Gtk, Pango, GLib, Gio
@@ -177,14 +173,6 @@ class Main(Gtk.ApplicationWindow):
 
         splScr = splash.SplashScreen()
 
-        # t = fn.threading.Thread(target=fn.get_desktop,
-        #                                args=(self,))
-        # t.daemon = True
-        # t.start()
-        # t.join()
-
-        # print(self.desktop)
-
         # =====================================================
         #     ATT THEME DARK OR LIGHT - FOLLOW USER SELECTION
         # ====================================================
@@ -213,24 +201,6 @@ class Main(Gtk.ApplicationWindow):
                 fn.makedirs("/root/.config/xsettingsd", 0o766)
             except Exception as error:
                 print(error)
-        # in a video ATT did not change - lateron it did...?
-        # if not fn.path.isdir("/root/.config/xfce4/"):
-        #     try:
-        #         fn.makedirs("/root/.config/xfce4/", 0o766)
-        #     except Exception as error:
-        #         print(error)
-
-        # if not fn.path.isdir("/root/.config/xfce4/xfconf/"):
-        #     try:
-        #         fn.makedirs("/root/.config/xfce4/xfconf/", 0o766)
-        #     except Exception as error:
-        #         print(error)
-
-        # if not fn.path.isdir("/root/.config/xfce4/xfconf/xfce-perchannel-xml/"):
-        #     try:
-        #         fn.makedirs("/root/.config/xfce4/xfconf/xfce-perchannel-xml/", 0o766)
-        #     except Exception as error:
-        #         print(error)
 
         if fn.path.isdir(fn.home + "/.config/gtk-3.0"):
             try:
@@ -263,20 +233,6 @@ class Main(Gtk.ApplicationWindow):
                         )
             except Exception as error:
                 print(error)
-
-        # in a video ATT did not change - lateron it did...?
-        # if fn.path.isdir("/root/.config/xfce4/xfconf/xfce-perchannel-xml/"):
-        #     try:
-        #         fn.shutil.rmtree("/root/.config/xfce4/xfconf/xfce-perchannel-xml/")
-        #         if fn.path.isdir(
-        #             fn.home + "/.config/xfce4/xfconf/xfce-perchannel-xml/"
-        #         ):
-        #             fn.shutil.copytree(
-        #                 fn.home + "/.config/xfce4/xfconf/xfce-perchannel-xml/",
-        #                 "/root/.config/xfce4/xfconf/xfce-perchannel-xml/",
-        #             )
-        #     except Exception as error:
-        #         print(error)
 
         # =====================================================
         #     ENSURING WE HAVE THE DIRECTORIES WE NEED
@@ -363,14 +319,6 @@ class Main(Gtk.ApplicationWindow):
         # =====================================================
         #                   MAKING BACKUPS
         # =====================================================
-
-        # ensuring we have a backup of /etc/sddm.conf.d/kde_settings.conf
-        # no backups in this folder - it confuses sddm.conf.d
-
-        # sddm_default_d1 = "/etc/sddm.conf"
-        # sddm_default_d1_bak = "/etc/bak.sddm.conf"
-        # sddm_default_d2 = "/etc/sddm.conf.d/kde_settings.conf"
-        # sddm_default_d2_bak = "/etc/bak.kde_settings.conf"
 
         if fn.path.isfile(fn.sddm_default_d1):
             if not fn.path.isfile(fn.sddm_default_d1_bak):
@@ -582,11 +530,6 @@ class Main(Gtk.ApplicationWindow):
         # =====================================================
         #               CATCHING ERRORS
         # =====================================================
-
-        # sddm_default_d1 = "/etc/sddm.conf"
-        # sddm_default_d1_bak = "/etc/bak.sddm.conf"
-        # sddm_default_d2 = "/etc/sddm.conf.d/kde_settings.conf"
-        # sddm_default_d2_bak = "/etc/bak.kde_settings.conf"
 
         # make directory if it doesn't exist'
         if fn.path.exists("/usr/bin/sddm"):
@@ -2689,41 +2632,9 @@ class Main(Gtk.ApplicationWindow):
     #                        FASTFETCH CONFIG
     # ====================================================================
 
-    # def on_install_fast(self, widget):
-    #    fn.install_package(self, "fastfetch")
-
-    # def on_distro_ascii_changed(self, widget):
-    #     self.big_ascii.set_active(True)
-
     def on_apply_fast(self, widget):
         small_ascii = "auto"
         backend = "off"
-        #    if self.asci.get_active():
-        #        backend = "ascii"
-        #        if not self.big_ascii.get_active() and not self.off.get_active():
-        #            small_ascii = "arch_small"
-        #            if fn.distr == "arcolinux":
-        #                small_ascii = "arcolinux_small"
-        #            if fn.distr == "archlinux":
-        #               small_ascii = "arch_small"
-        #           if fn.distr == "manjaro":
-        #               small_ascii = "manjaro_small"
-        #            backend = "ascii"
-        #        elif not self.small_ascii.get_active() and not self.off.get_active():
-        #            backend = "ascii"
-        #        else:
-        #            backend = "off"
-
-        #    if self.distro_ascii.get_active_text() != "auto" and not self.off.get_active():
-        #        small_ascii = self.distro_ascii.get_active_text()
-        #        if self.small_ascii.get_active():
-        #            if self.distro_ascii.get_active_text() == "ArcoLinux":
-        #                small_ascii = "arcolinux_small"
-        #            if self.distro_ascii.get_active_text() == "Arch":
-        #                small_ascii = "arch_small"
-        #            if self.distro_ascii.get_active_text() == "Manjaro":
-        #               small_ascii = "manjaro_small"
-
         fastfetch.apply_config(self, backend, small_ascii)
 
     def on_reset_fast_att(self, widget):
@@ -2745,14 +2656,6 @@ class Main(Gtk.ApplicationWindow):
             fastfetch.get_checkboxes(self)
             print("fastfetch default settings applied")
             fn.show_in_app_notification(self, "Default settings applied")
-
-    # def radio_toggled(self, widget):
-    #    if self.asci.get_active():
-    #        self.big_ascii.set_sensitive(True)
-    #        self.small_ascii.set_sensitive(True)
-    #    else:
-    #        self.big_ascii.set_sensitive(False)
-    #        self.small_ascii.set_sensitive(False)
 
     # When using this function to toggle a lolcat: utility = name of tool, e.g. fastfetch
 
@@ -2886,14 +2789,6 @@ class Main(Gtk.ApplicationWindow):
         else:
             if self.opened is False:
                 pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_aarnet")
-
-    # def on_mirror_github_repo_toggle(self, widget, active):
-    #     if not pmf.mirror_exist("Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"):
-    #         pmf.append_mirror(self, fn.seedhostmirror)
-    #     else:
-    #         if self.opened is False:
-    #             pmf.toggle_mirrorlist(self, widget.get_active(),
-    #                                   "arco_mirror_github")
 
     # =====================================================
     #               PACMAN CONF
@@ -3065,40 +2960,6 @@ class Main(Gtk.ApplicationWindow):
                 pmf.toggle_test_repos(self, widget.get_active(), "nemesis")
         fn.update_repos(self)
 
-    # def on_xerolinux_clicked(self, widget):
-    #     fn.install_xerolinux(self)
-    #     print("XeroLinux mirrors added")
-    #     print("Restart Att and select the repos")
-    #     fn.show_in_app_notification(self, "Xerolinux mirrors added")
-    #     fn.update_repos(self)
-
-    # def on_xero_toggle(self, widget, active):
-    #     if not pmf.repo_exist("[xerolinux_repo]"):
-    #         pmf.append_repo(self, fn.xero_repo)
-    #         print("Repo has been added to /etc/pacman.conf")
-    #         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    #     else:
-    #         if self.opened is False:
-    #             pmf.toggle_test_repos(self, widget.get_active(), "xero")
-
-    # def on_xero_xl_toggle(self, widget, active):
-    #     if not pmf.repo_exist("[xerolinux_repo_xl]"):
-    #         pmf.append_repo(self, fn.xero_xl_repo)
-    #         print("Repo has been added to /etc/pacman.conf")
-    #         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    #     else:
-    #         if self.opened is False:
-    #             pmf.toggle_test_repos(self, widget.get_active(), "xero_xl")
-
-    # def on_xero_nv_toggle(self, widget, active):
-    #     if not pmf.repo_exist("[xerolinux_nvidia_repo]"):
-    #         pmf.append_repo(self, fn.xero_nv_repo)
-    #         print("Repo has been added to /etc/pacman.conf")
-    #         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    #     else:
-    #         if self.opened is False:
-    #             pmf.toggle_test_repos(self, widget.get_active(), "xero_nv")
-
     def on_pacman_toggle1(self, widget, active):
         if not pmf.repo_exist("[core-testing]"):
             pmf.append_repo(self, fn.arch_testing_repo)
@@ -3156,15 +3017,6 @@ class Main(Gtk.ApplicationWindow):
         else:
             if self.opened is False:
                 pmf.toggle_test_repos(self, widget.get_active(), "multilib-testing")
-
-    # def on_pacman_toggle7(self, widget, active):
-    #     if not pmf.repo_exist("[Reborn-OS]"):
-    #         pmf.append_repo(self, fn.reborn_repo)
-    #         print("Repo has been added to /etc/pacman.conf")
-    #         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    #     else:
-    #         if self.opened is False:
-    #             pmf.toggle_test_repos(self, widget.get_active(), "Reborn-OS")
 
     def on_pacman_toggle7(self, widget, active):
         if not pmf.repo_exist("[multilib]"):
@@ -3239,80 +3091,6 @@ class Main(Gtk.ApplicationWindow):
     def tooltip_callback(self, widget, x, y, keyboard_mode, tooltip, text):
         tooltip.set_text(text)
         return True
-
-    # ====================================================================
-    #                       POLYBAR
-    # ====================================================================
-
-    # def on_polybar_apply_clicked(self, widget):
-    #     if self.pbrbutton.get_active():
-    #         state = True
-    #     else:
-    #         state = False
-
-    #     polybar.set_config(self, self.pbcombo.get_active_text(), state)
-    #     if fn.path.isfile(polybar.launch):
-    #         fn.show_in_app_notification(self, "Restart polybar to see changes")
-    #     else:
-    #         fn.messagebox(
-    #             self, "ERROR!!", "You dont seem to have a <b>launch.sh</b> file to launch/relaunch polybar")
-
-    # def on_pb_browse_config(self, widget):
-    #     dialog = Gtk.FileChooserDialog(
-    #         title="Please choose a file", action=Gtk.FileChooserAction.OPEN)
-    #     dialog.set_select_multiple(False)
-
-    #     dialog.set_current_folder(Gio.File.new_for_path(fn.home))
-    #     dialog.add_buttons(
-    #         Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Open", Gtk.ResponseType.OK)
-    #     dialog.connect("response", self.open_config_response)
-
-    #     dialog.show()
-
-    # def on_pb_browse_image(self, widget):
-    #     dialog = Gtk.FileChooserDialog(
-    #         title="Please choose a file", action=Gtk.FileChooserAction.OPEN)
-    #     dialog.set_select_multiple(False)
-    #     filter = Gtk.FileFilter()
-    #     filter.set_name("IMAGE Files")
-    #     filter.add_mime_type("image/png")
-    #     filter.add_mime_type("image/jpg")
-    #     filter.add_mime_type("image/jpeg")
-    #     dialog.set_filter(filter)
-    #     dialog.set_current_folder(Gio.File.new_for_path(fn.home))
-    #     dialog.add_buttons(
-    #         Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Open", Gtk.ResponseType.OK)
-    #     dialog.connect("response", self.open_image_response)
-
-    #     dialog.show()
-
-    # def open_image_response(self, dialog, response):
-
-    #     if response == Gtk.ResponseType.OK:
-    #         self.pbtextbox2.set_text(dialog.get_filename())
-    #         dialog.destroy()
-    #     elif response == Gtk.ResponseType.CANCEL:
-    #         dialog.destroy()
-
-    # def open_config_response(self, dialog, response):
-
-    #     if response == Gtk.ResponseType.OK:
-    #         self.pbtextbox1.set_text(dialog.get_filename())
-    #         dialog.destroy()
-    #     elif response == Gtk.ResponseType.CANCEL:
-    #         dialog.destroy()
-
-    # def on_pb_import_clicked(self, widget):
-    #     polybar.import_config(
-    #         self, self.pbtextbox1.get_text(), self.pbtextbox2.get_text())
-
-    # def on_pb_change_item(self, widget):
-    #     try:
-    #         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-    #             fn.config_dir + '/images/' + widget.get_active_text() + '.jpg', 385, 385)
-    #         self.pbimage.set_from_pixbuf(pixbuf)
-    #     except:
-    #         self.pbimage.set_from_pixbuf(None)
 
     # ====================================================================
     #                       SDDM
@@ -3830,23 +3608,6 @@ class Main(Gtk.ApplicationWindow):
     def on_click_remove_system_config_printer(self, widget):
         print("Removing system_config_printer")
         fn.remove_package(self, "system_config_printer")
-
-    # TODO : how to launch an app as the user
-    # def on_click_launch_system_config_printer(self, desktop):
-    #     if fn.check_package_installed("system-config-printer"):
-    #         try:
-    #             subprocess.Popen("/usr/bin/system-config-printer")
-    #             GLib.idle_add(
-    #                 fn.show_in_app_notification,
-    #                 self,
-    #                 "System config printer launched",
-    #             )
-    #             print("We started system-config-printer")
-    #         except:
-    #             pass
-    #     else:
-    #         print("First install system-config-printer package")
-    #         fn.show_in_app_notification(self, "First install system-config-printer")
 
     # ====================================================================
     #                       SHELLS EXTRA
@@ -4496,9 +4257,6 @@ class Main(Gtk.ApplicationWindow):
         self.zsh_themes.set_sensitive(True)
         zsh_theme.get_themes(self.zsh_themes)
 
-    # The intent behind this function is to be a centralised image changer for all portions of ATT that need it
-    # Currently utilising an if tree - this is not best practice: it should be a match: case tree.
-    # But I have not yet got that working.
     def update_image(
         self, widget, image, theme_type, att_base, image_width, image_height
     ):
@@ -4507,28 +4265,6 @@ class Main(Gtk.ApplicationWindow):
         sample_path = ""
         preview_path = ""
         random_option = False
-        # THIS CODE IS KEPT ON PURPOSE. DO NOT DELETE.
-        # Once Python 3.10 is released and used widely, delete the if statements below the match blocks
-        # and use the match instead. It is faster, and easier to maintain.
-        #    match "zsh":
-        #        case 'zsh':
-        #            sample_path = att_base+"/images/zsh-sample.jpg"
-        #            preview_path = att_base+"/images/zsh_previews/"+fn.get_combo_text(widget) + ".jpg"
-        #        case 'qtile':
-        #            sample_path = att_base+"/images/zsh-sample.jpg"
-        #            previe_path = att_base+"/images/zsh_previews/"+fn.get_combo_text(widget) + ".jpg"
-        #        case 'i3':
-        #            sample_path = att_base+"/images/i3-sample.jpg"
-        #            preview_path = att_base+"/themer_data/i3/"+fn.get_combo_text(widget) + ".jpg"
-        #        case 'awesome':
-        #            sample_path = att_base+"/images/i3-sample.jpg"
-        #            preview_path = att_base+"/themer_data/awesomewm/"+fn.get_combo_text(widget) + ".jpg"
-        #        case 'neofetch':
-        #            sample_path = att_base + fn.get_combo_text(widget)
-        #            preview_path = att_base + fn.get_combo_text(widget)
-        #        case unknown_command:
-        #            print("Function update_image passed an incorrect value for theme_type. Value passed was: " + theme_type)
-        #            print("Remember that the order for using this function is: self, widget, image, theme_type, att_base_path, image_width, image_height.")
         if theme_type == "zsh":
             sample_path = att_base + "/images/zsh-sample.jpg"
             preview_path = (
@@ -4829,21 +4565,6 @@ class ATTApplication(Gtk.Application):
         if not fn.path.isfile("/tmp/att.lock") and os_function_support:
             with open("/tmp/att.pid", "w", encoding="utf-8") as f:
                 f.write(str(fn.getpid()))
-
-            #apply saved dark theme preference (default: on)
-            # try:
-            #     secs = settings.read_section()
-            #     if "APPEARANCE" in secs:
-            #         dark = settings.read_settings("APPEARANCE", "dark_theme") == "True"
-            #     else:
-            #         dark = True
-            #     Gtk.Settings.get_default().set_property(
-            #         "gtk-application-prefer-dark-theme", dark
-            #     )
-            # except Exception:
-            #     Gtk.Settings.get_default().set_property(
-            #         "gtk-application-prefer-dark-theme", True
-            #     )
 
             # apply GTK_THEME from /etc/environment when not in environment (e.g. pkexec)
             gtk_theme = os.environ.get("GTK_THEME")

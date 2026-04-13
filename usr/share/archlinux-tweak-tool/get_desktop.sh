@@ -247,30 +247,6 @@ detect_qtile;
 detect_xfce;
 detect_xmonad;
 
-# if detect_unity;
-# then
-#     if detect_kde;
-#     then
-# 	if detect_gnome;
-# 	then
-# 	    if detect_xfce;
-# 	    then
-# 		if detect_cinnamon;
-# 		then
-# 		    if detect_mate;
-# 		    then
-# 			if detect_lxde;
-# 			then
-# 			    detect_sugar
-# 			fi
-# 		    fi
-# 		fi
-# 	    fi
-# 	fi
-#     fi
-# fi
-
-
 if [ "$1" == '-v' ];
 then
     echo $VERSION

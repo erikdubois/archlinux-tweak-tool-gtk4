@@ -162,24 +162,6 @@ def gui(self, Gtk, vboxstack1, fn):
     label11 = Gtk.Label(xalign=0)
     label11.set_markup("Enable Nemesis repo")
 
-    # self.xerolinux_button = Gtk.Button(label="Install mirrors")
-    # self.xerolinux_button.connect("clicked", self.on_xerolinux_clicked)
-
-    # self.xerolinux_switch = Gtk.Switch()
-    # self.xerolinux_switch.connect("notify::active", self.on_xero_toggle)
-    # label17 = Gtk.Label(xalign=0)
-    # label17.set_markup("Enable Xerolinux repo")
-
-    # self.xerolinux_xl_switch = Gtk.Switch()
-    # self.xerolinux_xl_switch.connect("notify::active", self.on_xero_xl_toggle)
-    # label18 = Gtk.Label(xalign=0)
-    # label18.set_markup("Enable Xerolinux XL repo")
-
-    # self.xerolinux_nv_switch = Gtk.Switch()
-    # self.xerolinux_nv_switch.connect("notify::active", self.on_xero_nv_toggle)
-    # label19 = Gtk.Label(xalign=0)
-    # label19.set_markup("Enable Xerolinux Nvidia repo")
-
     self.reborn_button = Gtk.Button(label="Install keys and mirrors")
     self.reborn_button.connect("clicked", self.on_reborn_clicked)
     self.reborn_switch = Gtk.Switch()
@@ -331,20 +313,6 @@ def gui(self, Gtk, vboxstack1, fn):
     self.nemesis_switch.set_margin_start(10)
     self.nemesis_switch.set_margin_end(10)
     hboxstack13.append(self.nemesis_switch)  # pack_end
-
-    # if not fn.check_package_installed("xerolinux-mirrorlist"):
-    #     hboxstack20.pack_start(label17, False, True, 10)
-    #     hboxstack20.pack_end(self.xerolinux_button, False, True, 10)
-
-    # if fn.check_package_installed("xerolinux-mirrorlist"):
-    #     hboxstack20.pack_start(label17, False, True, 10)
-    #     hboxstack20.pack_end(self.xerolinux_switch, False, False, 10)
-
-    #     hboxstack21.pack_start(label18, False, True, 10)
-    #     hboxstack21.pack_end(self.xerolinux_xl_switch, False, False, 10)
-
-    #     hboxstack22.pack_start(label19, False, True, 10)
-    #     hboxstack22.pack_end(self.xerolinux_nv_switch, False, False, 10)
 
     if not fn.check_package_installed("rebornos-keyring"):
         label20.set_margin_start(10)

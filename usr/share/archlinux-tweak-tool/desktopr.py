@@ -584,16 +584,6 @@ def install_desktop(self, desktop, state):
                 f"An error occurred: {str(e)}",
             )
 
-    # with fn.subprocess.Popen(
-    #     list(np.append(com1, command)),
-    #     bufsize=1,
-    #     stdout=fn.subprocess.PIPE,
-    #     universal_newlines=True,
-    # ) as p:
-    #     for line in p.stdout:
-    #         GLib.idle_add(self.desktopr_stat.set_text, line.strip())
-    # print("----------------------------------------------------------------")
-
     GLib.source_remove(timeout_id)
     timeout_id = None
     GLib.idle_add(self.desktopr_prog.set_fraction, 0)

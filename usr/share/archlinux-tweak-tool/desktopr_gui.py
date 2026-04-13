@@ -42,10 +42,6 @@ the nemesis repo"
     label.set_text("\n\n\nSelect a desktop")
     label.set_halign(Gtk.Align.CENTER)
 
-    # button_arco_repo = Gtk.Button(label="Activate ArcoLinux repositories")
-    # button_arco_repo.connect("clicked", self.on_arco_repo_clicked)
-    # button_arco_repo.set_margin_top(30)
-
     self.d_combo = Gtk.DropDown.new_from_strings(list(desktopr.desktops))
     self.d_combo.set_size_request(220, 0)
     self.d_combo.set_selected(0)
@@ -94,20 +90,14 @@ the nemesis repo"
     self.button_reinstall.set_hexpand(True)
     self.button_reinstall.set_vexpand(False)
     buttonbox.append(self.button_reinstall)
-    # buttonbox.pack_start(button_uninstall, True, True, 0)
 
     # =======================================
     #               BUTTONS
     # =======================================
 
-    # set_default = Gtk.Button(label="Set Default")
-    # set_default.set_size_request(195, 0)
-
-    # set_default.connect("clicked", self.on_default_clicked)
-    # defaultbox.pack_end(set_default, False, False, 0)
-
     self.ch1 = Gtk.CheckButton(label="Select to clear cache before re-install")
     checkbox.append(self.ch1)
+    
     # =======================================
     #               TEXTVIEW
     # =======================================
