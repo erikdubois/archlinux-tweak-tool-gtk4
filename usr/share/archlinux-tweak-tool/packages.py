@@ -288,7 +288,7 @@ class Packages:
                             else:
                                 f.write("%s\n" % package)
 
-                break
+            break
 
     # pacman synchronize database
     def pacman_sync(self):
