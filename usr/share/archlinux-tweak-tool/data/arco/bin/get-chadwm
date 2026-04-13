@@ -62,7 +62,7 @@ func_install_chadwm() {
 
     list=(
     alacritty
-    archlinux-logout-git
+    archlinux-logout-gtk4-git
     arconet-variety-config
     arcolinux-chadwm-git
     arcolinux-chadwm-pacman-hook-git
