@@ -30,7 +30,7 @@ class SplashScreen(Gtk.Window):
             except Exception:
                 pass
 
-        texture = Gdk.Texture.new_from_filename(base_dir + "/images/splash.png")
+        texture = Gdk.Texture.new_from_filename(base_dir + "/images/splash.jpg")
         picture = Gtk.Picture.new_for_paintable(texture)
         picture.set_can_shrink(False)
         picture.set_content_fit(Gtk.ContentFit.COVER)
