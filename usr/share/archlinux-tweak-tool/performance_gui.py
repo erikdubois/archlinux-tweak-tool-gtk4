@@ -42,9 +42,9 @@ def gui(self, Gtk, vboxstack27, performance, fn):
         hbox7_label.set_markup("tuned is <b>installed</b>")
     else:
         hbox7_label.set_text("Install tuned for dynamic system tuning")
-    btn_install_tuned = Gtk.Button(label="Install tuned")
+    btn_install_tuned = Gtk.Button(label="Install tuned/tuned-ppd")
     btn_install_tuned.connect("clicked", performance.install_tuned_tools, self)
-    btn_remove_tuned = Gtk.Button(label="Remove tuned")
+    btn_remove_tuned = Gtk.Button(label="Remove tuned/tuned-ppd")
     btn_remove_tuned.connect("clicked", performance.remove_tuned_tools, self)
     hbox7_label.set_margin_start(10)
     hbox7_label.set_margin_end(10)
@@ -69,15 +69,10 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     hbox7b.append(hbox7b_label)
 
     hbox7c = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.restart_tuned = Gtk.Button(label="Start/Restart tuned")
-    self.restart_tuned.connect("clicked", performance.restart_tuned_service, self)
     self.enable_tuned = Gtk.Button(label="Enable tuned")
     self.enable_tuned.connect("clicked", performance.enable_tuned_service, self)
     self.disable_tuned = Gtk.Button(label="Disable tuned")
     self.disable_tuned.connect("clicked", performance.disable_tuned_service, self)
-    self.restart_tuned.set_margin_start(10)
-    self.restart_tuned.set_margin_end(10)
-    hbox7c.append(self.restart_tuned)
     self.enable_tuned.set_margin_start(10)
     self.enable_tuned.set_margin_end(10)
     hbox7c.append(self.enable_tuned)
@@ -86,36 +81,16 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     hbox7c.append(self.disable_tuned)
 
     hbox7d = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.restart_tuned_ppd = Gtk.Button(label="Start/Restart tuned-ppd")
-    self.restart_tuned_ppd.connect("clicked", performance.restart_tuned_ppd_service, self)
     self.enable_tuned_ppd = Gtk.Button(label="Enable tuned-ppd")
     self.enable_tuned_ppd.connect("clicked", performance.enable_tuned_ppd_service, self)
     self.disable_tuned_ppd = Gtk.Button(label="Disable tuned-ppd")
     self.disable_tuned_ppd.connect("clicked", performance.disable_tuned_ppd_service, self)
-    self.restart_tuned_ppd.set_margin_start(10)
-    self.restart_tuned_ppd.set_margin_end(10)
-    hbox7d.append(self.restart_tuned_ppd)
     self.enable_tuned_ppd.set_margin_start(10)
     self.enable_tuned_ppd.set_margin_end(10)
     hbox7d.append(self.enable_tuned_ppd)
     self.disable_tuned_ppd.set_margin_start(10)
     self.disable_tuned_ppd.set_margin_end(10)
     hbox7d.append(self.disable_tuned_ppd)
-
-    if not fn.check_package_installed("tuned"):
-        self.enable_tuned.set_sensitive(False)
-        self.disable_tuned.set_sensitive(False)
-        self.restart_tuned.set_sensitive(False)
-        self.enable_tuned_ppd.set_sensitive(False)
-        self.disable_tuned_ppd.set_sensitive(False)
-        self.restart_tuned_ppd.set_sensitive(False)
-
-    hbox7e_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.tuned_status_label = Gtk.Label(xalign=0)
-    self.tuned_status_label.set_markup(performance.get_tuned_status_markup())
-    self.tuned_status_label.set_margin_start(10)
-    self.tuned_status_label.set_margin_end(10)
-    hbox7e_status.append(self.tuned_status_label)
 
     # Tuned Profiles Selection
     hbox7e = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -132,8 +107,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     active_profile = performance.get_active_tuned_profile()
     if active_profile and active_profile in tuned_profile_choices:
         self.tuned_profile_choices.set_selected(tuned_profile_choices.index(active_profile))
-    btn_apply_tuned_profile = Gtk.Button(label="Apply Profile")
-    btn_apply_tuned_profile.connect("clicked", performance.apply_tuned_profile, self)
+    self.btn_apply_tuned_profile = Gtk.Button(label="Apply Profile")
+    self.btn_apply_tuned_profile.connect("clicked", performance.apply_tuned_profile, self)
     hbox7f_label = Gtk.Label(xalign=0)
     hbox7f_label.set_text("Select profile:")
     hbox7f_label.set_margin_start(10)
@@ -142,9 +117,21 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     self.tuned_profile_choices.set_margin_start(10)
     self.tuned_profile_choices.set_margin_end(10)
     hbox7f.append(self.tuned_profile_choices)
-    btn_apply_tuned_profile.set_margin_start(10)
-    btn_apply_tuned_profile.set_margin_end(10)
-    hbox7f.append(btn_apply_tuned_profile)
+    self.btn_apply_tuned_profile.set_margin_start(10)
+    self.btn_apply_tuned_profile.set_margin_end(10)
+    hbox7f.append(self.btn_apply_tuned_profile)
+
+    # Set initial sensitivity for all tuned controls based on installation status
+    # Check just "tuned" package, not the combined "tuned tuned-ppd" string
+    if not fn.check_package_installed("tuned"):
+        self.enable_tuned.set_sensitive(False)
+        self.disable_tuned.set_sensitive(False)
+        self.restart_tuned.set_sensitive(False)
+        self.enable_tuned_ppd.set_sensitive(False)
+        self.disable_tuned_ppd.set_sensitive(False)
+        self.restart_tuned_ppd.set_sensitive(False)
+        self.tuned_profile_choices.set_sensitive(False)
+        self.btn_apply_tuned_profile.set_sensitive(False)
 
     hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.performance_status_label = Gtk.Label(xalign=0)
@@ -298,10 +285,6 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     self.irqbalance_status_label.set_margin_start(10)
     self.irqbalance_status_label.set_margin_end(10)
     self.irqbalance_status_label.set_hexpand(True)
-    self.restart_irqbalance = Gtk.Button(label="Start/Restart irqbalance")
-    self.restart_irqbalance.connect(
-        "clicked", performance.restart_irqbalance_service, self
-    )
     self.enable_irqbalance = Gtk.Button(label="Enable irqbalance")
     self.enable_irqbalance.connect(
         "clicked", performance.enable_irqbalance_service, self
@@ -311,9 +294,6 @@ def gui(self, Gtk, vboxstack27, performance, fn):
         "clicked", performance.disable_irqbalance_service, self
     )
     hbox20.append(self.irqbalance_status_label)
-    self.restart_irqbalance.set_margin_start(10)
-    self.restart_irqbalance.set_margin_end(10)
-    hbox20.append(self.restart_irqbalance)
     self.enable_irqbalance.set_margin_start(10)
     self.enable_irqbalance.set_margin_end(10)
     hbox20.append(self.enable_irqbalance)
@@ -324,7 +304,6 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     if not fn.check_package_installed("irqbalance"):
         self.enable_irqbalance.set_sensitive(False)
         self.disable_irqbalance.set_sensitive(False)
-        self.restart_irqbalance.set_sensitive(False)
 
     vboxstack27.append(hbox1)
     vboxstack27.append(hbox0)
@@ -334,7 +313,6 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     vboxstack27.append(hbox7b)
     vboxstack27.append(hbox7c)
     vboxstack27.append(hbox7d)
-    vboxstack27.append(hbox7e_status)
     vboxstack27.append(hbox7e)
     vboxstack27.append(hbox7f)
     vboxstack27.append(hbox9)

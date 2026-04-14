@@ -633,16 +633,22 @@ def install_package(self, package):
     else:
         try:
             print(command)
-            subprocess.call(
+            result = subprocess.run(
                 command.split(" "),
                 shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                capture_output=True,
+                text=True,
             )
-            print(package + " is now installed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now installed")
+            if result.returncode == 0:
+                print(package + " is now installed")
+                GLib.idle_add(show_in_app_notification, self, package + " is now installed")
+            else:
+                error_msg = result.stderr if result.stderr else result.stdout
+                print(f"Error installing {package}: {error_msg}")
+                GLib.idle_add(show_in_app_notification, self, f"Error installing {package}")
         except Exception as error:
             print(error)
+            GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
 
 
 def install_local_package(self, package):

@@ -9,7 +9,8 @@ from functions import GLib
 # ============================================================
 # Tuned Configuration
 # ============================================================
-TUNED_PACKAGE = "tuned tuned-ppd"
+TUNED_PACKAGE = "tuned"
+TUNED_PPD_PACKAGE = "tuned-ppd"
 TLP_PACKAGE = "tlp"
 tuned_ppd_config = "/etc/tuned/ppd.conf"
 
@@ -96,17 +97,42 @@ def refresh_performance_status_label(self):
 
 def install_tuned_tools(widget, self):
     """Install tuned for dynamic power management."""
-    fn.install_package(self, TUNED_PACKAGE)
+    # Remove conflicting files that may exist from previous installations
+    conflicting_files = [
+        "/etc/modprobe.d/tuned.conf",
+    ]
+    for file_path in conflicting_files:
+        if fn.path.exists(file_path):
+            try:
+                fn.unlink(file_path)
+                print(f"Removed conflicting file: {file_path}")
+            except Exception as e:
+                print(f"Could not remove {file_path}: {e}")
+
+    fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
     disable_tlp_if_present(self)
-    refresh_tuned_buttons(self)
-    refresh_performance_status_label(self)
+    # Enable and start tuned services after installation
+    print("Enabling and starting tuned services")
+    fn.enable_service("tuned")
+    fn.enable_service("tuned-ppd")
+    # Defer status refresh to allow systemctl to update
+    GLib.timeout_add(500, refresh_tuned_buttons, self)
+    GLib.timeout_add(500, refresh_tuned_profile_choices, self)
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed and started")
 
 
 def remove_tuned_tools(widget, self):
     """Remove tuned and tuned-ppd."""
-    fn.remove_package(self, TUNED_PACKAGE)
-    refresh_tuned_buttons(self)
-    refresh_performance_status_label(self)
+    # Disable services before removing the package
+    print("Disabling tuned services before removal")
+    fn.disable_service("tuned")
+    fn.disable_service("tuned-ppd")
+    fn.remove_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
+    # Use GLib.idle_add to ensure status refresh happens after operations complete
+    GLib.idle_add(refresh_tuned_buttons, self)
+    GLib.idle_add(refresh_tuned_profile_status, self)
+    GLib.idle_add(refresh_performance_status_label, self)
 
 
 def refresh_tuned_buttons(self):
@@ -114,15 +140,16 @@ def refresh_tuned_buttons(self):
     tuned_buttons = [
         "enable_tuned",
         "disable_tuned",
-        "restart_tuned",
         "enable_tuned_ppd",
         "disable_tuned_ppd",
-        "restart_tuned_ppd",
+        "tuned_profile_choices",
+        "btn_apply_tuned_profile",
     ]
-    installed = fn.check_package_installed(TUNED_PACKAGE)
+    # Check for the main tuned package - if installed, buttons should be enabled
+    installed = fn.check_package_installed("tuned")
     for button_name in tuned_buttons:
         if hasattr(self, button_name):
-            getattr(self, button_name).set_sensitive(installed)
+            GLib.idle_add(getattr(self, button_name).set_sensitive, installed)
 
 
 def disable_tlp_if_present(self):
@@ -144,44 +171,29 @@ def enable_tuned_service(widget, self):
     print("Enabling tuned service")
     disable_tlp_if_present(self)
     fn.enable_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been enabled")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been enabled and started")
 
 
 def disable_tuned_service(widget, self):
     print("Disabling tuned service")
     fn.disable_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been disabled")
-
-
-def restart_tuned_service(widget, self):
-    print("Restart tuned")
-    disable_tlp_if_present(self)
-    fn.restart_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been disabled and stopped")
 
 
 def enable_tuned_ppd_service(widget, self):
     print("Enabling tuned-ppd service")
     fn.enable_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled and started")
 
 
 def disable_tuned_ppd_service(widget, self):
     print("Disabling tuned-ppd service")
     fn.disable_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled")
-
-
-def restart_tuned_ppd_service(widget, self):
-    print("Restart tuned-ppd")
-    fn.restart_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled and stopped")
 
 
 # ============================================================
@@ -190,6 +202,9 @@ def restart_tuned_ppd_service(widget, self):
 
 def get_available_tuned_profiles():
     """Return list of available tuned profiles."""
+    if not fn.check_package_installed("tuned"):
+        return []
+
     try:
         result = fn.subprocess.run(
             ["tuned-adm", "list"],
@@ -226,6 +241,9 @@ def get_available_tuned_profiles():
 
 def get_active_tuned_profile():
     """Return the currently active tuned profile."""
+    if not fn.check_package_installed("tuned"):
+        return None
+
     try:
         result = fn.subprocess.run(
             ["tuned-adm", "active"],
@@ -265,6 +283,41 @@ def refresh_tuned_profile_status(self):
             self.tuned_profile_status_label.set_markup,
             get_tuned_profile_status_markup(),
         )
+
+
+def refresh_tuned_profile_choices(self):
+    """Refresh the tuned profile dropdown with available profiles."""
+    if not hasattr(self, "tuned_profile_choices"):
+        return
+
+    try:
+        import gi
+        gi.require_version("Gtk", "4.0")
+        from gi.repository import Gtk
+
+        tuned_profile_choices = get_available_tuned_profiles()
+        if tuned_profile_choices:
+            # Create a new dropdown with updated profiles
+            new_dropdown = Gtk.DropDown.new_from_strings(tuned_profile_choices)
+            new_dropdown.set_margin_start(10)
+            new_dropdown.set_margin_end(10)
+
+            # Set the currently active profile if available
+            active_profile = get_active_tuned_profile()
+            if active_profile and active_profile in tuned_profile_choices:
+                new_dropdown.set_selected(tuned_profile_choices.index(active_profile))
+
+            # Replace the old dropdown in the parent container
+            def update_dropdown():
+                parent = self.tuned_profile_choices.get_parent()
+                if parent:
+                    parent.remove(self.tuned_profile_choices)
+                    parent.append(new_dropdown)
+                    self.tuned_profile_choices = new_dropdown
+
+            GLib.idle_add(update_dropdown)
+    except Exception as e:
+        print(f"Error refreshing tuned profile choices: {e}")
 
 
 def apply_tuned_profile(widget, self):
@@ -472,33 +525,9 @@ def refresh_irqbalance_service_buttons(self):
     for button_name in [
         "enable_irqbalance",
         "disable_irqbalance",
-        "restart_irqbalance",
     ]:
         if hasattr(self, button_name):
             GLib.idle_add(getattr(self, button_name).set_sensitive, installed)
-
-
-def enable_tuned_service(widget, self):
-    print("Enabling tuned service")
-    disable_tlp_if_present(self)
-    fn.enable_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been enabled")
-
-
-def disable_tuned_service(widget, self):
-    print("Disabling tuned service")
-    fn.disable_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been disabled")
-
-
-def restart_tuned_service(widget, self):
-    print("Restart tuned")
-    disable_tlp_if_present(self)
-    fn.restart_service("tuned")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
 
 
 def disable_tlp_if_present(self):
@@ -514,27 +543,6 @@ def disable_tlp_if_present(self):
         self,
         "TLP service disabled because it conflicts with Tuned",
     )
-
-
-def enable_tuned_ppd_service(widget, self):
-    print("Enabling tuned-ppd service")
-    fn.enable_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled")
-
-
-def disable_tuned_ppd_service(widget, self):
-    print("Disabling tuned-ppd service")
-    fn.disable_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled")
-
-
-def restart_tuned_ppd_service(widget, self):
-    print("Restart tuned-ppd")
-    fn.restart_service("tuned-ppd")
-    refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
 
 
 def enable_zram(widget, self):
@@ -695,19 +703,12 @@ def remove_irqbalance(widget, self):
 def enable_irqbalance_service(widget, self):
     print("Enabling irqbalance service")
     fn.enable_service("irqbalance")
-    refresh_irqbalance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled")
+    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled and started")
 
 
 def disable_irqbalance_service(widget, self):
     print("Disabling irqbalance service")
     fn.disable_service("irqbalance")
-    refresh_irqbalance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled")
-
-
-def restart_irqbalance_service(widget, self):
-    print("Restart irqbalance")
-    fn.restart_service("irqbalance")
-    refresh_irqbalance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been restarted")
+    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled and stopped")
