@@ -379,72 +379,6 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
     hbox21.append(btn_apply_change_debug)  # pack_end
 
     # ======================================================================
-    #                       SWAP MANAGEMENT
-    # ======================================================================
-
-    hbox_swap_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hseparator_swap = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-    hseparator_swap.set_hexpand(True)
-    hbox_swap_sep.append(hseparator_swap)
-
-    hbox_swap_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_swap_title_label = Gtk.Label(xalign=0)
-    hbox_swap_title_label.set_markup("<b>Swap Management</b>")
-    hbox_swap_title_label.set_margin_start(10)
-    hbox_swap_title_label.set_margin_end(10)
-    hbox_swap_title.append(hbox_swap_title_label)
-
-    hbox_swapfile = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_swapfile_label = Gtk.Label(xalign=0)
-    hbox_swapfile_label.set_text("Create or manage a swapfile at /swapfile")
-    hbox_swapfile_label.set_margin_start(10)
-    hbox_swapfile_label.set_margin_end(10)
-    hbox_swapfile_label.set_hexpand(True)
-    self.swapfile_size = Gtk.DropDown.new_from_strings(
-        ["1G", "2G", "4G", "8G", "16G", "32G"]
-    )
-    self.swapfile_size.set_selected(1)  # default 2G
-    btn_create_swapfile = Gtk.Button(label="Create")
-    btn_create_swapfile.connect("clicked", self.on_click_create_swapfile)
-    btn_remove_swapfile = Gtk.Button(label="Remove")
-    btn_remove_swapfile.connect("clicked", self.on_click_remove_swapfile)
-    hbox_swapfile.append(hbox_swapfile_label)
-    self.swapfile_size.set_margin_start(10)
-    self.swapfile_size.set_margin_end(10)
-    hbox_swapfile.append(self.swapfile_size)
-    btn_create_swapfile.set_margin_start(10)
-    btn_create_swapfile.set_margin_end(10)
-    hbox_swapfile.append(btn_create_swapfile)
-    btn_remove_swapfile.set_margin_start(10)
-    btn_remove_swapfile.set_margin_end(10)
-    hbox_swapfile.append(btn_remove_swapfile)
-
-    hbox_zram = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_zram_label = Gtk.Label(xalign=0)
-    hbox_zram_label.set_text("Enable zram (compressed RAM swap) - installs zram-generator")
-    hbox_zram_label.set_margin_start(10)
-    hbox_zram_label.set_margin_end(10)
-    hbox_zram_label.set_hexpand(True)
-    self.zram_size = Gtk.DropDown.new_from_strings(
-        ["ram / 4", "ram / 2", "ram * 3 / 4", "ram", "1024", "2048", "4096"]
-    )
-    self.zram_size.set_selected(1)  # default ram / 2
-    btn_enable_zram = Gtk.Button(label="Enable")
-    btn_enable_zram.connect("clicked", self.on_click_enable_zram)
-    btn_disable_zram = Gtk.Button(label="Disable")
-    btn_disable_zram.connect("clicked", self.on_click_disable_zram)
-    hbox_zram.append(hbox_zram_label)
-    self.zram_size.set_margin_start(10)
-    self.zram_size.set_margin_end(10)
-    hbox_zram.append(self.zram_size)
-    btn_enable_zram.set_margin_start(10)
-    btn_enable_zram.set_margin_end(10)
-    hbox_zram.append(btn_enable_zram)
-    btn_disable_zram.set_margin_start(10)
-    btn_disable_zram.set_margin_end(10)
-    hbox_zram.append(btn_disable_zram)
-
-    # ======================================================================
     #                       VBOX STACK
     # ======================================================================
 
@@ -478,8 +412,3 @@ def gui(self, Gtk, vboxstack19, fn, fixes):
         vboxstack19.append(hbox19)
         vboxstack19.append(hbox20)
         vboxstack19.append(hbox21)
-
-    vboxstack19.append(hbox_swap_sep)
-    vboxstack19.append(hbox_swap_title)
-    vboxstack19.append(hbox_swapfile)
-    vboxstack19.append(hbox_zram)

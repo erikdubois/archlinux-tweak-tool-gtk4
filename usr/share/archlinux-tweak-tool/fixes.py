@@ -106,16 +106,6 @@ def set_parallel_downloads(self, widget):
             )
 
 
-def get_swapfile_size(self):
-    """get selected swapfile size from dropdown"""
-    return fn.get_combo_text(self.swapfile_size)
-
-
-def get_zram_size(self):
-    """get selected zram size expression from dropdown"""
-    return fn.get_combo_text(self.zram_size)
-
-
 def pop_parallel_downloads(self):
     """populate parallel downloads for pacman"""
     if fn.path.isfile(fn.pacman):

@@ -11,6 +11,7 @@ import lightdm
 import login
 import lxdm
 import fastfetch
+import performance
 import sddm
 import att
 import themer
@@ -25,6 +26,7 @@ import desktopr_gui
 import fixes_gui
 import fastfetch_gui
 import pacman_gui
+import performance_gui
 import privacy_gui
 import services_gui
 import shell_gui
@@ -92,6 +94,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack23 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack25 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack26 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack27 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 ATT
@@ -186,6 +189,14 @@ themes</i> you can customize <b>fastfetch</b>"
     # =====================================================
 
     packages_gui.gui(self, Gtk, vboxstack26, fn)
+
+    # =====================================================
+    #                       PERFORMANCE
+    # =====================================================
+
+    if fn.distr != "artix":
+        performance_gui.gui(self, Gtk, vboxstack27, performance, fn)
+
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
@@ -205,6 +216,9 @@ themes</i> you can customize <b>fastfetch</b>"
     stack.add_titled(vboxstack1, "stack6", "Pacman")  # Pacman config
 
     stack.add_titled(vboxstack3, "stack2", "Privacy")  # Privacy
+
+    if fn.distr != "artix":
+        stack.add_titled(vboxstack27, "stack27", "Performance")  # performance
 
     if fn.distr != "artix":
         stack.add_titled(vboxstack14, "stack14", "Services")  # services
