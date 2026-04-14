@@ -19,87 +19,56 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     hseparator.set_vexpand(False)
     hbox0.append(hseparator)
 
-    hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox2_label = Gtk.Label(xalign=0)
-    hbox2_label.set_markup(
-        "Use <b>tuned</b> for system tuning and <b>cpupower</b> for CPU governor profiles.\n"
-        "Balanced Mode is recommended for most users.\n"
-        "If <b>TLP</b> is installed, it will be disabled before Tuned is enabled."
-    )
-    hbox2_label.set_margin_start(10)
-    hbox2_label.set_margin_end(10)
-    hbox2.append(hbox2_label)
+    # ============================================================
+    # Tuned Block
+    # ============================================================
 
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox3_label = Gtk.Label(xalign=0)
-    if (
-        fn.check_package_installed("tuned")
-        and fn.check_package_installed("cpupower")
-    ):
-        hbox3_label.set_markup("Performance packages are <b>installed</b>")
-    else:
-        hbox3_label.set_text("Install performance packages")
-    btn_install_power = Gtk.Button(label="Install performance tools")
-    btn_install_power.connect("clicked", performance.install_power_tools, self)
-    btn_remove_power = Gtk.Button(label="Remove performance tools")
-    btn_remove_power.connect("clicked", performance.remove_power_tools, self)
-    hbox3_label.set_margin_start(10)
-    hbox3_label.set_margin_end(10)
-    hbox3_label.set_hexpand(True)
-    hbox3.append(hbox3_label)
-    btn_install_power.set_margin_start(10)
-    btn_install_power.set_margin_end(10)
-    hbox3.append(btn_install_power)
-    btn_remove_power.set_margin_start(10)
-    btn_remove_power.set_margin_end(10)
-    hbox3.append(btn_remove_power)
+    hbox6b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hseparator_tuned = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hseparator_tuned.set_hexpand(True)
+    hbox6b.append(hseparator_tuned)
 
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox4_label = Gtk.Label(xalign=0)
-    hbox4_label.set_markup(
-        "<b>CPU Power Profiles</b>\n"
-        "Performance Mode keeps the CPU at max speed for desktops, VMs, compiling, and gaming.\n"
-        "Balanced Mode uses schedutil for smart scaling when available.\n"
-        "Power Saver Mode keeps frequencies lower for laptop battery life.\n"
-        "Only profiles supported by your CPU driver are shown."
-    )
-    hbox4_label.set_margin_start(10)
-    hbox4_label.set_margin_end(10)
-    hbox4.append(hbox4_label)
-
-    hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    cpu_power_profile_choices = performance.get_cpu_power_profile_choices()
-    self.cpu_power_choices = Gtk.DropDown.new_from_strings(cpu_power_profile_choices)
-    self.cpu_power_choices.set_selected(
-        performance.get_cpu_power_profile_default(cpu_power_profile_choices)
-    )
-    btn_apply_cpu_power = Gtk.Button(label="Apply CPU profile")
-    btn_apply_cpu_power.connect("clicked", performance.apply_cpu_power_profile, self)
-    self.cpu_power_choices.set_margin_start(10)
-    self.cpu_power_choices.set_margin_end(10)
-    hbox5.append(self.cpu_power_choices)
-    btn_apply_cpu_power.set_margin_start(10)
-    btn_apply_cpu_power.set_margin_end(10)
-    hbox5.append(btn_apply_cpu_power)
-
-    hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.restart_cpupower = Gtk.Button(label="Start/Restart cpupower")
-    self.restart_cpupower.connect("clicked", performance.restart_cpupower_service, self)
-    self.enable_cpupower = Gtk.Button(label="Enable cpupower")
-    self.enable_cpupower.connect("clicked", performance.enable_cpupower_service, self)
-    self.disable_cpupower = Gtk.Button(label="Disable cpupower")
-    self.disable_cpupower.connect("clicked", performance.disable_cpupower_service, self)
-    self.restart_cpupower.set_margin_start(10)
-    self.restart_cpupower.set_margin_end(10)
-    hbox6.append(self.restart_cpupower)
-    self.enable_cpupower.set_margin_start(10)
-    self.enable_cpupower.set_margin_end(10)
-    hbox6.append(self.enable_cpupower)
-    self.disable_cpupower.set_margin_start(10)
-    self.disable_cpupower.set_margin_end(10)
-    hbox6.append(self.disable_cpupower)
+    hbox_tuned_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_tuned_title_label = Gtk.Label(xalign=0)
+    hbox_tuned_title_label.set_text("Tuned")
+    hbox_tuned_title_label.set_name("title")
+    hbox_tuned_title_label.set_margin_start(10)
+    hbox_tuned_title_label.set_margin_end(10)
+    hbox_tuned_title.append(hbox_tuned_title_label)
 
     hbox7 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox7_label = Gtk.Label(xalign=0)
+    if fn.check_package_installed("tuned"):
+        hbox7_label.set_markup("tuned is <b>installed</b>")
+    else:
+        hbox7_label.set_text("Install tuned for dynamic system tuning")
+    btn_install_tuned = Gtk.Button(label="Install tuned")
+    btn_install_tuned.connect("clicked", performance.install_tuned_tools, self)
+    btn_remove_tuned = Gtk.Button(label="Remove tuned")
+    btn_remove_tuned.connect("clicked", performance.remove_tuned_tools, self)
+    hbox7_label.set_margin_start(10)
+    hbox7_label.set_margin_end(10)
+    hbox7_label.set_hexpand(True)
+    hbox7.append(hbox7_label)
+    btn_install_tuned.set_margin_start(10)
+    btn_install_tuned.set_margin_end(10)
+    hbox7.append(btn_install_tuned)
+    btn_remove_tuned.set_margin_start(10)
+    btn_remove_tuned.set_margin_end(10)
+    hbox7.append(btn_remove_tuned)
+
+    hbox7b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox7b_label = Gtk.Label(xalign=0)
+    hbox7b_label.set_markup(
+        "<b>Tuned</b> - Dynamic system tuning for power management\n"
+        "<b>Tuned-PPD</b> - Power Profiles Daemon integration for desktop environments\n"
+        "If <b>TLP</b> is installed, it will be disabled when Tuned is enabled (they conflict)."
+    )
+    hbox7b_label.set_margin_start(10)
+    hbox7b_label.set_margin_end(10)
+    hbox7b.append(hbox7b_label)
+
+    hbox7c = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.restart_tuned = Gtk.Button(label="Start/Restart tuned")
     self.restart_tuned.connect("clicked", performance.restart_tuned_service, self)
     self.enable_tuned = Gtk.Button(label="Enable tuned")
@@ -108,13 +77,74 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     self.disable_tuned.connect("clicked", performance.disable_tuned_service, self)
     self.restart_tuned.set_margin_start(10)
     self.restart_tuned.set_margin_end(10)
-    hbox7.append(self.restart_tuned)
+    hbox7c.append(self.restart_tuned)
     self.enable_tuned.set_margin_start(10)
     self.enable_tuned.set_margin_end(10)
-    hbox7.append(self.enable_tuned)
+    hbox7c.append(self.enable_tuned)
     self.disable_tuned.set_margin_start(10)
     self.disable_tuned.set_margin_end(10)
-    hbox7.append(self.disable_tuned)
+    hbox7c.append(self.disable_tuned)
+
+    hbox7d = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.restart_tuned_ppd = Gtk.Button(label="Start/Restart tuned-ppd")
+    self.restart_tuned_ppd.connect("clicked", performance.restart_tuned_ppd_service, self)
+    self.enable_tuned_ppd = Gtk.Button(label="Enable tuned-ppd")
+    self.enable_tuned_ppd.connect("clicked", performance.enable_tuned_ppd_service, self)
+    self.disable_tuned_ppd = Gtk.Button(label="Disable tuned-ppd")
+    self.disable_tuned_ppd.connect("clicked", performance.disable_tuned_ppd_service, self)
+    self.restart_tuned_ppd.set_margin_start(10)
+    self.restart_tuned_ppd.set_margin_end(10)
+    hbox7d.append(self.restart_tuned_ppd)
+    self.enable_tuned_ppd.set_margin_start(10)
+    self.enable_tuned_ppd.set_margin_end(10)
+    hbox7d.append(self.enable_tuned_ppd)
+    self.disable_tuned_ppd.set_margin_start(10)
+    self.disable_tuned_ppd.set_margin_end(10)
+    hbox7d.append(self.disable_tuned_ppd)
+
+    if not fn.check_package_installed("tuned"):
+        self.enable_tuned.set_sensitive(False)
+        self.disable_tuned.set_sensitive(False)
+        self.restart_tuned.set_sensitive(False)
+        self.enable_tuned_ppd.set_sensitive(False)
+        self.disable_tuned_ppd.set_sensitive(False)
+        self.restart_tuned_ppd.set_sensitive(False)
+
+    hbox7e_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.tuned_status_label = Gtk.Label(xalign=0)
+    self.tuned_status_label.set_markup(performance.get_tuned_status_markup())
+    self.tuned_status_label.set_margin_start(10)
+    self.tuned_status_label.set_margin_end(10)
+    hbox7e_status.append(self.tuned_status_label)
+
+    # Tuned Profiles Selection
+    hbox7e = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.tuned_profile_status_label = Gtk.Label(xalign=0)
+    self.tuned_profile_status_label.set_markup(performance.get_tuned_profile_status_markup())
+    self.tuned_profile_status_label.set_margin_start(10)
+    self.tuned_profile_status_label.set_margin_end(10)
+    self.tuned_profile_status_label.set_hexpand(True)
+    hbox7e.append(self.tuned_profile_status_label)
+
+    hbox7f = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    tuned_profile_choices = performance.get_available_tuned_profiles()
+    self.tuned_profile_choices = Gtk.DropDown.new_from_strings(tuned_profile_choices)
+    active_profile = performance.get_active_tuned_profile()
+    if active_profile and active_profile in tuned_profile_choices:
+        self.tuned_profile_choices.set_selected(tuned_profile_choices.index(active_profile))
+    btn_apply_tuned_profile = Gtk.Button(label="Apply Profile")
+    btn_apply_tuned_profile.connect("clicked", performance.apply_tuned_profile, self)
+    hbox7f_label = Gtk.Label(xalign=0)
+    hbox7f_label.set_text("Select profile:")
+    hbox7f_label.set_margin_start(10)
+    hbox7f_label.set_margin_end(10)
+    hbox7f.append(hbox7f_label)
+    self.tuned_profile_choices.set_margin_start(10)
+    self.tuned_profile_choices.set_margin_end(10)
+    hbox7f.append(self.tuned_profile_choices)
+    btn_apply_tuned_profile.set_margin_start(10)
+    btn_apply_tuned_profile.set_margin_end(10)
+    hbox7f.append(btn_apply_tuned_profile)
 
     hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.performance_status_label = Gtk.Label(xalign=0)
@@ -125,16 +155,6 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     self.performance_status_label.set_margin_end(10)
     hbox9.append(self.performance_status_label)
 
-    if not fn.check_package_installed("tuned"):
-        self.enable_tuned.set_sensitive(False)
-        self.disable_tuned.set_sensitive(False)
-        self.restart_tuned.set_sensitive(False)
-
-    if not fn.check_package_installed("cpupower"):
-        self.enable_cpupower.set_sensitive(False)
-        self.disable_cpupower.set_sensitive(False)
-        self.restart_cpupower.set_sensitive(False)
-
     hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hseparator_zram = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator_zram.set_hexpand(True)
@@ -142,7 +162,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
 
     hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox11_label = Gtk.Label(xalign=0)
-    hbox11_label.set_markup("<b>Swap Management</b>")
+    hbox11_label.set_text("Swap Management")
+    hbox11_label.set_name("title")
     hbox11_label.set_margin_start(10)
     hbox11_label.set_margin_end(10)
     hbox11.append(hbox11_label)
@@ -204,7 +225,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
 
     hbox15 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox15_label = Gtk.Label(xalign=0)
-    hbox15_label.set_markup("<b>SSD/NVMe TRIM</b>")
+    hbox15_label.set_text("SSD/NVMe TRIM")
+    hbox15_label.set_name("title")
     hbox15_label.set_margin_start(10)
     hbox15_label.set_margin_end(10)
     hbox15.append(hbox15_label)
@@ -239,7 +261,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
 
     hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox18_label = Gtk.Label(xalign=0)
-    hbox18_label.set_markup("<b>IRQ Balancing</b>")
+    hbox18_label.set_text("IRQ Balancing")
+    hbox18_label.set_name("title")
     hbox18_label.set_margin_start(10)
     hbox18_label.set_margin_end(10)
     hbox18.append(hbox18_label)
@@ -305,12 +328,15 @@ def gui(self, Gtk, vboxstack27, performance, fn):
 
     vboxstack27.append(hbox1)
     vboxstack27.append(hbox0)
-    vboxstack27.append(hbox2)
-    vboxstack27.append(hbox3)
-    vboxstack27.append(hbox4)
-    vboxstack27.append(hbox5)
-    vboxstack27.append(hbox6)
+    vboxstack27.append(hbox6b)
+    vboxstack27.append(hbox_tuned_title)
     vboxstack27.append(hbox7)
+    vboxstack27.append(hbox7b)
+    vboxstack27.append(hbox7c)
+    vboxstack27.append(hbox7d)
+    vboxstack27.append(hbox7e_status)
+    vboxstack27.append(hbox7e)
+    vboxstack27.append(hbox7f)
     vboxstack27.append(hbox9)
     vboxstack27.append(hbox10)
     vboxstack27.append(hbox11)

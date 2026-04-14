@@ -6,16 +6,16 @@ import functions as fn
 from functions import GLib
 
 
-POWER_PACKAGES = ["tuned", "cpupower"]
+# ============================================================
+# Tuned Configuration
+# ============================================================
+TUNED_PACKAGE = "tuned tuned-ppd"
 TLP_PACKAGE = "tlp"
-CPU_POWER_PROFILES = {
-    "Performance Mode (performance)": "performance",
-    "Balanced Mode (schedutil - recommended)": "schedutil",
-    "Power Saver Mode (powersave)": "powersave",
-}
+tuned_ppd_config = "/etc/tuned/ppd.conf"
 
-cpupower_config = "/etc/default/cpupower"
-cpupower_governors = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
+# ============================================================
+# Other Features Configuration
+# ============================================================
 zram_config = "/etc/systemd/zram-generator.conf"
 zram_disk_size = "/sys/block/zram0/disksize"
 zram_enable_script = "/usr/share/archlinux-tweak-tool/data/any/enable-zram"
@@ -26,44 +26,9 @@ fstrim_timer = "fstrim.timer"
 fstrim_service = "fstrim.service"
 
 
-def install_power_tools(widget, self):
-    """Install performance tools."""
-    for package in POWER_PACKAGES:
-        fn.install_package(self, package)
-    disable_tlp_if_present(self)
-    refresh_power_service_buttons(self)
-    refresh_performance_status_label(self)
-
-
-def remove_power_tools(widget, self):
-    """Remove performance tools."""
-    for package in reversed(POWER_PACKAGES):
-        fn.remove_package(self, package)
-    refresh_power_service_buttons(self)
-    refresh_performance_status_label(self)
-
-
-def refresh_power_service_buttons(self):
-    """Refresh button sensitivity after installing or removing packages."""
-    button_groups = {
-        "tuned": [
-            "enable_tuned",
-            "disable_tuned",
-            "restart_tuned",
-        ],
-        "cpupower": [
-            "enable_cpupower",
-            "disable_cpupower",
-            "restart_cpupower",
-        ],
-    }
-
-    for package, button_names in button_groups.items():
-        installed = fn.check_package_installed(package)
-        for button_name in button_names:
-            if hasattr(self, button_name):
-                getattr(self, button_name).set_sensitive(installed)
-
+# ============================================================
+# Helper Functions (Service Status)
+# ============================================================
 
 def get_service_status(service):
     """Return a status label that includes enabled oneshot services."""
@@ -89,19 +54,294 @@ def get_service_status(service):
     return "disabled"
 
 
-def get_performance_status_markup():
-    """Build the service status label text."""
+def get_tuned_status_markup():
+    """Build the tuned block status label text."""
     tuned_status = get_service_status("tuned")
-    cpupower_status = get_service_status("cpupower")
-    tlp_status = get_service_status("tlp")
+    tuned_ppd_status = get_service_status("tuned-ppd")
     return (
         "Tuned service : "
         + tuned_status
-        + "   Cpupower service : "
-        + cpupower_status
-        + "   TLP service : "
-        + tlp_status
+        + "   Tuned-PPD service : "
+        + tuned_ppd_status
     )
+
+
+def refresh_tuned_status_label(self):
+    """Refresh the visible tuned status label."""
+    if hasattr(self, "tuned_status_label"):
+        GLib.idle_add(
+            self.tuned_status_label.set_markup,
+            get_tuned_status_markup(),
+        )
+
+
+def get_performance_status_markup():
+    """Build the combined service status label text."""
+    return get_tuned_status_markup()
+
+
+def refresh_performance_status_label(self):
+    """Refresh the visible performance service status label."""
+    refresh_tuned_status_label(self)
+    if hasattr(self, "performance_status_label"):
+        GLib.idle_add(
+            self.performance_status_label.set_markup,
+            get_performance_status_markup(),
+        )
+
+
+# ============================================================
+# Tuned Block (includes Tuned and Tuned-PPD)
+# ============================================================
+
+def install_tuned_tools(widget, self):
+    """Install tuned for dynamic power management."""
+    fn.install_package(self, TUNED_PACKAGE)
+    disable_tlp_if_present(self)
+    refresh_tuned_buttons(self)
+    refresh_performance_status_label(self)
+
+
+def remove_tuned_tools(widget, self):
+    """Remove tuned and tuned-ppd."""
+    fn.remove_package(self, TUNED_PACKAGE)
+    refresh_tuned_buttons(self)
+    refresh_performance_status_label(self)
+
+
+def refresh_tuned_buttons(self):
+    """Refresh tuned button sensitivity after installing or removing."""
+    tuned_buttons = [
+        "enable_tuned",
+        "disable_tuned",
+        "restart_tuned",
+        "enable_tuned_ppd",
+        "disable_tuned_ppd",
+        "restart_tuned_ppd",
+    ]
+    installed = fn.check_package_installed(TUNED_PACKAGE)
+    for button_name in tuned_buttons:
+        if hasattr(self, button_name):
+            getattr(self, button_name).set_sensitive(installed)
+
+
+def disable_tlp_if_present(self):
+    """Tuned and TLP should not manage power settings at the same time."""
+    if not fn.check_package_installed(TLP_PACKAGE):
+        return
+
+    print("TLP is installed - disabling tlp service before using tuned")
+    fn.disable_service("tlp")
+    refresh_performance_status_label(self)
+    GLib.idle_add(
+        fn.show_in_app_notification,
+        self,
+        "TLP service disabled because it conflicts with Tuned",
+    )
+
+
+def enable_tuned_service(widget, self):
+    print("Enabling tuned service")
+    disable_tlp_if_present(self)
+    fn.enable_service("tuned")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been enabled")
+
+
+def disable_tuned_service(widget, self):
+    print("Disabling tuned service")
+    fn.disable_service("tuned")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been disabled")
+
+
+def restart_tuned_service(widget, self):
+    print("Restart tuned")
+    disable_tlp_if_present(self)
+    fn.restart_service("tuned")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+
+
+def enable_tuned_ppd_service(widget, self):
+    print("Enabling tuned-ppd service")
+    fn.enable_service("tuned-ppd")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled")
+
+
+def disable_tuned_ppd_service(widget, self):
+    print("Disabling tuned-ppd service")
+    fn.disable_service("tuned-ppd")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled")
+
+
+def restart_tuned_ppd_service(widget, self):
+    print("Restart tuned-ppd")
+    fn.restart_service("tuned-ppd")
+    refresh_performance_status_label(self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+
+
+# ============================================================
+# Tuned Profiles Management
+# ============================================================
+
+def get_available_tuned_profiles():
+    """Return list of available tuned profiles."""
+    try:
+        result = fn.subprocess.run(
+            ["tuned-adm", "list"],
+            check=False,
+            shell=False,
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.STDOUT,
+        )
+        if result.returncode == 0:
+            output = result.stdout.decode().strip()
+            # Parse output: "Available profiles:" followed by profile names
+            lines = output.split('\n')
+            profiles = []
+            found_available = False
+            for line in lines:
+                if "Available profiles:" in line:
+                    found_available = True
+                    continue
+                if found_available and line.strip():
+                    # Format: "- profile-name    - description"
+                    # Extract profile name (the word after the leading dash, before description dash)
+                    line = line.strip()
+                    if line.startswith("- "):
+                        line = line[2:].strip()  # Remove leading "- "
+                        # Split on whitespace and take first token (profile name)
+                        profile_name = line.split()[0] if line.split() else ""
+                        if profile_name:
+                            profiles.append(profile_name)
+            return profiles
+    except Exception as error:
+        print(f"Error getting tuned profiles: {error}")
+    return []
+
+
+def get_active_tuned_profile():
+    """Return the currently active tuned profile."""
+    try:
+        result = fn.subprocess.run(
+            ["tuned-adm", "active"],
+            check=False,
+            shell=False,
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.STDOUT,
+        )
+        if result.returncode == 0:
+            output = result.stdout.decode().strip()
+            # Output format: "Current active profile: <profile_name>"
+            if "Current active profile:" in output:
+                profile = output.split("Current active profile:")[-1].strip()
+                return profile
+    except Exception as error:
+        print(f"Error getting active tuned profile: {error}")
+    return None
+
+
+def get_tuned_profile_status_markup():
+    """Build the tuned profile status label text."""
+    active_profile = get_active_tuned_profile()
+    tuned_enabled = get_service_status("tuned")
+
+    if active_profile:
+        status_text = f"Active profile: <b>{active_profile}</b> ({tuned_enabled})"
+    else:
+        status_text = "No active profile"
+
+    return status_text
+
+
+def refresh_tuned_profile_status(self):
+    """Refresh the visible tuned profile status label."""
+    if hasattr(self, "tuned_profile_status_label"):
+        GLib.idle_add(
+            self.tuned_profile_status_label.set_markup,
+            get_tuned_profile_status_markup(),
+        )
+
+
+def apply_tuned_profile(widget, self):
+    """Apply the selected tuned profile."""
+    choice = fn.get_combo_text(self.tuned_profile_choices)
+
+    if not choice:
+        print("No profile selected")
+        GLib.idle_add(fn.show_in_app_notification, self, "No profile selected")
+        return
+
+    set_tuned_profile(self, choice)
+
+
+def set_tuned_profile(self, profile_name):
+    """Set and enable a tuned profile."""
+    if not fn.check_package_installed("tuned"):
+        fn.install_package(self, "tuned")
+
+    if fn.shutil.which("tuned-adm") is None:
+        print("tuned-adm is not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "tuned-adm is not installed")
+        return
+
+    try:
+        # Ensure tuned service is started before applying profile
+        print("Starting tuned service...")
+        fn.enable_service("tuned")
+        fn.restart_service("tuned")
+
+        result = fn.subprocess.run(
+            ["tuned-adm", "profile", profile_name],
+            check=False,
+            shell=False,
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.STDOUT,
+        )
+        if result.returncode != 0:
+            print(result.stdout.decode().strip())
+            GLib.idle_add(
+                fn.show_in_app_notification, self, f"Could not set tuned profile to {profile_name}"
+            )
+            return
+
+        refresh_performance_status_label(self)
+        refresh_tuned_profile_status(self)
+        print(f"Tuned profile set to {profile_name}")
+        GLib.idle_add(
+            fn.show_in_app_notification, self, f"Tuned profile set to {profile_name}"
+        )
+    except Exception as error:
+        print(error)
+        GLib.idle_add(fn.show_in_app_notification, self, "Could not set tuned profile")
+
+
+def get_service_status(service):
+    """Return a status label that includes enabled oneshot services."""
+    if fn.check_service(service):
+        return "<b>enabled</b>"
+
+    try:
+        output = fn.subprocess.run(
+            ["systemctl", "is-enabled", service + ".service"],
+            check=False,
+            shell=False,
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.STDOUT,
+        )
+        status = output.stdout.decode().strip()
+        if status == "enabled":
+            return "<b>enabled</b>"
+        if status:
+            return status
+    except Exception as error:
+        print(error)
+
+    return "disabled"
 
 
 def refresh_performance_status_label(self):
@@ -276,136 +516,25 @@ def disable_tlp_if_present(self):
     )
 
 
-def enable_cpupower_service(widget, self):
-    print("Enabling cpupower service")
-    fn.enable_service("cpupower")
+def enable_tuned_ppd_service(widget, self):
+    print("Enabling tuned-ppd service")
+    fn.enable_service("tuned-ppd")
     refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Cpupower has been enabled")
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled")
 
 
-def disable_cpupower_service(widget, self):
-    print("Disabling cpupower service")
-    fn.disable_service("cpupower")
+def disable_tuned_ppd_service(widget, self):
+    print("Disabling tuned-ppd service")
+    fn.disable_service("tuned-ppd")
     refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Cpupower has been disabled")
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled")
 
 
-def restart_cpupower_service(widget, self):
-    print("Restart cpupower")
-    fn.restart_service("cpupower")
+def restart_tuned_ppd_service(widget, self):
+    print("Restart tuned-ppd")
+    fn.restart_service("tuned-ppd")
     refresh_performance_status_label(self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Cpupower has been restarted")
-
-
-def apply_cpu_power_profile(widget, self):
-    """Apply the selected CPU governor profile."""
-    choice = fn.get_combo_text(self.cpu_power_choices)
-    governor = CPU_POWER_PROFILES.get(choice)
-
-    if governor is None:
-        print("Unknown CPU power profile")
-        GLib.idle_add(fn.show_in_app_notification, self, "Unknown CPU power profile")
-        return
-
-    set_cpupower_governor(self, governor)
-
-
-def get_available_governors():
-    """Return governors exposed by the current kernel/CPU driver."""
-    try:
-        if fn.path.isfile(cpupower_governors):
-            with open(cpupower_governors, "r", encoding="utf-8") as f:
-                return f.read().split()
-    except Exception as error:
-        print(error)
-    return []
-
-
-def get_cpu_power_profile_choices():
-    """Return clean profile labels supported by this system."""
-    available_governors = get_available_governors()
-    if not available_governors:
-        return list(CPU_POWER_PROFILES)
-
-    choices = []
-    for label, governor in CPU_POWER_PROFILES.items():
-        if governor in available_governors:
-            choices.append(label)
-
-    return choices if choices else list(CPU_POWER_PROFILES)
-
-
-def get_cpu_power_profile_default(choices):
-    """Prefer Balanced when schedutil is available."""
-    balanced = "Balanced Mode (schedutil - recommended)"
-    if balanced in choices:
-        return choices.index(balanced)
-    return 0
-
-
-def set_cpupower_governor(self, governor):
-    """Apply and persist a cpupower CPU governor."""
-    if governor not in CPU_POWER_PROFILES.values():
-        print("Unknown cpupower governor : " + governor)
-        GLib.idle_add(fn.show_in_app_notification, self, "Unknown CPU power profile")
-        return
-
-    if not fn.check_package_installed("cpupower"):
-        fn.install_package(self, "cpupower")
-
-    if fn.shutil.which("cpupower") is None:
-        print("cpupower is not installed")
-        GLib.idle_add(fn.show_in_app_notification, self, "cpupower is not installed")
-        return
-
-    try:
-        result = fn.subprocess.run(
-            ["cpupower", "frequency-set", "-g", governor],
-            check=False,
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        if result.returncode != 0:
-            print(result.stdout.decode().strip())
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "Could not set CPU governor"
-            )
-            return
-
-        governor_line = "governor='" + governor + "'\n"
-        lines = []
-        if fn.path.isfile(cpupower_config):
-            with open(cpupower_config, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-
-        governor_found = False
-        new_lines = []
-        for line in lines:
-            stripped_line = line.strip()
-            if stripped_line.startswith("governor=") or stripped_line.startswith(
-                "#governor="
-            ):
-                new_lines.append(governor_line)
-                governor_found = True
-            else:
-                new_lines.append(line)
-
-        if not governor_found:
-            new_lines.append(governor_line)
-
-        with open(cpupower_config, "w", encoding="utf-8") as f:
-            f.writelines(new_lines)
-
-        fn.enable_service("cpupower")
-        refresh_performance_status_label(self)
-        print("CPU governor set to " + governor)
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "CPU governor set to " + governor
-        )
-    except Exception as error:
-        print(error)
-        GLib.idle_add(fn.show_in_app_notification, self, "Could not set CPU governor")
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
 
 
 def enable_zram(widget, self):
