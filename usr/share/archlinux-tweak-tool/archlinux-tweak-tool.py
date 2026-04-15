@@ -2173,7 +2173,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e sudo pacman -Syu",
+                "alacritty --hold -e bash -c 'sudo pacman -Syu; echo \"you can close this window now\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -2191,7 +2191,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e sudo pacman -Sc",
+                "alacritty --hold -e bash -c 'sudo pacman -Sc; echo \"you can close this window now\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
