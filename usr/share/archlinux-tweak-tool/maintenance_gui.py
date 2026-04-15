@@ -19,6 +19,32 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     hseparator.set_vexpand(False)
     hbox0.append(hseparator)
 
+    hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox22_label = Gtk.Label(xalign=0)
+    hbox22_label.set_text("Update system")
+    btn_update_system = Gtk.Button(label="Update")
+    btn_update_system.connect("clicked", self.on_click_update_system)
+    hbox22_label.set_margin_start(10)
+    hbox22_label.set_margin_end(10)
+    hbox22_label.set_hexpand(True)
+    hbox22.append(hbox22_label)
+    btn_update_system.set_margin_start(10)
+    btn_update_system.set_margin_end(10)
+    hbox22.append(btn_update_system)  # pack_end
+
+    hbox23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox23_label = Gtk.Label(xalign=0)
+    hbox23_label.set_text("Clean cache")
+    btn_clean_cache = Gtk.Button(label="Clean")
+    btn_clean_cache.connect("clicked", self.on_click_clean_cache)
+    hbox23_label.set_margin_start(10)
+    hbox23_label.set_margin_end(10)
+    hbox23_label.set_hexpand(True)
+    hbox23.append(hbox23_label)
+    btn_clean_cache.set_margin_start(10)
+    btn_clean_cache.set_margin_end(10)
+    hbox23.append(btn_clean_cache)  # pack_end
+
     hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox5_label = Gtk.Label(xalign=0)
     hbox5_label.set_text("Re-install archlinux-keyring")
@@ -384,7 +410,9 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
 
     vboxstack19.append(hbox1)
     vboxstack19.append(hbox0)
-    vboxstack19.append(hbox10)
+    vboxstack19.append(hbox22)
+    vboxstack19.append(hbox23)
+    #vboxstack19.append(hbox10)
     vboxstack19.append(hbox14)
     # vboxstack19.pack_start(hbox11, False, False, 0)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
