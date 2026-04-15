@@ -2169,6 +2169,42 @@ class Main(Gtk.ApplicationWindow):
         except:
             print("Install alacritty")
 
+    def on_click_update_system(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e sudo pacman -Syu",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Updating system")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "System update completed",
+            )
+        except:
+            print("Update system failed")
+
+    def on_click_clean_cache(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e sudo pacman -Sc",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Cleaning pacman cache")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Pacman cache cleaned",
+            )
+        except:
+            print("Clean cache failed")
+
     # ====================================================================
     #                       GRUB
     # ====================================================================
