@@ -427,21 +427,21 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     vboxstack19.append(hbox23)
     vboxstack19.append(hbox24)
     #vboxstack19.append(hbox10)
-    vboxstack19.append(hbox14)
-    # vboxstack19.pack_start(hbox11, False, False, 0)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox5)
-    vboxstack19.append(hbox2)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox3)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox4)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox40)
+    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
+        vboxstack19.append(hbox3)
+    # vboxstack19.pack_start(hbox11, False, False, 0)
+    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
+        vboxstack19.append(hbox5)
+    vboxstack19.append(hbox2)
     vboxstack19.append(hbox7)
     vboxstack19.append(hbox8)
     vboxstack19.append(hbox12)
     vboxstack19.append(hbox13)
+    vboxstack19.append(hbox14)
 
     if fn.distr == "arcolinux":
         hbox9.set_margin_start(20)
