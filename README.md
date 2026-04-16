@@ -2,6 +2,17 @@
 
 A comprehensive, user-friendly graphical application for customizing and maintaining Arch-based Linux systems. ATT provides an intuitive interface to manage system configurations, themes, packages, and services without requiring command-line expertise.
 
+# Installation
+
+Add the nemesis_repo to your /etc/pacman.conf and update your system.
+Then install sudo pacman -S archlinux-tweak-tool-gtk4-git.
+
+```
+[nemesis_repo]
+SigLevel = Never
+Server = https://erikdubois.github.io/$repo/$arch
+```
+
 ## Gallery
 
 ### Application Screenshots
