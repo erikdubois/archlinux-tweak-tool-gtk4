@@ -2,9 +2,18 @@
 
 A comprehensive, user-friendly graphical application for customizing and maintaining Arch-based Linux systems. ATT provides an intuitive interface to manage system configurations, themes, packages, and services without requiring command-line expertise.
 
-![screenshot](https://user-images.githubusercontent.com/36679406/202098693-3a94fa43-7916-42ba-9c1c-a4c7ecaff306.png)
+## Gallery
 
-![att-desktop](https://user-images.githubusercontent.com/36679406/232183963-1a5e2bc8-c0e4-422a-94b9-7a0185be3eea.png)
+### Application Screenshots
+
+| | |
+|---|---|---|
+| ![ATT Screenshot 1](images/att1.png) | ![ATT Screenshot 2](images/att2.png) | ![ATT Screenshot 3](images/att3.png) |
+| ![ATT Screenshot 4](images/att4.png) | ![ATT Screenshot 5](images/att5.png) | ![ATT Screenshot 6](images/att6.png) |
+| ![ATT Screenshot 7](images/att7.png) | ![ATT Screenshot 8](images/att8.png) | ![ATT Screenshot 9](images/att9.png) |
+| ![ATT Screenshot 10](images/att10.png) | ![ATT Screenshot 11](images/att11.png) | ![ATT Screenshot 12](images/att12.png) |
+
+![ATT Screenshot 13](images/att13.png)
 
 *Above: ArchLinux Tweak Tool interface in action.*
 
