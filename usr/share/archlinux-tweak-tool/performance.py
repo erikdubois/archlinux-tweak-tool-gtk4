@@ -140,8 +140,10 @@ def refresh_tuned_buttons(self):
     tuned_buttons = [
         "enable_tuned",
         "disable_tuned",
+        "restart_tuned",
         "enable_tuned_ppd",
         "disable_tuned_ppd",
+        "restart_tuned_ppd",
         "tuned_profile_choices",
         "btn_apply_tuned_profile",
     ]
@@ -194,6 +196,20 @@ def disable_tuned_ppd_service(widget, self):
     fn.disable_service("tuned-ppd")
     GLib.timeout_add(500, refresh_performance_status_label, self)
     GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled and stopped")
+
+
+def restart_tuned_service(widget, self):
+    print("Restarting tuned service")
+    fn.restart_service("tuned")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+
+
+def restart_tuned_ppd_service(widget, self):
+    print("Restarting tuned-ppd service")
+    fn.restart_service("tuned-ppd")
+    GLib.timeout_add(500, refresh_performance_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
 
 
 # ============================================================
