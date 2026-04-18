@@ -482,31 +482,24 @@ def gui(self, Gtk, vboxstack1, fn):
     hbox_aur_status.append(aur_status)
 
     hbox_aur_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    current_helper = pacman_functions.check_aur_helper()
+    yay_installed = fn.path.exists("/usr/bin/yay")
+    paru_installed = fn.path.exists("/usr/bin/paru")
 
-    if current_helper == "yay":
-        btn_aur_yay = Gtk.Button(label="Remove yay")
+    if yay_installed:
+        btn_aur_yay = Gtk.Button(label="Remove yay-git")
         btn_aur_yay.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "yay-git"))
-        btn_aur_paru = Gtk.Button(label="Install paru")
-        if chaotic_enabled:
-            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_pacman(self))
-        else:
-            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_git(self))
-    elif current_helper == "paru":
-        btn_aur_yay = Gtk.Button(label="Install yay")
+    else:
+        btn_aur_yay = Gtk.Button(label="Install yay-git")
         if chaotic_enabled:
             btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_pacman(self))
         else:
             btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_git(self))
-        btn_aur_paru = Gtk.Button(label="Remove paru")
+
+    if paru_installed:
+        btn_aur_paru = Gtk.Button(label="Remove paru-git")
         btn_aur_paru.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "paru-git"))
     else:
-        btn_aur_yay = Gtk.Button(label="Install yay")
-        if chaotic_enabled:
-            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_pacman(self))
-        else:
-            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_git(self))
-        btn_aur_paru = Gtk.Button(label="Install paru")
+        btn_aur_paru = Gtk.Button(label="Install paru-git")
         if chaotic_enabled:
             btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_pacman(self))
         else:
