@@ -68,11 +68,16 @@ def get_tuned_status_markup():
 
 
 def refresh_tuned_status_label(self):
-    """Refresh the visible tuned status label."""
+    """Refresh the visible tuned status labels."""
     if hasattr(self, "tuned_status_label"):
         GLib.idle_add(
             self.tuned_status_label.set_markup,
-            get_tuned_status_markup(),
+            "tuned service : " + get_service_status("tuned"),
+        )
+    if hasattr(self, "tuned_ppd_status_label"):
+        GLib.idle_add(
+            self.tuned_ppd_status_label.set_markup,
+            "tuned-ppd service : " + get_service_status("tuned-ppd"),
         )
 
 
@@ -111,28 +116,21 @@ def install_tuned_tools(widget, self):
 
     fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
     disable_tlp_if_present(self)
-    # Enable and start tuned services after installation
-    print("Enabling and starting tuned services")
-    fn.enable_service("tuned")
-    fn.enable_service("tuned-ppd")
-    # Defer status refresh to allow systemctl to update
     GLib.timeout_add(500, refresh_tuned_buttons, self)
     GLib.timeout_add(500, refresh_tuned_profile_choices, self)
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed and started")
+    GLib.timeout_add(500, refresh_tuned_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed")
 
 
 def remove_tuned_tools(widget, self):
     """Remove tuned and tuned-ppd."""
-    # Disable services before removing the package
     print("Disabling tuned services before removal")
     fn.disable_service("tuned")
     fn.disable_service("tuned-ppd")
     fn.remove_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
-    # Use GLib.idle_add to ensure status refresh happens after operations complete
     GLib.idle_add(refresh_tuned_buttons, self)
     GLib.idle_add(refresh_tuned_profile_status, self)
-    GLib.idle_add(refresh_performance_status_label, self)
+    GLib.idle_add(refresh_tuned_status_label, self)
 
 
 def refresh_tuned_buttons(self):
@@ -141,8 +139,6 @@ def refresh_tuned_buttons(self):
         "enable_tuned",
         "disable_tuned",
         "restart_tuned",
-        "enable_tuned_ppd",
-        "disable_tuned_ppd",
         "restart_tuned_ppd",
         "tuned_profile_choices",
         "btn_apply_tuned_profile",
@@ -169,33 +165,21 @@ def disable_tlp_if_present(self):
     )
 
 
-def enable_tuned_service(widget, self):
-    print("Enabling tuned service")
+def enable_tuned_services(widget, self):
+    print("Enabling tuned and tuned-ppd services")
     disable_tlp_if_present(self)
     fn.enable_service("tuned")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been enabled and started")
-
-
-def disable_tuned_service(widget, self):
-    print("Disabling tuned service")
-    fn.disable_service("tuned")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been disabled and stopped")
-
-
-def enable_tuned_ppd_service(widget, self):
-    print("Enabling tuned-ppd service")
     fn.enable_service("tuned-ppd")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been enabled and started")
+    GLib.timeout_add(500, refresh_tuned_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been enabled and started")
 
 
-def disable_tuned_ppd_service(widget, self):
-    print("Disabling tuned-ppd service")
+def disable_tuned_services(widget, self):
+    print("Disabling tuned and tuned-ppd services")
+    fn.disable_service("tuned")
     fn.disable_service("tuned-ppd")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been disabled and stopped")
+    GLib.timeout_add(500, refresh_tuned_status_label, self)
+    GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been disabled and stopped")
 
 
 def restart_tuned_service(widget, self):
@@ -604,6 +588,34 @@ def disable_zram(widget, self):
         print(error)
 
 
+def get_swapfile_size_label():
+    """Return the current swapfile size in GB if /swapfile exists."""
+    try:
+        if fn.path.isfile("/swapfile"):
+            size_bytes = fn.path.getsize("/swapfile")
+            return format(size_bytes / 1024 / 1024 / 1024, ".0f") + " GB"
+    except Exception as error:
+        print(error)
+    return None
+
+
+def refresh_swapfile_label(self):
+    """Refresh the swapfile label with current size."""
+    if not hasattr(self, "swapfile_label"):
+        return
+    size = get_swapfile_size_label()
+    if size:
+        GLib.idle_add(
+            self.swapfile_label.set_markup,
+            "Create or manage a swapfile at /swapfile - " + size + " <b>present</b>",
+        )
+    else:
+        GLib.idle_add(
+            self.swapfile_label.set_text,
+            "Create or manage a swapfile at /swapfile",
+        )
+
+
 def create_swapfile(widget, self):
     """Create a swapfile with the selected size."""
     try:
@@ -616,6 +628,7 @@ def create_swapfile(widget, self):
             stderr=fn.subprocess.STDOUT,
         )
         print("Creating swapfile: " + size)
+        GLib.idle_add(refresh_swapfile_label, self)
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -636,6 +649,7 @@ def remove_swapfile(widget, self):
             stderr=fn.subprocess.STDOUT,
         )
         print("Removing swapfile")
+        GLib.idle_add(refresh_swapfile_label, self)
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
