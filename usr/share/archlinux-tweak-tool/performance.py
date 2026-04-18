@@ -114,6 +114,7 @@ def install_tuned_tools(widget, self):
             except Exception as e:
                 print(f"Could not remove {file_path}: {e}")
 
+    remove_power_profiles_daemon_if_present(self)
     fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
     disable_tlp_if_present(self)
     GLib.timeout_add(500, refresh_tuned_buttons, self)
@@ -148,6 +149,20 @@ def refresh_tuned_buttons(self):
     for button_name in tuned_buttons:
         if hasattr(self, button_name):
             GLib.idle_add(getattr(self, button_name).set_sensitive, installed)
+
+
+def remove_power_profiles_daemon_if_present(self):
+    """power-profiles-daemon conflicts with tuned-ppd and must be removed first."""
+    if not fn.check_package_installed("power-profiles-daemon"):
+        return
+    print("power-profiles-daemon is installed - removing before installing tuned-ppd")
+    fn.disable_service("power-profiles-daemon")
+    fn.remove_package(self, "power-profiles-daemon")
+    GLib.idle_add(
+        fn.show_in_app_notification,
+        self,
+        "power-profiles-daemon removed (conflicts with tuned-ppd)",
+    )
 
 
 def disable_tlp_if_present(self):

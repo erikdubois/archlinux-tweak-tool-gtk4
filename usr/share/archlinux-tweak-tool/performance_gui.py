@@ -62,7 +62,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     hbox7b_label.set_markup(
         "<b>Tuned</b> - Dynamic system tuning for power management\n"
         "<b>Tuned-PPD</b> - Power Profiles Daemon integration for desktop environments\n"
-        "If <b>TLP</b> is installed, it will be disabled when Tuned is enabled (they conflict)."
+        "If <b>TLP</b> is installed, it will be disabled when Tuned is enabled (they conflict).\n"
+        "If <b>power-profiles-daemon</b> is installed, it will be removed before installing Tuned-PPD (they conflict)."
     )
     hbox7b_label.set_margin_start(10)
     hbox7b_label.set_margin_end(10)
