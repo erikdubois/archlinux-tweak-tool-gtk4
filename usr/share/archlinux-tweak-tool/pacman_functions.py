@@ -478,10 +478,10 @@ def install_yay_pacman(self):
 
 
 def install_yay_git(self):
-    """Install yay-git from source in a terminal window."""
+    """Install yay-git from source in a terminal window. Returns the Popen process."""
     fn.install_package(self, "alacritty base-devel git")
     build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
-    fn.subprocess.Popen(
+    return fn.subprocess.Popen(
         ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
         shell=False,
     )
@@ -494,10 +494,10 @@ def install_paru_pacman(self):
 
 
 def install_paru_git(self):
-    """Install paru-git from source in a terminal window."""
+    """Install paru-git from source in a terminal window. Returns the Popen process."""
     fn.install_package(self, "alacritty base-devel git")
     build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
-    fn.subprocess.Popen(
+    return fn.subprocess.Popen(
         ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
         shell=False,
     )

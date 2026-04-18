@@ -495,6 +495,10 @@ def gui(self, Gtk, vboxstack1, fn):
         chaotic_now = pacman_functions.is_chaotic_aur_enabled()
         aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_now else "disabled"))
 
+        def wait_and_refresh(process):
+            process.wait()
+            fn.GLib.idle_add(refresh_aur_buttons)
+
         if fn.path.exists("/usr/bin/yay"):
             btn_aur_yay.set_label("Remove yay-git")
             yay_handler_id[0] = btn_aur_yay.connect(
@@ -513,8 +517,11 @@ def gui(self, Gtk, vboxstack1, fn):
             else:
                 yay_handler_id[0] = btn_aur_yay.connect(
                     "clicked",
-                    lambda w: (pacman_functions.install_yay_git(self),
-                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                    lambda w: fn.threading.Thread(
+                        target=wait_and_refresh,
+                        args=(pacman_functions.install_yay_git(self),),
+                        daemon=True,
+                    ).start(),
                 )
 
         if fn.path.exists("/usr/bin/paru"):
@@ -535,8 +542,11 @@ def gui(self, Gtk, vboxstack1, fn):
             else:
                 paru_handler_id[0] = btn_aur_paru.connect(
                     "clicked",
-                    lambda w: (pacman_functions.install_paru_git(self),
-                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                    lambda w: fn.threading.Thread(
+                        target=wait_and_refresh,
+                        args=(pacman_functions.install_paru_git(self),),
+                        daemon=True,
+                    ).start(),
                 )
         return False
 
