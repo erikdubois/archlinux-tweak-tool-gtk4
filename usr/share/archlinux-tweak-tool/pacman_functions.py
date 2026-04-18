@@ -178,6 +178,12 @@ def toggle_test_repos(self, state, widget):
                     spin_on("[endeavouros]", lines, i, line)
                 if widget == "nemesis":
                     spin_on("[nemesis_repo]", lines, i, line)
+                # if widget == "xero":
+                #     spin_on("[xerolinux_repo]", lines, i, line)
+                # if widget == "xero_xl":
+                #     spin_on("[xerolinux_repo_xl]", lines, i, line)
+                # if widget == "xero_nv":
+                #     spin_on("[xerolinux_nvidia_repo]", lines, i, line)
 
                 if widget == "arco_testing":
                     pacman_on("[arcolinux_repo_testing]", lines, i, line)
@@ -232,6 +238,12 @@ def toggle_test_repos(self, state, widget):
                     spin_off("[endeavouros]", lines, i, line)
                 if widget == "nemesis":
                     spin_off("[nemesis_repo]", lines, i, line)
+                # if widget == "xero":
+                #     spin_off("[xerolinux_repo]", lines, i, line)
+                # if widget == "xero_xl":
+                #     spin_off("[xerolinux_repo_xl]", lines, i, line)
+                # if widget == "xero_nv":
+                #     spin_off("[xerolinux_nvidia_repo]", lines, i, line)
 
                 if widget == "arco_testing":
                     pacman_off("[arcolinux_repo_testing]", lines, i, line)
@@ -338,6 +350,13 @@ def toggle_mirrorlist(self, state, widget):
                         line,
                     )
 
+                # if widget == "arch":
+                #     pacman_on("[testing]", lines, i, line)
+                # if widget == "multilib":
+                #     pacman_on("[multilib-testing]", lines, i, line)
+                # if widget == "community":
+                #     pacman_on("[community-testing]", lines, i, line)
+
             with open(fn.arcolinux_mirrorlist, "w", encoding="utf-8") as f:
                 # lines = f.readlines()
                 f.writelines(lines)
@@ -415,6 +434,13 @@ def toggle_mirrorlist(self, state, widget):
                         line,
                     )
 
+                # if widget == "arch":
+                #     pacman_off("[testing]", lines, i, line)
+                # if widget == "multilib":
+                #     pacman_off("[multilib-testing]", lines, i, line)
+                # if widget == "community":
+                #     pacman_off("[community-testing]", lines, i, line)
+
             with open(fn.arcolinux_mirrorlist, "w", encoding="utf-8") as f:
                 f.writelines(lines)
                 f.close()
@@ -424,3 +450,105 @@ def toggle_mirrorlist(self, state, widget):
                 "ERROR!!",
                 "An error has occurred setting this setting 'toggle_test_repos Off'",
             )
+
+
+# ============================================================
+# AUR Helper Management
+# ============================================================
+
+def _get_regular_user():
+    """Get the first regular (non-system) user for running makepkg."""
+    try:
+        with open("/etc/passwd", "r") as f:
+            for line in f:
+                parts = line.strip().split(":")
+                if len(parts) >= 3:
+                    uid = int(parts[2])
+                    username = parts[0]
+                    if 1000 <= uid < 65534 and username not in ["nobody"]:
+                        return username
+    except Exception:
+        pass
+    return None
+
+
+def check_aur_helper():
+    """Check which AUR helper is installed (yay or paru)."""
+    if fn.path.exists("/usr/bin/yay"):
+        return "yay"
+    elif fn.path.exists("/usr/bin/paru"):
+        return "paru"
+    return None
+
+
+def is_chaotic_aur_enabled():
+    """Check if chaotic-aur repository is enabled in pacman.conf."""
+    return check_repo("[chaotic-aur]")
+
+
+def install_yay_pacman(self):
+    """Install yay from chaotic-aur repository."""
+    fn.install_package(self, "yay")
+    fn.show_in_app_notification(self, "yay installed successfully from chaotic-aur")
+
+
+def install_yay_git(self):
+    """Install yay-git from source."""
+    fn.install_package(self, "base-devel git")
+    try:
+        build_user = _get_regular_user()
+        if not build_user:
+            fn.show_in_app_notification(self, "Error: could not find regular user for building")
+            return
+
+        fn.subprocess.run(
+            ["git", "clone", "https://aur.archlinux.org/yay-git.git", "/tmp/yay-git"],
+            check=False,
+            shell=False,
+        )
+        fn.subprocess.run(
+            ["bash", "-c", f"cd /tmp/yay-git && sudo -u {build_user} makepkg -si --noconfirm"],
+            check=False,
+            shell=False,
+        )
+        fn.show_in_app_notification(self, "yay-git installed successfully")
+    except Exception as e:
+        print(f"Error installing yay-git: {e}")
+        fn.show_in_app_notification(self, f"Error installing yay-git: {e}")
+
+
+def install_paru_pacman(self):
+    """Install paru from chaotic-aur repository."""
+    fn.install_package(self, "paru")
+    fn.show_in_app_notification(self, "paru installed successfully from chaotic-aur")
+
+
+def install_paru_git(self):
+    """Install paru-git from source."""
+    fn.install_package(self, "base-devel git")
+    try:
+        build_user = _get_regular_user()
+        if not build_user:
+            fn.show_in_app_notification(self, "Error: could not find regular user for building")
+            return
+
+        fn.subprocess.run(
+            ["git", "clone", "https://aur.archlinux.org/paru-git.git", "/tmp/paru-git"],
+            check=False,
+            shell=False,
+        )
+        fn.subprocess.run(
+            ["bash", "-c", f"cd /tmp/paru-git && sudo -u {build_user} makepkg -si --noconfirm"],
+            check=False,
+            shell=False,
+        )
+        fn.show_in_app_notification(self, "paru-git installed successfully")
+    except Exception as e:
+        print(f"Error installing paru-git: {e}")
+        fn.show_in_app_notification(self, f"Error installing paru-git: {e}")
+
+
+def remove_aur_helper(self, helper):
+    """Remove the specified AUR helper."""
+    fn.remove_package(self, helper)
+    fn.show_in_app_notification(self, f"{helper} removed successfully")

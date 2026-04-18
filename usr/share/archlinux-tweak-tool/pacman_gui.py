@@ -2,6 +2,8 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import pacman_functions
+
 
 def gui(self, Gtk, vboxstack1, fn):
     """create a gui"""
@@ -455,6 +457,71 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack3.set_hexpand(True)
     hboxstack3.set_vexpand(True)
     vboxstack1.append(hboxstack3)
+
+    # =================AUR HELPER========================
+
+    hbox_aur_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hseparator_aur = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hseparator_aur.set_hexpand(True)
+    hbox_aur_sep.append(hseparator_aur)
+
+    hbox_aur_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    aur_title = Gtk.Label(xalign=0)
+    aur_title.set_text("AUR Helper")
+    aur_title.set_name("title")
+    aur_title.set_margin_start(10)
+    aur_title.set_margin_end(10)
+    hbox_aur_title.append(aur_title)
+
+    hbox_aur_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    aur_status = Gtk.Label(xalign=0)
+    chaotic_enabled = pacman_functions.is_chaotic_aur_enabled()
+    aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_enabled else "disabled"))
+    aur_status.set_margin_start(10)
+    aur_status.set_margin_end(10)
+    hbox_aur_status.append(aur_status)
+
+    hbox_aur_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    current_helper = pacman_functions.check_aur_helper()
+
+    if current_helper == "yay":
+        btn_aur_yay = Gtk.Button(label="Remove yay")
+        btn_aur_yay.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "yay-git"))
+        btn_aur_paru = Gtk.Button(label="Install paru")
+        if chaotic_enabled:
+            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_pacman(self))
+        else:
+            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_git(self))
+    elif current_helper == "paru":
+        btn_aur_yay = Gtk.Button(label="Install yay")
+        if chaotic_enabled:
+            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_pacman(self))
+        else:
+            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_git(self))
+        btn_aur_paru = Gtk.Button(label="Remove paru")
+        btn_aur_paru.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "paru-git"))
+    else:
+        btn_aur_yay = Gtk.Button(label="Install yay")
+        if chaotic_enabled:
+            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_pacman(self))
+        else:
+            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_git(self))
+        btn_aur_paru = Gtk.Button(label="Install paru")
+        if chaotic_enabled:
+            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_pacman(self))
+        else:
+            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_git(self))
+
+    hbox_aur_buttons.set_hexpand(True)
+    btn_aur_yay.set_hexpand(True)
+    btn_aur_paru.set_hexpand(True)
+    hbox_aur_buttons.append(btn_aur_yay)
+    hbox_aur_buttons.append(btn_aur_paru)
+
+    vboxstack1.append(hbox_aur_sep)
+    vboxstack1.append(hbox_aur_title)
+    vboxstack1.append(hbox_aur_status)
+    vboxstack1.append(hbox_aur_buttons)
 
     # =================FOOTER========================
 
