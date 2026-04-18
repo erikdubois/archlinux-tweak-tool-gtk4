@@ -1,0 +1,62 @@
+#!/bin/bash
+##################################################################################################################
+# Author    : Erik Dubois
+# Website   : https://www.erikdubois.be
+# Website   : https://www.arcolinux.info
+# Website   : https://www.arcolinux.com
+##################################################################################################################
+#
+#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
+#
+##################################################################################################################
+# Usage: build-yay-git <build_user>
+##################################################################################################################
+
+BUILD_USER=${1:-$SUDO_USER}
+
+tput setaf 6
+echo "================================================================"
+echo "  Building yay-git from AUR"
+echo "  Build user: $BUILD_USER"
+echo "================================================================"
+tput sgr0
+
+# Clean up any previous build
+if [ -d /tmp/yay-git ]; then
+    tput setaf 3
+    echo "Removing existing /tmp/yay-git..."
+    tput sgr0
+    rm -rf /tmp/yay-git
+fi
+
+tput setaf 2
+echo "Cloning yay-git from AUR..."
+tput sgr0
+sudo -u "$BUILD_USER" git clone https://aur.archlinux.org/yay-git.git /tmp/yay-git
+
+if [ $? -ne 0 ]; then
+    tput setaf 1
+    echo "ERROR: git clone failed"
+    tput sgr0
+    echo
+    echo "###############################################################################"
+    echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
+    echo "###############################################################################"
+    exit 1
+fi
+
+tput setaf 2
+echo "Building and installing yay-git..."
+tput sgr0
+cd /tmp/yay-git && sudo -u "$BUILD_USER" makepkg -si --noconfirm
+
+echo
+tput setaf 2
+echo "================================================================"
+echo "  yay-git build complete"
+echo "================================================================"
+tput sgr0
+echo
+echo "###############################################################################"
+echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
+echo "###############################################################################"

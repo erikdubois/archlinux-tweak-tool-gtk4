@@ -472,58 +472,46 @@ def is_chaotic_aur_enabled():
 
 
 def install_yay_pacman(self):
-    """Install yay from chaotic-aur repository."""
-    fn.install_package(self, "yay")
-    fn.show_in_app_notification(self, "yay installed successfully from chaotic-aur")
+    """Install yay-git from chaotic-aur repository."""
+    fn.install_package(self, "yay-git")
+    fn.show_in_app_notification(self, "yay-git installed successfully from chaotic-aur")
 
 
 def install_yay_git(self):
-    """Install yay-git from source."""
-    fn.install_package(self, "base-devel git")
-    try:
-        fn.subprocess.run(
-            ["git", "clone", "https://aur.archlinux.org/yay-git.git", "/tmp/yay-git"],
-            check=False,
-            shell=False,
-        )
-        fn.subprocess.run(
-            ["bash", "-c", f"cd /tmp/yay-git && sudo -u {fn.sudo_username} makepkg -si --noconfirm"],
-            check=False,
-            shell=False,
-        )
-        fn.show_in_app_notification(self, "yay-git installed successfully")
-    except Exception as e:
-        print(f"Error installing yay-git: {e}")
-        fn.show_in_app_notification(self, f"Error installing yay-git: {e}")
+    """Install yay-git from source in a terminal window."""
+    fn.install_package(self, "alacritty base-devel git")
+    build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
+    fn.subprocess.Popen(
+        ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+        shell=False,
+    )
 
 
 def install_paru_pacman(self):
-    """Install paru from chaotic-aur repository."""
-    fn.install_package(self, "paru")
-    fn.show_in_app_notification(self, "paru installed successfully from chaotic-aur")
+    """Install paru-git from chaotic-aur repository."""
+    fn.install_package(self, "paru-git")
+    fn.show_in_app_notification(self, "paru-git installed successfully from chaotic-aur")
 
 
 def install_paru_git(self):
-    """Install paru-git from source."""
-    fn.install_package(self, "base-devel git")
+    """Install paru-git from source in a terminal window."""
+    fn.install_package(self, "alacritty base-devel git")
+    build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
+    fn.subprocess.Popen(
+        ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+        shell=False,
+    )
+
+
+def remove_aur_helper(self, binary):
+    """Remove yay or paru by detecting the package that owns the binary."""
     try:
-        fn.subprocess.run(
-            ["git", "clone", "https://aur.archlinux.org/paru-git.git", "/tmp/paru-git"],
-            check=False,
-            shell=False,
-        )
-        fn.subprocess.run(
-            ["bash", "-c", f"cd /tmp/paru-git && sudo -u {fn.sudo_username} makepkg -si --noconfirm"],
-            check=False,
-            shell=False,
-        )
-        fn.show_in_app_notification(self, "paru-git installed successfully")
-    except Exception as e:
-        print(f"Error installing paru-git: {e}")
-        fn.show_in_app_notification(self, f"Error installing paru-git: {e}")
-
-
-def remove_aur_helper(self, helper):
-    """Remove the specified AUR helper."""
-    fn.remove_package(self, helper)
-    fn.show_in_app_notification(self, f"{helper} removed successfully")
+        result = fn.subprocess.check_output(
+            ["pacman", "-Qo", f"/usr/bin/{binary}"],
+            stderr=fn.subprocess.STDOUT,
+        ).decode().strip()
+        # output: "/usr/bin/yay is owned by yay-git 12.1.0-1"
+        pkg = result.split(" is owned by ")[1].split(" ")[0]
+        fn.remove_package(self, pkg)
+    except Exception:
+        fn.show_in_app_notification(self, f"Could not find package owning {binary}")

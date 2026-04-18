@@ -467,43 +467,80 @@ def gui(self, Gtk, vboxstack1, fn):
 
     hbox_aur_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     aur_title = Gtk.Label(xalign=0)
-    aur_title.set_text("AUR Helper")
-    aur_title.set_name("title")
+    aur_title.set_markup("<b>AUR Helper</b>")
     aur_title.set_margin_start(10)
     aur_title.set_margin_end(10)
     hbox_aur_title.append(aur_title)
 
     hbox_aur_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     aur_status = Gtk.Label(xalign=0)
-    chaotic_enabled = pacman_functions.is_chaotic_aur_enabled()
-    aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_enabled else "disabled"))
     aur_status.set_margin_start(10)
     aur_status.set_margin_end(10)
     hbox_aur_status.append(aur_status)
 
     hbox_aur_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    yay_installed = fn.path.exists("/usr/bin/yay")
-    paru_installed = fn.path.exists("/usr/bin/paru")
+    btn_aur_yay = Gtk.Button()
+    btn_aur_paru = Gtk.Button()
+    yay_handler_id = [None]
+    paru_handler_id = [None]
 
-    if yay_installed:
-        btn_aur_yay = Gtk.Button(label="Remove yay-git")
-        btn_aur_yay.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "yay-git"))
-    else:
-        btn_aur_yay = Gtk.Button(label="Install yay-git")
-        if chaotic_enabled:
-            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_pacman(self))
-        else:
-            btn_aur_yay.connect("clicked", lambda w: pacman_functions.install_yay_git(self))
+    def refresh_aur_buttons():
+        if yay_handler_id[0]:
+            btn_aur_yay.disconnect(yay_handler_id[0])
+            yay_handler_id[0] = None
+        if paru_handler_id[0]:
+            btn_aur_paru.disconnect(paru_handler_id[0])
+            paru_handler_id[0] = None
 
-    if paru_installed:
-        btn_aur_paru = Gtk.Button(label="Remove paru-git")
-        btn_aur_paru.connect("clicked", lambda w: pacman_functions.remove_aur_helper(self, "paru-git"))
-    else:
-        btn_aur_paru = Gtk.Button(label="Install paru-git")
-        if chaotic_enabled:
-            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_pacman(self))
+        chaotic_now = pacman_functions.is_chaotic_aur_enabled()
+        aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_now else "disabled"))
+
+        if fn.path.exists("/usr/bin/yay"):
+            btn_aur_yay.set_label("Remove yay-git")
+            yay_handler_id[0] = btn_aur_yay.connect(
+                "clicked",
+                lambda w: (pacman_functions.remove_aur_helper(self, "yay"),
+                           fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+            )
         else:
-            btn_aur_paru.connect("clicked", lambda w: pacman_functions.install_paru_git(self))
+            btn_aur_yay.set_label("Install yay-git")
+            if chaotic_now:
+                yay_handler_id[0] = btn_aur_yay.connect(
+                    "clicked",
+                    lambda w: (pacman_functions.install_yay_pacman(self),
+                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                )
+            else:
+                yay_handler_id[0] = btn_aur_yay.connect(
+                    "clicked",
+                    lambda w: (pacman_functions.install_yay_git(self),
+                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                )
+
+        if fn.path.exists("/usr/bin/paru"):
+            btn_aur_paru.set_label("Remove paru-git")
+            paru_handler_id[0] = btn_aur_paru.connect(
+                "clicked",
+                lambda w: (pacman_functions.remove_aur_helper(self, "paru"),
+                           fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+            )
+        else:
+            btn_aur_paru.set_label("Install paru-git")
+            if chaotic_now:
+                paru_handler_id[0] = btn_aur_paru.connect(
+                    "clicked",
+                    lambda w: (pacman_functions.install_paru_pacman(self),
+                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                )
+            else:
+                paru_handler_id[0] = btn_aur_paru.connect(
+                    "clicked",
+                    lambda w: (pacman_functions.install_paru_git(self),
+                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                )
+        return False
+
+    refresh_aur_buttons()
 
     hbox_aur_buttons.set_hexpand(True)
     btn_aur_yay.set_hexpand(True)
