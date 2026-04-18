@@ -438,7 +438,8 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     vboxstack27.append(hbox7e)
     vboxstack27.append(hbox10)
     vboxstack27.append(hbox11)
-    vboxstack27.append(hbox12)
+    if performance.get_root_filesystem_type() != "btrfs":
+        vboxstack27.append(hbox12)
     vboxstack27.append(hbox13)
     vboxstack27.append(hbox14)
     vboxstack27.append(hbox15)

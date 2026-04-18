@@ -603,6 +603,19 @@ def disable_zram(widget, self):
         print(error)
 
 
+def get_root_filesystem_type():
+    """Return the filesystem type of the root partition."""
+    try:
+        with open("/proc/mounts", "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 3 and parts[1] == "/":
+                    return parts[2]
+    except Exception as error:
+        print(error)
+    return ""
+
+
 def get_swapfile_size_label():
     """Return the current swapfile size in GB if /swapfile exists."""
     try:
