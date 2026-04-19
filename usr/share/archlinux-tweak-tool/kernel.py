@@ -358,6 +358,53 @@ def is_chaotic_aur_enabled():
     return False
 
 
+def get_boot_entries():
+    """Return list of (id, title) tuples from bootctl list."""
+    try:
+        output = subprocess.check_output(
+            ["bootctl", "list", "--no-pager"],
+            text=True, stderr=subprocess.DEVNULL
+        )
+        entries = []
+        current_id = None
+        current_title = None
+        for line in output.splitlines():
+            line = line.strip()
+            if line.startswith("id:"):
+                current_id = line.split(":", 1)[1].strip()
+            elif line.startswith("title:") and current_id:
+                current_title = line.split(":", 1)[1].strip()
+                entries.append((current_id, current_title))
+                current_id = None
+                current_title = None
+        return entries
+    except Exception:
+        return []
+
+
+def get_default_boot_entry():
+    """Return the current default boot entry ID."""
+    try:
+        output = subprocess.check_output(
+            ["bootctl", "status", "--no-pager"],
+            text=True, stderr=subprocess.DEVNULL
+        )
+        for line in output.splitlines():
+            if "Default Entry:" in line or "default entry:" in line.lower():
+                return line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def set_default_boot_entry(entry_id):
+    """Set the default boot entry using bootctl set-default."""
+    return subprocess.Popen(
+        ["bootctl", "set-default", entry_id],
+        shell=False
+    )
+
+
 INSTALL_SCRIPT = "/usr/share/archlinux-tweak-tool/data/any/install-kernel"
 REMOVE_SCRIPT = "/usr/share/archlinux-tweak-tool/data/any/remove-kernel"
 

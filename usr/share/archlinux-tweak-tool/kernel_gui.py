@@ -50,6 +50,9 @@ def gui(self, Gtk, vboxstack, fn):
     vboxstack.append(hbox_notice)
     vboxstack.append(hbox_running)
 
+    # ── Default boot entry ─────────────────────────────────
+    _build_boot_entry_selector(self, Gtk, vboxstack, fn)
+
     # ── Kernel rows ───────────────────────────────────────
     chaotic_enabled = kernel.is_chaotic_aur_enabled()
     installed_pkgs = kernel.get_installed_kernels()
@@ -209,3 +212,75 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs):
 
     vboxstack.append(hbox_label)
     vboxstack.append(hbox_row)
+
+
+def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
+    boot_entries = kernel.get_boot_entries()
+    if not boot_entries:
+        return
+
+    current_default = kernel.get_default_boot_entry()
+
+    hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    sep.set_hexpand(True)
+    hbox_sep.append(sep)
+
+    hbox_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl = Gtk.Label(xalign=0)
+    lbl.set_markup("<b>Default Boot Entry</b>")
+    lbl.set_margin_start(10)
+    lbl.set_margin_end(10)
+    hbox_hdr.append(lbl)
+
+    vboxstack.append(hbox_sep)
+    vboxstack.append(hbox_hdr)
+
+    hbox_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_row.set_margin_start(25)
+    hbox_row.set_margin_end(10)
+
+    combo = Gtk.ComboBoxText()
+    combo.set_hexpand(True)
+    combo_active_id = [None]
+    id_to_title = {}
+
+    for entry_id, title in boot_entries:
+        combo.append(entry_id, title)
+        id_to_title[entry_id] = title
+        if entry_id == current_default:
+            combo_active_id[0] = entry_id
+
+    if combo_active_id[0]:
+        combo.set_active_id(combo_active_id[0])
+
+    def on_set_default():
+        selected_id = combo.get_active_id()
+        if selected_id:
+            kernel.set_default_boot_entry(selected_id).wait()
+            fn.GLib.idle_add(lambda: _refresh_boot_entry_display(selected_id, lbl_current))
+
+    lbl_current = Gtk.Label(xalign=0)
+    lbl_current.set_margin_start(10)
+    if current_default:
+        lbl_current.set_markup(f"<small>Current: {current_default}</small>")
+    else:
+        lbl_current.set_markup("<small>Current: unknown</small>")
+
+    btn_set = Gtk.Button(label="Set as Default")
+    btn_set.set_size_request(160, -1)
+    btn_set.connect("clicked", lambda w: fn.threading.Thread(
+        target=on_set_default,
+        daemon=True,
+    ).start())
+
+    hbox_row.append(combo)
+    hbox_row.append(lbl_current)
+    hbox_row.append(btn_set)
+
+    vboxstack.append(hbox_row)
+
+
+def _refresh_boot_entry_display(entry_id, label_widget):
+    label_widget.set_markup(f"<small>Current: {entry_id}</small>")
+    return False
