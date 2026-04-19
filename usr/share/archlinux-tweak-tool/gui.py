@@ -48,6 +48,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     self.notification_revealer.set_reveal_child(False)
 
     self.notification_label = Gtk.Label()
+    self.notification_label.set_hexpand(True)
+    self.notification_label.set_margin_start(10)
+    self.notification_label.set_margin_end(10)
 
     pb_panel = GdkPixbuf.Pixbuf.new_from_file(base_dir + "/images/panel.png")
     texture_panel = Gdk.Texture.new_for_pixbuf(pb_panel)
