@@ -2759,8 +2759,14 @@ class Main(Gtk.ApplicationWindow):
     def on_click_software_flatpak(self, widget):
         try:
             fn.install_package(self, "alacritty flatpak")
+            script = (
+                "echo '=== Installed Flatpak apps ===' && "
+                "sudo -u " + fn.sudo_username + " flatpak list && "
+                "echo '' && "
+                "echo 'To install an app: flatpak install flathub <app-id>'"
+            )
             fn.subprocess.Popen(
-                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "flatpak", "list"],
+                ["alacritty", "--hold", "-e", "bash", "-c", script],
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
@@ -2789,8 +2795,14 @@ class Main(Gtk.ApplicationWindow):
                     stderr=fn.subprocess.STDOUT,
                 )
                 return
+            script = (
+                "echo '=== Installed Snap apps ===' && "
+                "sudo -u " + fn.sudo_username + " snap list && "
+                "echo '' && "
+                "echo 'To install an app: snap install <app-name>'"
+            )
             fn.subprocess.Popen(
-                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "snap", "list"],
+                ["alacritty", "--hold", "-e", "bash", "-c", script],
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )

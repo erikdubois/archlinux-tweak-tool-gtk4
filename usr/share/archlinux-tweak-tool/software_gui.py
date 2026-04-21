@@ -175,7 +175,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 11. Flatpak
     hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox10_label = Gtk.Label(xalign=0)
-    hbox10_label.set_text("Flatpak - Manage Flatpak apps")
+    hbox10_label.set_markup("Flatpak - Manage Flatpak apps" + (" <b>installed</b>" if fn.path.exists("/usr/bin/flatpak") else ""))
     btn10 = Gtk.Button(label="Open")
     btn10.connect("clicked", self.on_click_software_flatpak)
     hbox10_label.set_margin_start(20)
@@ -189,7 +189,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 12. Snapd
     hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox11_label = Gtk.Label(xalign=0)
-    hbox11_label.set_text("Snapd - Manage Snap apps")
+    hbox11_label.set_markup("Snapd - Manage Snap apps" + (" <b>installed</b>" if fn.path.exists("/usr/bin/snap") else ""))
     btn11 = Gtk.Button(label="Open")
     btn11.connect("clicked", self.on_click_software_snapd)
     hbox11_label.set_margin_start(20)
@@ -226,7 +226,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 14. Pacseek
     hbox13 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox13_label = Gtk.Label(xalign=0)
-    hbox13_label.set_text("Pacseek - TUI package searcher")
+    hbox13_label.set_markup("Pacseek - TUI package searcher" + (" <b>installed</b>" if fn.path.exists("/usr/bin/pacseek") else ""))
     btn13 = Gtk.Button(label="Open")
     btn13.connect("clicked", self.on_click_software_pacseek)
     hbox13_label.set_margin_start(20)
@@ -240,7 +240,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 15. Pacui
     hbox14 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox14_label = Gtk.Label(xalign=0)
-    hbox14_label.set_text("Pacui - TUI pacman wrapper")
+    hbox14_label.set_markup("Pacui - TUI pacman wrapper" + (" <b>installed</b>" if fn.path.exists("/usr/bin/pacui") else ""))
     btn14 = Gtk.Button(label="Open")
     btn14.connect("clicked", self.on_click_software_pacui_open)
     hbox14_label.set_margin_start(20)
