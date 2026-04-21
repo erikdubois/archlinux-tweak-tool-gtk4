@@ -2819,8 +2819,14 @@ class Main(Gtk.ApplicationWindow):
                     stderr=fn.subprocess.STDOUT,
                 )
                 return
+            import pwd
+            uid = pwd.getpwnam(fn.sudo_username).pw_uid
             fn.subprocess.call(
-                "sudo -E -u " + fn.sudo_username + " app-manager &",
+                "sudo -E -u " + fn.sudo_username +
+                " HOME=/home/" + fn.sudo_username +
+                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
+                " app-manager &",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
