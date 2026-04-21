@@ -31,10 +31,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 1. Pamac
     hbox1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox1_label = Gtk.Label(xalign=0)
-    hbox1_label.set_text("Pamac Aur")
+    hbox1_label.set_markup("Pamac Aur" + (" <b>installed</b>" if fn.path.exists("/usr/bin/pamac-manager") else ""))
     btn1 = Gtk.Button(label="Launch")
     btn1.connect("clicked", self.on_click_software_pamac)
-    hbox1_label.set_margin_start(10)
+    hbox1_label.set_margin_start(20)
     hbox1_label.set_margin_end(10)
     hbox1_label.set_hexpand(True)
     hbox1.append(hbox1_label)
@@ -45,10 +45,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 2. Octopi
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox2_label = Gtk.Label(xalign=0)
-    hbox2_label.set_text("Octopi - Qt package manager")
+    hbox2_label.set_markup("Octopi - Qt package manager" + (" <b>installed</b>" if fn.path.exists("/usr/bin/octopi") else ""))
     btn2 = Gtk.Button(label="Launch")
     btn2.connect("clicked", self.on_click_software_octopi)
-    hbox2_label.set_margin_start(10)
+    hbox2_label.set_margin_start(20)
     hbox2_label.set_margin_end(10)
     hbox2_label.set_hexpand(True)
     hbox2.append(hbox2_label)
@@ -59,10 +59,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 3. GNOME Software
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox3_label = Gtk.Label(xalign=0)
-    hbox3_label.set_text("GNOME Software - GTK software center")
+    hbox3_label.set_markup("GNOME Software - GTK software center" + (" <b>installed</b>" if fn.path.exists("/usr/bin/gnome-software") else ""))
     btn3 = Gtk.Button(label="Launch")
     btn3.connect("clicked", self.on_click_software_gnome)
-    hbox3_label.set_margin_start(10)
+    hbox3_label.set_margin_start(20)
     hbox3_label.set_margin_end(10)
     hbox3_label.set_hexpand(True)
     hbox3.append(hbox3_label)
@@ -73,10 +73,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 4. KDE Discover
     hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox4_label = Gtk.Label(xalign=0)
-    hbox4_label.set_text("KDE Discover - KDE software center (pulls KDE deps)")
+    hbox4_label.set_markup("KDE Discover - KDE software center (pulls KDE deps)" + (" <b>installed</b>" if fn.path.exists("/usr/bin/plasma-discover") else ""))
     btn4 = Gtk.Button(label="Launch")
     btn4.connect("clicked", self.on_click_software_discover)
-    hbox4_label.set_margin_start(10)
+    hbox4_label.set_margin_start(20)
     hbox4_label.set_margin_end(10)
     hbox4_label.set_hexpand(True)
     hbox4.append(hbox4_label)
@@ -87,10 +87,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 5. Bauh
     hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox5_label = Gtk.Label(xalign=0)
-    hbox5_label.set_text("Bauh - Multi-format package manager")
+    hbox5_label.set_markup("Bauh - Multi-format package manager" + (" <b>installed</b>" if fn.path.exists("/usr/bin/bauh") else ""))
     btn5 = Gtk.Button(label="Launch")
     btn5.connect("clicked", self.on_click_software_bauh)
-    hbox5_label.set_margin_start(10)
+    hbox5_label.set_margin_start(20)
     hbox5_label.set_margin_end(10)
     hbox5_label.set_hexpand(True)
     hbox5.append(hbox5_label)
@@ -107,13 +107,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     hbox_section2_label.set_margin_bottom(10)
     hbox_section2.append(hbox_section2_label)
 
-    # 6. Yay
+    # 6. Yay-git
     hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox6_label = Gtk.Label(xalign=0)
-    hbox6_label.set_text("Yay - AUR helper (Go-based)")
-    btn6 = Gtk.Button(label="Open")
+    hbox6_label.set_markup("Yay-git - AUR helper (Go-based)" + (" <b>installed</b>" if fn.path.exists("/usr/bin/yay") else ""))
+    btn6 = Gtk.Button(label="Install")
     btn6.connect("clicked", self.on_click_software_yay)
-    hbox6_label.set_margin_start(10)
+    hbox6_label.set_margin_start(20)
     hbox6_label.set_margin_end(10)
     hbox6_label.set_hexpand(True)
     hbox6.append(hbox6_label)
@@ -121,13 +121,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     btn6.set_margin_end(10)
     hbox6.append(btn6)
 
-    # 7. Paru
+    # 7. Paru-git
     hbox7 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox7_label = Gtk.Label(xalign=0)
-    hbox7_label.set_text("Paru - AUR helper (Rust-based)")
-    btn7 = Gtk.Button(label="Open")
+    hbox7_label.set_markup("Paru-git - AUR helper (Rust-based)" + (" <b>installed</b>" if fn.path.exists("/usr/bin/paru") else ""))
+    btn7 = Gtk.Button(label="Install")
     btn7.connect("clicked", self.on_click_software_paru)
-    hbox7_label.set_margin_start(10)
+    hbox7_label.set_margin_start(20)
     hbox7_label.set_margin_end(10)
     hbox7_label.set_hexpand(True)
     hbox7.append(hbox7_label)
@@ -138,10 +138,10 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 8. Trizen
     hbox8 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox8_label = Gtk.Label(xalign=0)
-    hbox8_label.set_text("Trizen - AUR helper (Perl-based)")
-    btn8 = Gtk.Button(label="Open")
+    hbox8_label.set_markup("Trizen - AUR helper (Perl-based)" + (" <b>installed</b>" if fn.path.exists("/usr/bin/trizen") else ""))
+    btn8 = Gtk.Button(label="Install")
     btn8.connect("clicked", self.on_click_software_trizen)
-    hbox8_label.set_margin_start(10)
+    hbox8_label.set_margin_start(20)
     hbox8_label.set_margin_end(10)
     hbox8_label.set_hexpand(True)
     hbox8.append(hbox8_label)
@@ -149,13 +149,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     btn8.set_margin_end(10)
     hbox8.append(btn8)
 
-    # 9. Pikaur
+    # 9. Pikaur-git
     hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox9_label = Gtk.Label(xalign=0)
-    hbox9_label.set_text("Pikaur - AUR helper (Python-based)")
-    btn9 = Gtk.Button(label="Open")
+    hbox9_label.set_markup("Pikaur-git - AUR helper (Python-based)" + (" <b>installed</b>" if fn.path.exists("/usr/bin/pikaur") else ""))
+    btn9 = Gtk.Button(label="Install")
     btn9.connect("clicked", self.on_click_software_pikaur)
-    hbox9_label.set_margin_start(10)
+    hbox9_label.set_margin_start(20)
     hbox9_label.set_margin_end(10)
     hbox9_label.set_hexpand(True)
     hbox9.append(hbox9_label)
@@ -172,13 +172,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     hbox_section3_label.set_margin_bottom(10)
     hbox_section3.append(hbox_section3_label)
 
-    # 10. Flatpak
+    # 11. Flatpak
     hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox10_label = Gtk.Label(xalign=0)
     hbox10_label.set_text("Flatpak - Manage Flatpak apps")
     btn10 = Gtk.Button(label="Open")
     btn10.connect("clicked", self.on_click_software_flatpak)
-    hbox10_label.set_margin_start(10)
+    hbox10_label.set_margin_start(20)
     hbox10_label.set_margin_end(10)
     hbox10_label.set_hexpand(True)
     hbox10.append(hbox10_label)
@@ -186,13 +186,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     btn10.set_margin_end(10)
     hbox10.append(btn10)
 
-    # 11. Snapd
+    # 12. Snapd
     hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox11_label = Gtk.Label(xalign=0)
     hbox11_label.set_text("Snapd - Manage Snap apps")
     btn11 = Gtk.Button(label="Open")
     btn11.connect("clicked", self.on_click_software_snapd)
-    hbox11_label.set_margin_start(10)
+    hbox11_label.set_margin_start(20)
     hbox11_label.set_margin_end(10)
     hbox11_label.set_hexpand(True)
     hbox11.append(hbox11_label)
@@ -200,13 +200,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     btn11.set_margin_end(10)
     hbox11.append(btn11)
 
-    # 12. AppImageLauncher
+    # 13. AppImageLauncher
     hbox12 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox12_label = Gtk.Label(xalign=0)
     hbox12_label.set_text("AppImageLauncher - Manage AppImages")
     btn12 = Gtk.Button(label="Launch")
     btn12.connect("clicked", self.on_click_software_appimagelauncher)
-    hbox12_label.set_margin_start(10)
+    hbox12_label.set_margin_start(20)
     hbox12_label.set_margin_end(10)
     hbox12_label.set_hexpand(True)
     hbox12.append(hbox12_label)
@@ -223,13 +223,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     hbox_section4_label.set_margin_bottom(10)
     hbox_section4.append(hbox_section4_label)
 
-    # 13. Pacseek
+    # 14. Pacseek
     hbox13 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox13_label = Gtk.Label(xalign=0)
     hbox13_label.set_text("Pacseek - TUI package searcher")
     btn13 = Gtk.Button(label="Open")
     btn13.connect("clicked", self.on_click_software_pacseek)
-    hbox13_label.set_margin_start(10)
+    hbox13_label.set_margin_start(20)
     hbox13_label.set_margin_end(10)
     hbox13_label.set_hexpand(True)
     hbox13.append(hbox13_label)
@@ -237,13 +237,13 @@ def gui(self, Gtk, vboxstack_software, fn):
     btn13.set_margin_end(10)
     hbox13.append(btn13)
 
-    # 14. Pacui
+    # 15. Pacui
     hbox14 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox14_label = Gtk.Label(xalign=0)
     hbox14_label.set_text("Pacui - TUI pacman wrapper")
     btn14 = Gtk.Button(label="Open")
-    btn14.connect("clicked", self.on_click_software_pacui)
-    hbox14_label.set_margin_start(10)
+    btn14.connect("clicked", self.on_click_software_pacui_open)
+    hbox14_label.set_margin_start(20)
     hbox14_label.set_margin_end(10)
     hbox14_label.set_hexpand(True)
     hbox14.append(hbox14_label)
