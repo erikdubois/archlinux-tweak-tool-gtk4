@@ -2769,7 +2769,26 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_software_snapd(self, widget):
         try:
-            fn.install_package(self, "alacritty snapd")
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/snap"):
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(
+                        fn.show_in_app_notification,
+                        self,
+                        "No AUR helper found - install yay, paru, trizen or pikaur first",
+                    )
+                    return
+                fn.subprocess.Popen(
+                    ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, aur_helper, "-S", "snapd"],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                return
             fn.subprocess.Popen(
                 ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "snap", "list"],
                 stdout=fn.subprocess.PIPE,
@@ -2780,14 +2799,33 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_software_appimagelauncher(self, widget):
         try:
-            fn.install_package(self, "appimagelauncher")
+            if not fn.path.exists("/usr/bin/app-manager"):
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(
+                        fn.show_in_app_notification,
+                        self,
+                        "No AUR helper found - install yay, paru, trizen or pikaur first",
+                    )
+                    return
+                fn.install_package(self, "alacritty")
+                fn.subprocess.Popen(
+                    ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, aur_helper, "-S", "appmanager"],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                return
             fn.subprocess.call(
-                "sudo -E -u " + fn.sudo_username + " AppImageLauncher &",
+                "sudo -E -u " + fn.sudo_username + " app-manager &",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            GLib.idle_add(fn.show_in_app_notification, self, "AppImageLauncher launched")
+            GLib.idle_add(fn.show_in_app_notification, self, "App-manager launched")
         except Exception as error:
             print(error)
 

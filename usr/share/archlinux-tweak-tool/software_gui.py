@@ -203,7 +203,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # 13. AppImageLauncher
     hbox12 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox12_label = Gtk.Label(xalign=0)
-    hbox12_label.set_text("AppImageLauncher - Manage AppImages")
+    hbox12_label.set_text("App-manager - Manage AppImages")
     btn12 = Gtk.Button(label="Launch")
     btn12.connect("clicked", self.on_click_software_appimagelauncher)
     hbox12_label.set_margin_start(20)
