@@ -33,6 +33,8 @@ import services_gui
 import shell_gui
 import themer_gui
 import user_gui
+import logging_gui
+import system_gui
 import packages_gui
 
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
@@ -99,6 +101,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack26 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack27 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack28 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_logging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 ATT
@@ -203,6 +207,10 @@ themes</i> you can customize <b>fastfetch</b>"
 
     kernel_gui.gui(self, Gtk, vboxstack28, fn)
 
+    logging_gui.gui(self, Gtk, vboxstack_logging, fn)
+
+    system_gui.gui(self, Gtk, vboxstack_system, fn)
+
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
@@ -216,6 +224,8 @@ themes</i> you can customize <b>fastfetch</b>"
     stack.add_titled(vboxstack8, "stack4", "Fastfetch")  # fastfetch config
 
     stack.add_titled(vboxstack28, "stack28", "Kernels")  # kernel manager
+
+    stack.add_titled(vboxstack_logging, "stack_logging", "Logging")  # log investigator
 
     stack.add_titled(vboxstack19, "stack19", "Maintenance")  # Maintenance
 
@@ -232,6 +242,8 @@ themes</i> you can customize <b>fastfetch</b>"
         stack.add_titled(vboxstack14, "stack14", "Services")  # services
 
     stack.add_titled(vboxstack23, "stack23", "Shells")  # shell
+
+    stack.add_titled(vboxstack_system, "stack_system", "System")  # system inspector
 
     stack.add_titled(vboxstack10, "stack11", "Themer")  # Themer
 

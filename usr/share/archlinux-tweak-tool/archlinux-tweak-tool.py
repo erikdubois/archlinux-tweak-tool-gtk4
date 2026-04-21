@@ -2242,6 +2242,372 @@ class Main(Gtk.ApplicationWindow):
             print("Remove pacman lock failed")
 
     # ====================================================================
+    #                   INVESTIGATE YOUR LOGS
+    # ====================================================================
+
+    def on_click_log_current_boot(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b 0 | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_prev_boot(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -1 | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_errors(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -p err | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_recent(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                'alacritty -e bash -c \'SYSTEMD_COLORS=1 journalctl --since "20 minutes ago" | fzf --ansi\'',
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_xorg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /var/log/Xorg.0.log | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_pacman(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /var/log/pacman.log | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_xsession(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            cmd = (
+                "alacritty -e bash -c '"
+                "found=; "
+                "for f in ~/.xsession-errors ~/.local/share/xorg/Xorg.0.log /var/log/Xorg.0.log; do "
+                "  [ -s \"$f\" ] && { found=$f; break; }; "
+                "done; "
+                "if [ -n \"$found\" ]; then bat --color=always \"$found\" | fzf --ansi; "
+                "else echo \"No X session error file found\"; read; fi'"
+            )
+            fn.subprocess.call(
+                cmd,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_blame(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'systemd-analyze blame | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_dmesg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    # ====================================================================
+    #                       SYSTEM INSPECTION
+    # ====================================================================
+
+    def on_click_system_cpu(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lscpu | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_memory_disk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\"; df -h'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsblk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsblk -f -o+SIZE | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lspci(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lspci -vnn | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsusb(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsusb | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsmod(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsmod | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_inxi(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "inxi")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'inxi -Fxx -c 2 --za | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_hwinfo(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "hwinfo")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'hwinfo --short | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_fdisk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo fdisk -l | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_fstab(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /etc/fstab | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_hostnamectl(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'hostnamectl'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_localectl(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'localectl'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --type=service | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services_enabled(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-unit-files --type=service --state=enabled | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services_failed(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --failed | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_dmesg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_gparted(self, widget):
+        try:
+            fn.install_package(self, "gparted")
+            fn.subprocess.call(
+                "sudo gparted &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "GParted launched",
+            )
+        except Exception as error:
+            print(error)
+
+    # ====================================================================
     #                       GRUB
     # ====================================================================
 
