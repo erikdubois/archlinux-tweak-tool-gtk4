@@ -2731,3 +2731,54 @@ def monitor_messages_queue(self):
             )
     except Exception as e:
         logger.error("Exception in monitor_messages_queue(): %s" % e)
+
+
+# =====================================================
+#        AUR HELPER & TERMINAL LAUNCH UTILITIES
+# =====================================================
+
+def get_aur_helper():
+    for helper in ["yay", "paru", "trizen", "pikaur"]:
+        if path.exists("/usr/bin/" + helper):
+            return helper
+    return None
+
+
+def launch_pacman_install_in_terminal(packages):
+    script = f"pacman -S --noconfirm {packages}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def launch_pacman_remove_in_terminal(packages):
+    script = f"pacman -Rcs --noconfirm {packages}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def launch_aur_install_in_terminal(aur_helper, package, username=None):
+    if username is None:
+        username = sudo_username
+    script = f"sudo -u {username} {aur_helper} -S --noconfirm {package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def launch_aur_remove_in_terminal(aur_helper, package, username=None):
+    if username is None:
+        username = sudo_username
+    script = f"sudo -u {username} {aur_helper} -Rs --noconfirm {package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def launch_npm_install_in_terminal(npm_package, username=None):
+    if username is None:
+        username = sudo_username
+    user_home = f"/home/{username}"
+    script = f"sudo -u {username} HOME={user_home} npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def launch_npm_remove_in_terminal(npm_package, username=None):
+    if username is None:
+        username = sudo_username
+    user_home = f"/home/{username}"
+    script = f"sudo -u {username} HOME={user_home} npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
