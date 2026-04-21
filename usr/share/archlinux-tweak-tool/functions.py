@@ -2737,6 +2737,32 @@ def monitor_messages_queue(self):
 #        AUR HELPER & TERMINAL LAUNCH UTILITIES
 # =====================================================
 
+def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification):
+    def _wait():
+        try:
+            process.wait()
+            time.sleep(1)
+            if path.exists(binary_path):
+                GLib.idle_add(label_widget.set_markup, installed_markup)
+                GLib.idle_add(show_in_app_notification, self_ref, notification)
+        except Exception as e:
+            print(f"Error: {e}")
+    threading.Thread(target=_wait, daemon=True).start()
+
+
+def wait_remove_and_update(process, binary_path, label_widget, plain_markup, self_ref, notification):
+    def _wait():
+        try:
+            process.wait()
+            time.sleep(1)
+            if not path.exists(binary_path):
+                GLib.idle_add(label_widget.set_markup, plain_markup)
+                GLib.idle_add(show_in_app_notification, self_ref, notification)
+        except Exception as e:
+            print(f"Error: {e}")
+    threading.Thread(target=_wait, daemon=True).start()
+
+
 def get_aur_helper():
     for helper in ["yay", "paru", "trizen", "pikaur"]:
         if path.exists("/usr/bin/" + helper):
