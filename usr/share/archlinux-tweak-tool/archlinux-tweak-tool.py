@@ -2858,6 +2858,283 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    # ====================================================================
+    #                       AI TOOLS
+    # ====================================================================
+
+    def on_click_ai_ollama(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/ollama"):
+                script = "pacman -Rcs --noconfirm ollama; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner")
+                    GLib.idle_add(self.btn_ai_ollama.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "ollama removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "ollama removal started")
+            else:
+                has_nvidia = fn.path.exists("/dev/nvidia0") or fn.path.exists("/usr/bin/nvidia-smi")
+                pkgs = "ollama ollama-cuda" if has_nvidia else "ollama"
+                script = f"pacman -S --noconfirm --needed {pkgs}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/ollama"):
+                        GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_ollama.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "ollama installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "ollama installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_webui(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/open-webui"):
+                script = "pacman -Rcs --noconfirm open-webui; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama")
+                    GLib.idle_add(self.btn_ai_webui.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "open-webui removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "open-webui removal started")
+            else:
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                    return
+                script = f"{aur_helper} -S open-webui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/open-webui"):
+                        GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_webui.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_claude(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/claude"):
+                script = "pacman -Rcs --noconfirm claude-code; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_claude.set_markup, "Claude Code - Anthropic CLI")
+                    GLib.idle_add(self.btn_ai_claude.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "claude-code removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "claude-code removal started")
+            else:
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                    return
+                script = f"{aur_helper} -S claude-code; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/claude"):
+                        GLib.idle_add(self.lbl_ai_claude.set_markup, "Claude Code - Anthropic CLI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_claude.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "claude-code installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "claude-code installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_aider(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/aider"):
+                script = "pacman -Rcs --noconfirm aider; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming")
+                    GLib.idle_add(self.btn_ai_aider.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "aider removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "aider removal started")
+            else:
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                    return
+                script = f"{aur_helper} -S aider; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/aider"):
+                        GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_aider.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "aider installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "aider installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_codex(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/codex") or fn.path.exists("/usr/local/bin/codex"):
+                script = "npm uninstall -g @openai/codex; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI")
+                    GLib.idle_add(self.btn_ai_codex.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "Codex removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Codex removal started")
+            else:
+                script = "npm install -g @openai/codex; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/codex") or fn.path.exists("/usr/local/bin/codex"):
+                        GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_codex.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Codex installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Codex installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_gemini(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/gemini") or fn.path.exists("/usr/local/bin/gemini"):
+                script = "npm uninstall -g @google/gemini-cli; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
+                    GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal started")
+            else:
+                script = "npm install -g @google/gemini-cli; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/gemini") or fn.path.exists("/usr/local/bin/gemini"):
+                        GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_chatgpt(self, widget):
+        try:
+            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://chatgpt.com &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_claude_web(self, widget):
+        try:
+            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://claude.ai &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_gemini_web(self, widget):
+        try:
+            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://gemini.google.com &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_perplexity(self, widget):
+        try:
+            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://perplexity.ai &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_comfyui(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/comfyui"):
+                script = "pacman -Rcs --noconfirm comfyui; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_comfyui.set_markup, "ComfyUI - Node-based diffusion UI")
+                    GLib.idle_add(self.btn_ai_comfyui.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "comfyui removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "comfyui removal started")
+            else:
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                    return
+                script = f"{aur_helper} -S comfyui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/comfyui"):
+                        GLib.idle_add(self.lbl_ai_comfyui.set_markup, "ComfyUI - Node-based diffusion UI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_comfyui.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "comfyui installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "comfyui installation started")
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_invokeai(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/invokeai"):
+                script = "pacman -Rcs --noconfirm invokeai; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_removal():
+                    process.wait()
+                    GLib.idle_add(self.lbl_ai_invokeai.set_markup, "InvokeAI - Stable Diffusion UI")
+                    GLib.idle_add(self.btn_ai_invokeai.set_label, "Install")
+                    GLib.idle_add(fn.show_in_app_notification, self, "invokeai removal complete")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "invokeai removal started")
+            else:
+                aur_helper = None
+                for helper in ["yay", "paru", "trizen", "pikaur"]:
+                    if fn.path.exists("/usr/bin/" + helper):
+                        aur_helper = helper
+                        break
+                if aur_helper is None:
+                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                    return
+                script = f"{aur_helper} -S invokeai; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                def wait_install():
+                    process.wait()
+                    if fn.path.exists("/usr/bin/invokeai"):
+                        GLib.idle_add(self.lbl_ai_invokeai.set_markup, "InvokeAI - Stable Diffusion UI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_invokeai.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "invokeai installation complete")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "invokeai installation started")
+        except Exception as error:
+            print(error)
 
     # ====================================================================
     #                       GRUB

@@ -33,6 +33,7 @@ import services_gui
 import shell_gui
 import themer_gui
 import user_gui
+import ai_gui
 import logging_gui
 import network_gui
 import system_gui
@@ -103,6 +104,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack26 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack27 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack28 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_ai = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_logging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_network = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -211,6 +213,8 @@ themes</i> you can customize <b>fastfetch</b>"
 
     kernel_gui.gui(self, Gtk, vboxstack28, fn)
 
+    ai_gui.gui(self, Gtk, vboxstack_ai, fn)
+
     logging_gui.gui(self, Gtk, vboxstack_logging, fn)
 
     network_gui.gui(self, Gtk, vboxstack_network, fn)
@@ -222,6 +226,8 @@ themes</i> you can customize <b>fastfetch</b>"
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
+    stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
+
     stack.add_titled(vboxstack25, "stack25", "Att")  # Design
 
     stack.add_titled(vboxstack13, "stack13", "Autostart")  # Autostart
