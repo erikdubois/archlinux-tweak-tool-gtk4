@@ -2614,6 +2614,19 @@ class Main(Gtk.ApplicationWindow):
     def on_click_software_octopi(self, widget):
         try:
             fn.install_package(self, "octopi")
+
+            def wait_install():
+                try:
+                    import time
+                    time.sleep(2)
+                    if fn.path.exists("/usr/bin/octopi"):
+                        GLib.idle_add(self.lbl_software_octopi.set_markup, "Octopi - Qt package manager <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "octopi installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+
             fn.subprocess.call(
                 "sudo -E -u " + fn.sudo_username + " octopi &",
                 shell=True,
@@ -2633,6 +2646,19 @@ class Main(Gtk.ApplicationWindow):
                     "Installing pamac-aur - this may take a moment",
                 )
                 fn.install_package(self, "pamac-aur")
+
+                def wait_install():
+                    try:
+                        import time
+                        time.sleep(2)
+                        if fn.path.exists("/usr/bin/pamac-manager"):
+                            GLib.idle_add(self.lbl_software_pamac.set_markup, "Pamac Aur <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur installed")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+
             fn.subprocess.call(
                 "sudo -E -u " + fn.sudo_username + " pamac-manager &",
                 shell=True,
@@ -2647,6 +2673,19 @@ class Main(Gtk.ApplicationWindow):
         try:
             import pwd
             fn.install_package(self, "gnome-software")
+
+            def wait_install():
+                try:
+                    import time
+                    time.sleep(2)
+                    if fn.path.exists("/usr/bin/gnome-software"):
+                        GLib.idle_add(self.lbl_software_gnome.set_markup, "GNOME Software - GTK software center <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "gnome-software installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+
             uid = pwd.getpwnam(fn.sudo_username).pw_uid
             fn.subprocess.call(
                 "sudo -E -u " + fn.sudo_username +
@@ -2675,11 +2714,17 @@ class Main(Gtk.ApplicationWindow):
                 dialog.connect("response", self._on_discover_warning_response)
                 dialog.present()
             else:
-                fn.subprocess.call(
-                    "sudo -E -u " + fn.sudo_username + " plasma-discover &",
+                import pwd
+                uid = pwd.getpwnam(fn.sudo_username).pw_uid
+                fn.subprocess.Popen(
+                    "DISPLAY=:0 sudo -E -u " + fn.sudo_username +
+                    " HOME=/home/" + fn.sudo_username +
+                    " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                    " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
+                    " plasma-discover",
                     shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
+                    stdout=fn.subprocess.DEVNULL,
+                    stderr=fn.subprocess.DEVNULL,
                 )
                 GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
         except Exception as error:
@@ -2688,18 +2733,56 @@ class Main(Gtk.ApplicationWindow):
     def _on_discover_warning_response(self, dialog, response):
         if response == Gtk.ResponseType.YES:
             fn.install_package(self, "discover")
-            fn.subprocess.call(
-                "sudo -E -u " + fn.sudo_username + " plasma-discover &",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
+
+            def wait_install():
+                try:
+                    import time
+                    import pwd
+                    time.sleep(15)
+                    if fn.path.exists("/usr/bin/plasma-discover"):
+                        GLib.idle_add(self.lbl_software_discover.set_markup, "KDE Discover - KDE software center (pulls KDE deps) <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover installed")
+                        uid = pwd.getpwnam(fn.sudo_username).pw_uid
+                        try:
+                            fn.subprocess.Popen(
+                                "DISPLAY=:0 sudo -E -u " + fn.sudo_username +
+                                " HOME=/home/" + fn.sudo_username +
+                                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
+                                " plasma-discover",
+                                shell=True,
+                                stdout=fn.subprocess.DEVNULL,
+                                stderr=fn.subprocess.DEVNULL,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
+                        except Exception as launch_error:
+                            print(f"Launch error: {launch_error}")
+                            GLib.idle_add(fn.show_in_app_notification, self, f"Failed to launch: {str(launch_error)}")
+                    else:
+                        print(f"Binary not found: /usr/bin/plasma-discover")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Installation may have failed")
+                except Exception as e:
+                    print(f"Error in wait_install: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
         dialog.destroy()
 
     def on_click_software_bauh(self, widget):
         try:
             fn.install_package(self, "bauh")
+
+            def wait_install():
+                try:
+                    import time
+                    time.sleep(2)
+                    if fn.path.exists("/usr/bin/bauh"):
+                        GLib.idle_add(self.lbl_software_bauh.set_markup, "Bauh - Multi-format package manager <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "bauh installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+
             fn.subprocess.call(
                 "sudo -E -u " + fn.sudo_username + " bauh &",
                 shell=True,
@@ -2712,70 +2795,300 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_software_yay(self, widget):
         try:
-            fn.install_package(self, "yay-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "yay-git installed")
+            script = "pacman -S --noconfirm yay-git; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "yay-git installation started")
+
+            def wait_install():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/yay"):
+                        GLib.idle_add(self.lbl_software_yay.set_markup, "Yay-git - AUR helper (Go-based) <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "yay-git installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_paru(self, widget):
         try:
-            fn.install_package(self, "paru-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "paru-git installed")
+            script = "pacman -S --noconfirm paru-git; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "paru-git installation started")
+
+            def wait_install():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/paru"):
+                        GLib.idle_add(self.lbl_software_paru.set_markup, "Paru-git - AUR helper (Rust-based) <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "paru-git installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_trizen(self, widget):
         try:
-            fn.install_package(self, "trizen")
-            GLib.idle_add(fn.show_in_app_notification, self, "trizen installed")
+            script = "pacman -S --noconfirm trizen; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "trizen installation started")
+
+            def wait_install():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/trizen"):
+                        GLib.idle_add(self.lbl_software_trizen.set_markup, "Trizen - AUR helper (Perl-based) <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "trizen installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_pikaur(self, widget):
         try:
-            fn.install_package(self, "pikaur-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git installed")
+            script = "pacman -S --noconfirm pikaur-git; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git installation started")
+
+            def wait_install():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/pikaur"):
+                        GLib.idle_add(self.lbl_software_pikaur.set_markup, "Pikaur-git - AUR helper (Python-based) <b>installed</b>")
+                        GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git installed")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
         except Exception as error:
             print(error)
 
-    def on_click_software_pacui(self, widget):
+    def on_click_software_yay_remove(self, widget):
         try:
-            fn.install_package(self, "pacui")
-            GLib.idle_add(fn.show_in_app_notification, self, "pacui installed")
+            script = "pacman -Rcs --noconfirm yay-git; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "yay-git removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/yay"):
+                        GLib.idle_add(self.lbl_software_yay.set_markup, "Yay-git - AUR helper (Go-based)")
+                        GLib.idle_add(fn.show_in_app_notification, self, "yay-git removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_paru_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm paru-git; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "paru-git removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/paru"):
+                        GLib.idle_add(self.lbl_software_paru.set_markup, "Paru-git - AUR helper (Rust-based)")
+                        GLib.idle_add(fn.show_in_app_notification, self, "paru-git removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_trizen_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm trizen; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "trizen removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/trizen"):
+                        GLib.idle_add(self.lbl_software_trizen.set_markup, "Trizen - AUR helper (Perl-based)")
+                        GLib.idle_add(fn.show_in_app_notification, self, "trizen removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pikaur_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm pikaur-git; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/pikaur"):
+                        GLib.idle_add(self.lbl_software_pikaur.set_markup, "Pikaur-git - AUR helper (Python-based)")
+                        GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_pacui_open(self, widget):
         try:
-            fn.install_package(self, "alacritty pacui")
-            fn.subprocess.Popen(
-                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
+            if not fn.path.exists("/usr/bin/pacui"):
+                script = "pacman -S --noconfirm pacui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                GLib.idle_add(fn.show_in_app_notification, self, "pacui installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/pacui"):
+                            GLib.idle_add(self.lbl_software_pacui.set_markup, "Pacui - TUI pacman wrapper <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "pacui installed")
+                            time.sleep(1)
+                            fn.subprocess.Popen(
+                                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "pacui launched")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+            else:
+                fn.subprocess.Popen(
+                    ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "pacui launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pacui_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm pacui; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "pacui removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/pacui"):
+                        GLib.idle_add(self.lbl_software_pacui.set_markup, "Pacui - TUI pacman wrapper")
+                        GLib.idle_add(fn.show_in_app_notification, self, "pacui removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_flatpak(self, widget):
         try:
-            fn.install_package(self, "alacritty flatpak")
-            script = (
-                "echo '=== Installed Flatpak apps ===' && "
-                "sudo -u " + fn.sudo_username + " flatpak list && "
-                "echo '' && "
-                "echo 'To install an app: flatpak install flathub <app-id>'"
-            )
-            fn.subprocess.Popen(
-                ["alacritty", "--hold", "-e", "bash", "-c", script],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
+            if not fn.path.exists("/usr/bin/flatpak"):
+                script = "pacman -S --noconfirm flatpak; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                GLib.idle_add(fn.show_in_app_notification, self, "flatpak installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/flatpak"):
+                            GLib.idle_add(self.lbl_software_flatpak.set_markup, "Flatpak - Manage Flatpak apps <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "flatpak installed")
+                            time.sleep(1)
+                            script = (
+                                "echo '=== Installed Flatpak apps ===' && "
+                                "sudo -u " + fn.sudo_username + " flatpak list && "
+                                "echo '' && "
+                                "echo 'To install an app: flatpak install flathub <app-id>'"
+                            )
+                            fn.subprocess.Popen(
+                                ["alacritty", "--hold", "-e", "bash", "-c", script],
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "flatpak launched")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+            else:
+                script = (
+                    "echo '=== Installed Flatpak apps ===' && "
+                    "sudo -u " + fn.sudo_username + " flatpak list && "
+                    "echo '' && "
+                    "echo 'To install an app: flatpak install flathub <app-id>'"
+                )
+                fn.subprocess.Popen(
+                    ["alacritty", "--hold", "-e", "bash", "-c", script],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "flatpak launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_flatpak_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm flatpak; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "flatpak removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/flatpak"):
+                        GLib.idle_add(self.lbl_software_flatpak.set_markup, "Flatpak - Manage Flatpak apps")
+                        GLib.idle_add(fn.show_in_app_notification, self, "flatpak removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
         except Exception as error:
             print(error)
 
     def on_click_software_snapd(self, widget):
         try:
-            fn.install_package(self, "alacritty")
             if not fn.path.exists("/usr/bin/snap"):
                 aur_helper = None
                 for helper in ["yay", "paru", "trizen", "pikaur"]:
@@ -2789,23 +3102,56 @@ class Main(Gtk.ApplicationWindow):
                         "No AUR helper found - install yay, paru, trizen or pikaur first",
                     )
                     return
+                script = f"sudo -u {fn.sudo_username} {aur_helper} -S snapd --noconfirm; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                GLib.idle_add(fn.show_in_app_notification, self, "snapd installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/snap"):
+                            GLib.idle_add(self.lbl_software_snapd.set_markup, "Snapd - Manage Snap apps <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "snapd installed")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+            else:
+                script = (
+                    "echo '=== Installed Snap apps ===' && "
+                    "sudo -u " + fn.sudo_username + " snap list && "
+                    "echo '' && "
+                    "echo 'To install an app: snap install <app-name>'"
+                )
                 fn.subprocess.Popen(
-                    ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, aur_helper, "-S", "snapd"],
+                    ["alacritty", "--hold", "-e", "bash", "-c", script],
                     stdout=fn.subprocess.PIPE,
                     stderr=fn.subprocess.STDOUT,
                 )
-                return
-            script = (
-                "echo '=== Installed Snap apps ===' && "
-                "sudo -u " + fn.sudo_username + " snap list && "
-                "echo '' && "
-                "echo 'To install an app: snap install <app-name>'"
-            )
-            fn.subprocess.Popen(
-                ["alacritty", "--hold", "-e", "bash", "-c", script],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
+                GLib.idle_add(fn.show_in_app_notification, self, "snapd launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_snapd_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm snapd; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "snapd removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/snap"):
+                        GLib.idle_add(self.lbl_software_snapd.set_markup, "Snapd - Manage Snap apps")
+                        GLib.idle_add(fn.show_in_app_notification, self, "snapd removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
         except Exception as error:
             print(error)
 
@@ -2824,12 +3170,36 @@ class Main(Gtk.ApplicationWindow):
                         "No AUR helper found - install yay, paru, trizen or pikaur first",
                     )
                     return
-                fn.install_package(self, "alacritty")
-                fn.subprocess.Popen(
-                    ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, aur_helper, "-S", "appmanager"],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
+                script = f"sudo -u {fn.sudo_username} {aur_helper} -S --noconfirm appmanager --noconfirm; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                GLib.idle_add(fn.show_in_app_notification, self, "appmanager installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        import pwd
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/app-manager"):
+                            GLib.idle_add(self.lbl_software_appimagelauncher.set_markup, "App-manager - Manage AppImages <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "appmanager installed")
+                            time.sleep(1)
+                            uid = pwd.getpwnam(fn.sudo_username).pw_uid
+                            fn.subprocess.Popen(
+                                "sudo -E -u " + fn.sudo_username +
+                                " HOME=/home/" + fn.sudo_username +
+                                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
+                                " app-manager &",
+                                shell=True,
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "app-manager launched")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
                 return
             import pwd
             uid = pwd.getpwnam(fn.sudo_username).pw_uid
@@ -2847,14 +3217,191 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_software_appimagelauncher_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm appmanager; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "appmanager removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/app-manager"):
+                        GLib.idle_add(self.lbl_software_appimagelauncher.set_markup, "App-manager - Manage AppImages")
+                        GLib.idle_add(fn.show_in_app_notification, self, "appmanager removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
     def on_click_software_pacseek(self, widget):
         try:
-            fn.install_package(self, "alacritty pacseek")
-            fn.subprocess.Popen(
-                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
+            if not fn.path.exists("/usr/bin/pacseek"):
+                script = "pacman -S --noconfirm pacseek; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                GLib.idle_add(fn.show_in_app_notification, self, "pacseek installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/pacseek"):
+                            GLib.idle_add(self.lbl_software_pacseek.set_markup, "Pacseek - TUI package searcher <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "pacseek installed")
+                            time.sleep(1)
+                            fn.subprocess.Popen(
+                                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "pacseek launched")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+            else:
+                fn.subprocess.Popen(
+                    ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "pacseek launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pacseek_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm pacseek; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "pacseek removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/pacseek"):
+                        GLib.idle_add(self.lbl_software_pacseek.set_markup, "Pacseek - TUI package searcher")
+                        GLib.idle_add(fn.show_in_app_notification, self, "pacseek removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pamac_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm pamac-aur; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/pamac") and not fn.path.exists("/usr/local/bin/pamac"):
+                        GLib.idle_add(self.lbl_software_pamac.set_markup, "Pamac - GUI package manager")
+                        GLib.idle_add(self.btn_software_pamac_remove.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_octopi_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm octopi; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "octopi removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/octopi"):
+                        GLib.idle_add(self.lbl_software_octopi.set_markup, "Octopi - GUI package manager")
+                        GLib.idle_add(self.btn_software_octopi_remove.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "octopi removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_gnome_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm gnome-software; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "gnome-software removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/gnome-software"):
+                        GLib.idle_add(self.lbl_software_gnome.set_markup, "GNOME Software - GUI package manager")
+                        GLib.idle_add(self.btn_software_gnome_remove.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "gnome-software removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_discover_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm discover; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/plasma-discover") and not fn.path.exists("/usr/bin/discover"):
+                        GLib.idle_add(self.lbl_software_discover.set_markup, "KDE Discover - GUI package manager")
+                        GLib.idle_add(self.btn_software_discover_remove.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_bauh_remove(self, widget):
+        try:
+            script = "pacman -Rcs --noconfirm bauh; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            GLib.idle_add(fn.show_in_app_notification, self, "bauh removal started")
+
+            def wait_removal():
+                try:
+                    import time
+                    process.wait()
+                    time.sleep(1)
+                    if not fn.path.exists("/usr/bin/bauh"):
+                        GLib.idle_add(self.lbl_software_bauh.set_markup, "Bauh - GUI package manager")
+                        GLib.idle_add(self.btn_software_bauh_remove.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "bauh removal complete")
+                except Exception as e:
+                    print(f"Error: {e}")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
         except Exception as error:
             print(error)
 
@@ -2880,11 +3427,14 @@ class Main(Gtk.ApplicationWindow):
                 script = f"pacman -S --noconfirm --needed {pkgs}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/ollama"):
-                        GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_ollama.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "ollama installation complete")
+                    try:
+                        process.wait()
+                        if fn.path.exists("/usr/bin/ollama"):
+                            GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_ollama.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "ollama installation complete")
+                    except Exception as e:
+                        print(f"Error in ollama wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "ollama installation started")
         except Exception as error:
@@ -2911,7 +3461,7 @@ class Main(Gtk.ApplicationWindow):
                 if aur_helper is None:
                     GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
                     return
-                script = f"{aur_helper} -S open-webui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                script = f"sudo -u {fn.sudo_username} {aur_helper} -S open-webui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
                     process.wait()
@@ -2945,7 +3495,7 @@ class Main(Gtk.ApplicationWindow):
                 if aur_helper is None:
                     GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
                     return
-                script = f"{aur_helper} -S claude-code; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                script = f"sudo -u {fn.sudo_username} {aur_helper} -S claude-code; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
                     process.wait()
@@ -2960,8 +3510,9 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_ai_aider(self, widget):
         try:
-            if fn.path.exists("/usr/bin/aider"):
-                script = "pacman -Rcs --noconfirm aider; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            aider_path = f"/home/{fn.sudo_username}/.local/bin/aider"
+            if fn.path.exists("/usr/bin/aider") or fn.path.exists(aider_path):
+                script = "pacman -Rcs --noconfirm aider-install; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_removal():
                     process.wait()
@@ -2979,14 +3530,21 @@ class Main(Gtk.ApplicationWindow):
                 if aur_helper is None:
                     GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
                     return
-                script = f"{aur_helper} -S aider; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+                script = f"sudo -u {fn.sudo_username} {aur_helper} -S aider-install; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/aider"):
-                        GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_aider.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "aider installation complete")
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/aider") or fn.path.exists(aider_path):
+                            GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_aider.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "aider installation complete")
+                        else:
+                            print(f"Aider binary not found. Checked: /usr/bin/aider and {aider_path}")
+                    except Exception as e:
+                        print(f"Error in wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "aider installation started")
         except Exception as error:
@@ -2994,25 +3552,40 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_ai_codex(self, widget):
         try:
-            if fn.path.exists("/usr/bin/codex") or fn.path.exists("/usr/local/bin/codex"):
+            codex_paths = ["/usr/bin/codex", "/usr/local/bin/codex", f"/home/{fn.sudo_username}/.local/bin/codex"]
+            codex_installed = any(fn.path.exists(p) for p in codex_paths)
+
+            if codex_installed:
                 script = "npm uninstall -g @openai/codex; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_removal():
-                    process.wait()
-                    GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI")
-                    GLib.idle_add(self.btn_ai_codex.set_label, "Install")
-                    GLib.idle_add(fn.show_in_app_notification, self, "Codex removal complete")
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI")
+                        GLib.idle_add(self.btn_ai_codex.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Codex removal complete")
+                    except Exception as e:
+                        print(f"Error in codex wait_removal: {e}")
                 fn.threading.Thread(target=wait_removal, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "Codex removal started")
             else:
                 script = "npm install -g @openai/codex; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/codex") or fn.path.exists("/usr/local/bin/codex"):
-                        GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_codex.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "Codex installation complete")
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if any(fn.path.exists(p) for p in codex_paths):
+                            GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_codex.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "Codex installation complete")
+                        else:
+                            print(f"Codex binary not found. Checked: {codex_paths}")
+                    except Exception as e:
+                        print(f"Error in codex wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "Codex installation started")
         except Exception as error:
@@ -3020,25 +3593,40 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_ai_gemini(self, widget):
         try:
-            if fn.path.exists("/usr/bin/gemini") or fn.path.exists("/usr/local/bin/gemini"):
+            gemini_paths = ["/usr/bin/gemini", "/usr/local/bin/gemini", f"/home/{fn.sudo_username}/.local/bin/gemini"]
+            gemini_installed = any(fn.path.exists(p) for p in gemini_paths)
+
+            if gemini_installed:
                 script = "npm uninstall -g @google/gemini-cli; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_removal():
-                    process.wait()
-                    GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
-                    GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
-                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
+                        GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
+                    except Exception as e:
+                        print(f"Error in gemini wait_removal: {e}")
                 fn.threading.Thread(target=wait_removal, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal started")
             else:
                 script = "npm install -g @google/gemini-cli; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
                 process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
                 def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/gemini") or fn.path.exists("/usr/local/bin/gemini"):
-                        GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if any(fn.path.exists(p) for p in gemini_paths):
+                            GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
+                        else:
+                            print(f"Gemini binary not found. Checked: {gemini_paths}")
+                    except Exception as e:
+                        print(f"Error in gemini wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation started")
         except Exception as error:
@@ -3046,93 +3634,49 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_ai_chatgpt(self, widget):
         try:
-            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://chatgpt.com &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://chatgpt.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
     def on_click_ai_claude_web(self, widget):
         try:
-            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://claude.ai &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://claude.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
     def on_click_ai_gemini_web(self, widget):
         try:
-            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://gemini.google.com &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://gemini.google.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
     def on_click_ai_perplexity(self, widget):
         try:
-            fn.subprocess.call("sudo -E -u " + fn.sudo_username + " xdg-open https://perplexity.ai &", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://perplexity.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
-    def on_click_ai_comfyui(self, widget):
+    def on_click_ai_dalle(self, widget):
         try:
-            if fn.path.exists("/usr/bin/comfyui"):
-                script = "pacman -Rcs --noconfirm comfyui; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                def wait_removal():
-                    process.wait()
-                    GLib.idle_add(self.lbl_ai_comfyui.set_markup, "ComfyUI - Node-based diffusion UI")
-                    GLib.idle_add(self.btn_ai_comfyui.set_label, "Install")
-                    GLib.idle_add(fn.show_in_app_notification, self, "comfyui removal complete")
-                fn.threading.Thread(target=wait_removal, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "comfyui removal started")
-            else:
-                aur_helper = None
-                for helper in ["yay", "paru", "trizen", "pikaur"]:
-                    if fn.path.exists("/usr/bin/" + helper):
-                        aur_helper = helper
-                        break
-                if aur_helper is None:
-                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
-                    return
-                script = f"{aur_helper} -S comfyui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/comfyui"):
-                        GLib.idle_add(self.lbl_ai_comfyui.set_markup, "ComfyUI - Node-based diffusion UI <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_comfyui.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "comfyui installation complete")
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "comfyui installation started")
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openai.com/dall-e-3", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
-    def on_click_ai_invokeai(self, widget):
+    def on_click_ai_midjourney(self, widget):
         try:
-            if fn.path.exists("/usr/bin/invokeai"):
-                script = "pacman -Rcs --noconfirm invokeai; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                def wait_removal():
-                    process.wait()
-                    GLib.idle_add(self.lbl_ai_invokeai.set_markup, "InvokeAI - Stable Diffusion UI")
-                    GLib.idle_add(self.btn_ai_invokeai.set_label, "Install")
-                    GLib.idle_add(fn.show_in_app_notification, self, "invokeai removal complete")
-                fn.threading.Thread(target=wait_removal, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "invokeai removal started")
-            else:
-                aur_helper = None
-                for helper in ["yay", "paru", "trizen", "pikaur"]:
-                    if fn.path.exists("/usr/bin/" + helper):
-                        aur_helper = helper
-                        break
-                if aur_helper is None:
-                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
-                    return
-                script = f"{aur_helper} -S invokeai; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/invokeai"):
-                        GLib.idle_add(self.lbl_ai_invokeai.set_markup, "InvokeAI - Stable Diffusion UI <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_invokeai.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "invokeai installation complete")
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "invokeai installation started")
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.midjourney.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_leonardo(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://leonardo.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_firefly(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.adobe.com/products/firefly", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
