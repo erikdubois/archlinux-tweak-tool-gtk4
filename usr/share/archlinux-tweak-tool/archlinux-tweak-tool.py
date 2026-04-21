@@ -3632,9 +3632,69 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_ai_ollama_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://ollama.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_webui_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openwebui.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_claude_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://code.claude.com/docs/en/cli-reference", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_aider_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://aider.chat/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_gemini_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://geminicli.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_codex_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://developers.openai.com/codex/cli", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
     def on_click_ai_chatgpt(self, widget):
         try:
             fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://chatgpt.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_chatgpt_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://academy.openai.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_claude_web_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://claude.com/resources/tutorials?open_in_browser=1", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_gemini_web_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://gemini.google.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_perplexity_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.perplexity.ai/hub/getting-started", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
@@ -3656,9 +3716,21 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_ai_dalle_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openai.com/index/dall-e-3/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
     def on_click_ai_dalle(self, widget):
         try:
             fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openai.com/dall-e-3", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_midjourney_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://docs.midjourney.com/hc/en-us/articles/33329261836941-Getting-Started-Guide", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
@@ -3668,9 +3740,21 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_ai_leonardo_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://leonardo.ai/learn/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
     def on_click_ai_leonardo(self, widget):
         try:
             fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://leonardo.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        except Exception as error:
+            print(error)
+
+    def on_click_ai_firefly_link(self, widget):
+        try:
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.adobe.com/learn/firefly", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
