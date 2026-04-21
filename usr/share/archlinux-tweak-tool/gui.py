@@ -35,6 +35,7 @@ import themer_gui
 import user_gui
 import logging_gui
 import system_gui
+import software_gui
 import packages_gui
 
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
@@ -103,6 +104,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack28 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_logging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 ATT
@@ -211,6 +213,8 @@ themes</i> you can customize <b>fastfetch</b>"
 
     system_gui.gui(self, Gtk, vboxstack_system, fn)
 
+    software_gui.gui(self, Gtk, vboxstack_software, fn)
+
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
@@ -242,6 +246,8 @@ themes</i> you can customize <b>fastfetch</b>"
         stack.add_titled(vboxstack14, "stack14", "Services")  # services
 
     stack.add_titled(vboxstack23, "stack23", "Shells")  # shell
+
+    stack.add_titled(vboxstack_software, "stack_software", "Software")  # software installers
 
     stack.add_titled(vboxstack_system, "stack_system", "System")  # system inspector
 

@@ -2608,6 +2608,273 @@ class Main(Gtk.ApplicationWindow):
             print(error)
 
     # ====================================================================
+    #                       SOFTWARE
+    # ====================================================================
+
+    def on_click_software_octopi(self, widget):
+        try:
+            fn.install_package(self, "octopi")
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username + " octopi &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Octopi launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pamac(self, widget):
+        try:
+            if not fn.path.exists("/usr/bin/pamac-manager"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Installing pamac-aur - this may take a moment",
+                )
+                fn.install_package(self, "pamac-aur")
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username + " pamac-manager &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Pamac launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_gnome(self, widget):
+        try:
+            import pwd
+            fn.install_package(self, "gnome-software packagekit")
+            fn.subprocess.call("systemctl start packagekit", shell=True)
+            uid = pwd.getpwnam(fn.sudo_username).pw_uid
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username +
+                " HOME=/home/" + fn.sudo_username +
+                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
+                " gnome-software &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "GNOME Software launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_discover(self, widget):
+        try:
+            if not fn.path.exists("/usr/bin/plasma-discover"):
+                dialog = Gtk.MessageDialog(
+                    transient_for=self,
+                    modal=True,
+                    message_type=Gtk.MessageType.WARNING,
+                    buttons=Gtk.ButtonsType.YES_NO,
+                    text="KDE Discover requires many KDE dependencies.\nThis may install a large number of packages.\n\nDo you want to continue?",
+                )
+                dialog.connect("response", self._on_discover_warning_response)
+                dialog.present()
+            else:
+                fn.subprocess.call(
+                    "sudo -E -u " + fn.sudo_username + " plasma-discover &",
+                    shell=True,
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
+        except Exception as error:
+            print(error)
+
+    def _on_discover_warning_response(self, dialog, response):
+        if response == Gtk.ResponseType.YES:
+            fn.install_package(self, "plasma-discover")
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username + " plasma-discover &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
+        dialog.destroy()
+
+    def on_click_software_bauh(self, widget):
+        try:
+            if not fn.path.exists("/usr/bin/bauh"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install bauh via: yay -S bauh",
+                )
+                return
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username + " bauh &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Bauh launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_yay(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/yay"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install yay via: pacman -S yay",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "yay"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_paru(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/paru"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install paru via: pacman -S paru",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "paru"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_trizen(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/trizen"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install trizen via: yay -S trizen",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "trizen"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pikaur(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/pikaur"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install pikaur via: yay -S pikaur",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "pikaur"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_flatpak(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "flatpak")
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "flatpak", "list"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_snapd(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/snap"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install snapd via: yay -S snapd",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "--hold", "-e", "sudo", "-u", fn.sudo_username, "snap", "list"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_appimagelauncher(self, widget):
+        try:
+            if not fn.path.exists("/usr/bin/AppImageLauncher"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install appimagelauncher via: yay -S appimagelauncher",
+                )
+                return
+            fn.subprocess.call(
+                "sudo -E -u " + fn.sudo_username + " AppImageLauncher &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "AppImageLauncher launched")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pacseek(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/pacseek"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install pacseek via: yay -S pacseek",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_software_pacui(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            if not fn.path.exists("/usr/bin/pacui"):
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Install pacui via: yay -S pacui",
+                )
+                return
+            fn.subprocess.Popen(
+                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    # ====================================================================
     #                       GRUB
     # ====================================================================
 
