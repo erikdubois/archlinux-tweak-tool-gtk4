@@ -58,7 +58,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     texture_panel = Gdk.Texture.new_for_pixbuf(pb_panel)
     panel = Gtk.Picture.new_for_paintable(texture_panel)
     panel.set_content_fit(Gtk.ContentFit.CONTAIN)
-    panel.set_hexpand(True)
 
     overlayframe = Gtk.Overlay()
     overlayframe.set_child(panel)
