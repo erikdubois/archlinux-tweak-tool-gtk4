@@ -2577,6 +2577,30 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_system_timers_enabled(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            import pwd
+            uid = pwd.getpwnam(fn.sudo_username).pw_uid
+            fn.subprocess.call(
+                "alacritty -e bash -c '{ echo \"=== System Timers ===\"; "
+                "SYSTEMD_COLORS=1 systemctl list-unit-files --type=timer --state=enabled; "
+                "echo; "
+                "echo \"=== User Timers ===\"; "
+                "sudo -u " + fn.sudo_username +
+                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus"
+                " SYSTEMD_COLORS=1"
+                " systemctl --user list-unit-files --type=timer --state=enabled; "
+                "} | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
     def on_click_system_dmesg(self, widget):
         try:
             fn.install_package(self, "alacritty")

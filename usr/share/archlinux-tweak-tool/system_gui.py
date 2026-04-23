@@ -229,12 +229,12 @@ def gui(self, Gtk, vboxstack_system, fn):
     btn15.set_margin_end(10)
     hbox15.append(btn15)
 
-    # 16. Kernel Ring Buffer
+    # 16. Systemd Timers Enabled
     hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox16_label = Gtk.Label(xalign=0)
-    hbox16_label.set_text("Kernel Ring Buffer (dmesg)")
+    hbox16_label.set_text("Systemd Timers Enabled")
     btn16 = Gtk.Button(label="View")
-    btn16.connect("clicked", self.on_click_system_dmesg)
+    btn16.connect("clicked", self.on_click_system_timers_enabled)
     hbox16_label.set_margin_start(10)
     hbox16_label.set_margin_end(10)
     hbox16_label.set_hexpand(True)
@@ -243,12 +243,12 @@ def gui(self, Gtk, vboxstack_system, fn):
     btn16.set_margin_end(10)
     hbox16.append(btn16)
 
-    # 17. GParted
+    # 17. Kernel Ring Buffer
     hbox17 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox17_label = Gtk.Label(xalign=0)
-    hbox17_label.set_text("Inspect with GParted (partition manager)")
-    btn17 = Gtk.Button(label="Launch")
-    btn17.connect("clicked", self.on_click_system_gparted)
+    hbox17_label.set_text("Kernel Ring Buffer (dmesg)")
+    btn17 = Gtk.Button(label="View")
+    btn17.connect("clicked", self.on_click_system_dmesg)
     hbox17_label.set_margin_start(10)
     hbox17_label.set_margin_end(10)
     hbox17_label.set_hexpand(True)
@@ -256,6 +256,20 @@ def gui(self, Gtk, vboxstack_system, fn):
     btn17.set_margin_start(10)
     btn17.set_margin_end(10)
     hbox17.append(btn17)
+
+    # 18. GParted
+    hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox18_label = Gtk.Label(xalign=0)
+    hbox18_label.set_text("Inspect with GParted (partition manager)")
+    btn18 = Gtk.Button(label="Launch")
+    btn18.connect("clicked", self.on_click_system_gparted)
+    hbox18_label.set_margin_start(10)
+    hbox18_label.set_margin_end(10)
+    hbox18_label.set_hexpand(True)
+    hbox18.append(hbox18_label)
+    btn18.set_margin_start(10)
+    btn18.set_margin_end(10)
+    hbox18.append(btn18)
 
     # ======================================================================
     #                       VBOX STACK
@@ -280,3 +294,4 @@ def gui(self, Gtk, vboxstack_system, fn):
     vboxstack_system.append(hbox15)
     vboxstack_system.append(hbox16)
     vboxstack_system.append(hbox17)
+    vboxstack_system.append(hbox18)
