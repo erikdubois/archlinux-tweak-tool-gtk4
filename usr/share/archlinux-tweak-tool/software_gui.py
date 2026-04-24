@@ -321,6 +321,53 @@ def gui(self, Gtk, vboxstack_software, fn):
     self.btn_software_pacui_remove.set_margin_end(10)
     hbox14.append(self.btn_software_pacui_remove)
 
+    # Section 5: Logout Managers
+    hbox_section5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_section5_label = Gtk.Label(xalign=0)
+    hbox_section5_label.set_text("Logout Managers")
+    hbox_section5_label.set_margin_start(10)
+    hbox_section5_label.set_margin_top(15)
+    hbox_section5_label.set_margin_bottom(10)
+    hbox_section5.append(hbox_section5_label)
+
+    # 16. ArchLinux Logout
+    hbox15 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_software_archlinux_logout = Gtk.Label(xalign=0)
+    self.lbl_software_archlinux_logout.set_markup("ArchLinux Logout - Session logout tool" + (" <b>installed</b>" if fn.path.exists("/usr/bin/archlinux-logout") else ""))
+    self.btn_software_archlinux_logout_install = Gtk.Button(label="Launch/Install")
+    self.btn_software_archlinux_logout_install.connect("clicked", self.on_click_software_archlinux_logout)
+    self.btn_software_archlinux_logout_remove = Gtk.Button(label="Remove")
+    self.btn_software_archlinux_logout_remove.connect("clicked", self.on_click_software_archlinux_logout_remove)
+    self.lbl_software_archlinux_logout.set_margin_start(20)
+    self.lbl_software_archlinux_logout.set_margin_end(10)
+    self.lbl_software_archlinux_logout.set_hexpand(True)
+    hbox15.append(self.lbl_software_archlinux_logout)
+    self.btn_software_archlinux_logout_install.set_margin_start(10)
+    self.btn_software_archlinux_logout_install.set_margin_end(5)
+    hbox15.append(self.btn_software_archlinux_logout_install)
+    self.btn_software_archlinux_logout_remove.set_margin_start(5)
+    self.btn_software_archlinux_logout_remove.set_margin_end(10)
+    hbox15.append(self.btn_software_archlinux_logout_remove)
+
+    # 17. powermenu
+    hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_software_powermenu = Gtk.Label(xalign=0)
+    self.lbl_software_powermenu.set_markup("powermenu - Power menu for i3/sway" + (" <b>installed</b>" if fn.path.exists("/usr/local/bin/edu-powermenu") else ""))
+    self.btn_software_powermenu_install = Gtk.Button(label="Launch/Install")
+    self.btn_software_powermenu_install.connect("clicked", self.on_click_software_powermenu)
+    self.btn_software_powermenu_remove = Gtk.Button(label="Remove")
+    self.btn_software_powermenu_remove.connect("clicked", self.on_click_software_powermenu_remove)
+    self.lbl_software_powermenu.set_margin_start(20)
+    self.lbl_software_powermenu.set_margin_end(10)
+    self.lbl_software_powermenu.set_hexpand(True)
+    hbox16.append(self.lbl_software_powermenu)
+    self.btn_software_powermenu_install.set_margin_start(10)
+    self.btn_software_powermenu_install.set_margin_end(5)
+    hbox16.append(self.btn_software_powermenu_install)
+    self.btn_software_powermenu_remove.set_margin_start(5)
+    self.btn_software_powermenu_remove.set_margin_end(10)
+    hbox16.append(self.btn_software_powermenu_remove)
+
     # ======================================================================
     #                       VBOX STACK
     # ======================================================================
@@ -345,3 +392,6 @@ def gui(self, Gtk, vboxstack_software, fn):
     vboxstack_software.append(hbox_section4)
     vboxstack_software.append(hbox13)
     vboxstack_software.append(hbox14)
+    vboxstack_software.append(hbox_section5)
+    vboxstack_software.append(hbox15)
+    vboxstack_software.append(hbox16)

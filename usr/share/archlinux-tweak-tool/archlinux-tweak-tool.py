@@ -3178,6 +3178,116 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
+    def on_click_software_archlinux_logout(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/archlinux-logout-gtk4"):
+                print("\n[INFO] Launching archlinux-logout-gtk4")
+                fn.subprocess.Popen(
+                    "archlinux-logout-gtk4 &",
+                    shell=True,
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "ArchLinux Logout launched")
+            else:
+                print("\n[INFO] archlinux-logout-gtk4-git not installed, starting installation")
+                process = fn.launch_pacman_install_in_terminal("archlinux-logout-gtk4-git")
+                GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        print("[INFO] Waiting for archlinux-logout-gtk4-git installation to complete...")
+                        process.wait()
+                        print("[INFO] Installation process completed")
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/archlinux-logout-gtk4"):
+                            print("[INFO] Binary exists at /usr/bin/archlinux-logout-gtk4, installation successful")
+                            GLib.idle_add(self.lbl_software_archlinux_logout.set_markup, "ArchLinux Logout - Session logout tool <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git installed")
+                            time.sleep(1)
+                            print("[INFO] Launching archlinux-logout-gtk4")
+                            fn.subprocess.Popen(
+                                "archlinux-logout-gtk4 &",
+                                shell=True,
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "ArchLinux Logout launched")
+                        else:
+                            print("[INFO] Binary NOT found at /usr/bin/archlinux-logout-gtk4, checking for errors...")
+                            fn.check_missing_repo_error(self, "", "archlinux-logout-gtk4-git")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_archlinux_logout_remove(self, widget):
+        try:
+            process = fn.launch_pacman_remove_in_terminal("archlinux-logout-gtk4-git")
+            GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git removal started")
+
+            fn.wait_remove_and_update(process, "/usr/bin/archlinux-logout-gtk4", self.lbl_software_archlinux_logout, "ArchLinux Logout - Session logout tool", self, "archlinux-logout-gtk4-git removal complete")
+        except Exception as error:
+            print(error)
+
+    def on_click_software_powermenu(self, widget):
+        try:
+            if fn.path.exists("/usr/local/bin/edu-powermenu"):
+                print("\n[INFO] Launching edu-powermenu")
+                fn.subprocess.Popen(
+                    "edu-powermenu &",
+                    shell=True,
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "powermenu launched")
+            else:
+                print("\n[INFO] edu-powermenu-git not installed, starting installation")
+                process = fn.launch_pacman_install_in_terminal("edu-powermenu-git")
+                GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        print("[INFO] Waiting for edu-powermenu-git installation to complete...")
+                        process.wait()
+                        print("[INFO] Installation process completed")
+                        time.sleep(1)
+                        if fn.path.exists("/usr/local/bin/edu-powermenu"):
+                            print("[INFO] Binary exists at /usr/local/bin/edu-powermenu, installation successful")
+                            GLib.idle_add(self.lbl_software_powermenu.set_markup, "powermenu - Power menu for i3/sway <b>installed</b>")
+                            GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installed")
+                            time.sleep(1)
+                            print("[INFO] Launching edu-powermenu")
+                            fn.subprocess.Popen(
+                                "edu-powermenu &",
+                                shell=True,
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "powermenu launched")
+                        else:
+                            print("[INFO] Binary NOT found at /usr/local/bin/edu-powermenu, checking for errors...")
+                            fn.check_missing_repo_error(self, "", "edu-powermenu-git")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    def on_click_software_powermenu_remove(self, widget):
+        try:
+            process = fn.launch_pacman_remove_in_terminal("edu-powermenu-git")
+            GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git removal started")
+
+            fn.wait_remove_and_update(process, "/usr/local/bin/edu-powermenu", self.lbl_software_powermenu, "powermenu - Power menu for i3/sway", self, "edu-powermenu-git removal complete")
+        except Exception as error:
+            print(error)
+
     # ====================================================================
     #                       AI TOOLS
     # ====================================================================
