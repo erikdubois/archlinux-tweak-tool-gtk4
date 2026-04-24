@@ -469,7 +469,7 @@ def check_content(value, file):
 def check_package_installed(package):  # noqa
     try:
         subprocess.check_output(
-            "pacman -Qi " + package, shell=True, stderr=subprocess.STDOUT
+            "pacman -Qi " + package, shell=True, stderr=subprocess.PIPE
         )
         # package is installed
         return True
@@ -489,7 +489,7 @@ def check_service(service):  # noqa
             check=True,
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         status = output.stdout.decode().strip()
         if status == "active":
@@ -508,7 +508,7 @@ def check_socket(socket):  # noqa
             check=True,
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         status = output.stdout.decode().strip()
         if status == "active":
@@ -552,7 +552,7 @@ def check_group(group):
             ["sh", "-c", "id " + sudo_username],
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         for x in groups.stdout.decode().split(" "):
             if group in x:
@@ -620,6 +620,67 @@ def check_edu_repos_active():
                 return True
 
 
+_nemesis_packages_cache = None
+
+def load_nemesis_packages():
+    """Load the list of nemesis_repo packages from file"""
+    global _nemesis_packages_cache
+    if _nemesis_packages_cache is not None:
+        return _nemesis_packages_cache
+
+    nemesis_file = "/usr/share/archlinux-tweak-tool/data/nemesis_packages.txt"
+    _nemesis_packages_cache = set()
+
+    try:
+        if path.exists(nemesis_file):
+            with open(nemesis_file, 'r') as f:
+                _nemesis_packages_cache = set(line.strip() for line in f if line.strip())
+            print(f"[DEBUG] Loaded {len(_nemesis_packages_cache)} nemesis packages from {nemesis_file}")
+        else:
+            print(f"[DEBUG] nemesis_packages.txt not found at {nemesis_file}")
+    except Exception as e:
+        print(f"[ERROR] Failed to load nemesis packages: {e}")
+
+    return _nemesis_packages_cache
+
+
+def find_package_repo(package_name):
+    """Determine which repo a package belongs to (nemesis_repo or chaotic-aur)"""
+    print(f"[DEBUG] find_package_repo() called for: {package_name}")
+
+    nemesis_packages = load_nemesis_packages()
+    if package_name in nemesis_packages:
+        print(f"[DEBUG] Found {package_name} in nemesis_repo")
+        return "nemesis_repo"
+
+    print(f"[DEBUG] Package {package_name} not in nemesis_repo, assuming chaotic-aur")
+    return "chaotic-aur"
+
+
+def check_missing_repo_error(self, error_msg, package):
+    """Check if installation error is due to missing repo and show appropriate error"""
+    print(f"\n[DEBUG] check_missing_repo_error() called")
+    print(f"[DEBUG] Package: {package}")
+    print(f"[DEBUG] Error message length: {len(error_msg)}")
+    print(f"[DEBUG] Error message (first 200 chars): {error_msg[:200]}")
+
+    if "target not found" not in error_msg.lower():
+        print(f"[DEBUG] 'target not found' not in error message, returning False")
+        return False
+
+    print(f"[DEBUG] 'target not found' detected, querying repo for {package}")
+    repo = find_package_repo(package)
+
+    if repo:
+        notification = f"Package not found. Please enable {repo} in pacman.conf"
+    else:
+        notification = "Package not found. Please enable nemesis_repo or chaotic-aur in pacman.conf"
+
+    print(f"[DEBUG] Showing notification: {notification}")
+    GLib.idle_add(show_in_app_notification, self, notification)
+    return True
+
+
 def install_package(self, package):
     command = "pacman -S " + package + " --noconfirm --needed"
     # if more than one package - checf fails and will install
@@ -645,7 +706,8 @@ def install_package(self, package):
             else:
                 error_msg = result.stderr if result.stderr else result.stdout
                 print(f"Error installing {package}: {error_msg}")
-                GLib.idle_add(show_in_app_notification, self, f"Error installing {package}")
+                if not check_missing_repo_error(self, error_msg, package):
+                    GLib.idle_add(show_in_app_notification, self, f"Error installing {package}")
         except Exception as error:
             print(error)
             GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
@@ -660,7 +722,7 @@ def install_local_package(self, package):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print(package + " is now installed")
         GLib.idle_add(show_in_app_notification, self, package + " is now installed")
@@ -685,7 +747,7 @@ def install_arco_package(self, package):
                     command.split(" "),
                     shell=False,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                 )
                 print(package + " is now installed")
                 GLib.idle_add(
@@ -719,7 +781,7 @@ def install_edu_package(self, package):
                     command.split(" "),
                     shell=False,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                 )
                 print(package + " is now installed")
                 GLib.idle_add(
@@ -778,7 +840,7 @@ def remove_package(self, package):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(package + " is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
@@ -798,7 +860,7 @@ def remove_package_s(self, package):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(package + " is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
@@ -818,7 +880,7 @@ def remove_package_rns(self, package):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(package + " is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
@@ -838,7 +900,7 @@ def remove_package_ss(self, package):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(package + " is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
@@ -858,7 +920,7 @@ def remove_package_dd(self, package):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(package + " is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
@@ -878,7 +940,7 @@ def enable_login_manager(self, loginmanager):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print(loginmanager + " has been enabled - reboot")
             GLib.idle_add(
@@ -910,7 +972,7 @@ def add_autologin_group(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
         except Exception as error:
             print(error)
@@ -938,7 +1000,7 @@ def install_arco_caja_plugin(self, widget):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("Caja-share is now installed - reboot")
         GLib.idle_add(self.label7.set_text, "Caja-share is now installed - reboot")
@@ -957,7 +1019,7 @@ def install_arco_caja_plugin(self, widget):
 def change_shell(self, shell):
     command = "sudo chsh " + sudo_username + " -s /bin/" + shell
     subprocess.call(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     print("Shell changed to " + shell + " for the user - logout")
     GLib.idle_add(
@@ -1051,7 +1113,7 @@ def make_grub(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We will update your grub files")
         print("We update your grub with 'sudo grub-mkconfig -o /boot/grub/grub.cfg'")
@@ -1357,7 +1419,7 @@ def set_hblock(self, toggle, state):
                     [enable],
                     shell=False,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                 )
             else:
                 GLib.idle_add(self.label7.set_text, "Install Hblock......")
@@ -1365,14 +1427,14 @@ def set_hblock(self, toggle, state):
                     install.split(" "),
                     shell=False,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                 )
                 GLib.idle_add(self.label7.set_text, "Database update...")
                 subprocess.call(
                     [enable],
                     shell=False,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                 )
 
         else:
@@ -1382,7 +1444,7 @@ def set_hblock(self, toggle, state):
                 check=True,
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
 
         GLib.idle_add(self.label7.set_text, "Complete")
@@ -1514,7 +1576,7 @@ def create_log(self):
     destination = att_log_dir + "att-log-" + time
     command = "sudo pacman -Q > " + destination
     subprocess.call(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     # GLib.idle_add(show_in_app_notification, self, "Log file created")
 
@@ -1559,7 +1621,7 @@ def install_arco_nemo_plugin(self, widget):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("Nemo-share is now installed - reboot")
         GLib.idle_add(self.label7.set_text, "Nemo-share is now installed - reboot")
@@ -1675,7 +1737,7 @@ def copy_nsswitch(choice):
         command.split(" "),
         shell=False,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stderr=subprocess.PIPE,
     )
     print("/etc/nsswitch.conf has been overwritten - reboot")
 
@@ -1716,7 +1778,7 @@ def install_reborn(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("RebornOS keyring is now installed")
     except Exception as error:
@@ -1732,7 +1794,7 @@ def install_reborn(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("RebornOS mirrorlist is now installed")
     except Exception as error:
@@ -1750,7 +1812,7 @@ def install_chaotics(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("Chaotics keyring is now installed")
     except Exception as error:
@@ -1766,7 +1828,7 @@ def install_chaotics(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("Chaotics mirrorlist is now installed")
     except Exception as error:
@@ -1784,7 +1846,7 @@ def install_endeavouros(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("EndeavourOS keyring is now installed")
     except Exception as error:
@@ -1800,7 +1862,7 @@ def install_endeavouros(self):
             install.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("EndeavourOS mirrorlist is now installed")
     except Exception as error:
@@ -1854,7 +1916,7 @@ def permissions(dst):
             check=True,
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         group = None
         for x in groups.stdout.decode().split(" "):
@@ -1881,7 +1943,7 @@ def findgroup():
             check=True,
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         group = None
         for x in groups.stdout.decode().split(" "):
@@ -1926,7 +1988,7 @@ def enable_service(service):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We enabled the following service : " + service)
     except Exception as error:
@@ -1940,7 +2002,7 @@ def restart_service(service):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We restarted the following service (if avalable) : " + service)
     except Exception as error:
@@ -1954,7 +2016,7 @@ def disable_service(service):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
 
         command = "systemctl disable " + service
@@ -1962,7 +2024,7 @@ def disable_service(service):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We stopped and disabled the following service " + service)
     except Exception as error:
@@ -2000,7 +2062,7 @@ def install_discovery(self):
                 install.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("Avahi, nss-mdns and gvfs-smb is now installed")
 
@@ -2009,7 +2071,7 @@ def install_discovery(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We enabled avahi-daemon.service")
     except Exception as error:
@@ -2023,7 +2085,7 @@ def remove_discovery(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
 
         command = "systemctl disable avahi-daemon.service -f --now"
@@ -2031,7 +2093,7 @@ def remove_discovery(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We disabled avahi-daemon.service")
 
@@ -2040,7 +2102,7 @@ def remove_discovery(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
 
         command = "systemctl disable avahi-daemon.socket -f"
@@ -2048,7 +2110,7 @@ def remove_discovery(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We disabled avahi-daemon.socket")
 
@@ -2058,7 +2120,7 @@ def remove_discovery(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("Avahi was removed")
 
@@ -2068,7 +2130,7 @@ def remove_discovery(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("nss-mdns was removed")
 
@@ -2078,7 +2140,7 @@ def remove_discovery(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("gvfs-smb was removed")
         else:
@@ -2106,7 +2168,7 @@ def install_samba(self):
                 install.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("Samba and gvfs-smb are now installed")
 
@@ -2115,7 +2177,7 @@ def install_samba(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We enabled smb.service")
 
@@ -2124,7 +2186,7 @@ def install_samba(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We enabled nmb.service")
     except Exception as error:
@@ -2138,7 +2200,7 @@ def uninstall_samba(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We disabled smb.service")
 
@@ -2147,7 +2209,7 @@ def uninstall_samba(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
         print("We disabled nmb.service")
 
@@ -2157,7 +2219,7 @@ def uninstall_samba(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("Samba was removed if there were no dependencies")
 
@@ -2167,7 +2229,7 @@ def uninstall_samba(self):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("gvfs-smb was removed")
     except Exception as error:
@@ -2189,7 +2251,7 @@ def copy_samba(choice):
         command.split(" "),
         shell=False,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stderr=subprocess.PIPE,
     )
     if choice == "example":
         if not path.isdir("/home/" + sudo_username + "/Shared"):
@@ -2232,7 +2294,7 @@ def copy_samba(choice):
                         command.split(" "),
                         shell=False,
                         stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
+                        stderr=subprocess.PIPE,
                     )
                 except Exception as error:
                     print(error)
@@ -2247,7 +2309,7 @@ def copy_samba(choice):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
         except Exception as error:
             print(error)
@@ -2258,7 +2320,7 @@ def copy_samba(choice):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
         except Exception as error:
             print(error)
@@ -2269,7 +2331,7 @@ def copy_samba(choice):
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
         except Exception as error:
             print(error)
@@ -2408,7 +2470,7 @@ def get_shell():
             ["su", "-", sudo_username, "-c", 'echo "$SHELL"'],
             check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
 
         output = process.stdout.decode().strip().strip("\n")
@@ -2442,7 +2504,7 @@ def install_arco_thunar_plugin(self, widget):
                 install.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
             print("Thunar-shares-plugin is now installed - reboot")
             GLib.idle_add(
@@ -2490,7 +2552,7 @@ def set_firefox_ublock(self, toggle, state):
                 install_ublock.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
         else:
             GLib.idle_add(self.label7.set_text, "Removing ublock Origin...")
@@ -2498,7 +2560,7 @@ def set_firefox_ublock(self, toggle, state):
                 uninstall_ublock.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
             )
 
         GLib.idle_add(self.label7.set_text, "Complete")
@@ -2531,7 +2593,7 @@ def update_repos(self):
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
         )
     except Exception as error:
         print(error)
@@ -2683,16 +2745,43 @@ def monitor_messages_queue(self):
 #        AUR HELPER & TERMINAL LAUNCH UTILITIES
 # =====================================================
 
-def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification):
+def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
     def _wait():
         try:
-            process.wait()
+            print(f"\n[DEBUG] wait_install_and_update() started for package: {package_name}")
+            print(f"[DEBUG] Binary path: {binary_path}")
+            print(f"[DEBUG] Waiting for process to complete...")
+            process.communicate()
             time.sleep(1)
+
+            error_output = ""
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    print(f"[DEBUG] Reading temp file: {process.temp_file}")
+                    with open(process.temp_file, 'r') as f:
+                        error_output = f.read()
+                    print(f"[DEBUG] Temp file contents: {len(error_output)} bytes")
+                    import os as os_module
+                    os_module.unlink(process.temp_file)
+                except Exception as e:
+                    print(f"[DEBUG] Error reading temp file: {e}")
+
             if path.exists(binary_path):
+                print(f"[DEBUG] Binary exists at {binary_path}, installation successful")
                 GLib.idle_add(label_widget.set_markup, installed_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
+            else:
+                print(f"[DEBUG] Binary NOT found at {binary_path}, checking for errors...")
+                print(f"[DEBUG] Total error output length: {len(error_output)} bytes")
+                if package_name:
+                    print(f"[DEBUG] Calling check_missing_repo_error with package: {package_name}")
+                    check_missing_repo_error(self_ref, error_output, package_name)
+                else:
+                    print(f"[DEBUG] No package_name provided, skipping error check")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"[ERROR] Exception in wait_install_and_update: {e}")
+            import traceback
+            traceback.print_exc()
     threading.Thread(target=_wait, daemon=True).start()
 
 
@@ -2717,27 +2806,35 @@ def get_aur_helper():
 
 
 def launch_pacman_install_in_terminal(packages):
-    script = f"pacman -S --noconfirm {packages}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    import tempfile
+    temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
+    temp_path = temp_file.name
+    temp_file.close()
+
+    script = f"pacman -S --noconfirm {packages} 2>&1 | tee {temp_path}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    print(f"[DEBUG] Launching pacman install with output to: {temp_path}")
+    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.temp_file = temp_path
+    return process
 
 
 def launch_pacman_remove_in_terminal(packages):
     script = f"pacman -Rcs --noconfirm {packages}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def launch_aur_install_in_terminal(aur_helper, package, username=None):
     if username is None:
         username = sudo_username
     script = f"sudo -u {username} {aur_helper} -S --noconfirm {package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def launch_aur_remove_in_terminal(aur_helper, package, username=None):
     if username is None:
         username = sudo_username
     script = f"sudo -u {username} {aur_helper} -Rs --noconfirm {package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def launch_npm_install_in_terminal(npm_package, username=None):
@@ -2745,7 +2842,7 @@ def launch_npm_install_in_terminal(npm_package, username=None):
         username = sudo_username
     user_home = f"/home/{username}"
     script = f"sudo -u {username} HOME={user_home} npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def launch_npm_remove_in_terminal(npm_package, username=None):
@@ -2753,4 +2850,4 @@ def launch_npm_remove_in_terminal(npm_package, username=None):
         username = sudo_username
     user_home = f"/home/{username}"
     script = f"sudo -u {username} HOME={user_home} npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

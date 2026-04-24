@@ -26,6 +26,27 @@ workdir=$(pwd)
 # reset - commit your changes or stash them before you merge
 # git reset --hard - personal alias - grh
 
+# Generate nemesis_packages.txt from nemesis_repo
+echo "Generating nemesis_packages.txt from nemesis_repo..."
+python3 << 'PYEOF' > $workdir/usr/share/archlinux-tweak-tool/data/nemesis_packages.txt
+import re
+import os
+
+repo_dir = "/home/erik/DATA/EDU/nemesis_repo/x86_64/"
+packages = set()
+
+for filename in os.listdir(repo_dir):
+    if filename.endswith('.pkg.tar.zst'):
+        match = re.match(r'^(.+?)-([^-]+-[^-]+)-(x86_64|any)\.pkg\.tar\.zst$', filename)
+        if match:
+            pkg_name = match.group(1)
+            packages.add(pkg_name)
+
+for pkg in sorted(packages):
+    print(pkg)
+PYEOF
+echo "nemesis_packages.txt generated successfully"
+
 if [[ -f "./repo.sh" ]]; then
     echo "Found repo.sh, running it..."
     bash ./repo.sh

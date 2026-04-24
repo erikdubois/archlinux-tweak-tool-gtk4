@@ -220,7 +220,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         apply_sddm_settings.connect("clicked", self.on_click_sddm_apply)
         apply_sddm_settings.set_margin_start(10)
         apply_sddm_settings.set_margin_end(10)
-        enable_sddm = Gtk.Button(label="Enable Sddm (when not active)")
+        enable_sddm = Gtk.Button(label="Install and enable sddm-git (when not yet active)")
         enable_sddm.connect("clicked", self.on_click_sddm_enable)
         enable_sddm.set_margin_end(10)
         hbox90.append(apply_sddm_settings)

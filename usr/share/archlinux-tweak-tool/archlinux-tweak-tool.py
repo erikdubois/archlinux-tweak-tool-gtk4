@@ -2676,7 +2676,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             process = fn.launch_pacman_install_in_terminal("yay-git")
             GLib.idle_add(fn.show_in_app_notification, self, "yay-git installation started")
-            fn.wait_install_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based) <b>installed</b>", self, "yay-git installed")
+            fn.wait_install_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based) <b>installed</b>", self, "yay-git installed", "yay-git")
         except Exception as error:
             print(error)
 
@@ -2684,7 +2684,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             process = fn.launch_pacman_install_in_terminal("paru-git")
             GLib.idle_add(fn.show_in_app_notification, self, "paru-git installation started")
-            fn.wait_install_and_update(process, "/usr/bin/paru", self.lbl_software_paru, "Paru-git - AUR helper (Rust-based) <b>installed</b>", self, "paru-git installed")
+            fn.wait_install_and_update(process, "/usr/bin/paru", self.lbl_software_paru, "Paru-git - AUR helper (Rust-based) <b>installed</b>", self, "paru-git installed", "paru-git")
         except Exception as error:
             print(error)
 
@@ -2692,7 +2692,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             process = fn.launch_pacman_install_in_terminal("trizen")
             GLib.idle_add(fn.show_in_app_notification, self, "trizen installation started")
-            fn.wait_install_and_update(process, "/usr/bin/trizen", self.lbl_software_trizen, "Trizen - AUR helper (Perl-based) <b>installed</b>", self, "trizen installed")
+            fn.wait_install_and_update(process, "/usr/bin/trizen", self.lbl_software_trizen, "Trizen - AUR helper (Perl-based) <b>installed</b>", self, "trizen installed", "trizen")
         except Exception as error:
             print(error)
 
@@ -3113,11 +3113,16 @@ class Main(Gtk.ApplicationWindow):
                 process = fn.launch_pacman_install_in_terminal(pkgs)
                 def wait_install():
                     try:
-                        process.wait()
+                        stdout_data, stderr_data = process.communicate()
+                        stdout_str = stdout_data.decode() if stdout_data else ""
+                        stderr_str = stderr_data.decode() if stderr_data else ""
+                        error_output = stderr_str + stdout_str
                         if fn.path.exists("/usr/bin/ollama"):
                             GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner <b>installed</b>")
                             GLib.idle_add(self.btn_ai_ollama.set_label, "Remove")
                             GLib.idle_add(fn.show_in_app_notification, self, "ollama installation complete")
+                        else:
+                            fn.check_missing_repo_error(self, error_output, "ollama")
                     except Exception as e:
                         print(f"Error in ollama wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
@@ -3143,11 +3148,19 @@ class Main(Gtk.ApplicationWindow):
                     return
                 process = fn.launch_aur_install_in_terminal(aur_helper, "open-webui")
                 def wait_install():
-                    process.wait()
-                    if fn.path.exists("/usr/bin/open-webui"):
-                        GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama <b>installed</b>")
-                        GLib.idle_add(self.btn_ai_webui.set_label, "Remove")
-                        GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation complete")
+                    try:
+                        stdout_data, stderr_data = process.communicate()
+                        stdout_str = stdout_data.decode() if stdout_data else ""
+                        stderr_str = stderr_data.decode() if stderr_data else ""
+                        error_output = stderr_str + stdout_str
+                        if fn.path.exists("/usr/bin/open-webui"):
+                            GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_webui.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation complete")
+                        else:
+                            fn.check_missing_repo_error(self, error_output, "open-webui")
+                    except Exception as e:
+                        print(f"Error in open-webui wait_install: {e}")
                 fn.threading.Thread(target=wait_install, daemon=True).start()
                 GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation started")
         except Exception as error:
@@ -3633,10 +3646,10 @@ class Main(Gtk.ApplicationWindow):
             else:
                 self.firstrun = False
         else:
-            print("First activate the nemesis repo")
+            print("First activate the chaotic-aur and/or the nemesis repo in pacman ")
             self.hbswich.set_active(False)
             GLib.idle_add(
-                fn.show_in_app_notification, self, "First activate the nemesis repo"
+                fn.show_in_app_notification, self, "First activate the chaotic-aur and/or the nemesis repo in pacman "
             )
 
     def set_ublock_firefox(self, widget, state):
