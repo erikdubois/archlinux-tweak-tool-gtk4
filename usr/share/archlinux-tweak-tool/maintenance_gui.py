@@ -2,8 +2,120 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import struct
 
-def gui(self, Gtk, vboxstack19, fn, maintenance):
+
+XCURSOR_IMAGE_TYPE = 0xFFFD0002
+CURSOR_PREVIEW_SIZE = 24
+CURSOR_PREVIEW_NAMES = (
+    "left_ptr",
+    "default",
+    "pointer",
+    "arrow",
+    "hand1",
+    "hand2",
+)
+
+
+def _load_xcursor_pixbuf(path, GdkPixbuf, GLib):
+    try:
+        with open(path, "rb") as cursor_file:
+            data = cursor_file.read()
+
+        magic, header_size, _version, toc_count = struct.unpack_from("<IIII", data, 0)
+        if magic != 0x72756358:
+            return None
+
+        pixbufs = []
+        toc_offset = header_size
+        for pos in range(toc_count):
+            entry_offset = toc_offset + pos * 12
+            chunk_type, _subtype, chunk_pos = struct.unpack_from(
+                "<III", data, entry_offset
+            )
+            if chunk_type != XCURSOR_IMAGE_TYPE:
+                continue
+
+            header, chunk_type, _subtype, _version = struct.unpack_from(
+                "<IIII", data, chunk_pos
+            )
+            if chunk_type != XCURSOR_IMAGE_TYPE:
+                continue
+
+            width, height, _xhot, _yhot, _delay = struct.unpack_from(
+                "<IIIII", data, chunk_pos + 16
+            )
+            if width <= 0 or height <= 0:
+                continue
+
+            pixel_offset = chunk_pos + header
+            pixel_count = width * height
+            if pixel_offset + pixel_count * 4 > len(data):
+                continue
+
+            rgba = bytearray(pixel_count * 4)
+            for pixel in range(pixel_count):
+                argb = struct.unpack_from("<I", data, pixel_offset + pixel * 4)[0]
+                rgba_pos = pixel * 4
+                rgba[rgba_pos] = (argb >> 16) & 0xFF
+                rgba[rgba_pos + 1] = (argb >> 8) & 0xFF
+                rgba[rgba_pos + 2] = argb & 0xFF
+                rgba[rgba_pos + 3] = (argb >> 24) & 0xFF
+
+            bytes_data = GLib.Bytes.new(bytes(rgba))
+            pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
+                bytes_data,
+                GdkPixbuf.Colorspace.RGB,
+                True,
+                8,
+                width,
+                height,
+                width * 4,
+            )
+            pixbufs.append(pixbuf)
+
+        if not pixbufs:
+            return None
+
+        pixbuf = min(
+            pixbufs,
+            key=lambda item: abs(
+                max(item.get_width(), item.get_height()) - CURSOR_PREVIEW_SIZE
+            ),
+        )
+        scale = CURSOR_PREVIEW_SIZE / max(pixbuf.get_width(), pixbuf.get_height())
+        width = max(1, round(pixbuf.get_width() * scale))
+        height = max(1, round(pixbuf.get_height() * scale))
+        return pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
+    except Exception as error:
+        print(error)
+        return None
+
+
+def _cursor_preview_pixbuf(fn, cursor_theme, GdkPixbuf, GLib):
+    for cursor_name in CURSOR_PREVIEW_NAMES:
+        cursor_path = "/usr/share/icons/" + cursor_theme + "/cursors/" + cursor_name
+        if fn.path.isfile(cursor_path):
+            pixbuf = _load_xcursor_pixbuf(cursor_path, GdkPixbuf, GLib)
+            if pixbuf:
+                return pixbuf
+    return None
+
+
+def _update_cursor_preview(self, fn, Gdk, GdkPixbuf, GLib):
+    cursor_theme = fn.get_combo_text(self.cursor_themes)
+    if not cursor_theme:
+        self.cursor_theme_preview.set_paintable(None)
+        return
+
+    pixbuf = _cursor_preview_pixbuf(fn, cursor_theme, GdkPixbuf, GLib)
+    if pixbuf:
+        self.cursor_theme_preview.set_paintable(Gdk.Texture.new_for_pixbuf(pixbuf))
+    else:
+        self.cursor_theme_preview.set_paintable(None)
+
+
+def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     """create a gui"""
     hbox1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox1_label = Gtk.Label(xalign=0)
@@ -273,6 +385,16 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     hbox13_label.set_text("Choose your cursor theme for installed desktops and SDDM")
     self.cursor_themes = Gtk.DropDown.new_from_strings([])
     maintenance.pop_gtk_cursor_names(self.cursor_themes)
+    self.cursor_theme_preview = Gtk.Picture()
+    self.cursor_theme_preview.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
+    self.cursor_theme_preview.set_size_request(CURSOR_PREVIEW_SIZE, CURSOR_PREVIEW_SIZE)
+    self.cursor_theme_preview.set_halign(Gtk.Align.END)
+    self.cursor_theme_preview.set_valign(Gtk.Align.CENTER)
+    self.cursor_themes.connect(
+        "notify::selected",
+        lambda *_args: _update_cursor_preview(self, fn, Gdk, GdkPixbuf, fn.GLib),
+    )
+    _update_cursor_preview(self, fn, Gdk, GdkPixbuf, fn.GLib)
     btn_apply_cursor = Gtk.Button(label="Apply")
     btn_apply_cursor.connect("clicked", self.on_click_apply_global_cursor)
     hbox13_label.set_margin_start(10)
@@ -285,22 +407,9 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     btn_apply_cursor.set_margin_start(10)
     btn_apply_cursor.set_margin_end(10)
     hbox13.append(btn_apply_cursor)  # pack_end
-
-    hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox9_label = Gtk.Label(xalign=0)
-    hbox9_label.set_markup(
-        "<b>Distro specific:  </b>" + fn.change_distro_label(fn.distr)
-    )
-    hbox9_label.set_margin_start(10)
-    hbox9_label.set_margin_end(10)
-    hbox9.append(hbox9_label)
-
-    hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox10_label = Gtk.Label(xalign=0)
-    hbox10_label.set_markup("<b>For any Arch Linux based system</b>")
-    hbox10_label.set_margin_start(10)
-    hbox10_label.set_margin_end(10)
-    hbox10.append(hbox10_label)
+    self.cursor_theme_preview.set_margin_start(10)
+    self.cursor_theme_preview.set_margin_end(10)
+    hbox13.append(self.cursor_theme_preview)
 
     hbox14 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox14_label = Gtk.Label(xalign=0)
@@ -315,121 +424,6 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     btn_probe.set_margin_end(10)
     hbox14.append(btn_probe)  # pack_end
 
-    hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox11_label = Gtk.Label(xalign=0)
-    hbox11_label.set_markup(
-        "We install Alacritty to show you what changes - close the terminal and ATT continues"
-    )
-    hbox11_label.set_margin_start(10)
-    hbox11_label.set_margin_end(10)
-    hbox11.append(hbox11_label)
-
-    hbox15 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox15_label = Gtk.Label(xalign=0)
-    hbox15_label.set_text("Remove all variety packages")
-    btn_apply_remove_all_variety_packages = Gtk.Button(label="Apply")
-    btn_apply_remove_all_variety_packages.connect(
-        "clicked", self.on_click_remove_all_variety_packages
-    )
-    hbox15_label.set_margin_start(10)
-    hbox15_label.set_margin_end(10)
-    hbox15_label.set_hexpand(True)
-    hbox15.append(hbox15_label)
-    btn_apply_remove_all_variety_packages.set_margin_start(10)
-    btn_apply_remove_all_variety_packages.set_margin_end(10)
-    hbox15.append(btn_apply_remove_all_variety_packages)  # pack_end
-
-    hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox16_label = Gtk.Label(xalign=0)
-    hbox16_label.set_text("Remove all conky packages")
-    btn_apply_remove_all_conky_packages = Gtk.Button(label="Apply")
-    btn_apply_remove_all_conky_packages.connect(
-        "clicked", self.on_click_remove_all_conky_packages
-    )
-    hbox16_label.set_margin_start(10)
-    hbox16_label.set_margin_end(10)
-    hbox16_label.set_hexpand(True)
-    hbox16.append(hbox16_label)
-    btn_apply_remove_all_conky_packages.set_margin_start(10)
-    btn_apply_remove_all_conky_packages.set_margin_end(10)
-    hbox16.append(btn_apply_remove_all_conky_packages)  # pack_end
-
-    hbox17 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox17_label = Gtk.Label(xalign=0)
-    hbox17_label.set_text("Remove all kernel(s) and keep the Linux kernel")
-    btn_apply_remove_all_kernels_but_linux = Gtk.Button(label="Apply")
-    btn_apply_remove_all_kernels_but_linux.connect(
-        "clicked", self.on_click_remove_all_kernels_but_linux
-    )
-    hbox17_label.set_margin_start(10)
-    hbox17_label.set_margin_end(10)
-    hbox17_label.set_hexpand(True)
-    hbox17.append(hbox17_label)
-    btn_apply_remove_all_kernels_but_linux.set_margin_start(10)
-    btn_apply_remove_all_kernels_but_linux.set_margin_end(10)
-    hbox17.append(btn_apply_remove_all_kernels_but_linux)  # pack_end
-
-    hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox18_label = Gtk.Label(xalign=0)
-    hbox18_label.set_text("Remove all kernel(s) and keep the Linux Cachyos kernel")
-    btn_apply_remove_all_kernels_but_linux_cachyos = Gtk.Button(label="Apply")
-    btn_apply_remove_all_kernels_but_linux_cachyos.connect(
-        "clicked", self.on_click_remove_all_kernels_but_linux_cachyos
-    )
-    hbox18_label.set_margin_start(10)
-    hbox18_label.set_margin_end(10)
-    hbox18_label.set_hexpand(True)
-    hbox18.append(hbox18_label)
-    btn_apply_remove_all_kernels_but_linux_cachyos.set_margin_start(10)
-    btn_apply_remove_all_kernels_but_linux_cachyos.set_margin_end(10)
-    hbox18.append(btn_apply_remove_all_kernels_but_linux_cachyos)  # pack_end
-
-    hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox19_label = Gtk.Label(xalign=0)
-    hbox19_label.set_text("Remove all kernel(s) and keep the Linux LTS kernel")
-    btn_apply_remove_all_kernels_but_linux_lts = Gtk.Button(label="Apply")
-    btn_apply_remove_all_kernels_but_linux_lts.connect(
-        "clicked", self.on_click_remove_all_kernels_but_linux_lts
-    )
-    hbox19_label.set_margin_start(10)
-    hbox19_label.set_margin_end(10)
-    hbox19_label.set_hexpand(True)
-    hbox19.append(hbox19_label)
-    btn_apply_remove_all_kernels_but_linux_lts.set_margin_start(10)
-    btn_apply_remove_all_kernels_but_linux_lts.set_margin_end(10)
-    hbox19.append(btn_apply_remove_all_kernels_but_linux_lts)  # pack_end
-
-    hbox20 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox20_label = Gtk.Label(xalign=0)
-    hbox20_label.set_text("Remove all kernel(s) and keep the Linux Zen kernel")
-    btn_apply_remove_all_kernels_but_linux_zen = Gtk.Button(label="Apply")
-    btn_apply_remove_all_kernels_but_linux_zen.connect(
-        "clicked", self.on_click_remove_all_kernels_but_linux_zen
-    )
-    hbox20_label.set_margin_start(10)
-    hbox20_label.set_margin_end(10)
-    hbox20_label.set_hexpand(True)
-    hbox20.append(hbox20_label)
-    btn_apply_remove_all_kernels_but_linux_zen.set_margin_start(10)
-    btn_apply_remove_all_kernels_but_linux_zen.set_margin_end(10)
-    hbox20.append(btn_apply_remove_all_kernels_but_linux_zen)  # pack_end
-
-
-    hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox21_label = Gtk.Label(xalign=0)
-    hbox21_label.set_text("Change debug to !debug in /etc/makepkg.conf")
-    btn_apply_change_debug = Gtk.Button(label="Apply")
-    btn_apply_change_debug.connect(
-        "clicked", self.on_click_change_debug
-    )
-    hbox21_label.set_margin_start(10)
-    hbox21_label.set_margin_end(10)
-    hbox21_label.set_hexpand(True)
-    hbox21.append(hbox21_label)
-    btn_apply_change_debug.set_margin_start(10)
-    btn_apply_change_debug.set_margin_end(10)
-    hbox21.append(btn_apply_change_debug)  # pack_end
-
     # ======================================================================
     #                       VBOX STACK
     # ======================================================================
@@ -442,12 +436,10 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     vboxstack19.append(hbox25)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox40)
-    #vboxstack19.append(hbox10)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox4)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox3)
-    # vboxstack19.pack_start(hbox11, False, False, 0)
     if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
         vboxstack19.append(hbox5)
     vboxstack19.append(hbox2)
@@ -455,17 +447,5 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     vboxstack19.append(hbox8)
     vboxstack19.append(hbox12)
     vboxstack19.append(hbox14)
-
-    if fn.distr == "arcolinux":
-        hbox9.set_margin_start(20)
-        hbox9.set_margin_end(20)
-        vboxstack19.append(hbox9)
-        vboxstack19.append(hbox15)
-        vboxstack19.append(hbox16)
-        vboxstack19.append(hbox17)
-        vboxstack19.append(hbox18)
-        vboxstack19.append(hbox19)
-        vboxstack19.append(hbox20)
-        vboxstack19.append(hbox21)
 
     vboxstack19.append(hbox13)

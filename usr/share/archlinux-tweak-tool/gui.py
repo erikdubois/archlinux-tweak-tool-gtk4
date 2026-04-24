@@ -160,7 +160,7 @@ themes</i> you can customize <b>fastfetch</b>"
     # #               MAINTENANCE
     # # ==========================================================
 
-    maintenance_gui.gui(self, Gtk, vboxstack19, fn, maintenance)
+    maintenance_gui.gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance)
 
     # ==========================================================
     #                 PACMAN
