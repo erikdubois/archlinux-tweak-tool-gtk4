@@ -145,16 +145,45 @@ def _set_xfce_cursor(path, cursor):
 
 
 def _set_gsettings_cursor(cursor):
-    """Set cursor for GNOME-style desktops when gsettings is available."""
+    """Set cursor through gsettings when available."""
+    username = fn.sudo_username
+    pkexec_uid = fn.os.environ.get("PKEXEC_UID")
+
+    if pkexec_uid:
+        try:
+            username = fn.pwd.getpwuid(int(pkexec_uid)).pw_name
+        except Exception as error:
+            print(error)
+
     try:
+        user_info = fn.pwd.getpwnam(username)
+        uid = user_info.pw_uid
+        home = user_info.pw_dir
+        env = [
+            "HOME=" + home,
+            "XDG_RUNTIME_DIR=/run/user/" + str(uid),
+            "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus",
+        ]
+        command = [
+            "gsettings",
+            "set",
+            "org.gnome.desktop.interface",
+            "cursor-theme",
+            cursor,
+        ]
+        if fn.os.geteuid() != uid:
+            command = ["sudo", "-u", username, "env"] + env + command
+        else:
+            command = ["env"] + env + command
+
         result = fn.subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", cursor],
+            command,
             check=False,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
         if result.returncode == 0:
-            return "gsettings:org.gnome.desktop.interface"
+            return "gsettings:" + username + ":org.gnome.desktop.interface"
         print(result.stdout.decode(errors="ignore"))
     except Exception as error:
         print(error)
@@ -336,10 +365,7 @@ def set_global_cursor(self, cursor):
     if "xfce" in sessions or fn.path.isfile(fn.xfce_config):
         apply_target("xfce", _set_xfce_cursor, fn.xfce_config, cursor)
 
-    if sessions.intersection({"budgie", "cinnamon", "gnome", "mate"}):
-        gsettings_target = _set_gsettings_cursor(cursor)
-        if gsettings_target:
-            changed.append(gsettings_target)
+    apply_target("gsettings", _set_gsettings_cursor, cursor)
 
     if "plasma" in sessions:
         apply_target("plasma", _set_plasma_cursor, cursor)
