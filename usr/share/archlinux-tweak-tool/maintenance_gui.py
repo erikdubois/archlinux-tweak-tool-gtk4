@@ -270,7 +270,7 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
 
     hbox13 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox13_label = Gtk.Label(xalign=0)
-    hbox13_label.set_text("Choose your cursor globally - /usr/share/icons/default")
+    hbox13_label.set_text("Choose your cursor theme for installed desktops and SDDM")
     self.cursor_themes = Gtk.DropDown.new_from_strings([])
     maintenance.pop_gtk_cursor_names(self.cursor_themes)
     btn_apply_cursor = Gtk.Button(label="Apply")
@@ -454,7 +454,6 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
     vboxstack19.append(hbox7)
     vboxstack19.append(hbox8)
     vboxstack19.append(hbox12)
-    vboxstack19.append(hbox13)
     vboxstack19.append(hbox14)
 
     if fn.distr == "arcolinux":
@@ -469,3 +468,4 @@ def gui(self, Gtk, vboxstack19, fn, maintenance):
         vboxstack19.append(hbox20)
         vboxstack19.append(hbox21)
 
+    vboxstack19.append(hbox13)
