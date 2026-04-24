@@ -4529,6 +4529,14 @@ class Main(Gtk.ApplicationWindow):
             and self.theme_sddm.get_selected_item() is not None
             and self.sddm_cursor_themes.get_selected_item() is not None
         ):
+            print("=" * 50)
+            print("Applying Sddm settings")
+            print(" - Auto login    :", self.autologin_sddm.get_active())
+            print(" - Session       :", fn.get_combo_text(self.sessions_sddm))
+            print(" - Theme         :", fn.get_combo_text(self.theme_sddm))
+            print(" - Cursor theme  :", fn.get_combo_text(self.sddm_cursor_themes))
+            print(" - Config file   :", fn.sddm_default_d2)
+
             if fn.path.isfile(fn.sddm_default_d2):
                 t1 = fn.threading.Thread(
                     target=sddm.set_sddm_value,
@@ -4546,6 +4554,7 @@ class Main(Gtk.ApplicationWindow):
                 t1.start()
 
             if fn.check_content("[Autologin]", fn.sddm_default_d1):
+                print(" - Autologin file:", fn.sddm_default_d1)
                 t2 = fn.threading.Thread(
                     target=sddm.set_user_autologin_value,
                     args=(
@@ -4560,6 +4569,7 @@ class Main(Gtk.ApplicationWindow):
                 t2.start()
 
             print("Sddm settings saved successfully")
+            print("=" * 50)
             fn.show_in_app_notification(self, "Sddm settings saved successfully")
 
         else:
@@ -4615,7 +4625,7 @@ class Main(Gtk.ApplicationWindow):
             "Both files have been changed /etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf"
         )
         fn.show_in_app_notification(
-            self, "The original sddm.conf and sddm.d.conf is now applied"
+            self, "Your original sddm.conf and sddm.d.conf is now applied"
         )
         fn.restart_program()
 
@@ -4646,18 +4656,172 @@ class Main(Gtk.ApplicationWindow):
             self.sessions_sddm.set_sensitive(False)
 
     def on_click_install_sddm_themes(self, widget):
-        fn.install_arco_package(self, "arcolinux-meta-sddm-themes")
+        fn.install_arco_package(self, "edu-sddm-simplicity-git")
         sddm.pop_theme_box(self, self.theme_sddm)
 
-    def on_click_remove_sddm_themes(self, widget):
-        fn.remove_package_s(self, "arcolinux-meta-sddm-themes")
-        if self.keep_default_theme.get_active() is True:
-            fn.install_arco_package(self, "arcolinux-sddm-simplicity-git")
-        fn.remove_package_remnants("arcolinux-meta-sddm-themes")
-        sddm.pop_theme_box(self, self.theme_sddm)
+    def on_browse_sddm_folder(self, widget):
+        dialog = Gtk.FileDialog()
+        dialog.set_title("Choose a folder with wallpapers")
+        current = self.sddm_folder_entry.get_text().strip()
+        start = current if fn.path.isdir(current) else fn.home
+        dialog.set_initial_folder(Gio.File.new_for_path(start))
+        dialog.select_folder(self, None, self.on_sddm_folder_response_cb)
+
+    def on_sddm_folder_response_cb(self, dialog, result):
+        try:
+            folder = dialog.select_folder_finish(result)
+            if folder:
+                folder_path = folder.get_path()
+                self.sddm_folder_entry.set_text(folder_path)
+                self._populate_sddm_thumbs(folder_path)
+        except Exception:
+            pass
+
+    def on_load_sddm_folder(self, _widget):
+        folder_path = self.sddm_folder_entry.get_text().strip()
+        if fn.path.isdir(folder_path):
+            self._populate_sddm_thumbs(folder_path)
+        else:
+            fn.show_in_app_notification(self, "Folder not found")
+
+    def on_stop_sddm_loading(self, _widget):
+        self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
+
+    def _populate_sddm_thumbs(self, folder_path):
+        self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
+        current_gen = self._sddm_load_gen
+
+        child = self.sddm_thumb_flow.get_first_child()
+        while child is not None:
+            next_child = child.get_next_sibling()
+            self.sddm_thumb_flow.remove(child)
+            child = next_child
+
+        exts = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
+        try:
+            entries = sorted(fn.os.listdir(folder_path))
+        except Exception:
+            return
+
+        image_paths = [
+            fn.path.join(folder_path, name)
+            for name in entries
+            if name.lower().endswith(exts)
+        ]
+
+        idx = [0]
+
+        def load_next():
+            if self._sddm_load_gen != current_gen:
+                return False
+            if idx[0] >= len(image_paths):
+                return False
+            path = image_paths[idx[0]]
+            idx[0] += 1
+            try:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, 160, 100, True)
+                texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+                pic = Gtk.Picture.new_for_paintable(texture)
+                pic.set_can_shrink(False)
+                pic.set_size_request(160, 100)
+
+                lbl = Gtk.Label()
+                lbl.set_text(fn.path.basename(path))
+                lbl.set_max_width_chars(18)
+                lbl.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+
+                box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                box.set_margin_top(4)
+                box.set_margin_bottom(4)
+                box.set_margin_start(4)
+                box.set_margin_end(4)
+                box.append(pic)
+                box.append(lbl)
+
+                btn = Gtk.Button()
+                btn.set_child(box)
+                btn.connect("clicked", self.on_sddm_thumb_clicked, path)
+                self.sddm_thumb_flow.append(btn)
+            except Exception:
+                pass
+            return True
+
+        GLib.idle_add(load_next)
+
+    def on_sddm_thumb_clicked(self, widget, path):
+        self.login_wallpaper_path = path
+        self.sddm_wallpaper_lbl.set_text(path)
+        self.sddm_wallpaper_preview.set_filename(path)
+        self.sddm_wallpaper_preview.get_parent().set_visible(True)
+
+    def on_set_sddm_wallpaper(self, widget):
+        simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
+        simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
+        dest = simplicity_images + "/background.jpg"
+        dest_bak = simplicity_images + "/background.jpg.bak"
+
+        if not self.login_wallpaper_path or not fn.path.isfile(self.login_wallpaper_path):
+            fn.show_in_app_notification(self, "First choose a wallpaper image")
+            return
+
+        if not fn.path.isdir(simplicity_images):
+            fn.show_in_app_notification(
+                self, "Simplicity theme not found - install it first"
+            )
+            return
+
+        try:
+            if fn.path.isfile(dest) and not fn.path.isfile(dest_bak):
+                fn.shutil.copy(dest, dest_bak)
+                print(" - Backup created:", dest_bak)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file(self.login_wallpaper_path)
+            pixbuf.savev(dest, "jpeg", [], [])
+            with open(simplicity_conf, "w", encoding="utf-8") as f:
+                f.write("[General]\nbackground=images/background.jpg\n")
+            print("=" * 50)
+            print("Applying Sddm wallpaper")
+            print(" - Source        :", self.login_wallpaper_path)
+            print(" - Destination   :", dest)
+            print(" - Config file   :", simplicity_conf)
+            print("Sddm wallpaper applied successfully")
+            print("=" * 50)
+            fn.show_in_app_notification(self, "Simplicity wallpaper applied")
+        except Exception as error:
+            print(error)
+            fn.show_in_app_notification(self, "Failed to apply wallpaper")
+
+    def on_restore_sddm_wallpaper(self, widget):
+        simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
+        simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
+        dest = simplicity_images + "/background.jpg"
+        dest_bak = simplicity_images + "/background.jpg.bak"
+
+        if not fn.path.isdir(simplicity_images):
+            fn.show_in_app_notification(
+                self, "Simplicity theme not found - install it first"
+            )
+            return
+
+        if not fn.path.isfile(dest_bak):
+            fn.show_in_app_notification(self, "No backup found - apply a wallpaper first")
+            return
+
+        try:
+            fn.shutil.copy(dest_bak, dest)
+            with open(simplicity_conf, "w", encoding="utf-8") as f:
+                f.write("[General]\nbackground=images/background.jpg\n")
+            self.sddm_wallpaper_lbl.set_text("Default wallpaper restored")
+            self.sddm_wallpaper_preview.set_filename(dest)
+            self.sddm_wallpaper_preview.get_parent().set_visible(True)
+            self.login_wallpaper_path = ""
+            print("Sddm simplicity wallpaper restored to default")
+            fn.show_in_app_notification(self, "Default wallpaper restored")
+        except Exception as error:
+            print(error)
+            fn.show_in_app_notification(self, "Failed to restore wallpaper")
 
     def on_click_install_bibata_cursor(self, widget):
-        fn.install_arco_package(self, "bibata-cursor-theme-bin")
+        fn.install_arco_package(self, "bibata-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
         if fn.check_package_installed("lightdm"):
@@ -4665,7 +4829,7 @@ class Main(Gtk.ApplicationWindow):
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_click_remove_bibata_cursor(self, widget):
-        fn.remove_package(self, "bibata-cursor-theme-bin")
+        fn.remove_package(self, "bibata-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
         if fn.check_package_installed("lightdm"):
@@ -4702,7 +4866,7 @@ class Main(Gtk.ApplicationWindow):
         fn.restart_program()
 
     def on_click_sddm_enable(self, desktop):
-        fn.install_package(self, "sddm")
+        fn.install_package(self, "sddm-git")
         fn.enable_login_manager(self, "sddm")
 
     def on_launch_adt_clicked(self, desktop):

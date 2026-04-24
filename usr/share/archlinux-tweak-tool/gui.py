@@ -28,6 +28,7 @@ import fastfetch_gui
 import kernel_gui
 import pacman_gui
 import performance_gui
+import sddm_gui
 import privacy_gui
 import services_gui
 import shell_gui
@@ -103,6 +104,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack26 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack27 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack28 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_sddm = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_ai = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_logging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_network = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -210,6 +212,8 @@ themes</i> you can customize <b>fastfetch</b>"
     if fn.distr != "artix":
         performance_gui.gui(self, Gtk, vboxstack27, performance, fn)
 
+    sddm_gui.gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn)
+
     kernel_gui.gui(self, Gtk, vboxstack28, fn)
 
     ai_gui.gui(self, Gtk, vboxstack_ai, fn)
@@ -252,6 +256,8 @@ themes</i> you can customize <b>fastfetch</b>"
 
     if fn.distr != "artix":
         stack.add_titled(vboxstack27, "stack27", "Performance")  # performance
+
+    stack.add_titled(vboxstack_sddm, "stack_sddm", "Sddm")  # sddm
 
     if fn.distr != "artix":
         stack.add_titled(vboxstack14, "stack14", "Services")  # services

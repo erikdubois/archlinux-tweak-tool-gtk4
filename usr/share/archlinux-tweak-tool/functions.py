@@ -869,60 +869,6 @@ def remove_package_dd(self, package):
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
-def remove_package_remnants(package):
-    """remove theme.conf.user from folder - ATT shows names of empty folders"""
-    # TODO: clean up for any theme
-    # scan folders
-    # if theme.conf is not present and theme.conf.user is delete
-    if package == "arcolinux-meta-sddm-themes":
-        themes = (
-            "arcolinux-futuristic",
-            "arcolinux-materia",
-            "arcolinux-materia-dark",
-            "arcolinux-simplicity",
-            "arcolinux-slice",
-            "arcolinux-sugar-candy",
-            "arcolinux-urbanlifestyle",
-        )
-        for theme in themes:
-            file = "/usr/share/sddm/themes/" + theme + "/theme.conf.user"
-            directory = "/usr/share/sddm/themes/" + theme
-
-            if file_check(file):
-                print("Also remove - " + file)
-                unlink(file)
-                try:
-                    rmdir(directory)
-                except:
-                    print("Manually remove any files in " + directory)
-
-    # clean up two of the ATT themes
-    # clean up if directory exists and if directory is not empty
-    if check_package_installed("arcolinux-sddm-breeze-minimal-git") is False:
-        file = "/usr/share/sddm/themes/arcolinux-breeze-minimal/theme.conf.user"
-        directory = "/usr/share/sddm/themes/arcolinux-breeze-minimal"
-        if path_check(directory):
-            if file_check(file):
-                try:
-                    unlink(file)
-                    if is_empty_directory(directory):
-                        rmdir(directory)
-                except:
-                    print("Manually remove any files in " + directory)
-
-    if check_package_installed("arcolinux-sddm-breeze-git") is False:
-        file = "/usr/share/sddm/themes/arcolinux-breeze/theme.conf.user"
-        directory = "/usr/share/sddm/themes/arcolinux-breeze"
-        if path_check(directory):
-            if file_check(file):
-                try:
-                    unlink(file)
-                    if is_empty_directory(directory):
-                        rmdir(directory)
-                except:
-                    print("Manually remove any files in " + directory)
-
-
 def enable_login_manager(self, loginmanager):
     if check_package_installed(loginmanager):
         try:
