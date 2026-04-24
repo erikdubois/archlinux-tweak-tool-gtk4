@@ -154,7 +154,14 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.sddm_wallpaper_preview.set_size_request(-1, 150)
         self.sddm_wallpaper_preview.set_hexpand(True)
         hbox_wp_preview.append(self.sddm_wallpaper_preview)
-        hbox_wp_preview.set_visible(False)
+        default_sddm_wallpaper = (
+            "/usr/share/sddm/themes/edu-simplicity/images/background.jpg"
+        )
+        if fn.path.isfile(default_sddm_wallpaper):
+            self.sddm_wallpaper_lbl.set_text(default_sddm_wallpaper)
+            self.sddm_wallpaper_preview.set_filename(default_sddm_wallpaper)
+        else:
+            hbox_wp_preview.set_visible(False)
 
         hbox_wp_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         btn_apply_wallpaper = Gtk.Button(label="Apply wallpaper")
