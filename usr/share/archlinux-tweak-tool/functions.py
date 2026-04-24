@@ -635,9 +635,9 @@ def load_nemesis_packages():
         if path.exists(nemesis_file):
             with open(nemesis_file, 'r') as f:
                 _nemesis_packages_cache = set(line.strip() for line in f if line.strip())
-            print(f"[DEBUG] Loaded {len(_nemesis_packages_cache)} nemesis packages from {nemesis_file}")
+            print(f"[INFO] Loaded {len(_nemesis_packages_cache)} nemesis packages from {nemesis_file}")
         else:
-            print(f"[DEBUG] nemesis_packages.txt not found at {nemesis_file}")
+            print(f"[INFO] nemesis_packages.txt not found at {nemesis_file}")
     except Exception as e:
         print(f"[ERROR] Failed to load nemesis packages: {e}")
 
@@ -646,29 +646,29 @@ def load_nemesis_packages():
 
 def find_package_repo(package_name):
     """Determine which repo a package belongs to (nemesis_repo or chaotic-aur)"""
-    print(f"[DEBUG] find_package_repo() called for: {package_name}")
+    print(f"[INFO] find_package_repo() called for: {package_name}")
 
     nemesis_packages = load_nemesis_packages()
     if package_name in nemesis_packages:
-        print(f"[DEBUG] Found {package_name} in nemesis_repo")
+        print(f"[INFO] Found {package_name} in nemesis_repo")
         return "nemesis_repo"
 
-    print(f"[DEBUG] Package {package_name} not in nemesis_repo, assuming chaotic-aur")
+    print(f"[INFO] Package {package_name} not in nemesis_repo, assuming chaotic-aur")
     return "chaotic-aur"
 
 
 def check_missing_repo_error(self, error_msg, package):
     """Check if installation error is due to missing repo and show appropriate error"""
-    print(f"\n[DEBUG] check_missing_repo_error() called")
-    print(f"[DEBUG] Package: {package}")
-    print(f"[DEBUG] Error message length: {len(error_msg)}")
-    print(f"[DEBUG] Error message (first 200 chars): {error_msg[:200]}")
+    print(f"\n[INFO] check_missing_repo_error() called")
+    print(f"[INFO] Package: {package}")
+    print(f"[INFO] Error message length: {len(error_msg)}")
+    print(f"[INFO] Error message (first 200 chars): {error_msg[:200]}")
 
     if "target not found" not in error_msg.lower():
-        print(f"[DEBUG] 'target not found' not in error message, returning False")
+        print(f"[INFO] 'target not found' not in error message, returning False")
         return False
 
-    print(f"[DEBUG] 'target not found' detected, querying repo for {package}")
+    print(f"[INFO] 'target not found' detected, querying repo for {package}")
     repo = find_package_repo(package)
 
     if repo:
@@ -676,7 +676,7 @@ def check_missing_repo_error(self, error_msg, package):
     else:
         notification = "Package not found. Please enable nemesis_repo or chaotic-aur in pacman.conf"
 
-    print(f"[DEBUG] Showing notification: {notification}")
+    print(f"[INFO] Showing notification: {notification}")
     GLib.idle_add(show_in_app_notification, self, notification)
     return True
 
@@ -2748,36 +2748,36 @@ def monitor_messages_queue(self):
 def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
     def _wait():
         try:
-            print(f"\n[DEBUG] wait_install_and_update() started for package: {package_name}")
-            print(f"[DEBUG] Binary path: {binary_path}")
-            print(f"[DEBUG] Waiting for process to complete...")
+            print(f"\n[INFO] wait_install_and_update() started for package: {package_name}")
+            print(f"[INFO] Binary path: {binary_path}")
+            print(f"[INFO] Waiting for process to complete...")
             process.communicate()
             time.sleep(1)
 
             error_output = ""
             if hasattr(process, 'temp_file') and process.temp_file:
                 try:
-                    print(f"[DEBUG] Reading temp file: {process.temp_file}")
+                    print(f"[INFO] Reading temp file: {process.temp_file}")
                     with open(process.temp_file, 'r') as f:
                         error_output = f.read()
-                    print(f"[DEBUG] Temp file contents: {len(error_output)} bytes")
+                    print(f"[INFO] Temp file contents: {len(error_output)} bytes")
                     import os as os_module
                     os_module.unlink(process.temp_file)
                 except Exception as e:
-                    print(f"[DEBUG] Error reading temp file: {e}")
+                    print(f"[INFO] Error reading temp file: {e}")
 
             if path.exists(binary_path):
-                print(f"[DEBUG] Binary exists at {binary_path}, installation successful")
+                print(f"[INFO] Binary exists at {binary_path}, installation successful")
                 GLib.idle_add(label_widget.set_markup, installed_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
             else:
-                print(f"[DEBUG] Binary NOT found at {binary_path}, checking for errors...")
-                print(f"[DEBUG] Total error output length: {len(error_output)} bytes")
+                print(f"[INFO] Binary NOT found at {binary_path}, checking for errors...")
+                print(f"[INFO] Total error output length: {len(error_output)} bytes")
                 if package_name:
-                    print(f"[DEBUG] Calling check_missing_repo_error with package: {package_name}")
+                    print(f"[INFO] Calling check_missing_repo_error with package: {package_name}")
                     check_missing_repo_error(self_ref, error_output, package_name)
                 else:
-                    print(f"[DEBUG] No package_name provided, skipping error check")
+                    print(f"[INFO] No package_name provided, skipping error check")
         except Exception as e:
             print(f"[ERROR] Exception in wait_install_and_update: {e}")
             import traceback
@@ -2788,13 +2788,42 @@ def wait_install_and_update(process, binary_path, label_widget, installed_markup
 def wait_remove_and_update(process, binary_path, label_widget, plain_markup, self_ref, notification):
     def _wait():
         try:
-            process.wait()
+            print(f"\n[INFO] wait_remove_and_update() started")
+            print(f"[INFO] Binary path to check: {binary_path}")
+            print(f"[INFO] Waiting for removal process to complete...")
+            stdout_data, stderr_data = process.communicate()
+            print(f"[INFO] Process completed")
+            print(f"[INFO] Captured output: stdout={len(stdout_data) if stdout_data else 0} bytes, stderr={len(stderr_data) if stderr_data else 0} bytes")
             time.sleep(1)
+
+            error_output = ""
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    print(f"[INFO] Reading output from temp file: {process.temp_file}")
+                    with open(process.temp_file, 'r') as f:
+                        error_output = f.read()
+                    print(f"[INFO] Temp file size: {len(error_output)} bytes")
+                    print(f"[INFO] Parsing output for errors...")
+                    import os as os_module
+                    os_module.unlink(process.temp_file)
+                    print(f"[INFO] Cleaned up temp file")
+                except Exception as e:
+                    print(f"[INFO] Could not read temp file: {e}")
+
+            print(f"[INFO] Checking if binary still exists at: {binary_path}")
             if not path.exists(binary_path):
+                print(f"[INFO] ✓ Binary successfully removed from {binary_path}")
+                print(f"[INFO] Updating UI and showing notification")
                 GLib.idle_add(label_widget.set_markup, plain_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
+                print(f"[INFO] {notification}")
+            else:
+                print(f"[INFO] ✗ Binary still exists at {binary_path}")
+                print(f"[INFO] Removal may have failed or encountered issues")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"[ERROR] Exception in wait_remove_and_update: {e}")
+            import traceback
+            traceback.print_exc()
     threading.Thread(target=_wait, daemon=True).start()
 
 
@@ -2811,16 +2840,98 @@ def launch_pacman_install_in_terminal(packages):
     temp_path = temp_file.name
     temp_file.close()
 
-    script = f"pacman -S --noconfirm {packages} 2>&1 | tee {temp_path}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    print(f"[DEBUG] Launching pacman install with output to: {temp_path}")
+    script = f"""
+set -o pipefail
+pacman -S --noconfirm {packages} 2>&1 | tee {temp_path}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Installation successful'
+else
+    echo '✗ Installation failed'
+    if grep -q 'target not found' {temp_path}; then
+        REPO="chaotic-aur"
+        NEMESIS_FILE="/usr/share/archlinux-tweak-tool/data/nemesis_packages.txt"
+
+        # Check if package is in nemesis_repo
+        if [ -f "$NEMESIS_FILE" ]; then
+            if grep -q "^{packages}$" "$NEMESIS_FILE"; then
+                REPO="nemesis_repo"
+            fi
+        fi
+
+        echo ''
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'REASON: Missing repository'
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'SOLUTION:'
+        echo ". Enable $REPO in /etc/pacman.conf"
+        echo ". Try again in the ATT"
+        echo ". Or run: pacman -Sy {packages}"
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    fi
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+echo 'You can close this window'
+read -p 'Press Enter to close...'
+"""
+    print(f"[INFO] Launching pacman install with output to: {temp_path}")
     process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.temp_file = temp_path
     return process
 
 
 def launch_pacman_remove_in_terminal(packages):
-    script = f"pacman -Rcs --noconfirm {packages}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    import tempfile
+    temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
+    temp_path = temp_file.name
+    temp_file.close()
+
+    script = f"""
+set -o pipefail
+pacman -Rcs --noconfirm {packages} 2>&1 | tee {temp_path}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Removal successful'
+else
+    echo '✗ Removal failed'
+    if grep -q 'target not found' {temp_path}; then
+        echo ''
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'REASON: Package might be removed already'
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'SOLUTION:'
+        echo '. Check if package is installed: pacman -Q {packages}'
+        echo '. Try manual removal: pacman -R {packages}'
+        echo '. For dependencies: pacman -Rdd {packages}'
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    elif grep -qE 'error:|failed' {temp_path}; then
+        echo ''
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'REASON: Package might be removed already'
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        echo 'SOLUTION:'
+        echo '. Check if package is installed: pacman -Q {packages}'
+        echo '. Try manual removal: pacman -R {packages}'
+        echo '. For dependencies: pacman -Rdd {packages}'
+        echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    fi
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+echo 'You can close this window'
+read -p 'Press Enter to close...'
+"""
+    print(f"[INFO] Launching pacman remove with output to: {temp_path}")
+    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.temp_file = temp_path
+    return process
 
 
 def launch_aur_install_in_terminal(aur_helper, package, username=None):

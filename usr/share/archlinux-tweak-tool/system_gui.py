@@ -261,7 +261,7 @@ def gui(self, Gtk, vboxstack_system, fn):
     hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox18_label = Gtk.Label(xalign=0)
     hbox18_label.set_text("Inspect with GParted (partition manager)")
-    btn18 = Gtk.Button(label="Launch")
+    btn18 = Gtk.Button(label="Launch/install")
     btn18.connect("clicked", self.on_click_system_gparted)
     hbox18_label.set_margin_start(10)
     hbox18_label.set_margin_end(10)
