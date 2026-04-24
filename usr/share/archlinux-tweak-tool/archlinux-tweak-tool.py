@@ -2691,8 +2691,8 @@ class Main(Gtk.ApplicationWindow):
         try:
             if not fn.path.exists("/usr/bin/plasma-discover"):
                 print("\n[INFO] plasma-discover not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("discover")
-                GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover installation started")
+                process = fn.launch_pacman_install_in_terminal("discover packagekit-qt6")
+                GLib.idle_add(fn.show_in_app_notification, self, "discover installation started")
 
                 def wait_install():
                     try:
