@@ -473,12 +473,14 @@ def is_chaotic_aur_enabled():
 
 def install_yay_pacman(self):
     """Install yay-git from chaotic-aur repository."""
+    print("\n[INFO] Installing yay-git from chaotic-aur")
     fn.install_package(self, "yay-git")
     fn.show_in_app_notification(self, "yay-git installed successfully from chaotic-aur")
 
 
 def install_yay_git(self):
     """Install yay-git from source in a terminal window. Returns the Popen process."""
+    print("\n[INFO] Installing yay-git from source (git)")
     fn.install_package(self, "alacritty base-devel git")
     build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
     return fn.subprocess.Popen(
@@ -489,12 +491,14 @@ def install_yay_git(self):
 
 def install_paru_pacman(self):
     """Install paru-git from chaotic-aur repository."""
+    print("\n[INFO] Installing paru-git from chaotic-aur")
     fn.install_package(self, "paru-git")
     fn.show_in_app_notification(self, "paru-git installed successfully from chaotic-aur")
 
 
 def install_paru_git(self):
     """Install paru-git from source in a terminal window. Returns the Popen process."""
+    print("\n[INFO] Installing paru-git from source (git)")
     fn.install_package(self, "alacritty base-devel git")
     build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
     return fn.subprocess.Popen(
@@ -506,12 +510,15 @@ def install_paru_git(self):
 def remove_aur_helper(self, binary):
     """Remove yay or paru by detecting the package that owns the binary."""
     try:
+        print(f"\n[INFO] Removing {binary}")
         result = fn.subprocess.check_output(
             ["pacman", "-Qo", f"/usr/bin/{binary}"],
             stderr=fn.subprocess.STDOUT,
         ).decode().strip()
         # output: "/usr/bin/yay is owned by yay-git 12.1.0-1"
         pkg = result.split(" is owned by ")[1].split(" ")[0]
+        print(f"[INFO] Found package: {pkg}")
         fn.remove_package(self, pkg)
-    except Exception:
+    except Exception as e:
+        print(f"[INFO] Could not find package owning {binary}: {e}")
         fn.show_in_app_notification(self, f"Could not find package owning {binary}")

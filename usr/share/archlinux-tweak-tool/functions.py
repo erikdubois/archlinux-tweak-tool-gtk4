@@ -682,35 +682,28 @@ def check_missing_repo_error(self, error_msg, package):
 
 
 def install_package(self, package):
-    command = "pacman -S " + package + " --noconfirm --needed"
-    # if more than one package - checf fails and will install
-    if check_package_installed(package):
-        print(package + " is already installed - nothing to do")
-        GLib.idle_add(
-            show_in_app_notification,
-            self,
-            package + " is already installed - nothing to do",
-        )
-    else:
-        try:
-            print(command)
-            result = subprocess.run(
-                command.split(" "),
-                shell=False,
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                print(package + " is now installed")
-                GLib.idle_add(show_in_app_notification, self, package + " is now installed")
-            else:
-                error_msg = result.stderr if result.stderr else result.stdout
-                print(f"Error installing {package}: {error_msg}")
-                if not check_missing_repo_error(self, error_msg, package):
-                    GLib.idle_add(show_in_app_notification, self, f"Error installing {package}")
-        except Exception as error:
-            print(error)
-            GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
+    try:
+        # Map package names to their binary names (some packages have different binary names)
+        binary_map = {
+            "fastfetch-git": "fastfetch",
+            "yay-git": "yay",
+            "paru-git": "paru",
+        }
+        binary_name = binary_map.get(package, package)
+        binary_path = f"/usr/bin/{binary_name}"
+
+        if path.exists(binary_path):
+            print(f"\n[INFO] {package} already installed")
+            GLib.idle_add(show_in_app_notification, self, f"{package} already installed")
+            return
+
+        print(f"\n[INFO] {package} not installed, starting installation")
+        process = launch_pacman_install_in_terminal(package)
+        GLib.idle_add(show_in_app_notification, self, f"{package} installation started")
+        wait_install_and_update(process, binary_path, None, None, self, f"{package} installed", package)
+    except Exception as error:
+        print(error)
+        GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
 
 
 def install_local_package(self, package):
@@ -2768,7 +2761,8 @@ def wait_install_and_update(process, binary_path, label_widget, installed_markup
 
             if path.exists(binary_path):
                 print(f"[INFO] Binary exists at {binary_path}, installation successful")
-                GLib.idle_add(label_widget.set_markup, installed_markup)
+                if label_widget:
+                    GLib.idle_add(label_widget.set_markup, installed_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
             else:
                 print(f"[INFO] Binary NOT found at {binary_path}, checking for errors...")

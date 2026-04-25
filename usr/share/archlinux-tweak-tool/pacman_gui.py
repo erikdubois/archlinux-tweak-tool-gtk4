@@ -394,7 +394,6 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack4.append(blank_pacman)  # pack_end
     hboxstack4.append(reset_pacman_online)  # pack_end
     hboxstack4.append(reset_pacman_local)  # pack_end
-    hboxstack4.append(self.custom_repo)  # pack_end
     # hboxstack4.pack_start(label_backup, False, False, 0)
 
     # ========================================================
@@ -442,21 +441,6 @@ def gui(self, Gtk, vboxstack1, fn):
     vboxstack1.append(hbox4)
     vboxstack1.append(hbox5)
     #vboxstack1.pack_start(frame3, False, False, 5)
-
-    # =================TESTING REPO========================
-
-    vboxstack1.append(frame)
-
-    # =================OTHER REPO========================
-
-    vboxstack1.append(frame2)
-
-    # =================CUSTOM REPO========================
-
-    vboxstack1.append(hboxstack2)
-    hboxstack3.set_hexpand(True)
-    hboxstack3.set_vexpand(True)
-    vboxstack1.append(hboxstack3)
 
     # =================AUR HELPER========================
 
@@ -562,6 +546,27 @@ def gui(self, Gtk, vboxstack1, fn):
     vboxstack1.append(hbox_aur_title)
     vboxstack1.append(hbox_aur_status)
     vboxstack1.append(hbox_aur_buttons)
+
+    # =================TESTING REPO========================
+
+    vboxstack1.append(frame)
+
+    # =================OTHER REPO========================
+
+    vboxstack1.append(frame2)
+
+    # =================CUSTOM REPO========================
+
+    vboxstack1.append(hboxstack2)
+    hboxstack3.set_hexpand(True)
+    hboxstack3.set_vexpand(True)
+    vboxstack1.append(hboxstack3)
+
+    hboxstack_custom_repo = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    self.custom_repo.set_margin_start(10)
+    self.custom_repo.set_margin_end(10)
+    hboxstack_custom_repo.append(self.custom_repo)  # pack_end
+    vboxstack1.append(hboxstack_custom_repo)
 
     # =================FOOTER========================
 

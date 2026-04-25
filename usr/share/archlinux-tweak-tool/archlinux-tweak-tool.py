@@ -4138,7 +4138,7 @@ class Main(Gtk.ApplicationWindow):
     # ====================================================================
 
     def on_install_fast(self, widget):
-        fn.install_package(self, "fastfetch")
+        fn.install_package(self, "fastfetch-git")
 
     # ====================================================================
     #                        FASTFETCH CONFIG
@@ -4172,18 +4172,21 @@ class Main(Gtk.ApplicationWindow):
         util_state = utilities.get_util_state(self, utility)
 
         if lolcat_state:
-            utilities.install_util("lolcat")
+            utilities.install_util(self, "lolcat")
             if not util_state or utility == "fastfetch":
                 util_state = True
                 utilities.set_util_state(self, utility, True, True)
         elif not lolcat_state and utility == "fastfetch":
             utilities.set_util_state(self, utility, True, False)
 
-        utilities.write_configs(utility, util_state, lolcat_state)
-
     def on_fast_util_toggled(self, switch, gparam):
         util_state = switch.get_active()
         lolcat_state = self.fast_lolcat.get_active()
+
+        if util_state and not fn.path.exists("/usr/bin/fastfetch"):
+            print("\n[INFO] fastfetch installation started")
+            fn.install_package(self, "fastfetch-git")
+            return
 
         fastfetch.toggle_fastfetch(util_state)
 
@@ -4191,7 +4194,7 @@ class Main(Gtk.ApplicationWindow):
             self.fast_lolcat.set_active(False)
             lolcat_state = False
 
-        utilities.write_configs("fastfetch", util_state, lolcat_state)
+        fastfetch.write_configs(util_state, lolcat_state)
         self.fast_lolcat.set_sensitive(util_state)
 
     def on_fast_lolcat_toggled(self, switch, gparam):
@@ -4200,24 +4203,20 @@ class Main(Gtk.ApplicationWindow):
 
         if util_state:
             fastfetch.toggle_lolcat(lolcat_state)
-            utilities.write_configs("fastfetch", util_state, lolcat_state)
+            fastfetch.write_configs(util_state, lolcat_state)
 
     def util_toggle(self, widget, active, utility):
         util_state = widget.get_active()
         lolcat_state = utilities.get_lolcat_state(self, utility)
 
         if util_state:
-            utilities.install_util(utility)
+            utilities.install_util(self, utility)
             if utility == "fastfetch":
                 utilities.set_util_state(self, utility, True, lolcat_state)
         else:
             if lolcat_state:
                 lolcat_state = False
             utilities.set_util_state(self, utility, False, False)
-            if utility == "fastfetch":
-                utilities.set_util_state(self, utility, False, False)
-
-            utilities.write_configs(utility, util_state, lolcat_state)
 
     def on_click_fastfetch_all_selection(self, widget):
         print("You have selected all Fastfetch switches")
@@ -4354,7 +4353,6 @@ class Main(Gtk.ApplicationWindow):
                     self.button_install.set_sensitive(False)
                     self.button_reinstall.set_sensitive(False)
                     #self.install_arco_vimix.set_sensitive(False)
-        #utilities.set_util_state_arco_switch(self)
 
     def on_pacman_a3p_toggle(self, widget, active):
         if not pmf.repo_exist("[arcolinux_repo_3party]"):
@@ -4467,6 +4465,7 @@ class Main(Gtk.ApplicationWindow):
             if self.opened is False:
                 pmf.toggle_test_repos(self, widget.get_active(), "nemesis")
         fn.update_repos(self)
+        desktopr_gui.update_button_state(self, fn)
 
     def on_pacman_toggle1(self, widget, active):
         if not pmf.repo_exist("[core-testing]"):

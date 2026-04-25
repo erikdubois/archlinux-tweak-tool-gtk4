@@ -157,16 +157,20 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
             b.disconnect(hid[0])
             hid[0] = None
 
-        def launch_and_wait(process):
+        def launch_and_wait(process, action, pkg_name):
             process.wait()
-            fn.GLib.idle_add(refresh)
+            print(f"[INFO] {action} completed for {pkg_name}")
+            fn.GLib.idle_add(lambda: (
+                fn.show_in_app_notification(self, f"{action} completed for {pkg_name}"),
+                refresh()
+            ))
 
         if installed and not is_running:
             hid[0] = b.connect(
                 "clicked",
                 lambda w: fn.threading.Thread(
                     target=launch_and_wait,
-                    args=(kernel.remove_kernel(self, p, h),),
+                    args=(kernel.remove_kernel(self, p, h), "Removal", p),
                     daemon=True,
                 ).start(),
             )
@@ -175,7 +179,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
                 "clicked",
                 lambda w: fn.threading.Thread(
                     target=launch_and_wait,
-                    args=(kernel.install_kernel(self, p, h),),
+                    args=(kernel.install_kernel(self, p, h), "Installation", p),
                     daemon=True,
                 ).start(),
             )
@@ -199,24 +203,30 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
         btn.set_label(f"Remove {pkg}")
         btn.set_sensitive(not is_running_init)
         if not is_running_init:
+            def remove_and_notify():
+                kernel.remove_kernel(self, pkg, headers).wait()
+                print(f"[INFO] Removal completed for {pkg}")
+                fn.GLib.idle_add(lambda: (
+                    fn.show_in_app_notification(self, f"Removal completed for {pkg}"),
+                    refresh()
+                ))
             handler_id[0] = btn.connect(
                 "clicked",
-                lambda w: fn.threading.Thread(
-                    target=lambda: (kernel.remove_kernel(self, pkg, headers).wait(),
-                                    fn.GLib.idle_add(refresh)),
-                    daemon=True,
-                ).start(),
+                lambda w: fn.threading.Thread(target=remove_and_notify, daemon=True).start(),
             )
     else:
         status_label.set_markup("not installed")
         btn.set_label(f"Install {pkg}")
+        def install_and_notify():
+            kernel.install_kernel(self, pkg, headers).wait()
+            print(f"[INFO] Installation completed for {pkg}")
+            fn.GLib.idle_add(lambda: (
+                fn.show_in_app_notification(self, f"Installation completed for {pkg}"),
+                refresh()
+            ))
         handler_id[0] = btn.connect(
             "clicked",
-            lambda w: fn.threading.Thread(
-                target=lambda: (kernel.install_kernel(self, pkg, headers).wait(),
-                                fn.GLib.idle_add(refresh)),
-                daemon=True,
-            ).start(),
+            lambda w: fn.threading.Thread(target=install_and_notify, daemon=True).start(),
         )
 
     hbox_row.append(status_label)
@@ -277,11 +287,14 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
         selected_id = combo.get_active_id()
         if selected_id:
             title = id_to_title.get(selected_id, "")
+            print(f"\n[INFO] Setting default boot entry to: {title}")
             success = kernel.set_default_boot_entry(selected_id)
             if success:
+                print(f"[INFO] Successfully set default boot entry to: {title}")
                 _refresh_boot_entry_display(selected_id, lbl_current)
                 fn.show_in_app_notification(self, f"Default boot entry set to: {title} — Reboot to verify")
             else:
+                print(f"[INFO] Failed to set default boot entry to: {title}")
                 fn.show_in_app_notification(self, f"Failed to set default boot entry: {title}")
 
     btn_set = Gtk.Button(label="Set as Default")

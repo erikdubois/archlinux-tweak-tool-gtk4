@@ -40,14 +40,14 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     self.fast_util = Gtk.Switch()
     fast_util_label = Gtk.Label(xalign=0)
-    fast_util_label.set_markup("Fastfetch enabled")
+    fast_util_label.set_markup("Fastfetch install/enable")
 
     self.fast_lolcat = Gtk.Switch()
     fast_lolcat_label = Gtk.Label(xalign=0)
-    fast_lolcat_label.set_markup("Lolcat enabled")
+    fast_lolcat_label.set_markup("Lolcat install/enable")
 
     # Set initial switch states from shell config before connecting signals
-    fastfetch_enabled = utilities.get_term_rc("fastfetch")
+    fastfetch_enabled = fastfetch.get_term_rc() and fn.path.exists("/usr/bin/fastfetch")
     lolcat_enabled = False
     if fastfetch_enabled:
         config = utilities.get_config_file()
@@ -64,17 +64,15 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     applyfastfetch = Gtk.Button(label="Apply Fastfetch configuration")
     resetnormalfastfetch = Gtk.Button(label="Reset Fastfetch")
-    installfastfetch = Gtk.Button(label="Install Fastfetch")
 
     applyfastfetch.connect("clicked", self.on_apply_fast)
     resetnormalfastfetch.connect("clicked", self.on_reset_fast)
-    installfastfetch.connect("clicked", self.on_install_fast)
 
     hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox22.set_margin_top(30)
+    hbox22.set_margin_top(10)
     hbox24 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox25 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox25.set_margin_top(30)
+    hbox25.set_margin_top(10)
     self.hbox26 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox27 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
@@ -112,7 +110,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label21 = Gtk.Label()
-    label21.set_text("Choose what to select with a button")
+    label21.set_text("Or choose what to select with a button")
     btn_all_selection = Gtk.Button(label="All")
     btn_all_selection.connect("clicked", self.on_click_fastfetch_all_selection)
     btn_normal_selection = Gtk.Button(label="Normal")
@@ -123,7 +121,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     btn_none_selection.connect("clicked", self.on_click_fastfetch_none_selection)
     label21.set_margin_start(10)
     label21.set_margin_end(10)
-    label21.set_hexpand(True)
     hbox21.append(label21)
     btn_all_selection.set_margin_start(10)
     btn_all_selection.set_margin_end(10)
@@ -239,17 +236,17 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     self.fast_lolcat.set_margin_end(30)
     hbox27.append(self.fast_lolcat)
 
-    installfastfetch.set_hexpand(True)
-    hbox24.append(installfastfetch)
-    hbox24.append(resetnormalfastfetch)  # pack_end
-    hbox24.append(applyfastfetch)  # pack_end
+    hbox24.append(resetnormalfastfetch)
+    spacer = Gtk.Box()
+    spacer.set_hexpand(True)
+    hbox24.append(spacer)
+    hbox24.append(applyfastfetch)
 
     vboxstack8.append(hbox3)
     vboxstack8.append(hbox4)
     vboxstack8.append(hbox23)
     vboxstack8.append(hbox27)
     vboxstack8.append(hbox22)
-    vboxstack8.append(self.hbox26)
     vboxstack8.append(hbox25)
     vboxstack8.append(fastfetch_image)
     vboxstack8.append(hbox21)
@@ -279,7 +276,7 @@ def on_fast_util_toggled(self, switch, gparam):
         self.fast_lolcat.set_sensitive(True)
 
     # Write to shellrc only when fastfetch is toggled
-    utilities.write_configs("fastfetch", fastfetch_enabled, self.fast_lolcat.get_active())
+    fastfetch.write_configs(fastfetch_enabled, self.fast_lolcat.get_active())
 
 
 def on_fast_lolcat_toggled(self, switch, gparam):
@@ -288,7 +285,7 @@ def on_fast_lolcat_toggled(self, switch, gparam):
     
     # Write to shellrc only when lolcat is toggled
     # Note: This is only relevant if fastfetch is enabled, hence no further checks needed
-    utilities.write_configs("fastfetch", self.fast_util.get_active(), lolcat_enabled)
+    fastfetch.write_configs(self.fast_util.get_active(), lolcat_enabled)
 
 
 def update_gui(self):

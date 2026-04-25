@@ -41,7 +41,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
 the nemesis repo"
     )
     label = Gtk.Label(xalign=0.5)
-    label.set_text("\n\n\nSelect a desktop")
+    label.set_text("\nSelect a desktop")
     label.set_halign(Gtk.Align.CENTER)
 
     self.d_combo = Gtk.DropDown.new_from_strings(list(desktopr.desktops))
@@ -53,8 +53,13 @@ the nemesis repo"
     dropbox.append(label_warning)
     # dropbox.pack_start(button_arco_repo, False, False, 0)
     dropbox.append(label)
+
+    combo_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    combo_hbox.set_margin_top(10)
+    combo_hbox.set_halign(Gtk.Align.CENTER)
     self.d_combo.set_halign(Gtk.Align.CENTER)
-    dropbox.append(self.d_combo)
+    combo_hbox.append(self.d_combo)
+    dropbox.append(combo_hbox)
 
     # =======================================
     #               STATUS
@@ -88,9 +93,11 @@ the nemesis repo"
 
     self.button_install.set_hexpand(True)
     self.button_install.set_vexpand(False)
+    self.button_install.set_sensitive(fn.check_edu_repos_active())
     buttonbox.append(self.button_install)
     self.button_reinstall.set_hexpand(True)
     self.button_reinstall.set_vexpand(False)
+    self.button_reinstall.set_sensitive(fn.check_edu_repos_active())
     buttonbox.append(self.button_reinstall)
 
     # =======================================
@@ -118,8 +125,7 @@ Know that these packages conflict with picom-git. It will be removed."
     noice = Gtk.Label(xalign=0)
     noice.set_markup(
         "We will backup and overwrite your ~/.config when installing desktops\n\
-Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n\
-Hyprland, Wayfire and Niri are Wayland desktops!"
+Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n"
     )
     noice.set_wrap(True)
     self.desktopr_error = Gtk.Label(xalign=0)
@@ -194,3 +200,10 @@ Hyprland, Wayfire and Niri are Wayland desktops!"
     vbox1.set_hexpand(True)
     vbox1.set_vexpand(True)
     vboxstack12.append(vbox1)
+
+
+def update_button_state(self, fn):
+    """Update install/reinstall button sensitivity based on nemesis repo status."""
+    nemesis_active = fn.check_edu_repos_active()
+    self.button_install.set_sensitive(nemesis_active)
+    self.button_reinstall.set_sensitive(nemesis_active)

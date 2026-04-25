@@ -499,21 +499,83 @@ def set_default_boot_entry(entry_id):
         return False
 
 
-INSTALL_SCRIPT = "/usr/share/archlinux-tweak-tool/data/any/install-kernel"
-REMOVE_SCRIPT = "/usr/share/archlinux-tweak-tool/data/any/remove-kernel"
-
-
 def install_kernel(self, pkg, headers):
-    fn.install_package(self, "alacritty")
-    return subprocess.Popen(
-        ["alacritty", "--hold", "-e", INSTALL_SCRIPT, pkg, headers],
-        shell=False,
-    )
+    """Install kernel and headers with detailed logging."""
+    print(f"\n[INFO] Installing kernel: {pkg}")
+    print(f"[INFO] Headers: {headers}")
+    script = f"""#!/bin/bash
+tput setaf 6
+echo "================================================================"
+echo "  Installing kernel: {pkg}"
+echo "  Headers: {headers}"
+echo "================================================================"
+tput sgr0
+
+pacman -S "{pkg}" "{headers}" --noconfirm --needed
+RESULT=$?
+
+echo
+if [ $RESULT -eq 0 ]; then
+    tput setaf 2
+    echo "================================================================"
+    echo "  ✓ Successfully installed {pkg}"
+    echo "================================================================"
+    tput sgr0
+else
+    tput setaf 1
+    echo "================================================================"
+    echo "  ✗ Failed to install {pkg}"
+    echo "================================================================"
+    tput sgr0
+fi
+
+echo
+echo "###############################################################################"
+echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
+echo "###############################################################################"
+read -p 'Press Enter to close...'
+"""
+    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    fn.show_in_app_notification(self, f"Installing {pkg}...")
+    return process
 
 
 def remove_kernel(self, pkg, headers):
-    fn.install_package(self, "alacritty")
-    return subprocess.Popen(
-        ["alacritty", "--hold", "-e", REMOVE_SCRIPT, pkg, headers],
-        shell=False,
-    )
+    """Remove kernel and headers with detailed logging."""
+    print(f"\n[INFO] Removing kernel: {pkg}")
+    print(f"[INFO] Headers: {headers}")
+    script = f"""#!/bin/bash
+tput setaf 6
+echo "================================================================"
+echo "  Removing kernel: {pkg}"
+echo "  Headers: {headers}"
+echo "================================================================"
+tput sgr0
+
+pacman -R "{headers}" "{pkg}" --noconfirm 2>/dev/null || pacman -R "{pkg}" --noconfirm
+RESULT=$?
+
+echo
+if [ $RESULT -eq 0 ]; then
+    tput setaf 2
+    echo "================================================================"
+    echo "  ✓ Successfully removed {pkg}"
+    echo "================================================================"
+    tput sgr0
+else
+    tput setaf 1
+    echo "================================================================"
+    echo "  ✗ Failed to remove {pkg}"
+    echo "================================================================"
+    tput sgr0
+fi
+
+echo
+echo "###############################################################################"
+echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
+echo "###############################################################################"
+read -p 'Press Enter to close...'
+"""
+    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    fn.show_in_app_notification(self, f"Removing {pkg}...")
+    return process

@@ -81,19 +81,96 @@ def toggle_lolcat(enable):
     try:
         with open(shell_config, "r", encoding="utf-8") as f:
             lines = f.readlines()
-        
-        lolcat_lines = [i for i, line in enumerate(lines) 
+
+        lolcat_lines = [i for i, line in enumerate(lines)
                         if "| lolcat" in line.lower()]
-        
+
         for line in lolcat_lines:
             # Skip updating the alias line and the line above it
             if "| lolcat" in lines[line] or line > 0 and "| lolcat" in lines[line - 1]:
                 continue
-        
+
         with open(shell_config, "w", encoding="utf-8") as f:
             f.writelines(lines)
         return True
     except Exception:
+        return False
+
+def get_position(lists, value):
+    """Get position of fastfetch command in list, accounting for lolcat and comments"""
+    data = []
+    suffixes = [" | lolcat", "\n", " | lolcat\n"]
+    prefix = "#"
+
+    for string in lists:
+        for item in suffixes:
+            if string in (value + item, prefix + value + item, value, prefix + value):
+                data.append(string)
+
+    if len(data) > 0:
+        position = lists.index(data[0])
+        return position
+    else:
+        return -1
+
+def write_configs(util_enabled, lolcat_enabled):
+    """Write fastfetch config to shell rc file"""
+    config = utilities.get_config_file()
+    if not config:
+        return
+
+    with open(config, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    reporting_section_start = -1
+    for i, line in enumerate(lines):
+        if "# reporting tools" in line.lower():
+            reporting_section_start = i
+            break
+
+    if reporting_section_start == -1:
+        return
+
+    fastfetch_line = -1
+    for i in range(reporting_section_start, len(lines)):
+        if lines[i].strip().startswith(("fastfetch", "#fastfetch")):
+            fastfetch_line = i
+            break
+
+    if fastfetch_line == -1:
+        return
+
+    current_line = lines[fastfetch_line].strip()
+    if util_enabled:
+        new_state = "fastfetch | lolcat" if lolcat_enabled else "fastfetch"
+    else:
+        new_state = "#fastfetch"
+
+    if current_line != new_state and fastfetch_line >= reporting_section_start:
+        lines[fastfetch_line] = new_state + "\n"
+
+        with open(config, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+
+def get_term_rc():
+    """Check if fastfetch is enabled in shell config"""
+    config_file = ""
+    pos = -1
+    try:
+        config_file = utilities.get_config_file()
+    except:
+        config_file = ""
+    if config_file != "":
+        with open(config_file, "r", encoding="utf-8") as myfile:
+            lines = myfile.readlines()
+            myfile.close()
+            pos = get_position(lines, "fastfetch")
+
+    if pos > 0 and lines[pos].startswith("#"):
+        return False
+    elif pos >= 0:
+        return True
+    else:
         return False
 
 def check_backend():
