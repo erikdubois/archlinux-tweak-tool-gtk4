@@ -13,6 +13,7 @@ import signal
 import datetime
 import functions as fn
 import desktopr_gui
+import utilities
 import gi
 
 # Heavy modules are imported lazily in `_finish_startup_init()` so the window can
