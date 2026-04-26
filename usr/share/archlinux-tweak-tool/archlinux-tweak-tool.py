@@ -33,7 +33,8 @@ login = None
 lightdm = None
 maintenance = None
 gui = None
-att = None
+icons = None
+themes = None
 desktopr = None
 autostart = None
 PackagesPromptGui = None
@@ -180,7 +181,7 @@ class Main(Gtk.ApplicationWindow):
         Runs after the window has had a chance to present itself.
         """
         global zsh_theme, user, themer, design, support, settings, services, sddm
-        global pacman_functions, fastfetch, lxdm, login, lightdm, maintenance, gui, att
+        global pacman_functions, fastfetch, lxdm, login, lightdm, maintenance, gui, icons, themes, att
         global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
 
         # Lazy imports to reduce time-to-first-window.
@@ -201,7 +202,8 @@ class Main(Gtk.ApplicationWindow):
         import lightdm as _lightdm
         import maintenance as _maintenance
         import gui as _gui
-        import att as _att
+        import icons as _icons
+        import themes as _themes
         import desktopr as _desktopr
         import autostart as _autostart
         import fastfetch_gui as _fastfetch_gui
@@ -222,7 +224,8 @@ class Main(Gtk.ApplicationWindow):
         lightdm = _lightdm
         maintenance = _maintenance
         gui = _gui
-        att = _att
+        icons = _icons
+        themes = _themes
         desktopr = _desktopr
         autostart = _autostart
         fastfetch_gui = _fastfetch_gui
@@ -1105,7 +1108,7 @@ class Main(Gtk.ApplicationWindow):
     def on_install_att_themes_clicked(self, widget):
         print("We have installed all the selected themes")
         fn.show_in_app_notification(self, "We have installed all the selected themes")
-        att.install_themes(self)
+        themes.install_themes(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1116,7 +1119,7 @@ class Main(Gtk.ApplicationWindow):
     def on_remove_att_themes_clicked(self, widget):
         print("We have removed all the selected themes")
         fn.show_in_app_notification(self, "We have removed all the selected themes")
-        att.remove_themes(self)
+        themes.remove_themes(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1125,9 +1128,9 @@ class Main(Gtk.ApplicationWindow):
             lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
 
     def on_find_att_themes_clicked(self, widget):
-        print("ATT : We show the installed themes")
+        print("[INFO] We show the installed themes")
         fn.show_in_app_notification(self, "We show the installed themes")
-        att.find_themes(self)
+        themes.find_themes(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1139,29 +1142,23 @@ class Main(Gtk.ApplicationWindow):
     # Sardi
 
     def on_install_att_sardi_icon_themes_clicked(self, widget):
-        print("ATT : We have installed all the selected sardi icon themes")
-        fn.show_in_app_notification(
-            self, "We have installed all the selected sardi icon themes"
-        )
-        att.install_sardi_icons(self)
+        print("[INFO] Installing selected Sardi icon themes")
+        icons.install_sardi_icons(self)
         # populate icon names on lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_remove_att_sardi_icon_themes_clicked(self, widget):
-        print("ATT : We have removed all the selected sardi icon themes")
-        fn.show_in_app_notification(
-            self, "We have removed all the selected sardi icon themes"
-        )
-        att.remove_sardi_icons(self)
+        print("[INFO] Removing selected Sardi icon themes")
+        icons.remove_sardi_icons(self)
         # populate icon names lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_find_att_sardi_icon_themes_clicked(self, widget):
-        print("ATT : We show the installed sardi icon themes")
+        print("[INFO] We show the installed sardi icon themes")
         fn.show_in_app_notification(self, "We show the installed sardi icon themes")
-        att.find_sardi_icons(self)
+        icons.find_sardi_icons(self)
         # populate icon names on lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
@@ -1170,29 +1167,23 @@ class Main(Gtk.ApplicationWindow):
     # surfn
 
     def on_install_att_surfn_icon_themes_clicked(self, widget):
-        print("ATT : We have installed all the selected Surfn cursor themes")
-        fn.show_in_app_notification(
-            self, "We have installed all the selected Surfn cursor themes"
-        )
-        att.install_surfn_icons(self)
+        print("[INFO] Installing selected Surfn icon themes")
+        icons.install_surfn_icons(self)
         # populate icon names on lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_remove_att_surfn_icon_themes_clicked(self, widget):
-        print("ATT : We have removed all the selected Surfn cursor themes")
-        fn.show_in_app_notification(
-            self, "We have removed all the selected Surfn cursor themes"
-        )
-        att.remove_surfn_icons(self)
+        print("[INFO] Removing selected Surfn icon themes")
+        icons.remove_surfn_icons(self)
         # populate icon names on lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_find_att_surfn_icon_themes_clicked(self, widget):
-        print("ATT : We show all the installed Surfn icon themes")
+        print("[INFO] We show all the installed Surfn icon themes")
         fn.show_in_app_notification(self, "We show all the installed Surfn icon themes")
-        att.find_surfn_icons(self)
+        icons.find_surfn_icons(self)
         # populate icon names on lightdm
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
@@ -1201,132 +1192,131 @@ class Main(Gtk.ApplicationWindow):
     # selection of theming
 
     def on_click_att_theming_all_selection(self, widget):
-        print("ATT : We have selected all themes")
+        print("[INFO] We have selected all themes")
         fn.show_in_app_notification(self, "We have selected all themes")
-        att.set_att_checkboxes_theming_all(self)
+        themes.set_att_checkboxes_theming_all(self)
 
     def on_click_att_theming_blue_selection(self, widget):
-        print("ATT : We have selected the normal selection - blue themes")
+        print("[INFO] We have selected the normal selection - blue themes")
         fn.show_in_app_notification(
             self, "We have selected the normal selection - blue themes"
         )
-        att.set_att_checkboxes_theming_blue(self)
+        themes.set_att_checkboxes_theming_blue(self)
 
     def on_click_att_theming_dark_selection(self, widget):
-        print("ATT : We have selected the minimal selection - dark themes")
+        print("[INFO] We have selected the minimal selection - dark themes")
         fn.show_in_app_notification(
             self, "We have selected the minimal selection - dark themes"
         )
-        att.set_att_checkboxes_theming_dark(self)
+        themes.set_att_checkboxes_theming_dark(self)
 
     def on_click_att_theming_none_selection(self, widget):
-        print("ATT : We have selected no themes")
+        print("[INFO] We have selected no themes")
         fn.show_in_app_notification(self, "We have selected no themes")
-        att.set_att_checkboxes_theming_none(self)
+        themes.set_att_checkboxes_theming_none(self)
 
     # selection of icon theming
     def on_click_att_sardi_icon_theming_all_selection(self, widget):
-        print("ATT : We have selected all sardi icons")
+        print("[INFO] We have selected all sardi icons")
         fn.show_in_app_notification(self, "We have selected all sardi icons")
-        att.set_att_checkboxes_theming_sardi_icons_all(self)
+        icons.set_att_checkboxes_theming_sardi_icons_all(self)
 
     def on_click_att_sardi_icon_theming_mint_selection(self, widget):
-        print("ATT : We have selected the mint selection - sardi icons")
+        print("[INFO] We have selected the mint selection - sardi icons")
         fn.show_in_app_notification(
             self, "We have selected the mint selection - sardi icons"
         )
-        att.set_att_checkboxes_theming_sardi_mint_icons(self)
+        icons.set_att_checkboxes_theming_sardi_mint_icons(self)
 
     def on_click_att_sardi_icon_theming_mixing_selection(self, widget):
-        print("ATT : We have selected the mixing selection - sardi icons")
+        print("[INFO] We have selected the mixing selection - sardi icons")
         fn.show_in_app_notification(
             self, "We have selected the mixing selection - sardi icons"
         )
-        att.set_att_checkboxes_theming_sardi_mixing_icons(self)
+        icons.set_att_checkboxes_theming_sardi_mixing_icons(self)
 
     def on_click_att_sardi_icon_theming_variations_selection(self, widget):
-        print("ATT : We have selected the variation selection - sardi icons")
+        print("[INFO] We have selected the variation selection - sardi icons")
         fn.show_in_app_notification(
             self, "We have selected the variation selection - sardi icons"
         )
-        att.set_att_checkboxes_theming_sardi_icons_variations(self)
+        icons.set_att_checkboxes_theming_sardi_icons_variations(self)
 
     def on_click_att_sardi_icon_theming_none_selection(self, widget):
-        print("ATT : We have selected no sardi icons")
+        print("[INFO] We have selected no sardi icons")
         fn.show_in_app_notification(self, "We have selected no sardiicons")
-        att.set_att_checkboxes_theming_sardi_icons_none(self)
+        icons.set_att_checkboxes_theming_sardi_icons_none(self)
 
     # different families of SARDI
 
     def on_click_att_fam_sardi_icon_theming_sardi_selection(self, widget):
-        print("ATT : We have selected the Sardi family")
+        print("[INFO] We have selected the Sardi family")
         fn.show_in_app_notification(self, "We have selected the Sardi family themes")
-        att.set_att_fam_checkboxes_theming_sardi_icons(self)
+        icons.set_att_fam_checkboxes_theming_sardi_icons(self)
 
     def on_click_att_fam_sardi_icon_theming_sardi_flexible_selection(self, widget):
-        print("ATT : We have selected the Sardi flexible family")
+        print("[INFO] We have selected the Sardi flexible family")
         fn.show_in_app_notification(
             self, "We have selected the Sardi flexible family themes"
         )
-        att.set_att_fam_checkboxes_theming_sardi_flexible(self)
+        icons.set_att_fam_checkboxes_theming_sardi_flexible(self)
 
     def on_click_att_fam_sardi_icon_theming_sardi_mono_selection(self, widget):
-        print("ATT : We have selected the Sardi mono family")
+        print("[INFO] We have selected the Sardi mono family")
         fn.show_in_app_notification(
             self, "We have selected the Sardi mono family themes"
         )
-        att.set_att_fam_checkboxes_theming_sardi_mono(self)
+        icons.set_att_fam_checkboxes_theming_sardi_mono(self)
 
     def on_click_att_fam_sardi_icon_theming_sardi_flat_selection(self, widget):
-        print("ATT : We have selected the Sardi flat family")
+        print("[INFO] We have selected the Sardi flat family")
         fn.show_in_app_notification(
             self, "We have selected the Sardi flat family themes"
         )
-        att.set_att_fam_checkboxes_theming_sardi_flat(self)
+        icons.set_att_fam_checkboxes_theming_sardi_flat(self)
 
     def on_click_att_fam_sardi_icon_theming_sardi_ghost_selection(self, widget):
-        print("ATT : We have selected the Sardi ghost family")
+        print("[INFO] We have selected the Sardi ghost family")
         fn.show_in_app_notification(
             self, "We have selected the Sardi ghost family themes"
         )
-        att.set_att_fam_checkboxes_theming_sardi_ghost(self)
+        icons.set_att_fam_checkboxes_theming_sardi_ghost(self)
 
     def on_click_att_fam_sardi_icon_theming_sardi_orb_selection(self, widget):
-        print("ATT : We have selected the Sardi orb family")
+        print("[INFO] We have selected the Sardi orb family")
         fn.show_in_app_notification(
             self, "We have selected the Sardi orb family themes"
         )
-        att.set_att_fam_checkboxes_theming_sardi_orb(self)
+        icons.set_att_fam_checkboxes_theming_sardi_orb(self)
 
     # selection of Surfn icons theming
     def on_click_att_surfn_theming_all_selection(self, widget):
-        print("ATT : We have selected all cursors")
+        print("[INFO] We have selected all cursors")
         fn.show_in_app_notification(self, "We have selected all cursors")
-        att.set_att_checkboxes_theming_surfn_icons_all(self)
+        icons.set_att_checkboxes_theming_surfn_icons_all(self)
 
     def on_click_att_surfn_theming_normal_selection(self, widget):
-        print("ATT : We have selected the normal selection - cursors")
+        print("[INFO] We have selected the normal selection - cursors")
         fn.show_in_app_notification(
             self, "We have selected the normal selection - cursors"
         )
-        att.set_att_checkboxes_theming_surfn_icons_normal(self)
+        icons.set_att_checkboxes_theming_surfn_icons_normal(self)
 
     def on_click_att_surfn_theming_minimal_selection(self, widget):
-        print("ATT : We have selected the minimal selection - cursors")
+        print("[INFO] We have selected the minimal selection - cursors")
         fn.show_in_app_notification(
             self, "We have selected the minimal selection - cursors"
         )
-        att.set_att_checkboxes_theming_surfn_icons_minimal(self)
+        icons.set_att_checkboxes_theming_surfn_icons_minimal(self)
 
     def on_click_att_surfn_theming_none_selection(self, widget):
-        print("ATT : We have selected no cursors")
+        print("[INFO] We have selected no cursors")
         fn.show_in_app_notification(self, "We have selected no cursors")
-        att.set_att_checkboxes_theming_surfn_icons_none(self)
+        icons.set_att_checkboxes_theming_surfn_icons_none(self)
 
     def on_install_extras_clicked(self, widget):
-        print("ATT : We install the selected projects")
-        fn.show_in_app_notification(self, "We install the selected projects")
-        att.install_att_extras(self)
+        print("[INFO] Installing selected Neo Candy icon packages")
+        icons.install_att_extras(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1337,9 +1327,8 @@ class Main(Gtk.ApplicationWindow):
 
     # extras
     def on_remove_extras_clicked(self, widget):
-        print("ATT : We remove the selected projects")
-        fn.show_in_app_notification(self, "We remove the selected projects")
-        att.remove_att_extras(self)
+        print("[INFO] Removing selected Neo Candy icon packages")
+        icons.remove_att_extras(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1349,9 +1338,9 @@ class Main(Gtk.ApplicationWindow):
             lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
 
     def on_find_extras_clicked(self, widget):
-        print("ATT : We show the installed projects")
+        print("[INFO] We show the installed projects")
         fn.show_in_app_notification(self, "We show the installed projects")
-        att.find_att_extras(self)
+        icons.find_att_extras(self)
         # populate lightdm page
         if fn.check_package_installed("lightdm"):
             lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
@@ -1362,14 +1351,14 @@ class Main(Gtk.ApplicationWindow):
 
     # selection of extras theming
     def on_click_extras_theming_all_selection(self, widget):
-        print("ATT : We have selected all projects")
+        print("[INFO] We have selected all projects")
         fn.show_in_app_notification(self, "We have selected all projects")
-        att.set_att_checkboxes_extras_all(self)
+        icons.set_att_checkboxes_extras_all(self)
 
     def on_click_extras_theming_none_selection(self, widget):
-        print("ATT : We have selected none of the projects")
+        print("[INFO] We have selected none of the projects")
         fn.show_in_app_notification(self, "We have selected none of the projects")
-        att.set_att_checkboxes_extras_none(self)
+        icons.set_att_checkboxes_extras_none(self)
 
     # ====================================================================
     #                       BASH
@@ -6001,7 +5990,7 @@ class ATTApplication(Gtk.Application):
                 Gtk.Settings.get_default().set_property("gtk-theme-name", gtk_theme)
 
             style_provider = Gtk.CssProvider()
-            style_provider.load_from_path(base_dir + "/att.css")
+            style_provider.load_from_path(base_dir + "/icons.css")
             display = Gdk.Display.get_default()
             if display is not None:
                 Gtk.StyleContext.add_provider_for_display(

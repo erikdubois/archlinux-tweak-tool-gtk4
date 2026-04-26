@@ -37,7 +37,7 @@ def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out
     frame = Gtk.Frame(label="Preview")
     frame.set_child(pic)
     frame.set_hexpand(True)
-    frame.set_vexpand(False)
+    frame.set_vexpand(True)
     frame.set_margin_start(10)
     frame.set_margin_end(10)
     frame.set_margin_top(10)
@@ -52,7 +52,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
     from gi.repository import Gdk
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl1 = Gtk.Label(xalign=0)
-    lbl1.set_text("Icons and themes")
+    lbl1.set_text("Icons")
     lbl1.set_name("title")
     hbox3.append(lbl1)
 
@@ -68,9 +68,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
 
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
-    vboxstack1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack1.set_hexpand(True)
-    vboxstack1.set_vexpand(True)
     vboxstack2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack2.set_hexpand(True)
     vboxstack2.set_vexpand(True)
@@ -84,217 +81,12 @@ def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
     stack = Gtk.Stack()
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
     stack.set_transition_duration(350)
-    stack.set_hhomogeneous(True)
+    stack.set_hhomogeneous(False)
     stack.set_vhomogeneous(False)
 
     stack_switcher = Gtk.StackSwitcher()
     stack_switcher.set_orientation(Gtk.Orientation.HORIZONTAL)
     stack_switcher.set_stack(stack)
-
-    # ==================================================================
-    #                       THEMES TAB
-    # ==================================================================
-
-    hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox10_label = Gtk.Label(xalign=0)
-    hbox10_label.set_markup(
-        'Select the packages you want to install or remove, then click the appropriate button.\n\
-Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
-    )
-
-    hbox10_label.set_margin_start(10)
-    hbox10_label.set_margin_end(10)
-    hbox10.append(hbox10_label)
-
-    # ARC THEMES
-    hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-
-    self.arcolinux_arc_aqua = Gtk.CheckButton(label="arcolinux-arc-aqua")
-    self.arcolinux_arc_archlinux_blue = Gtk.CheckButton(
-        label="arcolinux-arc-archlinux-blue"
-    )
-    self.arcolinux_arc_arcolinux_blue = Gtk.CheckButton(
-        label="arcolinux-arc-arcolinux-blue"
-    )
-    self.arcolinux_arc_azul = Gtk.CheckButton(label="arcolinux-arc-azul")
-    self.arcolinux_arc_azure = Gtk.CheckButton(label="arcolinux-arc-azure")
-    self.arcolinux_arc_azure_dodger_blue = Gtk.CheckButton(
-        label="arcolinux-arc-azure-dodger-blue"
-    )
-    self.arcolinux_arc_blood = Gtk.CheckButton(label="arcolinux-arc-blood")
-    self.arcolinux_arc_blue_sky = Gtk.CheckButton(label="arcolinux-arc-blue-sky")
-    self.arcolinux_arc_botticelli = Gtk.CheckButton(label="arcolinux-arc-botticelli")
-    self.arcolinux_arc_bright_lilac = Gtk.CheckButton(
-        label="arcolinux-arc-bright-lilac"
-    )
-    self.arcolinux_arc_carnation = Gtk.CheckButton(label="arcolinux-arc-carnation")
-    self.arcolinux_arc_carolina_blue = Gtk.CheckButton(
-        label="arcolinux-arc-carolina-blue"
-    )
-    self.arcolinux_arc_casablanca = Gtk.CheckButton(label="arcolinux-arc-casablanca")
-    self.arcolinux_arc_crimson = Gtk.CheckButton(label="arcolinux-arc-crimson")
-    self.arcolinux_arc_dawn = Gtk.CheckButton(label="arcolinux-arc-dawn")
-    self.arcolinux_arc_dodger_blue = Gtk.CheckButton(label="arcolinux-arc-dodger-blue")
-    self.arcolinux_arc_dracul = Gtk.CheckButton(label="arcolinux-arc-dracul")
-    self.arcolinux_arc_emerald = Gtk.CheckButton(label="arcolinux-arc-emerald")
-    self.arcolinux_arc_evopop = Gtk.CheckButton(label="arcolinux-arc-evopop")
-    self.arcolinux_arc_fern = Gtk.CheckButton(label="arcolinux-arc-fern")
-    self.arcolinux_arc_fire = Gtk.CheckButton(label="arcolinux-arc-fire")
-    self.arcolinux_arc_froly = Gtk.CheckButton(label="arcolinux-arc-froly")
-    self.arcolinux_arc_havelock = Gtk.CheckButton(label="arcolinux-arc-havelock")
-    self.arcolinux_arc_hibiscus = Gtk.CheckButton(label="arcolinux-arc-hibiscus")
-    self.arcolinux_arc_light_blue_grey = Gtk.CheckButton(
-        label="arcolinux-arc-light-blue-grey"
-    )
-    self.arcolinux_arc_light_blue_surfn = Gtk.CheckButton(
-        label="arcolinux-arc-light-blue-surfn"
-    )
-    self.arcolinux_arc_light_salmon = Gtk.CheckButton(
-        label="arcolinux-arc-light-salmon"
-    )
-    self.arcolinux_arc_mandy = Gtk.CheckButton(label="arcolinux-arc-mandy")
-    self.arcolinux_arc_mantis = Gtk.CheckButton(label="arcolinux-arc-mantis")
-    self.arcolinux_arc_medium_blue = Gtk.CheckButton(label="arcolinux-arc-medium-blue")
-    self.arcolinux_arc_niagara = Gtk.CheckButton(label="arcolinux-arc-niagara")
-    self.arcolinux_arc_nice_blue = Gtk.CheckButton(label="arcolinux-arc-nice-blue")
-    self.arcolinux_arc_numix = Gtk.CheckButton(label="arcolinux-arc-numix")
-    self.arcolinux_arc_orchid = Gtk.CheckButton(label="arcolinux-arc-orchid")
-    self.arcolinux_arc_pale_grey = Gtk.CheckButton(label="arcolinux-arc-pale-grey")
-    self.arcolinux_arc_paper = Gtk.CheckButton(label="arcolinux-arc-paper")
-    self.arcolinux_arc_pink = Gtk.CheckButton(label="arcolinux-arc-pink")
-    self.arcolinux_arc_polo = Gtk.CheckButton(label="arcolinux-arc-polo")
-    self.arcolinux_arc_punch = Gtk.CheckButton(label="arcolinux-arc-punch")
-    self.arcolinux_arc_red_orange = Gtk.CheckButton(label="arcolinux-arc-red-orange")
-    self.arcolinux_arc_rusty_orange = Gtk.CheckButton(
-        label="arcolinux-arc-rusty-orange"
-    )
-    self.arcolinux_arc_sky_blue = Gtk.CheckButton(label="arcolinux-arc-sky-blue")
-    self.arcolinux_arc_slate_grey = Gtk.CheckButton(label="arcolinux-arc-slate-grey")
-    self.arcolinux_arc_smoke = Gtk.CheckButton(label="arcolinux-arc-smoke")
-    self.arcolinux_arc_soft_blue = Gtk.CheckButton(label="arcolinux-arc-soft-blue")
-    self.arcolinux_arc_tacao = Gtk.CheckButton(label="arcolinux-arc-tacao")
-    self.arcolinux_arc_tangerine = Gtk.CheckButton(label="arcolinux-arc-tangerinex")
-    self.arcolinux_arc_tory = Gtk.CheckButton(label="arcolinux-arc-tory")
-    self.arcolinux_arc_vampire = Gtk.CheckButton(label="arcolinux-arc-vampire")
-    self.arcolinux_arc_warm_pink = Gtk.CheckButton(label="arcolinux-arc-warm-pink")
-
-    flowbox_themes = Gtk.FlowBox()
-    flowbox_themes.set_valign(Gtk.Align.START)
-    flowbox_themes.set_max_children_per_line(10)
-    flowbox_themes.set_selection_mode(Gtk.SelectionMode.NONE)
-
-    flowbox_themes.append(self.arcolinux_arc_aqua)
-    flowbox_themes.append(self.arcolinux_arc_archlinux_blue)
-    flowbox_themes.append(self.arcolinux_arc_arcolinux_blue)
-    flowbox_themes.append(self.arcolinux_arc_azul)
-    flowbox_themes.append(self.arcolinux_arc_azure)
-    flowbox_themes.append(self.arcolinux_arc_azure_dodger_blue)
-    flowbox_themes.append(self.arcolinux_arc_blood)
-    flowbox_themes.append(self.arcolinux_arc_blue_sky)
-    flowbox_themes.append(self.arcolinux_arc_botticelli)
-    flowbox_themes.append(self.arcolinux_arc_bright_lilac)
-    flowbox_themes.append(self.arcolinux_arc_carnation)
-    flowbox_themes.append(self.arcolinux_arc_carolina_blue)
-    flowbox_themes.append(self.arcolinux_arc_casablanca)
-    flowbox_themes.append(self.arcolinux_arc_crimson)
-    flowbox_themes.append(self.arcolinux_arc_dawn)
-    flowbox_themes.append(self.arcolinux_arc_dodger_blue)
-    flowbox_themes.append(self.arcolinux_arc_dracul)
-    flowbox_themes.append(self.arcolinux_arc_emerald)
-    flowbox_themes.append(self.arcolinux_arc_evopop)
-    flowbox_themes.append(self.arcolinux_arc_fern)
-    flowbox_themes.append(self.arcolinux_arc_fire)
-    flowbox_themes.append(self.arcolinux_arc_froly)
-    flowbox_themes.append(self.arcolinux_arc_havelock)
-    flowbox_themes.append(self.arcolinux_arc_hibiscus)
-    flowbox_themes.append(self.arcolinux_arc_light_blue_grey)
-    flowbox_themes.append(self.arcolinux_arc_light_blue_surfn)
-    flowbox_themes.append(self.arcolinux_arc_light_salmon)
-    flowbox_themes.append(self.arcolinux_arc_mandy)
-    flowbox_themes.append(self.arcolinux_arc_mantis)
-    flowbox_themes.append(self.arcolinux_arc_medium_blue)
-    flowbox_themes.append(self.arcolinux_arc_niagara)
-    flowbox_themes.append(self.arcolinux_arc_nice_blue)
-    flowbox_themes.append(self.arcolinux_arc_numix)
-    flowbox_themes.append(self.arcolinux_arc_orchid)
-    flowbox_themes.append(self.arcolinux_arc_pale_grey)
-    flowbox_themes.append(self.arcolinux_arc_paper)
-    flowbox_themes.append(self.arcolinux_arc_pink)
-    flowbox_themes.append(self.arcolinux_arc_polo)
-    flowbox_themes.append(self.arcolinux_arc_punch)
-    flowbox_themes.append(self.arcolinux_arc_red_orange)
-    flowbox_themes.append(self.arcolinux_arc_rusty_orange)
-    flowbox_themes.append(self.arcolinux_arc_sky_blue)
-    flowbox_themes.append(self.arcolinux_arc_slate_grey)
-    flowbox_themes.append(self.arcolinux_arc_smoke)
-    flowbox_themes.append(self.arcolinux_arc_soft_blue)
-    flowbox_themes.append(self.arcolinux_arc_tacao)
-    flowbox_themes.append(self.arcolinux_arc_tangerine)
-    flowbox_themes.append(self.arcolinux_arc_tory)
-    flowbox_themes.append(self.arcolinux_arc_vampire)
-    flowbox_themes.append(self.arcolinux_arc_warm_pink)
-
-    flowbox_themes.set_hexpand(True)
-    flowbox_themes.set_vexpand(True)
-    flowbox_themes.set_margin_start(10)
-    flowbox_themes.set_margin_end(10)
-    hbox11.append(flowbox_themes)
-
-    hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox18.set_hexpand(True)
-    label18 = Gtk.Label()
-    label18.set_text("Choose what to select with a button")
-    btn_all_selection_themes = Gtk.Button(label="All")
-    btn_all_selection_themes.connect("clicked", self.on_click_att_theming_all_selection)
-    btn_blue_selection_themes = Gtk.Button(label="Blue")
-    btn_blue_selection_themes.connect(
-        "clicked", self.on_click_att_theming_blue_selection
-    )
-    btn_dark_selection_themes = Gtk.Button(label="Dark")
-    btn_dark_selection_themes.connect(
-        "clicked", self.on_click_att_theming_dark_selection
-    )
-    btn_none_selection_themes = Gtk.Button(label="None")
-    btn_none_selection_themes.connect(
-        "clicked", self.on_click_att_theming_none_selection
-    )
-    label18.set_margin_start(10)
-    label18.set_margin_end(10)
-    label18.set_hexpand(True)
-    label18.set_xalign(0)
-    hbox18.append(label18)
-    btn_all_selection_themes.set_margin_start(10)
-    btn_all_selection_themes.set_margin_end(10)
-    hbox18.append(btn_all_selection_themes)  # pack_end
-    btn_dark_selection_themes.set_margin_start(10)
-    btn_dark_selection_themes.set_margin_end(10)
-    hbox18.append(btn_dark_selection_themes)  # pack_end
-    btn_blue_selection_themes.set_margin_start(10)
-    btn_blue_selection_themes.set_margin_end(10)
-    hbox18.append(btn_blue_selection_themes)  # pack_end
-    btn_none_selection_themes.set_margin_start(10)
-    btn_none_selection_themes.set_margin_end(10)
-    hbox18.append(btn_none_selection_themes)  # pack_end
-
-    # at bottom
-    hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    button_install_themes = Gtk.Button(label="Install the selected themes")
-    button_install_themes.connect("clicked", self.on_install_att_themes_clicked)
-    button_remove_themes = Gtk.Button(label="Uninstall the selected themes")
-    button_remove_themes.connect("clicked", self.on_remove_att_themes_clicked)
-    button_find_themes = Gtk.Button(label="Show the installed themes")
-    button_find_themes.connect("clicked", self.on_find_att_themes_clicked)
-
-    button_remove_themes.set_margin_start(10)
-    button_remove_themes.set_margin_end(10)
-    button_remove_themes.set_hexpand(True)
-    hbox19.append(button_remove_themes)
-    button_find_themes.set_margin_start(10)
-    button_find_themes.set_margin_end(10)
-    hbox19.append(button_find_themes)
-    button_install_themes.set_margin_start(10)
-    button_install_themes.set_margin_end(10)
-    hbox19.append(button_install_themes)  # pack_end
 
     # ==================================================================
     #                       ICONS TAB - SARDI
@@ -314,69 +106,69 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     self.sardi_icons_att = Gtk.CheckButton(label="sardi-icons")
     self.sardi_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-colora-variations-icons-git"
+        label="sardi-colora-variations-icons"
     )
     self.sardi_flat_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-flat-colora-variations-icons-git"
+        label="sardi-flat-colora-variations-icons"
     )
     self.sardi_flat_mint_y_icons_git = Gtk.CheckButton(
-        label="sardi-flat-mint-y-icons-git"
+        label="sardi-flat-mint-y-icons"
     )
     self.sardi_flat_mixing_icons_git = Gtk.CheckButton(
-        label="sardi-flat-mixing-icons-git"
+        label="sardi-flat-mixing-icons"
     )
     self.sardi_flexible_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-flexible-colora-variations-icons-git"
+        label="sardi-flexible-colora-variations-icons"
     )
     self.sardi_flexible_luv_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-flexible-luv-colora-variations-icons-git"
+        label="sardi-flexible-luv-colora-variations-icons"
     )
     self.sardi_flexible_mint_y_icons_git = Gtk.CheckButton(
-        label="sardi-flexible-mint-y-icons-git"
+        label="sardi-flexible-mint-y-icons"
     )
     self.sardi_flexible_mixing_icons_git = Gtk.CheckButton(
-        label="sardi-flexible-mixing-icons-git"
+        label="sardi-flexible-mixing-icons"
     )
     self.sardi_flexible_variations_icons_git = Gtk.CheckButton(
-        label="sardi-flexible-variations-icons-git"
+        label="sardi-flexible-variations-icons"
     )
     self.sardi_ghost_flexible_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-ghost-flexible-colora-variations-icons-git"
+        label="sardi-ghost-flexible-colora-variations-icons"
     )
     self.sardi_ghost_flexible_mint_y_icons_git = Gtk.CheckButton(
-        label="sardi-ghost-flexible-mint-y-icons-git"
+        label="sardi-ghost-flexible-mint-y-icons"
     )
     self.sardi_ghost_flexible_mixing_icons_git = Gtk.CheckButton(
-        label="sardi-ghost-flexible-mixing-icons-git"
+        label="sardi-ghost-flexible-mixing-icons"
     )
     self.sardi_ghost_flexible_variations_icons_git = Gtk.CheckButton(
-        label="sardi-ghost-flexible-variations-icons-git"
+        label="sardi-ghost-flexible-variations-icons"
     )
-    self.sardi_mint_y_icons_git = Gtk.CheckButton(label="sardi-mint-y-icons-git")
-    self.sardi_mixing_icons_git = Gtk.CheckButton(label="sardi-mixing-icons-git")
+    self.sardi_mint_y_icons_git = Gtk.CheckButton(label="sardi-mint-y-icons")
+    self.sardi_mixing_icons_git = Gtk.CheckButton(label="sardi-mixing-icons")
     self.sardi_mono_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-mono-colora-variations-icons-git"
+        label="sardi-mono-colora-variations-icons"
     )
     self.sardi_mono_mint_y_icons_git = Gtk.CheckButton(
-        label="sardi-mono-mint-y-icons-git"
+        label="sardi-mono-mint-y-icons"
     )
     self.sardi_mono_mixing_icons_git = Gtk.CheckButton(
-        label="sardi-mono-mixing-icons-git"
+        label="sardi-mono-mixing-icons"
     )
     self.sardi_mono_numix_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-mono-numix-colora-variations-icons-git"
+        label="sardi-mono-numix-colora-variations-icons"
     )
     self.sardi_mono_papirus_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-mono-papirus-colora-variations-icons-git"
+        label="sardi-mono-papirus-colora-variations-icons"
     )
     self.sardi_orb_colora_mint_y_icons_git = Gtk.CheckButton(
-        label="sardi-orb-colora-mint-y-icons-git"
+        label="sardi-orb-colora-mint-y-icons"
     )
     self.sardi_orb_colora_mixing_icons_git = Gtk.CheckButton(
-        label="sardi-orb-colora-mixing-icons-git"
+        label="sardi-orb-colora-mixing-icons"
     )
     self.sardi_orb_colora_variations_icons_git = Gtk.CheckButton(
-        label="sardi-orb-colora-variations-icons-git"
+        label="sardi-orb-colora-variations-icons"
     )
 
     flowbox_sardi = Gtk.FlowBox()
@@ -545,14 +337,14 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     hbox31 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
-    self.surfn_icons_git_att = Gtk.CheckButton(label="surfn-icons-git")
+    self.surfn_icons_git_att = Gtk.CheckButton(label="surfn-icons")
     self.surfn_arc_breeze_icons_git = Gtk.CheckButton(
-        label="surfn-arc-breeze-icons-git"
+        label="surfn-arc-breeze-icons"
     )
-    self.surfn_mint_y_icons_git = Gtk.CheckButton(label="surfn-mint-y-icons-git")
+    self.surfn_mint_y_icons_git = Gtk.CheckButton(label="surfn-mint-y-icons")
     self.surfn_plasma_dark = Gtk.CheckButton(label="surfn-plasma-dark")
-    self.surfn_plasma_dark_tela = Gtk.CheckButton(label="surfn-plasma-dark-tela")
     self.surfn_plasma_light = Gtk.CheckButton(label="surfn-plasma-light")
+    self.surfn_plasma_flow = Gtk.CheckButton(label="surfn-plasma-flow")
 
     flowbox_surfn = Gtk.FlowBox()
     flowbox_surfn.set_valign(Gtk.Align.START)
@@ -563,8 +355,8 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_surfn.append(self.surfn_arc_breeze_icons_git)
     flowbox_surfn.append(self.surfn_mint_y_icons_git)
     flowbox_surfn.append(self.surfn_plasma_dark)
-    flowbox_surfn.append(self.surfn_plasma_dark_tela)
     flowbox_surfn.append(self.surfn_plasma_light)
+    flowbox_surfn.append(self.surfn_plasma_flow)
 
     flowbox_surfn.set_hexpand(True)
     flowbox_surfn.set_vexpand(True)
@@ -717,21 +509,6 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     _att_pics = []  # collects (pic, scale) for the resize handler below
 
-    # themes
-    hbox10.set_margin_start(10)
-    hbox10.set_margin_end(10)
-    vboxstack1.append(hbox10)
-    hbox11.set_margin_start(10)
-    hbox11.set_margin_end(10)
-    vboxstack1.append(hbox11)
-    vboxstack1.append(
-        _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "arcthemes.jpg", scale=1, out_pics=_att_pics)
-    )
-    hbox18.set_margin_start(10)
-    hbox18.set_margin_end(10)
-    vboxstack1.append(hbox18)
-    vboxstack1.append(hbox19)
-
     # icons
     hbox20.set_margin_start(10)
     hbox20.set_margin_end(10)
@@ -755,7 +532,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox31.set_margin_start(10)
     hbox31.set_margin_end(10)
     vboxstack3.append(hbox31)
-    vboxstack3.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "surfn.jpg", out_pics=_att_pics))
+    vboxstack3.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "surfn.jpg", scale=0.8, out_pics=_att_pics))
     hbox32.set_margin_start(10)
     hbox32.set_margin_end(10)
     vboxstack3.append(hbox32)
@@ -769,7 +546,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox41.set_margin_end(10)
     vboxstack4.append(hbox41)
     vboxstack4.append(
-        _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "neocandy.jpg", out_pics=_att_pics)
+        _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "neocandy.jpg", scale=0.8, out_pics=_att_pics)
     )
     hbox42.set_margin_start(10)
     hbox42.set_margin_end(10)
@@ -783,7 +560,6 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     stack.add_titled(vboxstack4, "stack4", "Neo Candy")
     stack.add_titled(vboxstack2, "stack2", "Sardi")
     stack.add_titled(vboxstack3, "stack3", "Surfn")
-    stack.add_titled(vboxstack1, "stack1", "Themes")
 
     vbox.append(stack_switcher)
     stack.set_hexpand(True)

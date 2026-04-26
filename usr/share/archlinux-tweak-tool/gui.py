@@ -13,14 +13,16 @@ import lxdm
 import fastfetch
 import performance
 import sddm
-import att
+import icons
+import themes
 import themer
 import user
 import zsh_theme
 import packages
 
 # =============GUI=================
-import att_gui
+import icons_gui
+import themes_gui
 import autostart_gui
 import desktopr_gui
 import maintenance_gui
@@ -110,12 +112,19 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
     vboxstack_network = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
-    #                 ATT
+    #                 ICONS
     # ==========================================================
 
-    att_gui.gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir)
+    icons_gui.gui(self, Gtk, GdkPixbuf, vboxstack25, icons, fn, base_dir)
+
+    # ==========================================================
+    #                THEMES
+    # ==========================================================
+
+    themes_gui.gui(self, Gtk, GdkPixbuf, vboxstack_themes, themes, fn, base_dir)
 
     # ==========================================================
     #                AUTOSTART
@@ -231,14 +240,14 @@ themes</i> you can customize <b>fastfetch</b>"
     # ==========================================================
     stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
 
-    stack.add_titled(vboxstack25, "stack25", "Att")  # Design
-
     stack.add_titled(vboxstack13, "stack13", "Autostart")  # Autostart
 
 
     stack.add_titled(vboxstack12, "stack12", "Desktop")  # Desktop installer
 
     stack.add_titled(vboxstack8, "stack4", "Fastfetch")  # fastfetch config
+
+    stack.add_titled(vboxstack25, "stack25", "Icons")  # Icons and themes
 
     stack.add_titled(vboxstack28, "stack28", "Kernels")  # kernel manager
 
@@ -269,6 +278,8 @@ themes</i> you can customize <b>fastfetch</b>"
     stack.add_titled(vboxstack_system, "stack_system", "System")  # system inspector
 
     stack.add_titled(vboxstack10, "stack11", "Themer")  # Themer
+
+    stack.add_titled(vboxstack_themes, "stack_themes", "Themes")  # arc themes
 
     stack.add_titled(vboxstack18, "stack18", "User")  # user
 

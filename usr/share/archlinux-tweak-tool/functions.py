@@ -2821,6 +2821,23 @@ def wait_remove_and_update(process, binary_path, label_widget, plain_markup, sel
     threading.Thread(target=_wait, daemon=True).start()
 
 
+def wait_and_notify(process, self_ref, notification):
+    def _wait():
+        try:
+            process.communicate()
+            import os as os_module
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    os_module.unlink(process.temp_file)
+                except Exception:
+                    pass
+            print(f"[INFO] {notification}")
+            GLib.idle_add(show_in_app_notification, self_ref, notification)
+        except Exception as e:
+            print(f"[ERROR] Exception in wait_and_notify: {e}")
+    threading.Thread(target=_wait, daemon=True).start()
+
+
 def get_aur_helper():
     for helper in ["yay", "paru", "trizen", "pikaur"]:
         if path.exists("/usr/bin/" + helper):
@@ -2836,7 +2853,7 @@ def launch_pacman_install_in_terminal(packages):
 
     script = f"""
 set -o pipefail
-pacman -S --noconfirm {packages} 2>&1 | tee {temp_path}
+pacman -S --noconfirm --needed {packages} 2>&1 | tee {temp_path}
 RESULT=$?
 
 echo ''
