@@ -2889,7 +2889,7 @@ def launch_pacman_remove_in_terminal(packages):
 
     script = f"""
 set -o pipefail
-pacman -Rcs --noconfirm {packages} 2>&1 | tee {temp_path}
+pacman -Rs --noconfirm {packages} 2>&1 | tee {temp_path}
 RESULT=$?
 
 echo ''
