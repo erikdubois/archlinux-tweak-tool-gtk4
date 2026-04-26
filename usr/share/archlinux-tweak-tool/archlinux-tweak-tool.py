@@ -5926,11 +5926,11 @@ class Main(Gtk.ApplicationWindow):
                     vbox_stack.append(grid_package_count)
                     vbox_stack.append(vbox_pacmanlog)
 
-                    grid_package_status.hide()
-                    grid_package_count.hide()
+                    grid_package_status.set_visible(False)
+                    grid_package_count.set_visible(False)
                 else:
-                    grid_package_status.hide()
-                    grid_package_count.hide()
+                    grid_package_status.set_visible(False)
+                    grid_package_count.set_visible(False)
 
                 rb_export_selected = None
                 if rb_export_all.get_active():

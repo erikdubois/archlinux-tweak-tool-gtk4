@@ -6,7 +6,10 @@ import functions as fn
 
 class Packages:
     def __init__(self):
-        self.packages_file_name = "packages-x86_64.txt"
+        self.packages_file_name = "packages-x86_64-%s-%s.txt" % (
+            fn.datetime.datetime.today().date(),
+            fn.datetime.datetime.today().time().strftime("%H-%M-%S"),
+        )
         self.export_dir = "{}/{}".format(fn.home, "att-exports")
         self.default_export_path = "{}/{}".format(
             self.export_dir, self.packages_file_name
