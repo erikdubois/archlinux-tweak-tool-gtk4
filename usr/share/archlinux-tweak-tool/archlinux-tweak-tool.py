@@ -710,7 +710,7 @@ class Main(Gtk.ApplicationWindow):
         #      LAUNCHING GUI AND SETTING ALL THE OBJECTS
         # =====================================================
 
-        gui.gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango)
+        gui.gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib)
         # Now that the UI is built, show the main window.
         try:
             self.present()
@@ -4579,11 +4579,6 @@ class Main(Gtk.ApplicationWindow):
     #               PATREON LINK
     # =====================================================
 
-    def on_social_clicked(self, widget, event):
-        sup = support.Support(self)
-        sup.connect("response", lambda d, r: d.destroy())
-        sup.present()
-
     def tooltip_callback(self, widget, x, y, keyboard_mode, tooltip, text):
         tooltip.set_text(text)
         return True
@@ -5894,37 +5889,6 @@ class Main(Gtk.ApplicationWindow):
         self.get_application().quit()
         return False
 
-    def on_reload_att_clicked(self, widget):
-        # login
-        if fn.check_package_installed("sddm") and hasattr(self, "sessions_sddm"):
-            sddm.pop_box(self, self.sessions_sddm)
-        if fn.check_package_installed("lightdm") and hasattr(self, "sessions_lightdm"):
-            lightdm.pop_box_sessions_lightdm(self, self.sessions_lightdm)
-        # terminal
-        if fn.check_package_installed("termite") and hasattr(self, "term_themes"):
-            terminals.get_themes(self.term_themes)
-        # themes
-        if fn.check_package_installed("arcolinux-leftwm-git") and hasattr(self, "term_themes"):
-            terminals.get_themes(self.term_themes)
-        # populate all cursors dropdowns
-        if fn.check_package_installed("sddm") and hasattr(self, "sddm_cursor_themes"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm") and hasattr(self, "cursor_themes_lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-        # populate cursor themes - some themes include a cursor
-        if fn.check_package_installed("sddm") and hasattr(self, "sddm_cursor_themes"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm") and hasattr(self, "cursor_themes_lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm") and hasattr(self, "gtk_theme_names_lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm") and hasattr(self, "lxdm_gtk_theme"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
-        print("Reloaded")
 
     # ================================================================================
     # ================================================================================

@@ -43,7 +43,7 @@ import system_gui
 import software_gui
 import packages_gui
 
-def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango):
+def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     """creation of the gui"""
 
     # =======================================================
@@ -308,9 +308,6 @@ themes</i> you can customize <b>fastfetch</b>"
 
     lbl_distro = Gtk.Label(xalign=0)
     lbl_distro.set_markup("Working on\n" + fn.change_distro_label(fn.distr))
-    btn_reload_att = Gtk.Button(label="Reload ATT")
-    btn_reload_att.set_size_request(100, 30)
-    btn_reload_att.connect("clicked", self.on_reload_att_clicked)
     btn_restart_att = Gtk.Button(label="Restart ATT")
     btn_restart_att.set_size_request(100, 30)
     btn_restart_att.connect("clicked", self.on_refresh_att_clicked)
@@ -322,24 +319,10 @@ themes</i> you can customize <b>fastfetch</b>"
     #               SUPPORT LINK
     # =====================================================
 
-    pbp = GdkPixbuf.Pixbuf.new_from_file_at_size(
-        fn.path.join(base_dir, "images/support.png"), 58, 58
-    )
-    texture_support = Gdk.Texture.new_for_pixbuf(pbp)
-    pimage = Gtk.Picture.new_for_paintable(texture_support)
-    pimage.set_content_fit(Gtk.ContentFit.CONTAIN)
-    pimage.set_cursor(Gdk.Cursor.new_from_name("pointer"))
-    pimage.set_tooltip_text("Support or get support")
-
-    support_gesture = Gtk.GestureClick.new()
-    support_gesture.connect("pressed", lambda g, n, x, y: self.on_social_clicked(g, None))
-    pimage.add_controller(support_gesture)
-
     # =====================================================
     #                      PACKS
     # =====================================================
 
-    hbox1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
     hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
@@ -382,10 +365,9 @@ themes</i> you can customize <b>fastfetch</b>"
 
     hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
 
-    hbox1.append(pimage)
     hbox2.append(lbl_distro)
+    GLib.timeout_add_seconds(10, lambda: (lbl_distro.set_visible(False), False)[1])
     hbox6.append(btn_dark_theme)
-    hbox5.append(btn_reload_att)
     hbox3.append(btn_restart_att)
     hbox4.append(btn_quit_att)
 
@@ -394,7 +376,6 @@ themes</i> you can customize <b>fastfetch</b>"
     stack_switcher.set_vexpand(True)
     ivbox.append(stack_switcher)
 
-    ivbox.append(hbox1)
     ivbox.append(hbox2)
     ivbox.append(hbox5)
     ivbox.append(hbox3)
