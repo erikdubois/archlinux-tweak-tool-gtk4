@@ -1859,9 +1859,13 @@ class Main(Gtk.ApplicationWindow):
             print("[INFO] Download completed successfully")
             GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
             print("[INFO] Locating downloaded package file...")
-            file = fn.listdir(pathway)
-            package_file = pathway + str(file).strip("[]'")
+            files = fn.listdir(pathway)
+            if not files:
+                raise Exception("No files found after download")
+            package_file = pathway + str(files).strip("[]'")
             print(f"[INFO] Found package: {package_file}")
+            if not fn.os.path.exists(package_file):
+                raise Exception(f"Package file not found: {package_file}")
             print("[INFO] Starting package installation...")
             fn.install_local_package(self, package_file)
         except Exception as error:
@@ -1890,21 +1894,29 @@ class Main(Gtk.ApplicationWindow):
             print(error)
 
     def on_click_probe(self, widget):
+        print("[INFO] Starting hardware probe")
+        print("[INFO] Installing hw-probe package...")
         fn.install_package(self, "hw-probe")
+        print("[INFO] Installing alacritty terminal...")
         fn.install_package(self, "alacritty")
         try:
+            print("[INFO] Launching hardware probe...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
             fn.subprocess.call(
                 "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Probe link has been created")
+            print("[INFO] Probe link has been created")
             GLib.idle_add(
                 fn.show_in_app_notification, self, "Probe link has been created"
             )
         except Exception as error:
-            print(error)
+            print(f"[ERROR] Hardware probe failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification, self, f"Probe failed: {error}"
+            )
 
     def on_click_fix_mainstream(self, widget):
         fn.install_package(self, "alacritty")
@@ -2020,11 +2032,24 @@ class Main(Gtk.ApplicationWindow):
             print(error)
 
     def on_click_fix_pacman_gpg_conf(self, widget):
+        print("[INFO] Starting gpg.conf backup and reset")
         if not fn.path.isfile(fn.gpg_conf + ".bak"):
+            print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf}.bak")
             fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
+        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_original}")
+        print("[INFO] Content of original gpg.conf:")
+        print("=" * 70)
+        try:
+            with open(fn.gpg_conf_original, 'r') as f:
+                content = f.read()
+                print(content)
+        except Exception as e:
+            print(f"[ERROR] Could not read gpg.conf: {e}")
+        print("=" * 70)
         fn.shutil.copy(fn.gpg_conf_original, fn.gpg_conf)
-        print("The new /etc/pacman.d/gnupg/gpg.conf has been saved")
-        print("We only add servers to the config")
+        print("[INFO] The new /etc/pacman.d/gnupg/gpg.conf has been saved")
+        print("[INFO] Backup is in /etc/pacman.d/gnupg/gpg.conf.bak")
+        print("[INFO] We only add servers to the config")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -2032,24 +2057,40 @@ class Main(Gtk.ApplicationWindow):
         )
 
     def on_click_fix_pacman_gpg_conf_local(self, widget):
+        print("[INFO] Starting local gpg.conf backup and reset")
         if not fn.path.isdir(fn.home + "/.gnupg"):
             try:
+                print(f"[INFO] Creating directory: {fn.home}/.gnupg")
                 fn.makedirs(fn.home + "/.gnupg", 0o766)
                 fn.permissions(fn.home + "/.gnupg")
+                print("[INFO] Directory created and permissions set")
             except Exception as error:
-                print(error)
+                print(f"[ERROR] Failed to create directory: {error}")
 
         if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
             try:
+                print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf_local}.bak")
                 fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
                 fn.permissions(fn.gpg_conf_local + ".bak")
+                print("[INFO] Backup created successfully")
             except Exception as error:
-                print(error)
+                print(f"[ERROR] Failed to create backup: {error}")
 
+        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_local_original}")
+        print("[INFO] Content of original local gpg.conf:")
+        print("=" * 70)
+        try:
+            with open(fn.gpg_conf_local_original, 'r') as f:
+                content = f.read()
+                print(content)
+        except Exception as e:
+            print(f"[ERROR] Could not read local gpg.conf: {e}")
+        print("=" * 70)
         fn.shutil.copy(fn.gpg_conf_local_original, fn.gpg_conf_local)
         fn.permissions(fn.gpg_conf_local)
-        print("The new ~/.gnupg/gpg.conf has been saved")
-        print("We only add servers to the config")
+        print("[INFO] The new ~/.gnupg/gpg.conf has been saved")
+        print("[INFO] Backup is in ~/.gnupg/gpg.conf.bak")
+        print("[INFO] We only add servers to the config")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -2065,86 +2106,135 @@ class Main(Gtk.ApplicationWindow):
         self.btn_run_rate_mirrors.set_sensitive(True)
 
     def on_click_apply_global_cursor(self, widget):
-        cursor = fn.get_combo_text(self.cursor_themes)
-        maintenance.set_global_cursor(self, cursor)
-        print("Cursor is saved in /usr/share/icons/default")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Cursor saved in /usr/share/icons/default",
-        )
+        print("[INFO] Starting global cursor application")
+        try:
+            cursor = fn.get_combo_text(self.cursor_themes)
+            print(f"[INFO] Selected cursor theme: {cursor}")
+            print("[INFO] Applying global cursor theme...")
+            maintenance.set_global_cursor(self, cursor)
+            print(f"[INFO] Cursor '{cursor}' is saved in /usr/share/icons/default")
+            print("[INFO] Global cursor theme applied successfully")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Cursor is saved globally",
+            )
+        except Exception as error:
+            print(f"[ERROR] Failed to apply global cursor: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Failed to apply cursor: {error}",
+            )
 
     def on_click_update_system(self, widget):
         try:
+            print("[INFO] Starting system update")
+            print("[INFO] Installing alacritty terminal...")
             fn.install_package(self, "alacritty")
+            print("[INFO] Launching system update...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
             fn.subprocess.call(
                 "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Updating system")
+            print("[INFO] System update completed")
             GLib.idle_add(
                 fn.show_in_app_notification,
                 self,
                 "System update completed",
             )
-        except:
-            print("Update system failed")
+        except Exception as error:
+            print(f"[ERROR] Update system failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Update failed: {error}",
+            )
 
     def on_click_clean_cache(self, widget):
         try:
+            print("[INFO] Starting pacman cache cleanup")
+            print("[INFO] Installing alacritty terminal...")
             fn.install_package(self, "alacritty")
+            print("[INFO] Launching pacman cache cleanup...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
             fn.subprocess.call(
                 "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Cleaning pacman cache")
+            print("[INFO] Pacman cache cleanup completed")
             GLib.idle_add(
                 fn.show_in_app_notification,
                 self,
                 "Pacman cache cleaned",
             )
-        except:
-            print("Clean cache failed")
+        except Exception as error:
+            print(f"[ERROR] Clean cache failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Cleanup failed: {error}",
+            )
 
     def on_click_clear_orphans(self, widget):
         try:
+            print("[INFO] Starting orphan packages cleanup")
+            print("[INFO] Installing alacritty terminal...")
             fn.install_package(self, "alacritty")
+            print("[INFO] Launching orphan packages removal...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Starting orphan cleanup...")
             fn.subprocess.call(
                 "alacritty -e bash -c 'sudo pacman -Rns $(pacman -Qdtq); echo \"\"; echo \"=== Clear complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Clearing orphan packages")
+            print("[INFO] Orphan packages cleanup completed")
             GLib.idle_add(
                 fn.show_in_app_notification,
                 self,
                 "Orphan packages cleared",
             )
-        except:
-            print("Clear orphans failed")
+        except Exception as error:
+            print(f"[ERROR] Clear orphans failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Orphan cleanup failed: {error}",
+            )
 
     def on_click_remove_pacman_lock(self, widget):
         try:
+            print("[INFO] Starting pacman lock removal")
+            print("[INFO] Installing alacritty terminal...")
             fn.install_package(self, "alacritty")
+            print("[INFO] Checking pacman lock file: /var/lib/pacman/db.lck")
+            print("[INFO] Launching pacman lock removal...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
             fn.subprocess.call(
                 "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Removing pacman lock")
+            print("[INFO] Pacman lock removal completed")
             GLib.idle_add(
                 fn.show_in_app_notification,
                 self,
                 "Pacman lock removed",
             )
-        except:
-            print("Remove pacman lock failed")
+        except Exception as error:
+            print(f"[ERROR] Remove pacman lock failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Lock removal failed: {error}",
+            )
 
     # ====================================================================
     #                   INVESTIGATE YOUR LOGS
