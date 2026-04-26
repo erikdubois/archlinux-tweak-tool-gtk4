@@ -32,7 +32,7 @@ python3 << 'PYEOF' > $workdir/usr/share/archlinux-tweak-tool/data/nemesis_packag
 import re
 import os
 
-repo_dir = "/home/erik/DATA/EDU/nemesis_repo/x86_64/"
+repo_dir = "/home/erik/EDU/nemesis_repo/x86_64/"
 packages = set()
 
 for filename in os.listdir(repo_dir):
