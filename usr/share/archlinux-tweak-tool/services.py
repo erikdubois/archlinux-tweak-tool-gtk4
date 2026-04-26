@@ -7,34 +7,22 @@ from functions import GLib
 
 
 def choose_nsswitch(self):
-    """choose a nsswitch"""
+    """choose a nsswitch based on hosts: line"""
     choice = fn.get_combo_text(self.nsswitch_choices)
 
-    # options = ['ArcoLinux', 'Garuda', 'Arch Linux', 'EndeavourOS']
-    if choice == "ArcoLinux":  # alci #carli
-        fn.copy_nsswitch("arco")
-        print("Nsswitch from ArcoLinux")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from ArcoLinux")
-    elif choice == "Garuda":
-        fn.copy_nsswitch("garuda")
-        print("Nsswitch from Garuda")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from Garuda")
-    elif choice == "Arch Linux":  # archlinuxgui #ariser
-        fn.copy_nsswitch("arch")
-        print("Nsswitch from Arch Linux")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from Arch Linux")
-    elif choice == "Manjaro":
-        fn.copy_nsswitch("manjaro")
-        print("Nsswitch from Manjaro")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from Manjaro")
-    elif choice == "BigLinux":
-        fn.copy_nsswitch("biglinux")
-        print("Nsswitch from BigLinux")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from BigLinux")
-    else:
-        fn.copy_nsswitch("eos")
-        print("Nsswitch from EndeavourOS")
-        GLib.idle_add(fn.show_in_app_notification, self, "Nsswitch from EndeavourOS")
+    # Map hosts: lines to config directories
+    hosts_to_config = {
+        "mymachines resolve [!UNAVAIL=return] files myhostname dns": ("arch", "Standard (no mdns)"),
+        "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname": ("arco", "With mdns + wins"),
+        "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns": ("biglinux", "With mdns_minimal"),
+        "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns": ("manjaro", "With mdns4_minimal"),
+        "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins": ("garuda", "Custom order (no systemd)"),
+    }
+
+    if choice in hosts_to_config:
+        label = hosts_to_config[choice][1]
+        fn.copy_nsswitch(choice)
+        GLib.idle_add(fn.show_in_app_notification, self, f"Nsswitch: {label}")
 
 
 def choose_smb_conf(self):

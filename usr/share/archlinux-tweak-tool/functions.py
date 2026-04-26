@@ -1732,20 +1732,34 @@ def close_in_app_notification(self):
 # =====================================================
 
 
-def copy_nsswitch(choice):
-    command = (
-        "cp /usr/share/archlinux-tweak-tool/data/"
-        + choice
-        + "/nsswitch.conf /etc/nsswitch.conf"
-    )
-    print(command)
-    subprocess.call(
-        command.split(" "),
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    print("/etc/nsswitch.conf has been overwritten - reboot")
+def copy_nsswitch(new_hosts_line):
+    dest_file = "/etc/nsswitch.conf"
+
+    try:
+        # Read the current nsswitch.conf
+        with open(dest_file, 'r') as f:
+            dest_lines = f.readlines()
+
+        # Find and replace only the hosts: line
+        old_hosts_line = None
+        updated_lines = []
+        for line in dest_lines:
+            if line.startswith('hosts:'):
+                old_hosts_line = line.rstrip('\n')
+                updated_lines.append(new_hosts_line + '\n')
+            else:
+                updated_lines.append(line)
+
+        # Write back to nsswitch.conf
+        with open(dest_file, 'w') as f:
+            f.writelines(updated_lines)
+
+        # Show what changed
+        if old_hosts_line:
+            print(f"[INFO] Previous code: {old_hosts_line}")
+            print(f"[INFO] New code:      {new_hosts_line}")
+    except Exception as e:
+        print(f"[INFO] Error updating nsswitch.conf: {e}")
 
 
 # =====================================================
@@ -2055,22 +2069,9 @@ def find_active_audio():
 
 def install_discovery(self):
     try:
-        install = "pacman -S avahi nss-mdns gvfs-smb --needed --noconfirm"
-
-        if (
-            check_package_installed("avahi")
-            and check_package_installed("nss-mdns")
-            and check_package_installed("gvfs-smb")
-        ):
-            pass
-        else:
-            subprocess.call(
-                install.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("Avahi, nss-mdns and gvfs-smb is now installed")
+        packages = "avahi nss-mdns gvfs-smb"
+        print(f"[INFO] Opening terminal to install: {packages}")
+        launch_pacman_install_in_terminal(packages)
 
         command = "systemctl enable avahi-daemon.service -f --now"
         subprocess.call(
@@ -2079,9 +2080,9 @@ def install_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We enabled avahi-daemon.service")
+        print("[INFO] Avahi daemon enabled")
     except Exception as error:
-        print(error)
+        print(f"[INFO] Error installing discovery: {error}")
 
 
 def remove_discovery(self):
@@ -2101,7 +2102,7 @@ def remove_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We disabled avahi-daemon.service")
+        print("[INFO] Avahi daemon disabled")
 
         command = "systemctl stop avahi-daemon.socket -f"
         subprocess.call(
@@ -2118,41 +2119,13 @@ def remove_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We disabled avahi-daemon.socket")
+        print("[INFO] Avahi socket disabled")
 
-        command = "pacman -Rs avahi --noconfirm"
-        if check_package_installed("avahi"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("Avahi was removed")
-
-        command = "pacman -Rs nss-mdns --noconfirm"
-        if check_package_installed("nss-mdns"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("nss-mdns was removed")
-
-        command = "pacman -Rs gvfs-smb --noconfirm"
-        if check_package_installed("gvfs-smb"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("gvfs-smb was removed")
-        else:
-            pass
+        packages = "avahi nss-mdns gvfs-smb"
+        print(f"[INFO] Opening terminal to remove: {packages}")
+        launch_pacman_remove_in_terminal(packages)
     except Exception as error:
-        print(error)
+        print(f"[INFO] Error removing discovery: {error}")
 
 
 # =====================================================

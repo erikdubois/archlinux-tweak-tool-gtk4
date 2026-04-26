@@ -5091,19 +5091,33 @@ class Main(Gtk.ApplicationWindow):
     #                       SERVICES - NSSWITCH
     # ====================================================================
 
+    def update_network_status(self):
+        if hasattr(self, 'network_status_label'):
+            status1 = fn.check_service("smb")
+            status1_text = "<b>active</b>" if status1 else "inactive"
+            status2 = fn.check_service("nmb")
+            status2_text = "<b>active</b>" if status2 else "inactive"
+            status3 = fn.check_service("avahi-daemon")
+            status3_text = "<b>active</b>" if status3 else "inactive"
+            self.network_status_label.set_markup(
+                "Samba: " + status1_text + "   Nmb: " + status2_text + "   Avahi: " + status3_text
+            )
+
     def on_install_discovery_clicked(self, widget):
         fn.install_discovery(self)
+        self.update_network_status()
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Network discovery is installed - a good nsswitch_config is needed",
         )
-        print("Network discovery is installed")
+        print("[INFO] Network discovery is installed")
 
     def on_remove_discovery_clicked(self, widget):
         fn.remove_discovery(self)
+        self.update_network_status()
         GLib.idle_add(fn.show_in_app_notification, self, "Network discovery is removed")
-        print("Network discovery is removed")
+        print("[INFO] Network discovery is removed")
 
     def on_click_reset_nsswitch(self, widget):
         if fn.path.isfile(fn.nsswitch_config + ".bak"):
@@ -5111,6 +5125,15 @@ class Main(Gtk.ApplicationWindow):
 
         print("/etc/nsswitch.config reset")
         fn.show_in_app_notification(self, "Nsswitch config reset")
+
+    def on_click_edit_nsswitch(self, widget):
+        try:
+            fn.subprocess.Popen(["nano", fn.nsswitch_config])
+            print("Opened /etc/nsswitch.conf in nano")
+            fn.show_in_app_notification(self, "nsswitch.conf opened in terminal")
+        except Exception as e:
+            print(f"Error opening nsswitch.conf: {e}")
+            fn.show_in_app_notification(self, "Error opening nsswitch.conf for editing")
 
     def on_click_apply_nsswitch(self, widget):
         services.choose_nsswitch(self)
@@ -5124,6 +5147,7 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_restart_smb(self, widget):
         services.restart_smb(self)
+        self.update_network_status()
 
     def on_click_save_samba_share(self, widget):
         fn.save_samba_config(self)
@@ -5154,11 +5178,13 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_install_samba(self, widget):
         fn.install_samba(self)
+        self.update_network_status()
         print("Samba has been successfully installed")
         fn.show_in_app_notification(self, "Samba has been successfully installed")
 
     def on_click_uninstall_samba(self, widget):
         fn.uninstall_samba(self)
+        self.update_network_status()
         print("Samba has been successfully uninstalled")
         fn.show_in_app_notification(self, "Samba has been successfully uninstalled")
 

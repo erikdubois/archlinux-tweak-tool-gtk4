@@ -21,19 +21,6 @@ def gui(self, Gtk, vboxstack_network, fn):
 
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
-    vboxstack1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-
-    stack = Gtk.Stack()
-    stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
-    stack.set_transition_duration(350)
-    stack.set_hhomogeneous(False)
-    stack.set_vhomogeneous(False)
-
-    stack_switcher = Gtk.StackSwitcher()
-    stack_switcher.set_orientation(Gtk.Orientation.HORIZONTAL)
-    stack_switcher.set_stack(stack)
-
     # ==================================================================
     #                       NETWORK TAB
     # ==================================================================
@@ -41,7 +28,7 @@ def gui(self, Gtk, vboxstack_network, fn):
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox2_label = Gtk.Label(xalign=0)
     hbox2_label.set_text(
-        "Discover other computers in your network (to access other computers)"
+        "Discover other computers in your network"
     )
     button_install_discovery = Gtk.Button(label="Install network discovery")
     button_install_discovery.connect("clicked", self.on_install_discovery_clicked)
@@ -60,34 +47,40 @@ def gui(self, Gtk, vboxstack_network, fn):
 
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox3_label = Gtk.Label(xalign=0)
-    hbox3_label.set_text("Change the /etc/nsswitch.conf to connect to computers/NAS")
+    hbox3_label.set_text("Select hosts: line for name resolution (connect to computers/NAS)")
     hbox3_label.set_margin_start(10)
     hbox3_label.set_margin_end(10)
     hbox3.append(hbox3_label)
 
     hbox30 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.nsswitch_choices = Gtk.DropDown.new_from_strings([
-        "ArcoLinux",
-        "ArchLinux",
-        "BigLinux",
-        "EndeavourOS",
-        "Garuda",
-        "Manjaro",
+        "mymachines resolve [!UNAVAIL=return] files myhostname dns",
+        "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname",
+        "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+        "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+        "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins",
     ])
     self.nsswitch_choices.set_selected(0)
-    button_apply_nsswitch = Gtk.Button(label="Apply selected nsswitch.conf")
-    button_apply_nsswitch.connect("clicked", self.on_click_apply_nsswitch)
-    button_reset_nsswitch = Gtk.Button(label="Reset to default nsswitch")
-    button_reset_nsswitch.connect("clicked", self.on_click_reset_nsswitch)
     self.nsswitch_choices.set_margin_start(10)
     self.nsswitch_choices.set_margin_end(10)
     hbox30.append(self.nsswitch_choices)
+
+    hbox_nsswitch_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    button_apply_nsswitch = Gtk.Button(label="Apply selected nsswitch.conf")
+    button_apply_nsswitch.connect("clicked", self.on_click_apply_nsswitch)
+    button_reset_nsswitch = Gtk.Button(label="Reset to your default nsswitch.conf")
+    button_reset_nsswitch.connect("clicked", self.on_click_reset_nsswitch)
+    button_edit_nsswitch = Gtk.Button(label="Edit the /etc/nsswitch.conf manually")
+    button_edit_nsswitch.connect("clicked", self.on_click_edit_nsswitch)
     button_apply_nsswitch.set_margin_start(10)
     button_apply_nsswitch.set_margin_end(10)
-    hbox30.append(button_apply_nsswitch)
+    hbox_nsswitch_buttons.append(button_apply_nsswitch)
     button_reset_nsswitch.set_margin_start(10)
     button_reset_nsswitch.set_margin_end(10)
-    hbox30.append(button_reset_nsswitch)
+    hbox_nsswitch_buttons.append(button_reset_nsswitch)
+    button_edit_nsswitch.set_margin_start(10)
+    button_edit_nsswitch.set_margin_end(10)
+    hbox_nsswitch_buttons.append(button_edit_nsswitch)
 
     hbox92 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox92_label = Gtk.Label(xalign=0)
@@ -298,54 +291,120 @@ All computers in your network must have a unique name /etc/hostname"
     hbox19.append(install_arco_caja_plugin)
 
     # ======================================================================
-    #                       PACK TO VBOXSTACKS
+    #                       SHARED STATUS BAR
     # ======================================================================
 
-    # network tab
-    vboxstack1.append(hbox2)
-    vboxstack1.append(hbox3)
-    vboxstack1.append(hbox30)
+    hbox_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.network_status_label = Gtk.Label(xalign=0)
+
+    status1 = fn.check_service("smb")
+    status1_text = "<b>active</b>" if status1 else "inactive"
+    status2 = fn.check_service("nmb")
+    status2_text = "<b>active</b>" if status2 else "inactive"
+    status3 = fn.check_service("avahi-daemon")
+    status3_text = "<b>active</b>" if status3 else "inactive"
+
+    self.network_status_label.set_markup(
+        "Samba: " + status1_text + "   Nmb: " + status2_text + "   Avahi: " + status3_text
+    )
+    self.network_status_label.set_hexpand(True)
+    self.network_status_label.set_margin_start(10)
+    self.network_status_label.set_margin_end(10)
+    hbox_status.append(self.network_status_label)
+
+    restart_smb_main = Gtk.Button(label="Restart Smb")
+    restart_smb_main.connect("clicked", self.on_click_restart_smb)
+    restart_smb_main.set_margin_start(10)
+    restart_smb_main.set_margin_end(10)
+    hbox_status.append(restart_smb_main)
+
+    # ======================================================================
+    #                   SECTION 1: NETWORK DISCOVERY
+    # ======================================================================
+
+    hbox_section1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    section1_label = Gtk.Label(xalign=0)
+    section1_label.set_markup("<b>Network Discovery</b>")
+    section1_label.set_margin_start(10)
+    section1_label.set_margin_end(10)
+    hbox_section1.append(section1_label)
+
+    # ======================================================================
+    #                   SECTION 2: SAMBA FILE SHARING
+    # ======================================================================
+
+    hbox_section2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    section2_label = Gtk.Label(xalign=0)
+    section2_label.set_markup("<b>Samba File Sharing</b>")
+    section2_label.set_margin_start(10)
+    section2_label.set_margin_end(10)
+    hbox_section2.append(section2_label)
+
+    sep1 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    sep2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+
+    hbox_section_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    section_status_label = Gtk.Label(xalign=0)
+    section_status_label.set_markup("<b>Status</b>")
+    section_status_label.set_margin_start(10)
+    section_status_label.set_margin_end(10)
+    hbox_section_status.append(section_status_label)
+
+    # ======================================================================
+    #                       PACK ALL TO VBOX
+    # ======================================================================
+
+    # Status section
+    vbox.append(hbox_section_status)
+    hbox_status.set_margin_start(10)
+    hbox_status.set_margin_end(10)
+    vbox.append(hbox_status)
+    vbox.append(sep1)
+
+    # Section 1: Network Discovery
+    vbox.append(hbox_section1)
+    hbox2.set_margin_start(20)
+    hbox2.set_margin_end(10)
+    vbox.append(hbox2)
     if fn.check_service("firewalld"):
-        hbox92.set_margin_start(10)
+        hbox92.set_margin_start(20)
         hbox92.set_margin_end(10)
-        vboxstack1.append(hbox92)
-    hbox91.set_margin_start(10)
+        vbox.append(hbox92)
+    hbox3.set_margin_start(20)
+    hbox3.set_margin_end(10)
+    vbox.append(hbox3)
+    hbox30.set_margin_start(20)
+    hbox30.set_margin_end(10)
+    vbox.append(hbox30)
+    hbox_nsswitch_buttons.set_margin_start(20)
+    hbox_nsswitch_buttons.set_margin_end(10)
+    vbox.append(hbox_nsswitch_buttons)
+    hbox91.set_margin_start(20)
     hbox91.set_margin_end(10)
-    vboxstack1.append(hbox91)
-    hbox93.set_margin_start(10)
-    hbox93.set_margin_end(10)
-    vboxstack1.append(hbox93)
+    vbox.append(hbox91)
 
-    # samba tab
-    hbox_header_samba.set_margin_start(10)
+    vbox.append(sep2)
+
+    # Section 2: Samba File Sharing
+    vbox.append(hbox_section2)
+    hbox_header_samba.set_margin_start(20)
     hbox_header_samba.set_margin_end(10)
-    vboxstack2.append(hbox_header_samba)
-    vboxstack2.append(hbox4)
-    vboxstack2.append(hbox4bis)
-    vboxstack2.append(hbox5)
-    hbox16.set_margin_start(10)
+    vbox.append(hbox_header_samba)
+    hbox4.set_margin_start(20)
+    hbox4.set_margin_end(10)
+    vbox.append(hbox4)
+    hbox4bis.set_margin_start(20)
+    hbox4bis.set_margin_end(10)
+    vbox.append(hbox4bis)
+    hbox5.set_margin_start(20)
+    hbox5.set_margin_end(10)
+    vbox.append(hbox5)
+    hbox16.set_margin_start(20)
     hbox16.set_margin_end(10)
-    vboxstack2.append(hbox16)
-    hbox18.set_margin_start(10)
+    vbox.append(hbox16)
+    hbox18.set_margin_start(20)
     hbox18.set_margin_end(10)
-    vboxstack2.append(hbox18)
-    hbox94.set_margin_start(10)
-    hbox94.set_margin_end(10)
-    vboxstack2.append(hbox94)
-    hbox95.set_margin_start(10)
-    hbox95.set_margin_end(10)
-    vboxstack2.append(hbox95)
-    hbox19.set_margin_start(10)
-    hbox19.set_margin_end(10)
-    vboxstack2.append(hbox19)
-
-    stack.add_titled(vboxstack1, "stack_net1", "Network")
-    stack.add_titled(vboxstack2, "stack_net2", "Samba")
-
-    vbox.append(stack_switcher)
-    stack.set_hexpand(True)
-    stack.set_vexpand(True)
-    vbox.append(stack)
+    vbox.append(hbox18)
 
     vboxstack_network.append(hbox_title)
     vboxstack_network.append(hbox_sep)
