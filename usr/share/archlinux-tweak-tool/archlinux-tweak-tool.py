@@ -1814,33 +1814,33 @@ class Main(Gtk.ApplicationWindow):
     # ====================================================================
 
     def on_click_install_arch_keyring(self, widget):
+        fn.install_package(self, "alacritty")
         pathway = base_dir + "/data/arch/packages/"
-        file = fn.listdir(pathway)
-        fn.install_local_package(self, pathway + str(file).strip("[]'"))
-
-    def on_click_install_arch_keyring_online(self, widget):
-        pathway = "/tmp/att-installation/"
-        fn.mkdir(pathway)
-        command = (
-            "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
-            + pathway
-        )
+        files = fn.listdir(pathway)
+        pkg_file = files[0] if files else ""
+        pkg_path = pathway + pkg_file
         try:
             fn.subprocess.call(
-                command,
+                f"alacritty -e bash -c 'sudo pacman -U {pkg_path} --noconfirm; echo \"\"; echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            print("Downloading the package")
-            GLib.idle_add(fn.show_in_app_notification, self, "Downloading the package")
+            GLib.idle_add(fn.show_in_app_notification, self, "Keyring installed locally")
         except Exception as error:
             print(error)
 
-        file = fn.listdir(pathway)
-        fn.install_local_package(self, pathway + str(file).strip("[]'"))
+    def on_click_install_arch_keyring_online(self, widget):
+        fn.install_package(self, "alacritty")
+        pathway = "/tmp/att-installation/"
         try:
-            fn.shutil.rmtree(pathway)
+            fn.subprocess.call(
+                f"alacritty -e bash -c 'mkdir -p {pathway} && cd {pathway} && wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition && sudo pacman -U *.tar.zst --noconfirm && rm -rf {pathway} && echo \"\" && echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Keyring installed online")
         except Exception as error:
             print(error)
 
@@ -1848,7 +1848,7 @@ class Main(Gtk.ApplicationWindow):
         fn.install_package(self, "alacritty")
         try:
             fn.subprocess.call(
-                "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/any/fix-pacman-databases-and-keys",
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -1863,7 +1863,7 @@ class Main(Gtk.ApplicationWindow):
         fn.install_package(self, "alacritty")
         try:
             fn.subprocess.call(
-                "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe",
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -1878,10 +1878,10 @@ class Main(Gtk.ApplicationWindow):
     def on_click_fix_mainstream(self, widget):
         fn.install_package(self, "alacritty")
         try:
-            command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers"
+            command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers; read -p \"Press Enter to close...\"'"
             fn.subprocess.call(
-                command.split(" "),
-                shell=False,
+                command,
+                shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
@@ -1902,13 +1902,23 @@ class Main(Gtk.ApplicationWindow):
         GLib.idle_add(
             fn.show_in_app_notification, self, "Your original mirrorlist is back"
         )
+        fn.install_package(self, "alacritty")
+        try:
+            fn.subprocess.call(
+                f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
 
     def on_click_get_arch_mirrors(self, widget):
         fn.install_package(self, "alacritty")
         try:
             fn.install_package(self, "reflector")
             fn.subprocess.call(
-                "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-reflector",
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -1926,7 +1936,7 @@ class Main(Gtk.ApplicationWindow):
         fn.install_package(self, "alacritty")
         try:
             fn.subprocess.call(
-                "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-rate-mirrors",
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -2020,7 +2030,7 @@ class Main(Gtk.ApplicationWindow):
         self.btn_run_reflector.set_sensitive(True)
 
     def on_click_install_arch_mirrors2(self, widget):
-        fn.install_arco_package(self, "rate-mirrors")
+        fn.install_package(self, "rate-mirrors")
         self.btn_run_rate_mirrors.set_sensitive(True)
 
     def on_click_apply_global_cursor(self, widget):
@@ -2037,7 +2047,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e bash -c 'sudo pacman -Syu; echo \"you can close this window now\"'",
+                "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -2055,7 +2065,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e bash -c 'sudo pacman -Sc; echo \"you can close this window now\"'",
+                "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -2073,7 +2083,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e bash -c 'sudo pacman -Rns $(pacman -Qdtq); echo \"you can close this window now\"'",
+                "alacritty -e bash -c 'sudo pacman -Rns $(pacman -Qdtq); echo \"\"; echo \"=== Clear complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
@@ -2091,7 +2101,7 @@ class Main(Gtk.ApplicationWindow):
         try:
             fn.install_package(self, "alacritty")
             fn.subprocess.call(
-                "alacritty --hold -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"you can close this window now\"'",
+                "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,

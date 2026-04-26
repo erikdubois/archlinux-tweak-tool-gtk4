@@ -4,6 +4,7 @@
 
 # ============Functions============
 import functions as fn
+import settings
 
 import desktopr
 import maintenance

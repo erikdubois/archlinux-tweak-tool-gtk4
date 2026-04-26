@@ -22,7 +22,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     # Section 1: Local LLM Runners
     hbox_section1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section1_label = Gtk.Label(xalign=0)
-    hbox_section1_label.set_text("Local LLM Runners")
+    hbox_section1_label.set_markup("<b>Local LLM Runners</b>")
     hbox_section1_label.set_margin_start(10)
     hbox_section1_label.set_margin_top(15)
     hbox_section1_label.set_margin_bottom(10)
@@ -77,7 +77,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     # Section 2: CLI Coding Assistants
     hbox_section2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section2_label = Gtk.Label(xalign=0)
-    hbox_section2_label.set_text("CLI Coding Assistants")
+    hbox_section2_label.set_markup("<b>CLI Coding Assistants</b>")
     hbox_section2_label.set_margin_start(10)
     hbox_section2_label.set_margin_top(15)
     hbox_section2_label.set_margin_bottom(10)
@@ -181,7 +181,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     # Section 3: Web Apps
     hbox_section3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section3_label = Gtk.Label(xalign=0)
-    hbox_section3_label.set_text("Web Apps")
+    hbox_section3_label.set_markup("<b>Web Apps</b>")
     hbox_section3_label.set_margin_start(10)
     hbox_section3_label.set_margin_top(15)
     hbox_section3_label.set_margin_bottom(10)
@@ -282,7 +282,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     # Section 4: Image Generation
     hbox_section4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section4_label = Gtk.Label(xalign=0)
-    hbox_section4_label.set_text("Image Generation")
+    hbox_section4_label.set_markup("<b>Image Generation</b>")
     hbox_section4_label.set_margin_start(10)
     hbox_section4_label.set_margin_top(15)
     hbox_section4_label.set_margin_bottom(10)

@@ -424,28 +424,86 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     btn_probe.set_margin_end(10)
     hbox14.append(btn_probe)  # pack_end
 
+    # ==========================================
+    #              Section Labels
+    # ==========================================
+    hbox_sec_system = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_system = Gtk.Label(xalign=0)
+    lbl_sec_system.set_markup("<b>System Maintenance</b>")
+    lbl_sec_system.set_margin_start(10)
+    lbl_sec_system.set_margin_top(15)
+    lbl_sec_system.set_margin_bottom(5)
+    hbox_sec_system.append(lbl_sec_system)
+
+    hbox_sec_mirrors = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_mirrors = Gtk.Label(xalign=0)
+    lbl_sec_mirrors.set_markup("<b>Mirror Management</b>")
+    lbl_sec_mirrors.set_margin_start(10)
+    lbl_sec_mirrors.set_margin_top(15)
+    lbl_sec_mirrors.set_margin_bottom(5)
+    hbox_sec_mirrors.append(lbl_sec_mirrors)
+
+    hbox_sec_keys = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_keys = Gtk.Label(xalign=0)
+    lbl_sec_keys.set_markup("<b>Pacman Keys &amp; Keyring</b>")
+    lbl_sec_keys.set_margin_start(10)
+    lbl_sec_keys.set_margin_top(15)
+    lbl_sec_keys.set_margin_bottom(5)
+    hbox_sec_keys.append(lbl_sec_keys)
+
+    hbox_sec_pacman_config = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_pacman_config = Gtk.Label(xalign=0)
+    lbl_sec_pacman_config.set_markup("<b>Pacman Configuration</b>")
+    lbl_sec_pacman_config.set_margin_start(10)
+    lbl_sec_pacman_config.set_margin_top(15)
+    lbl_sec_pacman_config.set_margin_bottom(5)
+    hbox_sec_pacman_config.append(lbl_sec_pacman_config)
+
+    hbox_sec_sys_config = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_sys_config = Gtk.Label(xalign=0)
+    lbl_sec_sys_config.set_markup("<b>System Configuration</b>")
+    lbl_sec_sys_config.set_margin_start(10)
+    lbl_sec_sys_config.set_margin_top(15)
+    lbl_sec_sys_config.set_margin_bottom(5)
+    hbox_sec_sys_config.append(lbl_sec_sys_config)
+
+    hbox_sec_diagnostics = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_sec_diagnostics = Gtk.Label(xalign=0)
+    lbl_sec_diagnostics.set_markup("<b>Diagnostics</b>")
+    lbl_sec_diagnostics.set_margin_start(10)
+    lbl_sec_diagnostics.set_margin_top(15)
+    lbl_sec_diagnostics.set_margin_bottom(5)
+    hbox_sec_diagnostics.append(lbl_sec_diagnostics)
+
     # ======================================================================
     #                       VBOX STACK
     # ======================================================================
 
     vboxstack19.append(hbox1)
     vboxstack19.append(hbox0)
+
+    vboxstack19.append(hbox_sec_system)
     vboxstack19.append(hbox22)
     vboxstack19.append(hbox23)
     vboxstack19.append(hbox24)
     vboxstack19.append(hbox25)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox40)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox4)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox3)
-    if not (fn.distr == "manjaro" or fn.distr == "biglinux" or fn.distr == "artix"):
-        vboxstack19.append(hbox5)
+
+    vboxstack19.append(hbox_sec_mirrors)
+    vboxstack19.append(hbox40)
+    vboxstack19.append(hbox4)
+    vboxstack19.append(hbox3)
+
+    vboxstack19.append(hbox_sec_keys)
+    vboxstack19.append(hbox5)
     vboxstack19.append(hbox2)
     vboxstack19.append(hbox7)
     vboxstack19.append(hbox8)
-    vboxstack19.append(hbox12)
-    vboxstack19.append(hbox14)
 
+    vboxstack19.append(hbox_sec_pacman_config)
+    vboxstack19.append(hbox12)
+
+    vboxstack19.append(hbox_sec_sys_config)
     vboxstack19.append(hbox13)
+
+    vboxstack19.append(hbox_sec_diagnostics)
+    vboxstack19.append(hbox14)

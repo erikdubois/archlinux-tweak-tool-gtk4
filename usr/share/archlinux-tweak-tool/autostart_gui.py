@@ -22,7 +22,7 @@ def gui(self, Gtk, vboxstack13, fn):
     labelbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     labelbox.set_vexpand(True)
     lbls = Gtk.Label(xalign=0)
-    lbls.set_text("Current content of ~/.config/autostart/")
+    lbls.set_text("This is the current content of ~/.config/autostart/")
     toplabelbox.append(lbls)
 
     files = [x.replace(".desktop", "") for x in fn.listdir(fn.autostart)]
@@ -44,6 +44,14 @@ def gui(self, Gtk, vboxstack13, fn):
     # ==========================================
     #              Button
     # ==========================================
+    hbox_add_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    lbl_add_manual = Gtk.Label(xalign=0)
+    lbl_add_manual.set_markup("<b>Add a manual autostart file</b>")
+    lbl_add_manual.set_margin_start(5)
+    lbl_add_manual.set_margin_top(10)
+    lbl_add_manual.set_margin_bottom(5)
+    hbox_add_label.append(lbl_add_manual)
+
     lbl1 = Gtk.Label(label="Name")
     lbl2 = Gtk.Label(label="Command")
     lbl3 = Gtk.Label(label="Comment")
@@ -105,4 +113,5 @@ def gui(self, Gtk, vboxstack13, fn):
     mainbox.set_hexpand(True)
     vboxstack13.append(mainbox)
     vboxstack13.append(labelbox)
+    vboxstack13.append(hbox_add_label)
     vboxstack13.append(hbox2)
