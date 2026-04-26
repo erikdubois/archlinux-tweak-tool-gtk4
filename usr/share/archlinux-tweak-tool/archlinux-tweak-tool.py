@@ -1817,11 +1817,11 @@ class Main(Gtk.ApplicationWindow):
         fn.install_package(self, "alacritty")
         pathway = base_dir + "/data/arch/packages/"
         files = fn.listdir(pathway)
-        pkg_file = files[0] if files else ""
+        pkg_file = next((f for f in files if f.endswith(".tar.zst")), files[0] if files else "")
         pkg_path = pathway + pkg_file
         try:
             fn.subprocess.call(
-                f"alacritty -e bash -c 'sudo pacman -U {pkg_path} --noconfirm; echo \"\"; echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
+                f"alacritty -e bash -c 'sudo pacman -U \"{pkg_path}\" --noconfirm; echo \"\"; echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
