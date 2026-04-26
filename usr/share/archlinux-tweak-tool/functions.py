@@ -710,17 +710,30 @@ def install_local_package(self, package):
     command = "pacman -U " + package + " --noconfirm"
     # if more than one package - checf fails and will install
     try:
-        print(command)
-        subprocess.call(
+        print(f"[INFO] Executing: {command}")
+        print(f"[INFO] Installing package: {package}")
+        print(f"[INFO] Verifying package file exists: {package}")
+        if not os.path.exists(package):
+            raise Exception(f"Package file not found: {package}")
+        print(f"[INFO] Package file verified")
+        result = subprocess.run(
             command.split(" "),
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            text=True
         )
-        print(package + " is now installed")
-        GLib.idle_add(show_in_app_notification, self, package + " is now installed")
+        if result.returncode == 0:
+            print(f"[INFO] {package} is now installed")
+            GLib.idle_add(show_in_app_notification, self, package + " is now installed")
+        else:
+            error_output = result.stderr if result.stderr else result.stdout
+            print(f"[ERROR] Installation failed with exit code: {result.returncode}")
+            print(f"[ERROR] Pacman output: {error_output}")
+            GLib.idle_add(show_in_app_notification, self, f"Installation failed: {error_output[:100]}")
     except Exception as error:
-        print(error)
+        print(f"[ERROR] Installation error: {error}")
+        GLib.idle_add(show_in_app_notification, self, f"Installation error: {error}")
 
 
 def install_arco_package(self, package):

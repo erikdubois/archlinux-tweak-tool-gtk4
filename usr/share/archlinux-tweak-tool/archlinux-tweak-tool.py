@@ -1814,35 +1814,66 @@ class Main(Gtk.ApplicationWindow):
     # ====================================================================
 
     def on_click_install_arch_keyring(self, widget):
-        fn.install_package(self, "alacritty")
-        pathway = base_dir + "/data/arch/packages/"
-        files = fn.listdir(pathway)
-        pkg_file = next((f for f in files if f.endswith(".tar.zst")), files[0] if files else "")
-        pkg_path = pathway + pkg_file
+        print("[INFO] Starting local archlinux-keyring installation")
+        GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
         try:
-            fn.subprocess.call(
-                f"alacritty -e bash -c 'sudo pacman -U \"{pkg_path}\" --noconfirm; echo \"\"; echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            GLib.idle_add(fn.show_in_app_notification, self, "Keyring installed locally")
+            pathway = base_dir + "/data/arch/packages/keyring/"
+            print(f"[INFO] Package pathway: {pathway}")
+            print("[INFO] Searching for archlinux-keyring package...")
+            files = fn.listdir(pathway)
+            if not files:
+                raise Exception("No package files found in pathway")
+            package_file = pathway + str(files).strip("[]'")
+            print(f"[INFO] Found package: {package_file}")
+            print(f"[INFO] Package size check...")
+            if fn.os.path.exists(package_file):
+                size = fn.os.path.getsize(package_file)
+                print(f"[INFO] Package file size: {size} bytes")
+            else:
+                raise Exception(f"Package file not found: {package_file}")
+            print("[INFO] Starting package installation...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Installing archlinux-keyring...")
+            fn.install_local_package(self, package_file)
         except Exception as error:
-            print(error)
+            print(f"[ERROR] Local installation failed: {error}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
 
     def on_click_install_arch_keyring_online(self, widget):
-        fn.install_package(self, "alacritty")
+        print("[INFO] Starting online archlinux-keyring installation")
         pathway = "/tmp/att-installation/"
+        print(f"[INFO] Creating temporary directory: {pathway}")
+        fn.mkdir(pathway)
+        command = (
+            "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
+            + pathway
+        )
         try:
+            print("[INFO] Downloading archlinux-keyring package...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
             fn.subprocess.call(
-                f"alacritty -e bash -c 'mkdir -p {pathway} && cd {pathway} && wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition && sudo pacman -U *.tar.zst --noconfirm && rm -rf {pathway} && echo \"\" && echo \"=== Installation complete ===\"; read -p \"Press Enter to close...\"'",
+                command,
                 shell=True,
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
-            GLib.idle_add(fn.show_in_app_notification, self, "Keyring installed online")
+            print("[INFO] Download completed successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
+            print("[INFO] Locating downloaded package file...")
+            file = fn.listdir(pathway)
+            package_file = pathway + str(file).strip("[]'")
+            print(f"[INFO] Found package: {package_file}")
+            print("[INFO] Starting package installation...")
+            fn.install_local_package(self, package_file)
         except Exception as error:
-            print(error)
+            print(f"[ERROR] Installation failed: {error}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
+        finally:
+            print("[INFO] Cleaning up temporary files...")
+            try:
+                fn.shutil.rmtree(pathway)
+                print("[INFO] Cleanup completed")
+            except Exception as error:
+                print(f"[WARNING] Cleanup failed: {error}")
 
     def on_click_fix_pacman_keys(self, widget):
         fn.install_package(self, "alacritty")
