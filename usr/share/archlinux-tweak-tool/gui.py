@@ -366,7 +366,7 @@ themes</i> you can customize <b>fastfetch</b>"
     hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
 
     hbox2.append(lbl_distro)
-    GLib.timeout_add_seconds(10, lambda: (lbl_distro.set_visible(False), False)[1])
+    lbl_distro.set_visible(True)
     hbox6.append(btn_dark_theme)
     hbox3.append(btn_restart_att)
     hbox4.append(btn_quit_att)
