@@ -545,8 +545,8 @@ class Main(Gtk.ApplicationWindow):
             if fn.path.isfile(fn.sddm_default_d1):
                 try:
                     if fn.path.getsize(fn.sddm_default_d1) == 0:
-                        fn.shutil.copy(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-                        fn.shutil.copy(fn.sddm_default_d2_arco, fn.sddm_default_d2)
+                        fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+                        fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
                 except Exception as error:
                     print(error)
 
@@ -555,8 +555,8 @@ class Main(Gtk.ApplicationWindow):
                 fn.sddm_default_d2
             ):
                 try:
-                    fn.shutil.copy(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-                    fn.shutil.copy(fn.sddm_default_d2_arco, fn.sddm_default_d2)
+                    fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+                    fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
 
                     message = """
     The default SDDM files in your installation were either missing or corrupted.
@@ -608,8 +608,8 @@ class Main(Gtk.ApplicationWindow):
                 pass
             else:
                 fn.create_sddm_k_dir()
-                fn.shutil.copy(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-                fn.shutil.copy(fn.sddm_default_d2_arco, fn.sddm_default_d2)
+                fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+                fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
                 print(
                     "We changed your sddm configuration files so that ATT could start"
                 )
@@ -4177,8 +4177,8 @@ class Main(Gtk.ApplicationWindow):
     def on_click_sddm_reset_original_att(self, widget):
         fn.create_sddm_k_dir()
         try:
-            fn.shutil.copy(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-            fn.shutil.copy(fn.sddm_default_d2_arco, fn.sddm_default_d2)
+            fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+            fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
         except Exception as error:
             print(error)
 
@@ -4213,12 +4213,12 @@ class Main(Gtk.ApplicationWindow):
 
     def on_click_no_sddm_reset_original(self, widget):
         fn.create_sddm_k_dir()
-        if fn.path.isfile(fn.sddm_default_d1_arco):
-            fn.shutil.copyfile(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-            fn.shutil.copyfile(fn.sddm_default_d2_arco, fn.sddm_default_d2)
-        print("The ArcoLinux sddm configuration is now applied")
+        if fn.path.isfile(fn.sddm_default_d1_kiro):
+            fn.shutil.copyfile(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+            fn.shutil.copyfile(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
+        print("The Kiro sddm configuration is now applied")
         fn.show_in_app_notification(
-            self, "The ArcoLinux sddm configuration is now applied"
+            self, "The Kiro sddm configuration is now applied"
         )
 
     def on_autologin_sddm_activated(self, widget, gparam):
@@ -4433,10 +4433,10 @@ class Main(Gtk.ApplicationWindow):
         print("Do not forget to enable sddm")
         fn.show_in_app_notification(self, "Sddm has been installed but not enabled")
         fn.create_sddm_k_dir()
-        fn.shutil.copyfile(fn.sddm_default_d1_arco, fn.sddm_default_d1)
-        fn.shutil.copyfile(fn.sddm_default_d2_arco, fn.sddm_default_d2)
-        print("The ATT sddm configuration is now applied")
-        fn.show_in_app_notification(self, "The ATT sddm configuration is now applied")
+        fn.shutil.copyfile(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+        fn.shutil.copyfile(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
+        print("The Kiro sddm configuration is now applied")
+        fn.show_in_app_notification(self, "The Kiro sddm configuration is now applied")
         fn.restart_program()
 
     def on_click_sddm_enable(self, desktop):

@@ -45,20 +45,15 @@ sddm_default_d1_bak = "/etc/bak.sddm.conf"
 sddm_default_d2 = "/etc/sddm.conf.d/kde_settings.conf"
 sddm_default_d2_bak = "/etc/bak.kde_settings.conf"
 sddm_default_d2_dir = "/etc/sddm.conf.d/"
-sddm_default_d1_arco = "/usr/share/archlinux-tweak-tool/data/arco/sddm/sddm.conf"
-sddm_default_d2_arco = (
-    "/usr/share/archlinux-tweak-tool/data/arco/sddm.conf.d/kde_settings.conf"
+sddm_default_d1_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/sddm/sddm.conf"
+sddm_default_d2_kiro = (
+    "/usr/share/archlinux-tweak-tool/data/kiro/sddm.conf.d/kde_settings.conf"
 )
 icons_default = "/usr/share/icons/default/index.theme"
 
 samba_config = "/etc/samba/smb.conf"
 
 mirrorlist = "/etc/pacman.d/mirrorlist"
-arcolinux_mirrorlist = "/etc/pacman.d/arcolinux-mirrorlist"
-# xerolinux_mirrorlist = "/etc/pacman.d/xerolinux-mirrorlist"
-arcolinux_mirrorlist_original = (
-    "/usr/share/archlinux-tweak-tool/data/arco/arcolinux-mirrorlist"
-)
 pacman = "/etc/pacman.conf"
 pacman_arch = "/usr/share/archlinux-tweak-tool/data/arch/pacman/pacman.conf"
 pacman_arco = "/usr/share/archlinux-tweak-tool/data/arco/pacman/pacman.conf"
