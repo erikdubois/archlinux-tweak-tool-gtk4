@@ -2448,6 +2448,16 @@ def get_aur_helper():
 
 def launch_pacman_install_in_terminal(packages):
     import tempfile
+    import shutil
+
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
+
     temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
     temp_path = temp_file.name
     temp_file.close()
@@ -2498,6 +2508,16 @@ read -p 'Press Enter to close...'
 
 def launch_pacman_remove_in_terminal(packages):
     import tempfile
+    import shutil
+
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
+
     temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
     temp_path = temp_file.name
     temp_file.close()
@@ -2547,6 +2567,14 @@ read -p 'Press Enter to close...'
 
 
 def launch_aur_install_in_terminal(aur_helper, package, username=None):
+    import shutil
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
     if username is None:
         username = sudo_username
     script = f"sudo -u {username} {aur_helper} -S --noconfirm {package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
@@ -2554,6 +2582,14 @@ def launch_aur_install_in_terminal(aur_helper, package, username=None):
 
 
 def launch_aur_remove_in_terminal(aur_helper, package, username=None):
+    import shutil
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
     if username is None:
         username = sudo_username
     script = f"sudo -u {username} {aur_helper} -Rs --noconfirm {package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
@@ -2561,6 +2597,14 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
 
 
 def launch_npm_install_in_terminal(npm_package, username=None):
+    import shutil
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
@@ -2569,6 +2613,14 @@ def launch_npm_install_in_terminal(npm_package, username=None):
 
 
 def launch_npm_remove_in_terminal(npm_package, username=None):
+    import shutil
+    if not shutil.which("alacritty"):
+        print("[INFO] alacritty not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            return None
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
