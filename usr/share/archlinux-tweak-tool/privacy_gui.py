@@ -52,7 +52,7 @@ def gui(self, Gtk, vboxstack3, fn):
 
     hbox_section2_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     label_section2_title = Gtk.Label(xalign=0)
-    label_section2_title.set_markup("<b>Network & Tracking Protection</b>")
+    label_section2_title.set_markup("<b>Network &amp; Tracking Protection</b>")
     label_section2_title.set_margin_start(10)
     label_section2_title.set_margin_end(10)
     hbox_section2_title.append(label_section2_title)
