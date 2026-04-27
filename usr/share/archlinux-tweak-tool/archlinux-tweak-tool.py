@@ -141,7 +141,13 @@ class Main(Gtk.ApplicationWindow):
                             break
             except Exception:
                 pass
-        print("[INFO] : Theme = " + (_gtk_theme if _gtk_theme else "not set"))
+        if _gtk_theme:
+            is_dark = _gtk_theme.endswith("-dark")
+            base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
+            dark_str = " (dark mode)" if is_dark else ""
+            print("[INFO] : Theme = " + base_theme + dark_str)
+        else:
+            print("[INFO] : Theme = not set")
         print(
             "---------------------------------------------------------------------------"
         )
@@ -6081,7 +6087,12 @@ class ATTApplication(Gtk.Application):
                 except Exception:
                     pass
             if gtk_theme:
-                Gtk.Settings.get_default().set_property("gtk-theme-name", gtk_theme)
+                prefer_dark = gtk_theme.endswith("-dark")
+                theme_name = gtk_theme[:-5] if prefer_dark else gtk_theme
+                Gtk.Settings.get_default().set_property("gtk-theme-name", theme_name)
+                Gtk.Settings.get_default().set_property(
+                    "gtk-application-prefer-dark-theme", prefer_dark
+                )
 
             style_provider = Gtk.CssProvider()
             style_provider.load_from_path(base_dir + "/icons.css")
