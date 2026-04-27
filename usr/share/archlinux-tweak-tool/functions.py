@@ -2459,25 +2459,25 @@ def ensure_firefox_installed():
 
 
 def ensure_nodejs_installed():
-    import shutil
     import time
 
-    if shutil.which("npm"):
+    if path.exists("/usr/bin/npm"):
         return True
 
     print("[INFO] Node.js not found, installing...")
     install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs"],
-                                 capture_output=True, text=True)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if install_proc.returncode != 0:
         print(f"[ERROR] Failed to install Node.js: {install_proc.stderr}")
         return False
 
     time.sleep(1)
-    if shutil.which("npm"):
+
+    if path.exists("/usr/bin/npm"):
         print("[INFO] Node.js installed successfully")
         return True
     else:
-        print("[ERROR] Node.js installed but npm not found in PATH")
+        print("[ERROR] Node.js installed but /usr/bin/npm not found")
         return False
 
 
@@ -2646,7 +2646,7 @@ def launch_npm_install_in_terminal(npm_package, username=None):
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
-    script = f"sudo -u {username} HOME={user_home} npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    script = f"sudo -u {username} HOME={user_home} /usr/bin/npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
@@ -2665,5 +2665,5 @@ def launch_npm_remove_in_terminal(npm_package, username=None):
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
-    script = f"sudo -u {username} HOME={user_home} npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    script = f"sudo -u {username} HOME={user_home} /usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

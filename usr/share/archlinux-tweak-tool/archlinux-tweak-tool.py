@@ -3354,35 +3354,41 @@ class Main(Gtk.ApplicationWindow):
 
             if codex_installed:
                 process = fn.launch_npm_remove_in_terminal("@openai/codex")
-                def wait_removal():
-                    try:
-                        import time
-                        process.wait()
-                        time.sleep(1)
-                        GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI")
-                        GLib.idle_add(self.btn_ai_codex.set_label, "Install")
-                        GLib.idle_add(fn.show_in_app_notification, self, "Codex removal complete")
-                    except Exception as e:
-                        print(f"Error in codex wait_removal: {e}")
-                fn.threading.Thread(target=wait_removal, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Codex removal started")
+                if process:
+                    def wait_removal():
+                        try:
+                            import time
+                            process.wait()
+                            time.sleep(1)
+                            GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI")
+                            GLib.idle_add(self.btn_ai_codex.set_label, "Install")
+                            GLib.idle_add(fn.show_in_app_notification, self, "Codex removal complete")
+                        except Exception as e:
+                            print(f"Error in codex wait_removal: {e}")
+                    fn.threading.Thread(target=wait_removal, daemon=True).start()
+                    GLib.idle_add(fn.show_in_app_notification, self, "Codex removal started")
+                else:
+                    GLib.idle_add(fn.show_in_app_notification, self, "Codex removal failed")
             else:
                 process = fn.launch_npm_install_in_terminal("@openai/codex")
-                def wait_install():
-                    try:
-                        import time
-                        process.wait()
-                        time.sleep(1)
-                        if any(fn.path.exists(p) for p in codex_paths):
-                            GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI <b>installed</b>")
-                            GLib.idle_add(self.btn_ai_codex.set_label, "Remove")
-                            GLib.idle_add(fn.show_in_app_notification, self, "Codex installation complete")
-                        else:
-                            print(f"Codex binary not found. Checked: {codex_paths}")
-                    except Exception as e:
-                        print(f"Error in codex wait_install: {e}")
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Codex installation started")
+                if process:
+                    def wait_install():
+                        try:
+                            import time
+                            process.wait()
+                            time.sleep(1)
+                            if any(fn.path.exists(p) for p in codex_paths):
+                                GLib.idle_add(self.lbl_ai_codex.set_markup, "OpenAI Codex CLI <b>installed</b>")
+                                GLib.idle_add(self.btn_ai_codex.set_label, "Remove")
+                                GLib.idle_add(fn.show_in_app_notification, self, "Codex installation complete")
+                            else:
+                                print(f"Codex binary not found. Checked: {codex_paths}")
+                        except Exception as e:
+                            print(f"Error in codex wait_install: {e}")
+                    fn.threading.Thread(target=wait_install, daemon=True).start()
+                    GLib.idle_add(fn.show_in_app_notification, self, "Codex installation started")
+                else:
+                    GLib.idle_add(fn.show_in_app_notification, self, "Codex installation failed")
         except Exception as error:
             print(error)
 
@@ -3393,35 +3399,41 @@ class Main(Gtk.ApplicationWindow):
 
             if gemini_installed:
                 process = fn.launch_npm_remove_in_terminal("@google/gemini-cli")
-                def wait_removal():
-                    try:
-                        import time
-                        process.wait()
-                        time.sleep(1)
-                        GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
-                        GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
-                        GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
-                    except Exception as e:
-                        print(f"Error in gemini wait_removal: {e}")
-                fn.threading.Thread(target=wait_removal, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal started")
+                if process:
+                    def wait_removal():
+                        try:
+                            import time
+                            process.wait()
+                            time.sleep(1)
+                            GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
+                            GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
+                            GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
+                        except Exception as e:
+                            print(f"Error in gemini wait_removal: {e}")
+                    fn.threading.Thread(target=wait_removal, daemon=True).start()
+                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal started")
+                else:
+                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal failed")
             else:
                 process = fn.launch_npm_install_in_terminal("@google/gemini-cli")
-                def wait_install():
-                    try:
-                        import time
-                        process.wait()
-                        time.sleep(1)
-                        if any(fn.path.exists(p) for p in gemini_paths):
-                            GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
-                            GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
-                            GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
-                        else:
-                            print(f"Gemini binary not found. Checked: {gemini_paths}")
-                    except Exception as e:
-                        print(f"Error in gemini wait_install: {e}")
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation started")
+                if process:
+                    def wait_install():
+                        try:
+                            import time
+                            process.wait()
+                            time.sleep(1)
+                            if any(fn.path.exists(p) for p in gemini_paths):
+                                GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
+                                GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
+                                GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
+                            else:
+                                print(f"Gemini binary not found. Checked: {gemini_paths}")
+                        except Exception as e:
+                            print(f"Error in gemini wait_install: {e}")
+                    fn.threading.Thread(target=wait_install, daemon=True).start()
+                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation started")
+                else:
+                    GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation failed")
         except Exception as error:
             print(error)
 
