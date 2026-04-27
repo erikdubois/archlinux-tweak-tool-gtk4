@@ -3425,137 +3425,80 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
-    def on_click_ai_ollama_link(self, widget):
+    def open_url_in_browser(self, url):
+        if not fn.ensure_firefox_installed():
+            print(f"[ERROR] Cannot open {url}: Firefox installation failed")
+            return
         try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://ollama.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 firefox -new-tab {url}", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
+
+    def on_click_ai_ollama_link(self, widget):
+        self.open_url_in_browser("https://ollama.com/")
 
     def on_click_ai_webui_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openwebui.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://openwebui.com/")
 
     def on_click_ai_claude_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://code.claude.com/docs/en/cli-reference", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://code.claude.com/docs/en/cli-reference")
 
     def on_click_ai_aider_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://aider.chat/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://aider.chat/")
 
     def on_click_ai_gemini_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://geminicli.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://geminicli.com/")
 
     def on_click_ai_codex_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://developers.openai.com/codex/cli", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://developers.openai.com/codex/cli")
 
     def on_click_ai_chatgpt(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://chatgpt.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://chatgpt.com")
 
     def on_click_ai_chatgpt_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://academy.openai.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://academy.openai.com/")
 
     def on_click_ai_claude_web_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://claude.com/resources/tutorials?open_in_browser=1", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://claude.com/resources/tutorials?open_in_browser=1")
 
     def on_click_ai_gemini_web_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://gemini.google.com/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://gemini.google.com/")
 
     def on_click_ai_perplexity_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.perplexity.ai/hub/getting-started", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://www.perplexity.ai/hub/getting-started")
 
     def on_click_ai_claude_web(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://claude.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://claude.ai")
 
     def on_click_ai_gemini_web(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://gemini.google.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://gemini.google.com")
 
     def on_click_ai_perplexity(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://perplexity.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://perplexity.ai")
 
     def on_click_ai_dalle_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openai.com/index/dall-e-3/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://openai.com/index/dall-e-3/")
 
     def on_click_ai_dalle(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://openai.com/dall-e-3", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://openai.com/dall-e-3")
 
     def on_click_ai_midjourney_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://docs.midjourney.com/hc/en-us/articles/33329261836941-Getting-Started-Guide", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://docs.midjourney.com/hc/en-us/articles/33329261836941-Getting-Started-Guide")
 
     def on_click_ai_midjourney(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.midjourney.com", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://www.midjourney.com")
 
     def on_click_ai_leonardo_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://leonardo.ai/learn/", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://leonardo.ai/learn/")
 
     def on_click_ai_leonardo(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://leonardo.ai", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://leonardo.ai")
 
     def on_click_ai_firefly_link(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.adobe.com/learn/firefly", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://www.adobe.com/learn/firefly")
 
     def on_click_ai_firefly(self, widget):
-        try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open https://www.adobe.com/products/firefly", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
-        except Exception as error:
-            print(error)
+        self.open_url_in_browser("https://www.adobe.com/products/firefly")
 
 
 

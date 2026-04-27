@@ -2446,6 +2446,30 @@ def get_aur_helper():
     return None
 
 
+def ensure_firefox_installed():
+    import shutil
+    if not shutil.which("firefox"):
+        print("[INFO] Firefox not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "firefox"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install Firefox: {install_proc.stderr}")
+            return False
+    return True
+
+
+def ensure_nodejs_installed():
+    import shutil
+    if not shutil.which("npm"):
+        print("[INFO] Node.js not found, installing...")
+        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs"],
+                                     capture_output=True, text=True)
+        if install_proc.returncode != 0:
+            print(f"[ERROR] Failed to install Node.js: {install_proc.stderr}")
+            return False
+    return True
+
+
 def launch_pacman_install_in_terminal(packages):
     import tempfile
     import shutil
@@ -2605,6 +2629,9 @@ def launch_npm_install_in_terminal(npm_package, username=None):
         if install_proc.returncode != 0:
             print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
+    if not ensure_nodejs_installed():
+        print("[ERROR] Node.js installation failed")
+        return None
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
@@ -2621,6 +2648,9 @@ def launch_npm_remove_in_terminal(npm_package, username=None):
         if install_proc.returncode != 0:
             print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
+    if not ensure_nodejs_installed():
+        print("[ERROR] Node.js installation failed")
+        return None
     if username is None:
         username = sudo_username
     user_home = f"/home/{username}"
