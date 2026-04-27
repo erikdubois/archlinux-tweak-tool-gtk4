@@ -51,12 +51,6 @@ tput sgr0
 cd /tmp/yay-git && sudo -u "$BUILD_USER" makepkg -si --noconfirm
 
 echo
-tput setaf 2
-echo "================================================================"
-echo "  yay-git build complete"
-echo "================================================================"
-tput sgr0
-echo
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+echo "=== Installation complete ==="
+echo "You can close this window"
+read -p "Press Enter to close..."

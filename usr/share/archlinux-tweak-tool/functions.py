@@ -2496,6 +2496,10 @@ def ensure_git_installed():
     install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "git"],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
+    print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
+    print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
+    print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
+
     if install_proc.returncode != 0:
         print(f"[ERROR] Failed to install Git: {install_proc.stderr}")
         return False
