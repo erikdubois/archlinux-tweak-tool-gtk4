@@ -3442,7 +3442,7 @@ class Main(Gtk.ApplicationWindow):
             print(f"[ERROR] Cannot open {url}: Firefox installation failed")
             return
         try:
-            fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 firefox -new-tab '{url}' &", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+            fn.subprocess.Popen(["sudo", "-u", fn.sudo_username, "-i", "bash", "-c", f"DISPLAY=:0 firefox -new-tab '{url}'"], stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
         except Exception as error:
             print(error)
 
