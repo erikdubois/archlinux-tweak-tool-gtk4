@@ -5351,6 +5351,17 @@ class Main(Gtk.ApplicationWindow):
         file_chooser.connect("response", on_response)
         file_chooser.present()
 
+    def on_click_remove_debug(self, widget):
+        try:
+            result = fn.remove_debug_from_makepkg_conf()
+            if result:
+                fn.show_in_app_notification(self, "Debug successfully removed from /etc/makepkg.conf")
+            else:
+                fn.show_in_app_notification(self, "Failed to remove debug from /etc/makepkg.conf")
+        except Exception as error:
+            print(f"[ERROR] on_click_remove_debug: {error}")
+            fn.show_in_app_notification(self, "Error removing debug from makepkg.conf")
+
     # ====================================================================
     #                            BOTTOM BUTTONS
     # ====================================================================

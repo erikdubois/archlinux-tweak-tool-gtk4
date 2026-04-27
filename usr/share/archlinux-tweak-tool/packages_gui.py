@@ -24,8 +24,8 @@ def gui(self, Gtk, vbox_stack, fn):
         label_export_desc.set_markup(
             f""
             f" <b>No AUR packages are exported</b>\n"
-            f" - Option: <b>Explicitly Installed Packages</b> (recommended) will export installed packages only found in sync db (less packages)\n"
-            f" - Option: <b>All Installed Packages</b> will export all packages currently installed on your system (lots of packages)\n"
+            f" - Option: <b>Explicitly Installed Packages</b> (recommended) packages only found in sync db (less packages)\n"
+            f" - Option: <b>All Installed Packages</b> will export all packages currently installed on your system \n"
             f" - Tip: To see packages installed from AUR in the terminal type: pacman -Qqem\n\n"
             f""
             f" A list of installed packages will be exported to <b>.config/att-exports</b>"
@@ -225,12 +225,57 @@ def gui(self, Gtk, vbox_stack, fn):
         vbox_install_button.set_margin_bottom(10)
         vbox_install.append(vbox_install_button)
 
+        frame_build = Gtk.Frame(label="")
+        frame_build_label = frame_build.get_label_widget()
+        frame_build_label.set_markup("<b>Building packages</b>")
+
+        hbox_build = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        label_build_desc = Gtk.Label(xalign=0, yalign=0)
+        label_build_desc.set_markup(
+            f""
+            f" <b>Build packages from source using makepkg</b>\n"
+            f" - Build packages from PKGBUILD files\n"
+            f" - Requires base-devel package group to be installed\n"
+            f" - Arch Linux create by default always a -debug package\n"
+        )
+
+        label_build_desc.set_selectable(True)
+
+        vbox_build = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        label_build_desc.set_margin_start(10)
+        label_build_desc.set_margin_end(10)
+        vbox_build.append(label_build_desc)
+
+        hbox_debug = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        label_debug = Gtk.Label(xalign=0)
+        label_debug.set_text("Remove the debug in /etc/makepkg.conf")
+        label_debug.set_hexpand(True)
+        button_remove_debug = Gtk.Button(label="Remove")
+
+        hbox_debug.append(label_debug)
+        hbox_debug.append(button_remove_debug)
+        hbox_debug.set_margin_start(10)
+        hbox_debug.set_margin_end(10)
+        hbox_debug.set_margin_top(10)
+        hbox_debug.set_margin_bottom(10)
+        vbox_build.append(hbox_debug)
+
+        button_remove_debug.connect("clicked", self.on_click_remove_debug)
+
+        vbox_build.set_margin_start(10)
+        vbox_build.set_margin_end(10)
+        hbox_build.append(vbox_build)
+
+        frame_build.set_child(hbox_build)
+
         vbox_stack.append(hbox_title)
         vbox_stack.append(hbox_sep)
 
         vbox_stack.append(frame_export)
         frame_export.set_margin_bottom(15)
         vbox_stack.append(frame_install)
+        frame_install.set_margin_bottom(15)
+        vbox_stack.append(frame_build)
 
     except Exception as e:
         fn.logger.error("Exception in packages_gui.gui(): %s" % e)

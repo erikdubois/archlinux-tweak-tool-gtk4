@@ -2514,6 +2514,55 @@ def ensure_git_installed():
         return False
 
 
+def remove_debug_from_makepkg_conf():
+    makepkg_conf = "/etc/makepkg.conf"
+    try:
+        print(f"[INFO] Starting removal of debug from {makepkg_conf}")
+
+        if not path.exists(makepkg_conf):
+            print(f"[ERROR] {makepkg_conf} not found")
+            return False
+
+        print(f"[DEBUG] Reading {makepkg_conf}...")
+        with open(makepkg_conf, 'r') as f:
+            lines = f.readlines()
+
+        print(f"[DEBUG] Total lines read: {len(lines)}")
+
+        modified = False
+        for i, line in enumerate(lines):
+            if line.startswith("OPTIONS="):
+                print(f"[DEBUG] Found OPTIONS line at line {i+1}")
+                print(f"[DEBUG] Original line: {line.strip()}")
+
+                if " debug " in line or line.endswith("debug)\n"):
+                    lines[i] = line.replace(" debug ", " !debug ")
+                    lines[i] = lines[i].replace("debug)", "!debug)")
+                    modified = True
+                    print(f"[DEBUG] Modified line: {lines[i].strip()}")
+                    print(f"[INFO] Successfully replaced debug with !debug")
+                else:
+                    print(f"[DEBUG] debug not found in OPTIONS line")
+                break
+
+        if modified:
+            print(f"[DEBUG] Writing changes back to {makepkg_conf}...")
+            with open(makepkg_conf, 'w') as f:
+                f.writelines(lines)
+            print(f"[INFO] Successfully removed debug from /etc/makepkg.conf")
+            return True
+        else:
+            print(f"[WARNING] debug not found in OPTIONS line, no changes made")
+            return False
+
+    except PermissionError:
+        print(f"[ERROR] Permission denied: need root access to edit {makepkg_conf}")
+        return False
+    except Exception as e:
+        print(f"[ERROR] Failed to modify {makepkg_conf}: {e}")
+        return False
+
+
 def launch_pacman_install_in_terminal(packages):
     import tempfile
     import shutil
