@@ -2485,6 +2485,31 @@ def ensure_nodejs_installed():
     return False
 
 
+def ensure_git_installed():
+    import shutil
+    import time
+
+    if shutil.which("git"):
+        return True
+
+    print("[INFO] Git not found, installing...")
+    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "git"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    if install_proc.returncode != 0:
+        print(f"[ERROR] Failed to install Git: {install_proc.stderr}")
+        return False
+
+    time.sleep(1)
+
+    if shutil.which("git"):
+        print("[INFO] Git installed successfully")
+        return True
+    else:
+        print("[ERROR] Git installed but not found in PATH")
+        return False
+
+
 def launch_pacman_install_in_terminal(packages):
     import tempfile
     import shutil
