@@ -2181,33 +2181,6 @@ class Main(Gtk.ApplicationWindow):
                 f"Cleanup failed: {error}",
             )
 
-    def on_click_clear_orphans(self, widget):
-        try:
-            print("[INFO] Starting orphan packages cleanup")
-            print("[INFO] Installing alacritty terminal...")
-            fn.install_package(self, "alacritty")
-            print("[INFO] Launching orphan packages removal...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Starting orphan cleanup...")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo pacman -Rns $(pacman -Qdtq); echo \"\"; echo \"=== Clear complete ===\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] Orphan packages cleanup completed")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Orphan packages cleared",
-            )
-        except Exception as error:
-            print(f"[ERROR] Clear orphans failed: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                f"Orphan cleanup failed: {error}",
-            )
-
     def on_click_remove_pacman_lock(self, widget):
         try:
             print("[INFO] Starting pacman lock removal")
