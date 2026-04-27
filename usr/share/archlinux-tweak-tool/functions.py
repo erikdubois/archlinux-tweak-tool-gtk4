@@ -2635,7 +2635,7 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def launch_npm_install_in_terminal(npm_package, username=None):
+def launch_npm_install_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
         print("[INFO] alacritty not found, installing...")
@@ -2647,14 +2647,11 @@ def launch_npm_install_in_terminal(npm_package, username=None):
     if not ensure_nodejs_installed():
         print("[ERROR] Node.js installation failed")
         return None
-    if username is None:
-        username = sudo_username
-    user_home = f"/home/{username}"
-    script = f"sudo -u {username} HOME={user_home} /usr/bin/npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    script = f"/usr/bin/npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def launch_npm_remove_in_terminal(npm_package, username=None):
+def launch_npm_remove_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
         print("[INFO] alacritty not found, installing...")
@@ -2666,8 +2663,5 @@ def launch_npm_remove_in_terminal(npm_package, username=None):
     if not ensure_nodejs_installed():
         print("[ERROR] Node.js installation failed")
         return None
-    if username is None:
-        username = sudo_username
-    user_home = f"/home/{username}"
-    script = f"sudo -u {username} HOME={user_home} /usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+    script = f"/usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
