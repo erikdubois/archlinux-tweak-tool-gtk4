@@ -435,16 +435,6 @@ class Main(Gtk.ApplicationWindow):
             except Exception as error:
                 print(error)
 
-        # ensuring we have a backup or the arcolinux mirrorlist
-        if fn.path.isfile(fn.arcolinux_mirrorlist):
-            if not fn.path.isfile(fn.arcolinux_mirrorlist + ".bak"):
-                try:
-                    fn.shutil.copy(
-                        fn.arcolinux_mirrorlist, fn.arcolinux_mirrorlist + ".bak"
-                    )
-                except Exception as error:
-                    print(error)
-
         # ensuring we have a backup of the archlinux mirrorlist
         if fn.path.isfile(fn.mirrorlist):
             if not fn.path.isfile(fn.mirrorlist + ".bak"):
