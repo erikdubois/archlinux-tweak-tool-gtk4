@@ -2461,24 +2461,28 @@ def ensure_firefox_installed():
 def ensure_nodejs_installed():
     import time
 
-    if path.exists("/usr/bin/npm"):
-        return True
+    npm_paths = ["/usr/bin/npm", "/usr/local/bin/npm"]
+    for npm_path in npm_paths:
+        if path.exists(npm_path):
+            return True
 
     print("[INFO] Node.js not found, installing...")
-    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs"],
+    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs", "npm"],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if install_proc.returncode != 0:
-        print(f"[ERROR] Failed to install Node.js: {install_proc.stderr}")
-        return False
 
-    time.sleep(1)
+    print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
+    print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
+    print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
 
-    if path.exists("/usr/bin/npm"):
-        print("[INFO] Node.js installed successfully")
-        return True
-    else:
-        print("[ERROR] Node.js installed but /usr/bin/npm not found")
-        return False
+    time.sleep(2)
+
+    for npm_path in npm_paths:
+        if path.exists(npm_path):
+            print("[INFO] Node.js installed successfully")
+            return True
+
+    print("[ERROR] Node.js/npm installation failed - npm not found in common paths")
+    return False
 
 
 def launch_pacman_install_in_terminal(packages):
