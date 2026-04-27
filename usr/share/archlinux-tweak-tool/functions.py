@@ -2460,14 +2460,25 @@ def ensure_firefox_installed():
 
 def ensure_nodejs_installed():
     import shutil
-    if not shutil.which("npm"):
-        print("[INFO] Node.js not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs"],
-                                     capture_output=True, text=True)
-        if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install Node.js: {install_proc.stderr}")
-            return False
-    return True
+    import time
+
+    if shutil.which("npm"):
+        return True
+
+    print("[INFO] Node.js not found, installing...")
+    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs"],
+                                 capture_output=True, text=True)
+    if install_proc.returncode != 0:
+        print(f"[ERROR] Failed to install Node.js: {install_proc.stderr}")
+        return False
+
+    time.sleep(1)
+    if shutil.which("npm"):
+        print("[INFO] Node.js installed successfully")
+        return True
+    else:
+        print("[ERROR] Node.js installed but npm not found in PATH")
+        return False
 
 
 def launch_pacman_install_in_terminal(packages):
