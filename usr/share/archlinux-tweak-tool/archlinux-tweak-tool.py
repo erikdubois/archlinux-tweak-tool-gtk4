@@ -130,19 +130,19 @@ class Main(Gtk.ApplicationWindow):
             "---------------------------------------------------------------------------"
         )
 
-        _gtk_theme = os.environ.get("GTK_THEME")
+        _gtk_theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
         if not _gtk_theme:
             try:
                 with open("/etc/environment", "r", encoding="utf-8") as _f:
                     for _line in _f:
                         _line = _line.strip()
                         if _line.startswith("GTK_THEME="):
-                            _gtk_theme = _line.split("=", 1)[1].strip()
+                            _gtk_theme = _line.split("=", 1)[1].strip().strip("\"'")
                             break
             except Exception:
                 pass
         if _gtk_theme:
-            is_dark = _gtk_theme.endswith("-dark")
+            is_dark = _gtk_theme.lower().endswith("-dark")
             base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
             dark_str = " (dark mode)" if is_dark else ""
             print("[INFO] : Theme = " + base_theme + dark_str)
@@ -6118,19 +6118,19 @@ class ATTApplication(Gtk.Application):
                 f.write(str(fn.getpid()))
 
             # apply GTK_THEME from /etc/environment when not in environment (e.g. pkexec)
-            gtk_theme = os.environ.get("GTK_THEME")
+            gtk_theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
             if not gtk_theme:
                 try:
                     with open("/etc/environment", "r", encoding="utf-8") as _f:
                         for _line in _f:
                             _line = _line.strip()
                             if _line.startswith("GTK_THEME="):
-                                gtk_theme = _line.split("=", 1)[1].strip()
+                                gtk_theme = _line.split("=", 1)[1].strip().strip("\"'")
                                 break
                 except Exception:
                     pass
             if gtk_theme:
-                prefer_dark = gtk_theme.endswith("-dark")
+                prefer_dark = gtk_theme.lower().endswith("-dark")
                 theme_name = gtk_theme[:-5] if prefer_dark else gtk_theme
                 Gtk.Settings.get_default().set_property("gtk-theme-name", theme_name)
                 Gtk.Settings.get_default().set_property(
