@@ -75,19 +75,6 @@ the nemesis and/or chaotic-aur repo"
     self.button_install = Gtk.Button(label="Install")
     self.button_reinstall = Gtk.Button(label="Re-Install")
 
-    self.button_adt = Gtk.Button()
-    self.button_adt.set_margin_top(70)
-    self.button_adt.set_size_request(100, 20)
-
-    if fn.check_package_installed("arcolinux-desktop-trasher-git") is True:
-        self.adt_installed = True
-        self.button_adt.set_label("Remove the ArcoLinux Desktop Trasher")
-        self.button_adt.connect("clicked", self.on_launch_adt_clicked)
-    else:
-        self.adt_installed = False
-        self.button_adt.set_label("Install the ArcoLinux Desktop Trasher")
-        self.button_adt.connect("clicked", self.on_launch_adt_clicked)
-
     self.button_install.connect("clicked", self.on_install_clicked, "inst")
     self.button_reinstall.connect("clicked", self.on_install_clicked, "reinst")
 
@@ -187,11 +174,7 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
 
     vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vbox1.append(vbox)
-    if fn.distr == "arcolinux":
-        self.button_adt.set_margin_start(10)
-        self.button_adt.set_margin_end(10)
-        vbox1.append(self.button_adt)
-    vbox1.append(vboxprog)  # pack_end
+ 
     # =======================================
     #               PACK TO WINDOW
     # =======================================

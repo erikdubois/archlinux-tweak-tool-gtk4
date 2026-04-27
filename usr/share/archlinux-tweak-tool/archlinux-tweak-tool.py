@@ -28,9 +28,6 @@ services = None
 sddm = None
 pacman_functions = None
 fastfetch = None
-lxdm = None
-login = None
-lightdm = None
 maintenance = None
 gui = None
 icons = None
@@ -114,8 +111,6 @@ class Main(Gtk.ApplicationWindow):
         print("If you have errors, because of the login managers")
         print("You can try running one of these scripts:")
         print("Run fix-sddm-conf")
-        print("Run fix-lightdm-conf")
-        print("Run fix-lxdm-conf")
         print("You can receive ATT support on https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
         print(
             "---------------------------------------------------------------------------"
@@ -174,8 +169,6 @@ class Main(Gtk.ApplicationWindow):
         self.progress = Gtk.ProgressBar()
         self.progress.set_pulse_step(0.2)
         self.progress.set_visible(False)
-
-        self.grub_image_path = ""
         self.login_wallpaper_path = ""
         self.fb = Gtk.FlowBox()
         self.flowbox_wall = Gtk.FlowBox()
@@ -193,7 +186,7 @@ class Main(Gtk.ApplicationWindow):
         Runs after the window has had a chance to present itself.
         """
         global zsh_theme, user, themer, design, support, settings, services, sddm
-        global pacman_functions, fastfetch, lxdm, login, lightdm, maintenance, gui, icons, themes, att
+        global pacman_functions, fastfetch, maintenance, gui, icons, themes, att
         global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
 
         # Lazy imports to reduce time-to-first-window.
@@ -209,9 +202,6 @@ class Main(Gtk.ApplicationWindow):
         import sddm as _sddm
         import pacman_functions as _pacman_functions
         import fastfetch as _fastfetch
-        import lxdm as _lxdm
-        import login as _login
-        import lightdm as _lightdm
         import maintenance as _maintenance
         import gui as _gui
         import icons as _icons
@@ -231,9 +221,6 @@ class Main(Gtk.ApplicationWindow):
         sddm = _sddm
         pacman_functions = _pacman_functions
         fastfetch = _fastfetch
-        lxdm = _lxdm
-        login = _login
-        lightdm = _lightdm
         maintenance = _maintenance
         gui = _gui
         icons = _icons
@@ -406,40 +393,6 @@ class Main(Gtk.ApplicationWindow):
                 except Exception as error:
                     pass
 
-        # ensuring we have a backup of /etc/lightdm/lightdm.conf
-        if fn.path.isfile(fn.lightdm_conf):
-            if not fn.path.isfile(fn.lightdm_conf_bak):
-                try:
-                    fn.shutil.copy(fn.lightdm_conf, fn.lightdm_conf_bak)
-                except Exception as error:
-                    print(error)
-
-        # ensuring we have a backup of /etc/lightdm/lightdm-gtk-greeter.conf
-        if fn.path.isfile(fn.lightdm_greeter):
-            if not fn.path.isfile(fn.lightdm_greeter_bak):
-                try:
-                    fn.shutil.copy(fn.lightdm_greeter, fn.lightdm_greeter_bak)
-                except Exception as error:
-                    print(error)
-
-        # ensuring we have a backup of /etc/lightdm/slick-greeter.conf
-        if fn.path.isfile(fn.lightdm_slick_greeter):
-            if not fn.path.isfile(fn.lightdm_slick_greeter_bak):
-                try:
-                    fn.shutil.copy(
-                        fn.lightdm_slick_greeter, fn.lightdm_slick_greeter_bak
-                    )
-                except Exception as error:
-                    print(error)
-
-        # ensuring we have a backup of /etc/lxdm/lxdm.conf
-        if fn.path.isfile(fn.lxdm_conf):
-            if not fn.path.isfile(fn.lxdm_conf_bak):
-                try:
-                    fn.shutil.copy(fn.lxdm_conf, fn.lxdm_conf_bak)
-                except Exception as error:
-                    print(error)
-
         # ensuring we have a backup of index.theme
         if fn.path.exists("/usr/share/icons/default/index.theme"):
             if not fn.path.isfile("/usr/share/icons/default/index.theme" + ".bak"):
@@ -551,15 +504,6 @@ class Main(Gtk.ApplicationWindow):
                 fn.permissions(fn.home + "/.zshrc")
             except Exception as error:
                 print(error)
-
-        # make backup of /etc/default/grub
-        # renaming bak to back for BigLinux
-        if fn.path.isfile(fn.grub_default_grub):
-            if not fn.path.isfile(fn.grub_default_grub + ".back"):
-                try:
-                    fn.shutil.copy(fn.grub_default_grub, fn.grub_default_grub + ".back")
-                except Exception as error:
-                    print(error)
 
         # make backup of /etc/pacman.conf
         if fn.path.isfile(fn.pacman):
@@ -771,24 +715,6 @@ class Main(Gtk.ApplicationWindow):
 
 
         # =====================================================
-        #                     LIGHTDM
-        # =====================================================
-
-        if fn.path.exists("/usr/bin/lightdm"):
-            if fn.path.isfile(fn.lightdm_conf):
-                try:
-                    if "#" in lightdm.check_lightdm(
-                        fn.get_lines(fn.lightdm_conf), "autologin-user="
-                    ):
-                        self.autologin_lightdm.set_active(False)
-                        self.sessions_lightdm.set_sensitive(False)
-                    else:
-                        self.autologin_lightdm.set_active(True)
-                        self.sessions_lightdm.set_sensitive(True)
-                except Exception as error:
-                    print(error)
-
-        # =====================================================
         #                        SDDM
         # =====================================================
 
@@ -813,23 +739,6 @@ class Main(Gtk.ApplicationWindow):
         if not fn.path.isfile("/tmp/att.lock"):
             with open("/tmp/att.lock", "w", encoding="utf-8") as f:
                 f.write("")
-
-        # =====================================================
-        #                        LXDM
-        # =====================================================
-
-        if fn.path.exists("/usr/bin/lxdm"):
-            try:
-                pos = fn.get_position(fn.get_lines(fn.lxdm_conf), "bottom_pane=")
-                lines = fn.get_lines(fn.lxdm_conf)
-                state = lines[pos].split("=")[1].strip()
-                if fn.path.isfile(fn.lxdm_conf):
-                    if state == "1":
-                        self.panel_lxdm.set_active(True)
-                    else:
-                        self.panel_lxdm.set_active(False)
-            except Exception as error:
-                pass
 
         if not fn.path.isfile("/tmp/att.lock"):
             with open("/tmp/att.lock", "w", encoding="utf8") as f:
@@ -1121,34 +1030,19 @@ class Main(Gtk.ApplicationWindow):
         print("We have installed all the selected themes")
         fn.show_in_app_notification(self, "We have installed all the selected themes")
         themes.install_themes(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     def on_remove_att_themes_clicked(self, widget):
         print("We have removed all the selected themes")
         fn.show_in_app_notification(self, "We have removed all the selected themes")
         themes.remove_themes(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     def on_find_att_themes_clicked(self, widget):
         print("[INFO] We show the installed themes")
         fn.show_in_app_notification(self, "We show the installed themes")
         themes.find_themes(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     # ====================================================================
     # Sardi
@@ -1156,24 +1050,15 @@ class Main(Gtk.ApplicationWindow):
     def on_install_att_sardi_icon_themes_clicked(self, widget):
         print("[INFO] Installing selected Sardi icon themes")
         icons.install_sardi_icons(self)
-        # populate icon names on lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_remove_att_sardi_icon_themes_clicked(self, widget):
         print("[INFO] Removing selected Sardi icon themes")
         icons.remove_sardi_icons(self)
-        # populate icon names lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_find_att_sardi_icon_themes_clicked(self, widget):
         print("[INFO] We show the installed sardi icon themes")
         fn.show_in_app_notification(self, "We show the installed sardi icon themes")
         icons.find_sardi_icons(self)
-        # populate icon names on lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     # ====================================================================
     # surfn
@@ -1181,24 +1066,15 @@ class Main(Gtk.ApplicationWindow):
     def on_install_att_surfn_icon_themes_clicked(self, widget):
         print("[INFO] Installing selected Surfn icon themes")
         icons.install_surfn_icons(self)
-        # populate icon names on lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_remove_att_surfn_icon_themes_clicked(self, widget):
         print("[INFO] Removing selected Surfn icon themes")
         icons.remove_surfn_icons(self)
-        # populate icon names on lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     def on_find_att_surfn_icon_themes_clicked(self, widget):
         print("[INFO] We show all the installed Surfn icon themes")
         fn.show_in_app_notification(self, "We show all the installed Surfn icon themes")
         icons.find_surfn_icons(self)
-        # populate icon names on lightdm
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
 
     # ====================================================================
     # selection of theming
@@ -1329,37 +1205,19 @@ class Main(Gtk.ApplicationWindow):
     def on_install_extras_clicked(self, widget):
         print("[INFO] Installing selected Neo Candy icon packages")
         icons.install_att_extras(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     # extras
     def on_remove_extras_clicked(self, widget):
         print("[INFO] Removing selected Neo Candy icon packages")
         icons.remove_att_extras(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     def on_find_extras_clicked(self, widget):
         print("[INFO] We show the installed projects")
         fn.show_in_app_notification(self, "We show the installed projects")
         icons.find_att_extras(self)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     # selection of extras theming
     def on_click_extras_theming_all_selection(self, widget):
@@ -1425,15 +1283,8 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes - some themes include a cursor
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     def on_remove_themes_clicked(self, widget):
         design.remove_themes(self)
@@ -1442,15 +1293,8 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes - some themes include a cursor
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     def on_find_themes_clicked(self, widget):
         design.find_themes(self)
@@ -1459,15 +1303,8 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes - some themes include a cursor
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
-        # populate lightdm page
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_theme_names_lightdm(self, self.gtk_theme_names_lightdm)
-        # populate lxdm page
-        if fn.check_package_installed("lxdm"):
-            lxdm.pop_gtk_theme_names_lxdm(self.lxdm_gtk_theme)
+
 
     # icons
     def on_install_icon_themes_clicked(self, widget):
@@ -1476,13 +1313,9 @@ class Main(Gtk.ApplicationWindow):
         fn.show_in_app_notification(
             self, "We have installed all the selected icon themes"
         )
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
-            # populate cursor themes
+        # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_remove_icon_themes_clicked(self, widget):
@@ -1491,26 +1324,18 @@ class Main(Gtk.ApplicationWindow):
         fn.show_in_app_notification(
             self, "We have removed all the selected icon themes"
         )
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
         # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_find_icon_themes_clicked(self, widget):
         design.find_icon_themes(self)
         print("We show all the installed icon themes")
         fn.show_in_app_notification(self, "We show all the installed icon themes")
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_icon_names_lightdm(self, self.gtk_icon_names_lightdm)
         # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     # cursors
@@ -1523,8 +1348,6 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_remove_cursor_themes_clicked(self, widget):
@@ -1536,8 +1359,6 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_find_cursor_themes_clicked(self, widget):
@@ -1547,8 +1368,6 @@ class Main(Gtk.ApplicationWindow):
         # populate cursor themes
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     # fonts
@@ -3748,187 +3567,7 @@ class Main(Gtk.ApplicationWindow):
         except Exception as error:
             print(error)
 
-    # ====================================================================
-    #                       GRUB
-    # ====================================================================
 
-    def on_grub_item_clicked(self, widget, data):
-        for x in data:
-            self.grub_image_path = x.get_name()
-
-    def on_set_grub_wallpaper(self, widget):
-        if not fn.path.isfile(fn.grub_theme_conf):
-            self.on_click_install_arco_vimix_clicked(self)
-
-        if self.grub_image_path == "":
-            fn.show_in_app_notification(self, "First choose a wallpaper image")
-        else:
-            fn.set_grub_wallpaper(self, self.grub_image_path)
-
-    def on_reset_grub_wallpaper(self, widget):
-        if fn.path.isfile(fn.grub_theme_conf + ".bak"):
-            fn.shutil.copy(fn.grub_theme_conf + ".bak", fn.grub_theme_conf)
-        self.pop_themes_grub(self.grub_theme_combo, fn.get_grub_wallpapers(), True)
-
-        if not fn.path.isfile(fn.grub_theme_conf):
-            self.on_click_install_arco_vimix_clicked(self)
-
-        print("Default Vimix grub wallpaper applied")
-        fn.show_in_app_notification(self, "Default Vimix grub wallpaper applied")
-
-    def on_reset_grub(self, widget):
-        if fn.path.isfile(fn.grub_default_grub + ".back"):
-            fn.shutil.copy(fn.grub_default_grub + ".back", fn.grub_default_grub)
-        self.pop_themes_grub(self.grub_theme_combo, fn.get_grub_wallpapers(), True)
-        fn.make_grub(self)
-
-    def pop_themes_grub(self, combo, lists, start):
-        if fn.path.isfile(fn.grub_theme_conf):
-            _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
-            with open(fn.grub_theme_conf, "r", encoding="utf-8") as f:
-                listss = f.readlines()
-                f.close()
-
-            val = fn.get_position(listss, "desktop-image: ")
-            # bg_image = listss[val].split(" ")[1].replace('"', "").strip()
-
-            child = self.fb.get_first_child()
-            while child is not None:
-                next_child = child.get_next_sibling()
-                self.fb.remove(child)
-                child = next_child
-
-            for x in lists:
-                pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    "/boot/grub/themes/Vimix/" + x, 128, 128
-                )
-                pimage = Gtk.Image()
-                pimage.set_name("/boot/grub/themes/Vimix/" + x)
-                pimage.set_from_pixbuf(pb)
-                self.fb.append(pimage)
-
-    def on_grub_theme_change(self, widget, pspec=None):
-        try:
-            pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                "/boot/grub/themes/Vimix/" + fn.get_combo_text(widget),
-                645,
-                645,
-            )
-            print(fn.get_combo_text(widget))
-            self.image_grub.set_from_pixbuf(pixbuf3)
-        except Exception as error:
-            print(error)
-
-    def on_import_wallpaper(self, widget):
-        text = self.tbimage.get_text()
-        if len(text) > 1:
-            print(fn.path.basename(text))
-            fn.shutil.copy(text, "/boot/grub/themes/Vimix/" + fn.path.basename(text))
-            self.pop_themes_grub(self.grub_theme_combo, fn.get_grub_wallpapers(), False)
-        else:
-            print("First search for a wallpaper")
-            fn.show_in_app_notification(self, "First select an image")
-
-    def on_remove_wallpaper(self, widget):
-        widget.set_sensitive(False)
-        if fn.path.isfile(self.grub_image_path):
-            excludes = [
-                "archlinux03.jpg",
-                "archlinux04.jpg",
-                "archlinux06.jpg",
-                "archlinux07.jpg",
-                "arcolinux01.jpg",
-                "arcolinux02.jpg",
-                "arcolinux03.jpg",
-                "arcolinux04.jpg",
-                "arcolinux05.jpg",
-                "arcolinux06.jpg",
-                "arcolinux07.jpg",
-                "arcolinux08.jpg",
-                "background-slaze.jpg",
-                "background-stylish.jpg",
-                "background-tela.jpg",
-                "background-vimix.jpg",
-                "archlinux01.png",
-                "archlinux02.png",
-                "archlinux05.png",
-                "arcolinux09.png",
-                "arcolinux10.png",
-                "arcolinux11.png",
-                "arcolinux.png",
-                "background.png",
-            ]
-
-            if not fn.path.basename(self.grub_image_path) in excludes:
-                fn.unlink(self.grub_image_path)
-                self.pop_themes_grub(
-                    self.grub_theme_combo, fn.get_grub_wallpapers(), True
-                )
-                fn.show_in_app_notification(self, "Wallpaper removed successfully")
-            else:
-                fn.show_in_app_notification(self, "You can not remove that wallpaper")
-        else:
-            print("First select a wallpaper to remove")
-            fn.show_in_app_notification(self, "First select a wallpaper to remove")
-        widget.set_sensitive(True)
-
-    def on_choose_wallpaper(self, widget):
-        dialog = Gtk.FileChooserDialog(
-            title="Please choose a file",
-            transient_for=self,
-            action=Gtk.FileChooserAction.OPEN,
-        )
-        filter = Gtk.FileFilter()
-        filter.set_name("IMAGE Files")
-        filter.add_mime_type("image/png")
-        filter.add_mime_type("image/jpg")
-        filter.add_mime_type("image/jpeg")
-        dialog.set_filter(filter)
-        dialog.set_current_folder(Gio.File.new_for_path(fn.home))
-        dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-        dialog.add_button("_Open", Gtk.ResponseType.OK)
-        dialog.connect("response", self.open_response_cb)
-
-        dialog.present()
-
-    def open_response_cb(self, dialog, response):
-        if response == Gtk.ResponseType.OK:
-            f = dialog.get_file()
-            if f:
-                self.tbimage.set_text(f.get_path())
-            dialog.destroy()
-        elif response == Gtk.ResponseType.CANCEL:
-            dialog.destroy()
-
-    def on_click_install_arco_vimix_clicked(self, desktop):
-        if fn.check_package_installed("grub2-theme-vimix-git"):
-            fn.remove_package(self, "grub2-theme-vimix-git")
-        fn.install_arco_package(self, "arcolinux-grub-theme-vimix-git")
-        if fn.check_package_installed("arcolinux-grub-theme-vimix-git"):
-            fn.set_default_grub_theme(self)
-            fn.make_grub(self)
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "Setting saved successfully"
-            )
-        fn.restart_program()
-
-    def on_reset_grub_vimix(self, desktop):
-        fn.install_arco_package(self, "arcolinux-grub-theme-vimix-git")
-        fn.set_default_grub_theme(self)
-        fn.make_grub(self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Vimix has been installed")
-
-    def on_click_install_orignal_grub_rebornos(self, widget):
-        if fn.check_package_installed("arcolinux-grub-theme-vimix-git"):
-            fn.remove_package(self, "arcolinux-grub-theme-vimix-git")
-        fn.install_package(self, "grub2-theme-vimix-git")
-        self.on_reset_grub(self)
-        fn.restart_program()
-
-    def on_clicked_grub_timeout(self, widget):
-        seconds = int(self.scale.get_value())
-        fn.set_grub_timeout(self, seconds)
-        fn.make_grub(self)
 
     # ====================================================================
     #                            PRIVACY
@@ -3962,281 +3601,6 @@ class Main(Gtk.ApplicationWindow):
             target=fn.set_firefox_ublock, args=(self, widget, widget.get_active())
         )
         t.start()
-
-    # ====================================================================
-    #                       LIGHTDM
-    # ====================================================================
-
-    def on_click_lightdm_apply(self, widget):
-        # for autologin, user and session
-        if (
-            (
-                self.sessions_lightdm.get_selected_item() is not None
-                and self.autologin_lightdm.get_active() is True
-            )
-            or self.autologin_lightdm.get_active() is False
-            and self.gtk_theme_names_lightdm.get_selected_item() is not None
-            and self.gtk_icon_names_lightdm.get_selected_item() is not None
-            and self.cursor_themes_lightdm.get_selected_item() is not None
-        ):
-            t1 = fn.threading.Thread(
-                target=lightdm.set_lightdm_value,
-                args=(
-                    self,
-                    fn.get_lines(fn.lightdm_conf),
-                    fn.sudo_username,
-                    fn.get_combo_text(self.sessions_lightdm),
-                    self.autologin_lightdm.get_active(),
-                ),
-            )
-            t1.daemon = True
-            t1.start()
-            print("Lightdm autologin and session settings saved successfully")
-        else:
-            print("Make sure all variables are filled in")
-            fn.show_in_app_notification(self, "Fill in all fields")
-
-        # for theme,icon and cursor - lightdm greeter
-        if (
-            (self.gtk_theme_names_lightdm.get_selected_item() is not None)
-            and self.gtk_icon_names_lightdm.get_selected_item() is not None
-            and self.cursor_themes_lightdm.get_selected_item() is not None
-        ):
-            t1 = fn.threading.Thread(
-                target=lightdm.set_lightdm_icon_theme_cursor,
-                args=(
-                    self,
-                    fn.get_lines(fn.lightdm_greeter),
-                    fn.get_combo_text(self.gtk_theme_names_lightdm),
-                    fn.get_combo_text(self.gtk_icon_names_lightdm),
-                    fn.get_combo_text(self.cursor_themes_lightdm),
-                ),
-            )
-            t1.daemon = True
-            t1.start()
-            print("Lightdm icon and theme settings saved successfully")
-        else:
-            print("Make sure all variables are filled in")
-            fn.show_in_app_notification(self, "Fill in all fields")
-
-        # for theme,icon and cursor - slick greeter
-        if (
-            (self.gtk_theme_names_lightdm.get_selected_item() is not None)
-            and self.gtk_icon_names_lightdm.get_selected_item() is not None
-            and self.cursor_themes_lightdm.get_selected_item() is not None
-        ):
-            t1 = fn.threading.Thread(
-                target=lightdm.set_lightdm_icon_theme_cursor_slick,
-                args=(
-                    self,
-                    fn.get_lines(fn.lightdm_slick_greeter),
-                    fn.get_combo_text(self.gtk_theme_names_lightdm),
-                    fn.get_combo_text(self.gtk_icon_names_lightdm),
-                ),
-            )
-            t1.daemon = True
-            t1.start()
-            print("Lightdm icon and theme settings saved successfully")
-        else:
-            print("Make sure all variables are filled in")
-            fn.show_in_app_notification(self, "Fill in all fields")
-
-    def on_click_install_arco_lightdmgreeter(self, widget):
-        if fn.path.isfile(fn.lightdm_greeter_arco_att):
-            fn.shutil.copy(fn.lightdm_greeter_arco_att, fn.lightdm_greeter)
-
-        print("Lightdm gtk-greeter-settings applied")
-        fn.show_in_app_notification(self, "Lightdm gtk-greeter-settings applied")
-
-    def on_click_reset_lightdm_lightdm_greeter(self, widget):
-        if fn.path.isfile(fn.lightdm_conf_bak):
-            fn.shutil.copy(fn.lightdm_conf_bak, fn.lightdm_conf)
-        if fn.path.isfile(fn.lightdm_greeter_bak):
-            fn.shutil.copy(fn.lightdm_greeter_bak, fn.lightdm_greeter)
-
-        if "#" in lightdm.check_lightdm(
-            fn.get_lines(fn.lightdm_conf), "autologin-user="
-        ):
-            self.autologin_lightdm.set_active(False)
-        else:
-            self.autologin_lightdm.set_active(True)
-
-        print("Lightdm and lightdm gtk-greeter-settings applied")
-        fn.show_in_app_notification(self, "Lightdm settings applied")
-        fn.restart_program()
-
-    def on_autologin_lightdm_activated(self, widget, gparam):
-        if widget.get_active():
-            command = "groupadd autologin"
-            try:
-                fn.subprocess.call(
-                    command.split(" "),
-                    shell=False,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-            except Exception as error:
-                print(error)
-
-            self.sessions_lightdm.set_sensitive(True)
-        else:
-            self.sessions_lightdm.set_sensitive(False)
-
-    # no lightdm present
-    def on_click_att_lightdm_clicked(self, desktop):
-        fn.install_package(self, "lightdm")
-        fn.install_package(self, "lightdm-gtk-greeter")
-        fn.install_package(self, "lightdm-gtk-greeter-settings")
-        print("--------------------------------------------")
-        print("Do not forget to enable Lightdm")
-        print("--------------------------------------------")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Lightdm has been installed but not enabled",
-        )
-        try:
-            fn.shutil.copy(fn.lightdm_conf_arco, fn.lightdm_conf)
-            fn.shutil.copy(fn.lightdm_greeter_arco, fn.lightdm_greeter)
-            fn.shutil.copy(fn.ligthdm_slick_greeter_arco, fn.lightdm_slick_greeter)
-        except Exception as error:
-            print(error)
-        fn.restart_program()
-
-    def on_click_lightdm_enable(self, desktop):
-        fn.install_package(self, "lightdm")
-        fn.install_package(self, "lightdm-gtk-greeter")
-        fn.enable_login_manager(self, "lightdm")
-
-    def on_click_install_slick_greeter(self, desktop):
-        fn.install_package(self, "lightdm-slick-greeter")
-        fn.enable_slick_greeter(self)
-        login.find_slick_greeter_label(self.lbl_slickgreeter)
-
-    def on_click_remove_slick_greeter(self, desktop):
-        fn.remove_package(self, "lightdm-slick-greeter")
-        fn.disable_slick_greeter(self)
-        login.find_slick_greeter_label(self.lbl_slickgreeter)
-
-    def on_click_lightdm_reset_original_att(self, widget):
-        try:
-            fn.shutil.copy(fn.lightdm_conf_arco, fn.lightdm_conf)
-            fn.shutil.copy(fn.lightdm_greeter_arco, fn.lightdm_greeter)
-            fn.shutil.copy(fn.ligthdm_slick_greeter_arco, fn.lightdm_slick_greeter)
-        except Exception as error:
-            print(error)
-
-        print(
-            "All files have been changed /etc/lightdm.conf, /etc/lightdm-gtk-greeter.conf"
-        )
-        print("and /etc/lightdm/slick-greeter.conf")
-        print("Now change the configuration like you want it to be and save")
-        fn.show_in_app_notification(
-            self, "The ATT lightdm configuration is now applied"
-        )
-        fn.restart_program()
-
-    # ====================================================================
-    #                        LXDM
-    # ====================================================================
-
-    def on_click_install_lxdm(self, desktop):
-        fn.install_package(self, "lxdm")
-        print("--------------------------------------------")
-        print("Do not forget to enable Lxdm")
-        print("--------------------------------------------")
-        fn.restart_program()
-
-    # no lxdm present
-    def on_click_att_lxdm_clicked(self, desktop):
-        fn.install_package(self, "lxdm")
-        try:
-            fn.shutil.copy(fn.lxdm_conf_arco, fn.lxdm_conf)
-        except Exception as error:
-            print(error)
-        try:
-            fn.shutil.copy(fn.lxdm_conf_arco, fn.lxdm_conf)
-        except Exception as error:
-            print(error)
-        print("--------------------------------------------")
-        print("Do not forget to enable Lxdm")
-        print("--------------------------------------------")
-        fn.restart_program()
-
-    def on_click_lxdm_enable(self, desktop):
-        fn.install_package(self, "lxdm")
-        fn.enable_login_manager(self, "lxdm")
-
-    def on_autologin_lxdm_activated(self, widget, gparam):
-        if widget.get_active():
-            command = "groupadd autologin"
-            try:
-                fn.subprocess.call(
-                    command.split(" "),
-                    shell=False,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-            except Exception as error:
-                print(error)
-
-    def on_click_lxdm_reset_original_att(self, widget):
-        try:
-            fn.shutil.copy(fn.lxdm_conf_arco, fn.lxdm_conf)
-        except Exception as error:
-            print(error)
-
-        print("ATT Lxdm configuration file has been saved /etc/lxdm/lxdm.conf")
-        print("Now change the configuration like you want it to be and save")
-        fn.show_in_app_notification(self, "The ATT Lxdm configuration is now applied")
-        fn.restart_program()
-
-    def on_click_lxdm_reset(self, widget):
-        if fn.path.isfile(fn.lxdm_conf_bak):
-            fn.shutil.copy(fn.lxdm_conf_bak, fn.lxdm_conf)
-        print("Lxdm default settings applied")
-        fn.show_in_app_notification(self, "Lxdm default settings applied")
-        fn.restart_program()
-
-    def on_click_install_att_lxdm_minimalo(self, widget):
-        fn.install_arco_package(self, "arcolinux-lxdm-theme-minimalo-git")
-        lxdm.pop_lxdm_theme_greeter(self.lxdm_theme_greeter)
-
-    def on_click_remove_att_lxdm_minimalo(self, widget):
-        fn.remove_package(self, "arcolinux-lxdm-theme-minimalo-git")
-        lxdm.pop_lxdm_theme_greeter(self.lxdm_theme_greeter)
-
-    def on_click_install_lxdm_themes(self, widget):
-        fn.install_arco_package(self, "lxdm-themes")
-        lxdm.pop_lxdm_theme_greeter(self.lxdm_theme_greeter)
-
-    def on_click_remove_lxdm_themes(self, widget):
-        fn.remove_package(self, "lxdm-themes")
-        lxdm.pop_lxdm_theme_greeter(self.lxdm_theme_greeter)
-
-    def on_click_lxdm_apply(self, widget):
-        if (
-            self.lxdm_gtk_theme.get_selected_item() is not None
-            and self.lxdm_theme_greeter.get_selected_item() is not None
-        ):
-            t1 = fn.threading.Thread(
-                target=lxdm.set_lxdm_value,
-                args=(
-                    self,
-                    fn.get_lines(fn.lxdm_conf),
-                    fn.sudo_username,
-                    fn.get_combo_text(self.lxdm_gtk_theme),
-                    fn.get_combo_text(self.lxdm_theme_greeter),
-                    self.autologin_lxdm.get_active(),
-                    self.panel_lxdm.get_active(),
-                ),
-            )
-            t1.daemon = True
-            t1.start()
-            print("Lxdm autologin and other session settings saved successfully")
-        else:
-            print("Select all elements - none can be empty")
-            fn.show_in_app_notification(self, "You need to select all elements first")
 
     # ====================================================================
     #                        FASTFETCH CONFIG
@@ -5042,32 +4406,24 @@ class Main(Gtk.ApplicationWindow):
         fn.install_arco_package(self, "bibata-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_click_remove_bibata_cursor(self, widget):
         fn.remove_package(self, "bibata-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_click_install_bibatar_cursor(self, widget):
         fn.install_arco_package(self, "bibata-extra-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     def on_click_remove_bibatar_cursor(self, widget):
         fn.remove_package(self, "bibata-extra-cursor-theme")
         if fn.check_package_installed("sddm"):
             sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        if fn.check_package_installed("lightdm"):
-            lightdm.pop_gtk_cursor_names(self, self.cursor_themes_lightdm)
         maintenance.pop_gtk_cursor_names(self.cursor_themes)
 
     # if no sddm - press 1

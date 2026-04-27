@@ -168,32 +168,10 @@ def toggle_test_repos(self, state, widget):
             # TODO enumerate
             for i in range(0, len(lines)):
                 line = lines[i]
-                if widget == "reborn":
-                    spin_on("[Reborn-OS]", lines, i, line)
-                if widget == "garuda":
-                    spin_on("[garuda]", lines, i, line)
                 if widget == "chaotics":
                     spin_on("[chaotic-aur]", lines, i, line)
-                if widget == "endeavouros":
-                    spin_on("[endeavouros]", lines, i, line)
                 if widget == "nemesis":
                     spin_on("[nemesis_repo]", lines, i, line)
-                # if widget == "xero":
-                #     spin_on("[xerolinux_repo]", lines, i, line)
-                # if widget == "xero_xl":
-                #     spin_on("[xerolinux_repo_xl]", lines, i, line)
-                # if widget == "xero_nv":
-                #     spin_on("[xerolinux_nvidia_repo]", lines, i, line)
-
-                if widget == "arco_testing":
-                    pacman_on("[arcolinux_repo_testing]", lines, i, line)
-                if widget == "arco_base":
-                    pacman_on("[arcolinux_repo]", lines, i, line)
-                if widget == "arco_a3p":
-                    pacman_on("[arcolinux_repo_3party]", lines, i, line)
-                if widget == "arco_axl":
-                    pacman_on("[arcolinux_repo_xlarge]", lines, i, line)
-
                 if widget == "testing":
                     pacman_on("[core-testing]", lines, i, line)
                 if widget == "core":
@@ -228,32 +206,10 @@ def toggle_test_repos(self, state, widget):
             # TODO enumerate
             for i in range(0, len(lines)):
                 line = lines[i]
-                if widget == "reborn":
-                    spin_off("[Reborn-OS]", lines, i, line)
-                if widget == "garuda":
-                    spin_off("[garuda]", lines, i, line)
                 if widget == "chaotics":
                     spin_off("[chaotic-aur]", lines, i, line)
-                if widget == "endeavouros":
-                    spin_off("[endeavouros]", lines, i, line)
                 if widget == "nemesis":
                     spin_off("[nemesis_repo]", lines, i, line)
-                # if widget == "xero":
-                #     spin_off("[xerolinux_repo]", lines, i, line)
-                # if widget == "xero_xl":
-                #     spin_off("[xerolinux_repo_xl]", lines, i, line)
-                # if widget == "xero_nv":
-                #     spin_off("[xerolinux_nvidia_repo]", lines, i, line)
-
-                if widget == "arco_testing":
-                    pacman_off("[arcolinux_repo_testing]", lines, i, line)
-                if widget == "arco_base":
-                    pacman_off("[arcolinux_repo]", lines, i, line)
-                if widget == "arco_a3p":
-                    pacman_off("[arcolinux_repo_3party]", lines, i, line)
-                if widget == "arco_axl":
-                    pacman_off("[arcolinux_repo_xlarge]", lines, i, line)
-
                 if widget == "testing":
                     pacman_off("[core-testing]", lines, i, line)
                 if widget == "core":
@@ -278,179 +234,6 @@ def toggle_test_repos(self, state, widget):
                 "ERROR!!",
                 "An error has occurred setting this setting 'toggle_test_repos Off'",
             )
-
-
-def toggle_mirrorlist(self, state, widget):
-    """toggle mirrorlist"""
-    if not fn.os.path.isfile(fn.arcolinux_mirrorlist + ".bak"):
-        fn.shutil.copy(fn.arcolinux_mirrorlist, fn.arcolinux_mirrorlist + ".bak")
-    lines = ""
-    if state is True:
-        with open(fn.arcolinux_mirrorlist, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            f.close()
-        try:
-            # TODO enumerate
-            for i in range(0, len(lines)):
-                line = lines[i]
-                if widget == "arco_mirror_seed":
-                    mirror_on(
-                        "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_gitlab":
-                    mirror_on(
-                        "Server = https://gitlab.com/arcolinux/$repo/-/raw/main/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_belnet":
-                    mirror_on(
-                        "Server = https://ftp.belnet.be/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_accum":
-                    mirror_on(
-                        "Server = https://mirror.accum.se/mirror/arcolinux.info/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_funami":
-                    mirror_on(
-                        "Server = https://mirror.funami.tech/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_jingk":
-                    mirror_on(
-                        "Server = https://mirror.jingk.ai/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_github":
-                    mirror_on(
-                        "Server = https://arcolinux.github.io/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_aarnet":
-                    mirror_on(
-                        "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-
-                # if widget == "arch":
-                #     pacman_on("[testing]", lines, i, line)
-                # if widget == "multilib":
-                #     pacman_on("[multilib-testing]", lines, i, line)
-                # if widget == "community":
-                #     pacman_on("[community-testing]", lines, i, line)
-
-            with open(fn.arcolinux_mirrorlist, "w", encoding="utf-8") as f:
-                # lines = f.readlines()
-                f.writelines(lines)
-                f.close()
-        except Exception as error:
-            print(error)
-            fn.messagebox(
-                self,
-                "ERROR!!",
-                "An error has occurred setting this setting 'toggle_test_repos On'",
-            )
-    else:
-        with open(fn.arcolinux_mirrorlist, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            f.close()
-        try:
-            # TODO enumerate
-            for i in range(0, len(lines)):
-                line = lines[i]
-
-                if widget == "arco_mirror_seed":
-                    mirror_off(
-                        "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_gitlab":
-                    mirror_off(
-                        "Server = https://gitlab.com/arcolinux/$repo/-/raw/main/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_belnet":
-                    mirror_off(
-                        "Server = https://ftp.belnet.be/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_accum":
-                    mirror_off(
-                        "Server = https://mirror.accum.se/mirror/arcolinux.info/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_funami":
-                    mirror_off(
-                        "Server = https://mirror.funami.tech/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_jingk":
-                    mirror_off(
-                        "Server = https://mirror.jingk.ai/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_github":
-                    mirror_off(
-                        "Server = https://arcolinux.github.io/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-                if widget == "arco_mirror_aarnet":
-                    mirror_off(
-                        "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch",
-                        lines,
-                        i,
-                        line,
-                    )
-
-                # if widget == "arch":
-                #     pacman_off("[testing]", lines, i, line)
-                # if widget == "multilib":
-                #     pacman_off("[multilib-testing]", lines, i, line)
-                # if widget == "community":
-                #     pacman_off("[community-testing]", lines, i, line)
-
-            with open(fn.arcolinux_mirrorlist, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-                f.close()
-        except:
-            fn.messagebox(
-                self,
-                "ERROR!!",
-                "An error has occurred setting this setting 'toggle_test_repos Off'",
-            )
-
 
 # ============================================================
 # AUR Helper Management

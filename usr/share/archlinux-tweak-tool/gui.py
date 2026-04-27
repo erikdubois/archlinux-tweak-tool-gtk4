@@ -8,9 +8,6 @@ import settings
 
 import desktopr
 import maintenance
-import lightdm
-import login
-import lxdm
 import fastfetch
 import performance
 import sddm

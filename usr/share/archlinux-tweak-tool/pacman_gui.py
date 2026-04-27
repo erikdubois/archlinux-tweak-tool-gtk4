@@ -85,42 +85,8 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack17 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack20 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack24 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-
-    # ========================================================
-    #               ARCO REPOS
-    # ========================================================
-
-    frame3 = Gtk.Frame(label="")
-    frame3lbl = frame3.get_label_widget()
-    frame3lbl.set_markup("<b>ArcoLinux repos</b>")
-
-    self.atestrepo_button = Gtk.Switch()
-    self.atestrepo_button.connect("notify::active", self.on_pacman_atestrepo_toggle)
-    label1 = Gtk.Label(xalign=0)
-    label1.set_markup("# Enable ArcoLinux testing repo")
-
-    self.arcolinux_button = Gtk.Button(label="Add Arcolinux repos")
-    self.arcolinux_button.connect("clicked", self.on_arcolinux_clicked)
-
-    self.arepo_button = Gtk.Switch()
-    self.arepo_button.connect("notify::active", self.on_pacman_arepo_toggle)
-    label5 = Gtk.Label(xalign=0)
-    label5.set_markup("Enable ArcoLinux repo")
-
-    self.a3prepo_button = Gtk.Switch()
-    self.a3prepo_button.connect("notify::active", self.on_pacman_a3p_toggle)
-    label6 = Gtk.Label(xalign=0)
-    label6.set_markup("Enable ArcoLinux 3rd-party repo")
-
-    self.axlrepo_button = Gtk.Switch()
-    self.axlrepo_button.connect("notify::active", self.on_pacman_axl_toggle)
-    label7 = Gtk.Label(xalign=0)
-    label7.set_markup("Enable ArcoLinux x-large repo")
 
     # ========================================================
     #               ARCHLINUX REPOS
@@ -173,31 +139,10 @@ def gui(self, Gtk, vboxstack1, fn):
     frame2lbl = frame2.get_label_widget()
     frame2lbl.set_markup("<b>Other repos</b>")
 
-    self.endeavouros_button = Gtk.Button(label="Install keys and mirrors")
-    self.endeavouros_button.connect("clicked", self.on_endeavouros_clicked)
-    self.endeavouros_switch = Gtk.Switch()
-    self.endeavouros_switch.connect("notify::active", self.on_endeavouros_toggle)
-    label16 = Gtk.Label(xalign=0)
-    label16.set_markup("Enable Endeavour repo")
-
     self.nemesis_switch = Gtk.Switch()
     self.nemesis_switch.connect("notify::active", self.on_nemesis_toggle)
     label11 = Gtk.Label(xalign=0)
     label11.set_markup("Enable Nemesis repo")
-
-    self.reborn_button = Gtk.Button(label="Install keys and mirrors")
-    self.reborn_button.connect("clicked", self.on_reborn_clicked)
-    self.reborn_switch = Gtk.Switch()
-    self.reborn_switch.connect("notify::active", self.on_reborn_toggle)
-    label20 = Gtk.Label(xalign=0)
-    label20.set_markup("Enable RebornOS repo")
-
-    self.garuda_button = Gtk.Button(label="Install keys and mirrors")
-    self.garuda_button.connect("clicked", self.on_garuda_clicked)
-    self.garuda_switch = Gtk.Switch()
-    self.garuda_switch.connect("notify::active", self.on_garuda_toggle)
-    label21 = Gtk.Label(xalign=0)
-    label21.set_markup("Enable Garuda repo")
 
     self.chaotics_button = Gtk.Button(label="Install keys and mirrors")
     self.chaotics_button.connect("clicked", self.on_chaotics_clicked)
@@ -221,33 +166,6 @@ def gui(self, Gtk, vboxstack1, fn):
     scrolled_window = Gtk.ScrolledWindow()
     scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scrolled_window.set_child(self.textview_custom_repo)
-
-    # ========================================================
-    #               ARCO REPOS PACKING
-    # ========================================================
-    if not fn.check_content("arcolinux", fn.pacman):
-        label5.set_margin_start(10)
-        label5.set_margin_end(10)
-        label5.set_hexpand(True)
-        hboxstack7.append(label5)
-        self.arcolinux_button.set_margin_start(10)
-        self.arcolinux_button.set_margin_end(10)
-        hboxstack7.append(self.arcolinux_button)  # pack_end
-
-    if fn.check_content("arcolinux", fn.pacman):
-        label5.set_margin_start(10)
-        label5.set_margin_end(10)
-        hboxstack7.append(label5)
-        self.arepo_button.set_margin_start(10)
-        self.arepo_button.set_margin_end(10)
-        hboxstack7.append(self.arepo_button)  # pack_end
-        label6.set_margin_start(10)
-        label6.set_margin_end(10)
-        label6.set_hexpand(True)
-        hboxstack8.append(label6)
-        self.a3prepo_button.set_margin_start(10)
-        self.a3prepo_button.set_margin_end(10)
-        hboxstack8.append(self.a3prepo_button)  # pack_end
 
     vboxstack2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hboxstack1.set_margin_start(10)
@@ -312,23 +230,6 @@ def gui(self, Gtk, vboxstack1, fn):
     #               OTHER REPOS PACKING
     # ========================================================
 
-    if not fn.check_package_installed("endeavouros-keyring"):
-        label16.set_margin_start(10)
-        label16.set_margin_end(10)
-        label16.set_hexpand(True)
-        hboxstack19.append(label16)
-        self.endeavouros_button.set_margin_start(10)
-        self.endeavouros_button.set_margin_end(10)
-        hboxstack19.append(self.endeavouros_button)  # pack_end
-
-    if fn.check_package_installed("endeavouros-keyring"):
-        label16.set_margin_start(10)
-        label16.set_margin_end(10)
-        hboxstack19.append(label16)
-        self.endeavouros_switch.set_margin_start(10)
-        self.endeavouros_switch.set_margin_end(10)
-        hboxstack19.append(self.endeavouros_switch)  # pack_end
-
     label11.set_margin_start(10)
     label11.set_margin_end(10)
     label11.set_hexpand(True)
@@ -336,40 +237,6 @@ def gui(self, Gtk, vboxstack1, fn):
     self.nemesis_switch.set_margin_start(10)
     self.nemesis_switch.set_margin_end(10)
     hboxstack13.append(self.nemesis_switch)  # pack_end
-
-    if not fn.check_package_installed("rebornos-keyring"):
-        label20.set_margin_start(10)
-        label20.set_margin_end(10)
-        label20.set_hexpand(True)
-        hboxstack23.append(label20)
-        self.reborn_button.set_margin_start(10)
-        self.reborn_button.set_margin_end(10)
-        hboxstack23.append(self.reborn_button)  # pack_end
-
-    if fn.check_package_installed("rebornos-keyring"):
-        label20.set_margin_start(10)
-        label20.set_margin_end(10)
-        hboxstack23.append(label20)
-        self.reborn_switch.set_margin_start(10)
-        self.reborn_switch.set_margin_end(10)
-        hboxstack23.append(self.reborn_switch)  # pack_end
-
-    if not fn.check_package_installed("chaotic-keyring"):
-        label21.set_margin_start(10)
-        label21.set_margin_end(10)
-        label21.set_hexpand(True)
-        hboxstack24.append(label21)
-        self.garuda_button.set_margin_start(10)
-        self.garuda_button.set_margin_end(10)
-        hboxstack24.append(self.garuda_button)  # pack_end
-
-    if fn.check_package_installed("chaotic-keyring"):
-        label21.set_margin_start(10)
-        label21.set_margin_end(10)
-        hboxstack24.append(label21)
-        self.garuda_switch.set_margin_start(10)
-        self.garuda_switch.set_margin_end(10)
-        hboxstack24.append(self.garuda_switch)  # pack_end
 
     if not fn.check_package_installed("chaotic-keyring"):
         label9.set_margin_start(10)
@@ -452,7 +319,6 @@ def gui(self, Gtk, vboxstack1, fn):
     vbox3.append(hboxstack8)
     vbox3.append(hboxstack9)
 
-    frame3.set_child(vbox3)
     # ========================================================
     #               PACK TO WINDOW
     # ========================================================

@@ -288,12 +288,8 @@ def pop_gtk_cursor_names(self, combo):
 
 def pop_login_managers_combo(self, combo):
     """find with the active loginmanager"""
-    options = ["sddm", "lightdm", "lxdm"]
+    options = ["sddm"]
     for option in options:
         self.login_managers_combo.get_model().append(option)
         if fn.check_content("sddm", "/etc/systemd/system/display-manager.service"):
             self.login_managers_combo.set_selected(0)
-        if fn.check_content("lightdm", "/etc/systemd/system/display-manager.service"):
-            self.login_managers_combo.set_selected(1)
-        if fn.check_content("lxdm", "/etc/systemd/system/display-manager.service"):
-            self.login_managers_combo.set_selected(2)

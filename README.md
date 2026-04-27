@@ -52,7 +52,7 @@ The tool is written in Python with GTK4 and is built with extensibility and user
 
 - Manage wallpapers and desktop backgrounds
 - Configure desktop environments
-- Support for multiple desktop managers (SDDM, LightDM, LXDM)
+- Support for SDDM display manager
 - Desktop environment-specific settings
 
 ### 📦 Package Management
@@ -149,14 +149,10 @@ ATT implements automatic backup functionality for system safety:
 ATT provides specialized configuration tools for common login managers:
 
 - **SDDM**: Simple Display Manager configuration
-- **LightDM**: Lightweight login manager
-- **LXDM**: LXDE login manager
 
 Automated fix scripts are available if issues occur:
 
 - `fix-sddm-conf`
-- `fix-lightdm-conf`
-- `fix-lxdm-conf`
 
 ### Repository Management
 
