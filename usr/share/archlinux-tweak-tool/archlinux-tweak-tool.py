@@ -169,6 +169,12 @@ class Main(Gtk.ApplicationWindow):
         self.desktop_status = Gtk.Label()
         self.image_DE = Gtk.Picture()
 
+        self.label7 = Gtk.Label(xalign=0)
+        self.label7.set_visible(False)
+        self.progress = Gtk.ProgressBar()
+        self.progress.set_pulse_step(0.2)
+        self.progress.set_visible(False)
+
         self.grub_image_path = ""
         self.login_wallpaper_path = ""
         self.fb = Gtk.FlowBox()
@@ -4401,11 +4407,11 @@ class Main(Gtk.ApplicationWindow):
     # =====================================================
 
     def on_update_pacman_databases_clicked(self, Widget):
-        fn.update_repos(self)
-        print("sudo pacman -Sy")
-        print("All the selected pacman databases are up-to-date")
-        fn.show_in_app_notification(
-            self, "All the selected pacman databases are up-to-date"
+        fn.show_in_app_notification(self, "Opening terminal to update pacman databases")
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", "sudo pacman -Sy; read -p 'Press Enter to exit...'"],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
         )
 
     def on_arcolinux_clicked(self, widget):
@@ -4538,6 +4544,7 @@ class Main(Gtk.ApplicationWindow):
         else:
             if self.opened is False:
                 pmf.toggle_test_repos(self, widget.get_active(), "chaotics")
+        fn.GLib.timeout_add(100, self.refresh_aur_buttons)
 
     def on_endeavouros_clicked(self, widget):
         fn.install_endeavouros(self)
@@ -4565,6 +4572,7 @@ class Main(Gtk.ApplicationWindow):
                 pmf.toggle_test_repos(self, widget.get_active(), "nemesis")
         fn.update_repos(self)
         desktopr_gui.update_button_state(self, fn)
+        fn.GLib.timeout_add(100, self.refresh_aur_buttons)
 
     def on_pacman_toggle1(self, widget, active):
         if not pmf.repo_exist("[core-testing]"):
@@ -4636,10 +4644,15 @@ class Main(Gtk.ApplicationWindow):
     def custom_repo_clicked(self, widget):
         custom_repo_text = self.textview_custom_repo.get_buffer()
         startiter, enditer = custom_repo_text.get_bounds()
+        repo_content = custom_repo_text.get_text(startiter, enditer, True)
 
-        if not len(custom_repo_text.get_text(startiter, enditer, True)) < 5:
-            print(custom_repo_text.get_text(startiter, enditer, True))
-            pmf.append_repo(self, custom_repo_text.get_text(startiter, enditer, True))
+        if len(repo_content.strip()) < 5:
+            print("[INFO] No custom repo defined")
+            fn.show_in_app_notification(self, "No custom repo defined")
+            return
+
+        print(repo_content)
+        pmf.append_repo(self, repo_content)
         try:
             fn.update_repos(self)
         except Exception as error:
@@ -4670,6 +4683,7 @@ class Main(Gtk.ApplicationWindow):
             fn.show_in_app_notification(
                 self, "Default Settings Applied - check in a terminal"
             )
+        fn.GLib.timeout_add(500, self.update_repos_switches)
 
     def reset_pacman_online(self, widget):
         if fn.distr == "arch":
@@ -4684,6 +4698,30 @@ class Main(Gtk.ApplicationWindow):
         fn.show_in_app_notification(
             self, "Default Settings Applied - check in a terminal"
         )
+        fn.GLib.timeout_add(500, self.update_repos_switches)
+
+    def edit_pacman_conf_clicked(self, widget):
+        fn.show_in_app_notification(self, "Opening pacman.conf in terminal")
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "sudo", "nano", fn.pacman],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+
+    def update_repos_switches(self):
+        """Update all repo switches based on current pacman.conf state."""
+        self.chaotics_switch.set_active(pmf.check_repo("[chaotic-aur]"))
+        self.nemesis_switch.set_active(pmf.check_repo("[nemesis_repo]"))
+        self.arepo_button.set_active(pmf.check_repo("[arcolinux]"))
+        self.a3prepo_button.set_active(pmf.check_repo("[arcolinux-3rdparty]"))
+        self.axlrepo_button.set_active(pmf.check_repo("[archuserrepo]"))
+        if hasattr(self, 'refresh_aur_buttons'):
+            self.refresh_aur_buttons()
+        if hasattr(self, 'parallel_downloads_label'):
+            import pacman_gui
+            value = pacman_gui.get_parallel_downloads(fn)
+            self.parallel_downloads_label.set_markup(f"ParallelDownloads: {value}")
+        return False
 
     # =====================================================
     #               PATREON LINK
@@ -5134,12 +5172,6 @@ class Main(Gtk.ApplicationWindow):
     def on_click_install_arco_thunar_plugin(self, widget):
         fn.install_arco_thunar_plugin(self, widget)
 
-    def on_click_install_arco_caja_plugin(self, widget):
-        fn.install_arco_caja_plugin(self, widget)
-
-    def on_click_install_arco_nemo_plugin(self, widget):
-        fn.install_arco_nemo_plugin(self, widget)
-
     def on_click_apply_samba(self, widget):
         services.choose_smb_conf(self)
         print("Applying selected samba configuration")
@@ -5155,17 +5187,39 @@ class Main(Gtk.ApplicationWindow):
             print("Instead choose one from the dropdown")
             fn.show_in_app_notification(self, "No backup configuration present")
 
+    def on_click_edit_samba_nano(self, widget):
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "nano", fn.samba_config],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        print(f"Opening {fn.samba_config} in nano")
+        fn.show_in_app_notification(self, "Opening samba.conf in terminal with nano")
+
     def on_click_install_samba(self, widget):
+        print("\n" + "=" * 70)
+        print("INSTALLING SAMBA")
+        print("=" * 70)
         fn.install_samba(self)
+        print("✓ Samba package installed")
+        print("\nApplying 'Easy' configuration...")
+        services.choose_smb_conf(self)
+        print("✓ Easy configuration applied with automatic 'Shared' folder setup")
+        print("=" * 70 + "\n")
         self.update_network_status()
-        print("Samba has been successfully installed")
-        fn.show_in_app_notification(self, "Samba has been successfully installed")
+        fn.show_in_app_notification(
+            self, "✓ Samba installed with Easy configuration. Restart smb to apply."
+        )
 
     def on_click_uninstall_samba(self, widget):
+        print("\n" + "=" * 70)
+        print("UNINSTALLING SAMBA")
+        print("=" * 70)
         fn.uninstall_samba(self)
+        print("✓ Samba package uninstalled")
+        print("=" * 70 + "\n")
         self.update_network_status()
-        print("Samba has been successfully uninstalled")
-        fn.show_in_app_notification(self, "Samba has been successfully uninstalled")
+        fn.show_in_app_notification(self, "✓ Samba has been uninstalled")
 
     # ====================================================================
     #                       SERVICES - AUDIO
@@ -5942,73 +5996,62 @@ class Main(Gtk.ApplicationWindow):
         widget.destroy()
 
     def on_click_install_packages(self, widget, packages_obj, gui_parts):
-        try:
-            if fn.check_pacman_lockfile() is True:
-                fn.logger.warning(
-                    "Install aborted, failed to lock database, pacman lockfile exists at %s"
-                    % fn.pacman_lockfile
-                )
+        import gi
+        gi.require_version("Gio", "2.0")
+        from gi.repository import Gio
 
-                fn.messagebox(
-                    self,
-                    "Install aborted",
-                    "Failed to lock database, pacman lockfile exists at %s\nIs another pacman process running ?"
-                    % fn.pacman_lockfile,
-                )
+        packages_dir = packages_obj.export_dir
+
+        # Create file chooser dialog
+        file_chooser = Gtk.FileChooserDialog(
+            title="Select Packages File to Install",
+            parent=self,
+            action=Gtk.FileChooserAction.OPEN,
+            modal=True,
+        )
+        file_chooser.add_button("_Open", -5)
+        file_chooser.add_button("_Cancel", -6)
+
+        # Set initial folder using Gio.File
+        initial_folder = Gio.File.new_for_path(packages_dir)
+        file_chooser.set_current_folder(initial_folder)
+
+        # Add filter for .txt files
+        file_filter = Gtk.FileFilter()
+        file_filter.set_name("Package Files (*.txt)")
+        file_filter.add_pattern("*.txt")
+        file_chooser.add_filter(file_filter)
+
+        # Handle response
+        handled = [False]  # Use list to allow modification in nested function
+
+        def on_response(dialog, response_id, user_data=None):
+            if handled[0]:
+                return
+            handled[0] = True
+
+            print(f"Response ID: {response_id}")
+            if response_id == -5 or response_id == -4:
+                selected_file = dialog.get_file()
+                if selected_file:
+                    file_path = selected_file.get_path()
+                    print(f"Selected packages file: {file_path}")
+                    fn.show_in_app_notification(
+                        self, f"Opening terminal to install from: {fn.path.basename(file_path)}"
+                    )
+                    # Open terminal with installation command
+                    fn.subprocess.Popen(
+                        ["alacritty", "-e", "bash", "-c", f"pacman -S --needed $(cat {file_path} | grep -v '^#' | tr '\\n' ' '); read -p 'Press Enter to exit...'"],
+                        stdout=fn.subprocess.PIPE,
+                        stderr=fn.subprocess.PIPE,
+                    )
             else:
-                packages = packages_obj.get_packages_file_content()
+                print("Package selection cancelled")
+                fn.show_in_app_notification(self, "Package selection cancelled")
+            dialog.close()
 
-                if packages is not None:
-                    packages_prompt_dialog = PackagesPromptGui(packages)
-                    packages_prompt_dialog.set_transient_for(self)
-
-                    result_holder = [None]
-                    loop = GLib.MainLoop()
-
-                    def on_pkgs_response(dialog, response_id):
-                        result_holder[0] = response_id
-                        loop.quit()
-                        dialog.destroy()
-
-                    packages_prompt_dialog.connect("response", on_pkgs_response)
-                    packages_prompt_dialog.present()
-                    loop.run()
-
-                    if result_holder[0] == Gtk.ResponseType.OK:
-                        widget.set_sensitive(False)
-                        fn.logger.info("Preparing installation")
-                        vbox_stack = gui_parts[0]
-                        grid_package_status = gui_parts[1]
-                        grid_package_count = gui_parts[2]
-                        vbox_pacmanlog = gui_parts[3]
-                        # textbuffer = gui_parts[4]
-                        # textview = gui_parts[5]
-                        label_package_status = gui_parts[6]
-                        label_package_count = gui_parts[7]
-
-                        if vbox_pacmanlog.is_visible() is False:
-                            vbox_stack.append(grid_package_status)
-                            vbox_stack.append(grid_package_count)
-                            vbox_stack.append(vbox_pacmanlog)
-                        else:
-                            grid_package_status.show()
-                            grid_package_count.show()
-
-                        packages_obj.install_packages(packages, widget, gui_parts)
-                else:
-                    fn.logger.error(
-                        "Package list file %s not found"
-                        % packages_obj.default_export_path
-                    )
-                    fn.messagebox(
-                        self,
-                        "Error package list file not found",
-                        "Cannot find %s" % packages_obj.default_export_path,
-                    )
-
-        except Exception as e:
-            fn.logger.error("Exception in on_click_install_packages(): %s" % e)
-            widget.set_sensitive(True)
+        file_chooser.connect("response", on_response)
+        file_chooser.present()
 
     # ====================================================================
     #                            BOTTOM BUTTONS

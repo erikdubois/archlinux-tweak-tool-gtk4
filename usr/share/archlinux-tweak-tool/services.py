@@ -26,40 +26,11 @@ def choose_nsswitch(self):
 
 
 def choose_smb_conf(self):
-    """choose_smb_conf"""
-    choice = fn.get_combo_text(self.samba_choices)
-
-    if choice == "ArcoLinux":
-        fn.copy_samba("arco")
-        print("smb.conf from ArcoLinux")
-        GLib.idle_add(fn.show_in_app_notification, self, "Smb.conf from ArcoLinux")
-    elif choice == "Easy":
-        fn.copy_samba("example")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Smb.conf easy configuration applied"
-        )
-    elif choice == "Usershares":
-        fn.copy_samba("usershares")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Smb.conf usershares configuration applied",
-        )
-    elif choice == "Windows":
-        fn.copy_samba("windows")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Smb.conf windows configuration applied"
-        )
-    elif choice == "Original":
-        fn.copy_samba("original")
-        print("Smb.conf from gitlab of Samba")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Smb.conf from gitlab of Samba"
-        )
-    elif choice == "BigLinux":
-        fn.copy_samba("biglinux")
-        print("Smb.conf from BigLinux")
-        GLib.idle_add(fn.show_in_app_notification, self, "Smb.conf from BigLinux")
+    """Apply the Easy samba configuration"""
+    fn.copy_samba("example")
+    GLib.idle_add(
+        fn.show_in_app_notification, self, "Smb.conf easy configuration applied"
+    )
 
 
 def create_samba_user(self):
@@ -116,19 +87,48 @@ def add_autoconnect_pulseaudio(self):
 
 
 def restart_smb(self):
-    """restart samba"""
+    """restart samba with detailed status checklist"""
+    print("\n" + "=" * 70)
+    print("SAMBA SERVICE RESTART - STATUS CHECKLIST")
+    print("=" * 70)
+    print(f"Configuration: {fn.samba_config}")
+    print("=" * 70)
 
-    if fn.check_service("smb"):
-        restart = "systemctl restart smb"
-        fn.system(restart)
-        print("Restarting smb service...")
-        GLib.idle_add(fn.show_in_app_notification, self, "Restarting smb service...")
-    else:
-        print("Did you install samba - check for errors")
-        print("Type in a terminal")
-        print("   sudo systemctl status smb")
+    smb_active = fn.check_service("smb")
+    nmb_active = fn.check_service("nmb")
+    avahi_active = fn.check_service("avahi-daemon")
+
+    print(f"✓ Samba (smb):           {'✓ ACTIVE' if smb_active else '✗ INACTIVE'}")
+    print(f"✓ NetBIOS (nmb):         {'✓ ACTIVE' if nmb_active else '✗ INACTIVE'}")
+    print(f"✓ Avahi (discovery):     {'✓ ACTIVE' if avahi_active else '✗ INACTIVE'}")
+    print("=" * 70)
+
+    if smb_active:
+        print("\nRestarting samba services...")
+        fn.system("systemctl restart smb")
+        if nmb_active:
+            fn.system("systemctl restart nmb")
+        print("✓ Samba services restarted successfully")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
-            "Did you install samba - check for errors",
+            "✓ Samba restarted. Check other services in the status bar.",
+        )
+    else:
+        print("\n✗ Samba is not installed or running")
+        print("\nREQUIRED SETUP:")
+        print("1. Install samba package: pacman -S samba")
+        print("2. Enable services:")
+        print("   - systemctl enable smb")
+        if not nmb_active:
+            print("   - systemctl enable nmb")
+        if not avahi_active:
+            print("   - systemctl enable avahi-daemon")
+        print("3. Start services: systemctl start smb (and nmb/avahi if needed)")
+        print("\nFor help, run: sudo systemctl status smb")
+        print("=" * 70 + "\n")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "✗ Samba not running. Check terminal output for setup instructions.",
         )

@@ -474,8 +474,12 @@ def is_chaotic_aur_enabled():
 def install_yay_pacman(self):
     """Install yay-git from chaotic-aur repository."""
     print("\n[INFO] Installing yay-git from chaotic-aur")
-    fn.install_package(self, "yay-git")
-    fn.show_in_app_notification(self, "yay-git installed successfully from chaotic-aur")
+    fn.show_in_app_notification(self, "Opening terminal to install yay-git")
+    fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", "sudo pacman -S yay-git; read -p 'Press Enter to exit...'"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
 
 
 def install_yay_git(self):
@@ -492,8 +496,12 @@ def install_yay_git(self):
 def install_paru_pacman(self):
     """Install paru-git from chaotic-aur repository."""
     print("\n[INFO] Installing paru-git from chaotic-aur")
-    fn.install_package(self, "paru-git")
-    fn.show_in_app_notification(self, "paru-git installed successfully from chaotic-aur")
+    fn.show_in_app_notification(self, "Opening terminal to install paru-git")
+    fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", "sudo pacman -S paru-git; read -p 'Press Enter to exit...'"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
 
 
 def install_paru_git(self):
@@ -518,7 +526,12 @@ def remove_aur_helper(self, binary):
         # output: "/usr/bin/yay is owned by yay-git 12.1.0-1"
         pkg = result.split(" is owned by ")[1].split(" ")[0]
         print(f"[INFO] Found package: {pkg}")
-        fn.remove_package(self, pkg)
+        fn.show_in_app_notification(self, f"Opening terminal to remove {pkg}")
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press Enter to exit...'"],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
     except Exception as e:
         print(f"[INFO] Could not find package owning {binary}: {e}")
         fn.show_in_app_notification(self, f"Could not find package owning {binary}")

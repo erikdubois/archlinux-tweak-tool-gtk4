@@ -5,44 +5,61 @@
 
 def gui(self, Gtk, vboxstack3, fn):
     """create a gui"""
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    lbl1 = Gtk.Label(xalign=0)
-    lbl1.set_text("Privacy/Security")
-    lbl1.set_name("title")
-    hbox3.append(lbl1)
+    # Title
+    hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_title = Gtk.Label(xalign=0)
+    lbl_title.set_text("Privacy/Security")
+    lbl_title.set_name("title")
+    hbox_title.append(lbl_title)
 
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    # Separator
+    hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator.set_hexpand(True)
     hseparator.set_vexpand(False)
-    hbox4.append(hseparator)
+    hbox_sep.append(hseparator)
 
-    # ==========================================================
-    #                       HBLOCK
-    # ==========================================================
+    # ========== SECTION 1: CONTENT BLOCKING ==========
 
-    hbox7 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox8 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_section1_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_section1_title = Gtk.Label(xalign=0)
+    label_section1_title.set_markup("<b>Content Blocking</b>")
+    label_section1_title.set_margin_start(10)
+    label_section1_title.set_margin_end(10)
+    hbox_section1_title.append(label_section1_title)
 
-    label_top = Gtk.Label()
-    label_top.set_markup(
-        "Improve your <b>security</b> and <b>privacy</b> \
-by blocking ads, tracking and malware domains"
-    )
-    label_top.set_margin_start(10)
-    label_top.set_margin_end(10)
-    hbox8.append(label_top)
+    hbox_ublock = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_ublock = Gtk.Label(xalign=0)
+    label_ublock.set_markup("Install/remove uBlock Origin")
+    label_ublock.set_margin_start(30)
+    label_ublock.set_margin_end(10)
+    label_ublock.set_halign(Gtk.Align.START)
+    label_ublock.set_hexpand(True)
 
-    instructions = Gtk.Label()
-    instructions.set_markup(
-        "To update your hblock hosts file, please disable and enable hblock"
-    )
-    instructions.set_margin_start(10)
-    instructions.set_margin_end(10)
-    hbox11.append(instructions)
+    state = fn.ublock_get_state(self)
 
-    label_hblock = Gtk.Label()
+    self.firefox_ublock_switch = Gtk.Switch()
+    self.firefox_ublock_switch.connect("notify::active", self.set_ublock_firefox)
+    self.firefox_ublock_switch.set_active(state)
+    self.firefox_ublock_switch.set_margin_start(10)
+    self.firefox_ublock_switch.set_margin_end(10)
+    self.firefox_ublock_switch.set_halign(Gtk.Align.END)
+
+    hbox_ublock.append(label_ublock)
+    hbox_ublock.append(self.firefox_ublock_switch)
+
+    # ========== SECTION 2: NETWORK & TRACKING PROTECTION ==========
+
+    hbox_section2_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_section2_title = Gtk.Label(xalign=0)
+    label_section2_title.set_markup("<b>Network & Tracking Protection</b>")
+    label_section2_title.set_margin_start(10)
+    label_section2_title.set_margin_end(10)
+    hbox_section2_title.append(label_section2_title)
+
+    hbox_hblock = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+
+    label_hblock = Gtk.Label(xalign=0)
     label_hblock.set_text(
         "Enable/install hblock - Your orignal /etc/hosts file can be found in /etc/hosts.bak"
     )
@@ -59,61 +76,26 @@ by blocking ads, tracking and malware domains"
     self.hbswich.connect("notify::active", self.set_hblock)
     self.hbswich.set_active(state)
 
-    label_hblock.set_margin_start(10)
+    label_hblock.set_margin_start(30)
     label_hblock.set_margin_end(10)
     label_hblock.set_hexpand(True)
     label_hblock.set_halign(Gtk.Align.START)
-    hbox7.append(label_hblock)
+    hbox_hblock.append(label_hblock)
     self.hbswich.set_margin_start(10)
     self.hbswich.set_margin_end(10)
     self.hbswich.set_halign(Gtk.Align.END)
-    hbox7.append(self.hbswich)  # pack_end
+    hbox_hblock.append(self.hbswich)
 
-    # ==========================================================
-    #                       FIREFOX
-    # ==========================================================
+    # ========== APPEND TO VBOX ==========
 
-    hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    vboxstack3.append(hbox_title)
+    vboxstack3.append(hbox_sep)
 
-    label_firefox = Gtk.Label()
-    label_firefox.set_markup("Install extra <b>Firefox</b> extensions")
-    label_firefox.set_margin_start(10)
-    label_firefox.set_margin_end(10)
-    label_firefox.set_hexpand(True)
-    label_firefox.set_halign(Gtk.Align.START)
-    hbox9.append(label_firefox)
+    vboxstack3.append(hbox_section1_title)
+    vboxstack3.append(hbox_ublock)
 
-    label_firefox_ublock = Gtk.Label()
-    label_firefox_ublock.set_markup("Install/remove uBlock Origin")
-    label_firefox_ublock.set_margin_start(10)
-    label_firefox_ublock.set_margin_end(10)
-    label_firefox_ublock.set_halign(Gtk.Align.START)
-    label_firefox_ublock.set_hexpand(True)
+    vboxstack3.append(hbox_section2_title)
+    vboxstack3.append(hbox_hblock)
 
-    state = fn.ublock_get_state(self)
-
-    self.firefox_ublock_switch = Gtk.Switch()
-    self.firefox_ublock_switch.connect("notify::active", self.set_ublock_firefox)
-    self.firefox_ublock_switch.set_active(state)
-    self.firefox_ublock_switch.set_margin_start(10)
-    self.firefox_ublock_switch.set_margin_end(10)
-    self.firefox_ublock_switch.set_halign(Gtk.Align.END)
-
-    hbox10.append(label_firefox_ublock)
-    hbox10.append(self.firefox_ublock_switch)
-
-    # ==========================================================
-    #                      VSTACK
-    # ==========================================================
-
-    vboxstack3.append(hbox3)
-    vboxstack3.append(hbox4)
-    vboxstack3.append(hbox8)
-    vboxstack3.append(hbox11)
-    vboxstack3.append(hbox7)
-    vboxstack3.append(hbox9)
-    vboxstack3.append(hbox10)
-
-    vboxstack3.append(self.label7)  # pack_end
-    vboxstack3.append(self.progress)  # pack_end
+    vboxstack3.append(self.label7)
+    vboxstack3.append(self.progress)

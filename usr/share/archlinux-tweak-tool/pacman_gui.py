@@ -5,6 +5,19 @@
 import pacman_functions
 
 
+def get_parallel_downloads(fn):
+    """Get ParallelDownloads value from pacman.conf"""
+    try:
+        with open(fn.pacman, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("ParallelDownloads"):
+                    value = line.split("=")[1].strip()
+                    return value
+    except Exception:
+        pass
+    return "Not set"
+
+
 def gui(self, Gtk, vboxstack1, fn):
     """create a gui"""
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -26,6 +39,12 @@ def gui(self, Gtk, vboxstack1, fn):
     button_update_repos.connect("clicked", self.on_update_pacman_databases_clicked)
     # hbox5.pack_start(message, True, True, 0)
     hbox5.append(button_update_repos)  # pack_end
+
+    parallel_downloads_label = Gtk.Label(xalign=1)
+    parallel_downloads_label.set_markup(f"ParallelDownloads: {get_parallel_downloads(fn)}")
+    parallel_downloads_label.set_margin_start(10)
+    parallel_downloads_label.set_margin_end(10)
+    self.parallel_downloads_label = parallel_downloads_label
     # ========================================================
     #               FOOTER
     # ========================================================
@@ -38,6 +57,8 @@ def gui(self, Gtk, vboxstack1, fn):
     reset_pacman_online.connect("clicked", self.reset_pacman_online)
     blank_pacman = Gtk.Button(label="Blank pacman (auto reboot) and select")
     blank_pacman.connect("clicked", self.blank_pacman)
+    edit_pacman_conf = Gtk.Button(label="Edit pacman.conf in terminal")
+    edit_pacman_conf.connect("clicked", self.edit_pacman_conf_clicked)
     label_backup = Gtk.Label(xalign=0)
     label_backup.set_text("You can find the backup at /etc/pacman.conf.bak")
 
@@ -394,6 +415,7 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack4.append(blank_pacman)  # pack_end
     hboxstack4.append(reset_pacman_online)  # pack_end
     hboxstack4.append(reset_pacman_local)  # pack_end
+    hboxstack4.append(edit_pacman_conf)  # pack_end
     # hboxstack4.pack_start(label_backup, False, False, 0)
 
     # ========================================================
@@ -437,6 +459,22 @@ def gui(self, Gtk, vboxstack1, fn):
 
     # =================ARCO REPO========================
 
+    spacer = Gtk.Label()
+    spacer.set_hexpand(True)
+    hbox5.append(spacer)
+
+    hbox5.append(parallel_downloads_label)
+
+    aur_status = Gtk.Label(xalign=1)
+    aur_status.set_margin_start(10)
+    aur_status.set_margin_end(10)
+    hbox5.append(aur_status)
+
+    nemesis_status = Gtk.Label(xalign=1)
+    nemesis_status.set_margin_start(10)
+    nemesis_status.set_margin_end(10)
+    hbox5.append(nemesis_status)
+
     vboxstack1.append(hbox3)
     vboxstack1.append(hbox4)
     vboxstack1.append(hbox5)
@@ -456,12 +494,6 @@ def gui(self, Gtk, vboxstack1, fn):
     aur_title.set_margin_end(10)
     hbox_aur_title.append(aur_title)
 
-    hbox_aur_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    aur_status = Gtk.Label(xalign=0)
-    aur_status.set_margin_start(10)
-    aur_status.set_margin_end(10)
-    hbox_aur_status.append(aur_status)
-
     hbox_aur_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     btn_aur_yay = Gtk.Button()
     btn_aur_paru = Gtk.Button()
@@ -478,6 +510,9 @@ def gui(self, Gtk, vboxstack1, fn):
 
         chaotic_now = pacman_functions.is_chaotic_aur_enabled()
         aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_now else "disabled"))
+
+        nemesis_now = pacman_functions.check_repo("[nemesis_repo]")
+        nemesis_status.set_text("Nemesis repo: " + ("enabled" if nemesis_now else "disabled"))
 
         def wait_and_refresh(process):
             process.wait()
@@ -535,6 +570,7 @@ def gui(self, Gtk, vboxstack1, fn):
         return False
 
     refresh_aur_buttons()
+    self.refresh_aur_buttons = refresh_aur_buttons
 
     hbox_aur_buttons.set_hexpand(True)
     btn_aur_yay.set_hexpand(True)
@@ -544,7 +580,6 @@ def gui(self, Gtk, vboxstack1, fn):
 
     vboxstack1.append(hbox_aur_sep)
     vboxstack1.append(hbox_aur_title)
-    vboxstack1.append(hbox_aur_status)
     vboxstack1.append(hbox_aur_buttons)
 
     # =================TESTING REPO========================
@@ -568,6 +603,13 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack_custom_repo.append(self.custom_repo)  # pack_end
     vboxstack1.append(hboxstack_custom_repo)
 
+    hboxstack_blank_pacman = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    blank_pacman.set_margin_start(10)
+    blank_pacman.set_margin_end(10)
+    hboxstack_blank_pacman.append(blank_pacman)
+    vboxstack1.append(hboxstack_blank_pacman)
+
     # =================FOOTER========================
 
+    hboxstack4.remove(blank_pacman)
     vboxstack1.append(hboxstack4)  # pack_end

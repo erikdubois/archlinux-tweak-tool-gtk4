@@ -28,7 +28,7 @@ def gui(self, Gtk, vbox_stack, fn):
             f" - Option: <b>All Installed Packages</b> will export all packages currently installed on your system (lots of packages)\n"
             f" - Tip: To see packages installed from AUR in the terminal type: pacman -Qqem\n\n"
             f""
-            f" A list of installed packages will be exported to <b>{packages_obj.default_export_path}</b>"
+            f" A list of installed packages will be exported to <b>.config/att-exports</b>"
         )
 
         label_export_desc.set_selectable(True)
@@ -86,6 +86,7 @@ def gui(self, Gtk, vbox_stack, fn):
         vbox_export.append(grid_export)
         vbox_export_button.set_margin_start(10)
         vbox_export_button.set_margin_end(10)
+        vbox_export_button.set_margin_bottom(10)
         vbox_export.append(vbox_export_button)
 
         vbox_export.set_margin_start(10)
@@ -105,9 +106,8 @@ def gui(self, Gtk, vbox_stack, fn):
             f" <b>WARNING: Proceed with caution this will install packages onto your system!</b>\n"
             f" <b>Packages from the AUR are not supported </b>\n"
             f" <b>This also performs a full system upgrade</b>\n\n"
-            f" - A list of packages are sourced from <b>{packages_obj.default_export_path}</b>\n"
+            f" - A list of packages are sourced from <b>.config/att-exports</b>\n"
             f" - To ignore a package, add a # in front of the package name\n"
-            f" - Log file: {packages_obj.logfile}\n"
             f" - <b>A reboot is recommended when core Linux packages are installed</b>"
         )
 
@@ -222,12 +222,14 @@ def gui(self, Gtk, vbox_stack, fn):
 
         vbox_install_button.set_margin_start(10)
         vbox_install_button.set_margin_end(10)
+        vbox_install_button.set_margin_bottom(10)
         vbox_install.append(vbox_install_button)
 
         vbox_stack.append(hbox_title)
         vbox_stack.append(hbox_sep)
 
         vbox_stack.append(frame_export)
+        frame_export.set_margin_bottom(15)
         vbox_stack.append(frame_install)
 
     except Exception as e:

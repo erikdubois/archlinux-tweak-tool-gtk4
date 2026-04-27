@@ -2244,7 +2244,7 @@ def copy_samba(choice):
             val = get_position(lists, "[SAMBASHARE]")
             lists[val + 1] = "path = " + "/home/" + sudo_username + "/Shared\n"
 
-            print("You have choosen for the easy setup")
+            print("You have choosen to install Samba with an example share")
             print("We have added a folder called 'Shared' to your home directory")
             print("You can access this folder from any computer in your network")
             print("You can write and remove items from the shared folder")

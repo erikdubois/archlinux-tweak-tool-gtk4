@@ -10,7 +10,7 @@ class Packages:
             fn.datetime.datetime.today().date(),
             fn.datetime.datetime.today().time().strftime("%H-%M-%S"),
         )
-        self.export_dir = "{}/{}".format(fn.home, "att-exports")
+        self.export_dir = "{}/.config/{}".format(fn.home, "att-exports")
         self.default_export_path = "{}/{}".format(
             self.export_dir, self.packages_file_name
         )
