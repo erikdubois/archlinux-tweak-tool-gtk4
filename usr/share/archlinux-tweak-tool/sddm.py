@@ -4,7 +4,7 @@
 
 import functions as fn
 import os
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio, Gdk, GdkPixbuf, Pango
 
 
 def ensure_sddm_config(self):
@@ -373,131 +373,104 @@ def on_autologin_sddm_activated(self, widget, param_spec=None):
 
 
 def on_browse_sddm_folder(self, widget=None):
-    """Open folder browser dialog for SDDM wallpapers"""
-    dialog = Gtk.FileChooserDialog(
-        title="Select Wallpaper Folder",
-        transient_for=self,
-        action=Gtk.FileChooserAction.SELECT_FOLDER,
-        modal=True,
-    )
-    dialog.add_button("_Open", -5)
-    dialog.add_button("_Cancel", -6)
+    dialog = Gtk.FileDialog()
+    dialog.set_title("Choose a folder with wallpapers")
+    current = self.sddm_folder_entry.get_text().strip()
+    start = current if fn.path.isdir(current) else fn.home
+    dialog.set_initial_folder(Gio.File.new_for_path(start))
+    dialog.select_folder(self, None, lambda d, result: _on_sddm_folder_response(self, d, result))
 
-    def on_response(d, response_id):
-        if response_id == -5:
-            selected = d.get_file()
-            if selected:
-                folder = selected.get_path()
-                self.sddm_folder_entry.set_text(folder)
-                fn.debug_print(f"Selected folder: {folder}")
-        d.close()
 
-    dialog.connect("response", on_response)
-    dialog.present()
+def _on_sddm_folder_response(self, dialog, result):
+    try:
+        folder = dialog.select_folder_finish(result)
+        if folder:
+            folder_path = folder.get_path()
+            self.sddm_folder_entry.set_text(folder_path)
+            _populate_sddm_thumbs(self, folder_path)
+    except Exception:
+        pass
 
 
 def on_load_sddm_folder(self, widget=None):
-    """Load wallpapers from the specified folder"""
-    try:
-        folder = self.sddm_folder_entry.get_text()
-        if not folder or not fn.path.isdir(folder):
-            fn.messagebox(self, "Error", "Please specify a valid folder path")
-            return
-
-        fn.log_subsection("Load SDDM Wallpapers")
-        fn.debug_print(f"Loading wallpapers from: {folder}")
-
-        _populate_sddm_thumbs(self, folder)
-        fn.log_success(f"Wallpapers loaded from {folder}")
-    except Exception as error:
-        fn.log_error(f"Failed to load wallpapers: {error}")
-        fn.messagebox(self, "Error", f"Failed to load wallpapers: {error}")
+    folder_path = self.sddm_folder_entry.get_text().strip()
+    if fn.path.isdir(folder_path):
+        _populate_sddm_thumbs(self, folder_path)
+    else:
+        fn.show_in_app_notification(self, "Folder not found")
 
 
-def _clear_sddm_thumbs(self):
-    """Remove all children from the wallpaper flowbox"""
+def on_stop_sddm_loading(self, widget=None):
+    self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
+
+
+def _populate_sddm_thumbs(self, folder_path):
+    self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
+    current_gen = self._sddm_load_gen
+
     child = self.sddm_thumb_flow.get_first_child()
-    while child:
+    while child is not None:
         next_child = child.get_next_sibling()
         self.sddm_thumb_flow.remove(child)
         child = next_child
 
-
-def on_stop_sddm_loading(self, widget=None):
-    """Stop loading wallpapers"""
+    exts = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
     try:
-        fn.log_subsection("Stop Loading")
-        fn.debug_print("Stopped wallpaper loading")
-        self.sddm_folder_entry.set_text("")
-        _clear_sddm_thumbs(self)
-        fn.log_success("Wallpaper loading stopped")
-    except Exception as error:
-        fn.log_error(f"Failed to stop loading: {error}")
-
-
-def _populate_sddm_thumbs(self, folder):
-    """Populate wallpaper thumbnails in the flowbox"""
-    try:
-        _clear_sddm_thumbs(self)
-
-        image_extensions = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp')
-        image_files = []
-
-        for filename in sorted(fn.listdir(folder)):
-            if filename.lower().endswith(image_extensions):
-                filepath = fn.path.join(folder, filename)
-                if fn.path.isfile(filepath):
-                    image_files.append(filepath)
-
-        fn.debug_print(f"Found {len(image_files)} wallpaper(s)")
-
-        self._sddm_thumb_queue = list(image_files)
-        _add_next_sddm_thumb(self)
-
-    except Exception as error:
-        fn.log_error(f"Failed to populate thumbnails: {error}")
-
-
-def _add_next_sddm_thumb(self):
-    """Add thumbnails one at a time via idle_add to keep UI responsive"""
-    queue = getattr(self, '_sddm_thumb_queue', [])
-    if not queue:
+        entries = sorted(fn.os.listdir(folder_path))
+    except Exception:
         return
 
-    filepath = queue.pop(0)
-    try:
-        picture = Gtk.Picture.new_for_filename(filepath)
-        picture.set_can_shrink(True)
-        picture.set_content_fit(Gtk.ContentFit.COVER)
-        picture.set_size_request(150, 100)
+    image_paths = [
+        fn.path.join(folder_path, name)
+        for name in entries
+        if name.lower().endswith(exts)
+    ]
 
-        button = Gtk.Button()
-        button.set_child(picture)
-        button.set_size_request(150, 100)
-        button.connect("clicked", lambda _, path=filepath: on_sddm_thumb_clicked(self, path))
+    idx = [0]
 
-        self.sddm_thumb_flow.insert(button, -1)
-    except Exception as e:
-        fn.debug_print(f"Failed to load thumbnail {filepath}: {e}")
+    def load_next():
+        if self._sddm_load_gen != current_gen:
+            return False
+        if idx[0] >= len(image_paths):
+            return False
+        path = image_paths[idx[0]]
+        idx[0] += 1
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, 160, 100, True)
+            texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+            pic = Gtk.Picture.new_for_paintable(texture)
+            pic.set_can_shrink(False)
+            pic.set_size_request(160, 100)
 
-    if queue:
-        fn.GLib.idle_add(_add_next_sddm_thumb, self, priority=fn.GLib.PRIORITY_LOW)
+            lbl = Gtk.Label()
+            lbl.set_text(fn.path.basename(path))
+            lbl.set_max_width_chars(18)
+            lbl.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            box.set_margin_top(4)
+            box.set_margin_bottom(4)
+            box.set_margin_start(4)
+            box.set_margin_end(4)
+            box.append(pic)
+            box.append(lbl)
+
+            btn = Gtk.Button()
+            btn.set_child(box)
+            btn.connect("clicked", lambda w, p=path: on_sddm_thumb_clicked(self, w, p))
+            self.sddm_thumb_flow.append(btn)
+        except Exception:
+            pass
+        return True
+
+    fn.GLib.idle_add(load_next)
 
 
-def on_sddm_thumb_clicked(self, filepath):
-    """Handle wallpaper thumbnail selection"""
-    try:
-        if not fn.path.isfile(filepath):
-            fn.messagebox(self, "Error", "Selected file not found")
-            return
-
-        self.sddm_wallpaper_lbl.set_text(filepath)
-        self.sddm_wallpaper_preview.set_filename(filepath)
-        self.sddm_selected_wallpaper = filepath
-        fn.debug_print(f"Selected wallpaper: {filepath}")
-        fn.show_in_app_notification(self, f"Selected: {fn.path.basename(filepath)}")
-    except Exception as error:
-        fn.log_error(f"Failed to select wallpaper: {error}")
+def on_sddm_thumb_clicked(self, _widget, path):
+    self.login_wallpaper_path = path
+    self.sddm_wallpaper_lbl.set_text(path)
+    self.sddm_wallpaper_preview.set_filename(path)
+    self.sddm_wallpaper_preview.get_parent().set_visible(True)
 
 
 def on_click_sddm_apply(self):
@@ -546,35 +519,60 @@ def on_click_sddm_enable(self):
         fn.messagebox(self, "Error", f"Failed to install/enable SDDM: {error}")
 
 
-def on_set_sddm_wallpaper(self, widget=None):
-    """Set the selected wallpaper for SDDM"""
-    selected = getattr(self, 'sddm_selected_wallpaper', None)
+def on_set_sddm_wallpaper(self, _widget=None):
+    simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
+    simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
+    dest = simplicity_images + "/background.jpg"
+    dest_bak = simplicity_images + "/background.jpg.bak"
 
-    if not selected:
-        fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse a folder, then click a wallpaper thumbnail to select it.")
+    path = getattr(self, "login_wallpaper_path", None)
+    if not path or not fn.path.isfile(path):
+        fn.show_in_app_notification(self, "First choose a wallpaper image")
+        return
+
+    if not fn.path.isdir(simplicity_images):
+        fn.show_in_app_notification(self, "Simplicity theme not found - install it first")
         return
 
     try:
-        fn.log_subsection("Apply SDDM Wallpaper")
-        fn.debug_print(f"Applying wallpaper: {selected}")
-        fn.log_success("SDDM wallpaper applied")
-        fn.show_in_app_notification(self, "Wallpaper applied successfully")
+        if fn.path.isfile(dest) and not fn.path.isfile(dest_bak):
+            fn.shutil.copy(dest, dest_bak)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+        pixbuf.savev(dest, "jpeg", [], [])
+        with open(simplicity_conf, "w", encoding="utf-8") as f:
+            f.write("[General]\nbackground=images/background.jpg\n")
+        fn.show_in_app_notification(self, "Simplicity wallpaper applied")
     except Exception as error:
-        fn.log_error(f"Failed to apply wallpaper: {error}")
-        fn.messagebox(self, "Error", f"Failed to apply wallpaper: {error}")
+        print(error)
+        fn.show_in_app_notification(self, "Failed to apply wallpaper")
 
 
-def on_restore_sddm_wallpaper(self, widget=None):
-    """Restore default SDDM wallpaper"""
+def on_restore_sddm_wallpaper(self, _widget=None):
+    simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
+    simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
+    dest = simplicity_images + "/background.jpg"
+    dest_bak = simplicity_images + "/background.jpg.bak"
+
+    if not fn.path.isdir(simplicity_images):
+        fn.show_in_app_notification(self, "Simplicity theme not found - install it first")
+        return
+
+    if not fn.path.isfile(dest_bak):
+        fn.show_in_app_notification(self, "No backup found - apply a wallpaper first")
+        return
+
     try:
-        fn.log_subsection("Restore Default Wallpaper")
-        default_wallpaper = "/usr/share/sddm/themes/edu-simplicity/images/background.jpg"
-        self.sddm_wallpaper_lbl.set_text(default_wallpaper)
-        fn.log_success("Default wallpaper restored")
+        fn.shutil.copy(dest_bak, dest)
+        with open(simplicity_conf, "w", encoding="utf-8") as f:
+            f.write("[General]\nbackground=images/background.jpg\n")
+        self.sddm_wallpaper_lbl.set_text("Default wallpaper restored")
+        self.sddm_wallpaper_preview.set_filename(dest)
+        self.sddm_wallpaper_preview.get_parent().set_visible(True)
+        self.login_wallpaper_path = ""
         fn.show_in_app_notification(self, "Default wallpaper restored")
     except Exception as error:
-        fn.log_error(f"Failed to restore wallpaper: {error}")
-        fn.messagebox(self, "Error", f"Failed to restore wallpaper: {error}")
+        print(error)
+        fn.show_in_app_notification(self, "Failed to restore wallpaper")
 
 
 def on_click_install_bibata_cursor(self, widget=None):
