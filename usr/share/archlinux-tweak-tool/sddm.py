@@ -381,8 +381,8 @@ def on_browse_sddm_folder(self, widget=None):
             action=Gtk.FileChooserAction.SELECT_FOLDER,
         )
         dialog.add_buttons(
-            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
+            "_Cancel", Gtk.ResponseType.CANCEL,
+            "_Open", Gtk.ResponseType.OK,
         )
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
