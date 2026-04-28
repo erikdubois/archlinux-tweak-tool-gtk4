@@ -406,11 +406,7 @@ def on_load_sddm_folder(self, widget=None):
         fn.log_subsection("Load SDDM Wallpapers")
         fn.debug_print(f"Loading wallpapers from: {folder}")
 
-        for filename in fn.listdir(folder):
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                filepath = fn.path.join(folder, filename)
-                fn.debug_print(f"Found wallpaper: {filename}")
-
+        _populate_sddm_thumbs(self, folder)
         fn.log_success(f"Wallpapers loaded from {folder}")
     except Exception as error:
         fn.log_error(f"Failed to load wallpapers: {error}")
@@ -423,9 +419,66 @@ def on_stop_sddm_loading(self, widget=None):
         fn.log_subsection("Stop Loading")
         fn.debug_print("Stopped wallpaper loading")
         self.sddm_folder_entry.set_text("")
+        _m = self.sddm_thumb_flow.get_model()
+        if _m:
+            _m.splice(0, _m.get_n_items(), [])
         fn.log_success("Wallpaper loading stopped")
     except Exception as error:
         fn.log_error(f"Failed to stop loading: {error}")
+
+
+def _populate_sddm_thumbs(self, folder):
+    """Populate wallpaper thumbnails in the flowbox"""
+    try:
+        _m = self.sddm_thumb_flow.get_model()
+        if _m:
+            _m.splice(0, _m.get_n_items(), [])
+
+        image_extensions = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp')
+        image_files = []
+
+        for filename in fn.listdir(folder):
+            if filename.lower().endswith(image_extensions):
+                filepath = fn.path.join(folder, filename)
+                if fn.path.isfile(filepath):
+                    image_files.append(filepath)
+
+        fn.debug_print(f"Found {len(image_files)} wallpaper(s)")
+
+        for filepath in image_files:
+            try:
+                picture = Gtk.Picture()
+                picture.set_filename(filepath)
+                picture.set_can_shrink(True)
+                picture.set_content_fit(Gtk.ContentFit.COVER)
+                picture.set_size_request(150, 100)
+
+                button = Gtk.Button()
+                button.set_child(picture)
+                button.set_size_request(150, 100)
+                button.connect("clicked", lambda btn, path=filepath: on_sddm_thumb_clicked(self, path))
+
+                self.sddm_thumb_flow.insert(button, -1)
+            except Exception as e:
+                fn.debug_print(f"Failed to load thumbnail {filepath}: {e}")
+
+    except Exception as error:
+        fn.log_error(f"Failed to populate thumbnails: {error}")
+
+
+def on_sddm_thumb_clicked(self, filepath):
+    """Handle wallpaper thumbnail selection"""
+    try:
+        if not fn.path.isfile(filepath):
+            fn.messagebox(self, "Error", "Selected file not found")
+            return
+
+        self.sddm_wallpaper_lbl.set_text(filepath)
+        self.sddm_wallpaper_preview.set_filename(filepath)
+        fn.debug_print(f"Selected wallpaper: {filepath}")
+        fn.show_in_app_notification(self, f"Selected: {fn.path.basename(filepath)}")
+    except Exception as error:
+        fn.log_error(f"Failed to select wallpaper: {error}")
 
 
 def on_click_sddm_apply(self):
