@@ -5,6 +5,151 @@
 import functions as fn
 
 
+def on_click_att_sardi_icon_theming_all_selection(self, widget):
+    fn.log_subsection("All Sardi icons selected")
+    fn.show_in_app_notification(self, "We have selected all sardi icons")
+    set_att_checkboxes_theming_sardi_icons_all(self)
+
+def on_click_att_sardi_icon_theming_mint_selection(self, widget):
+    fn.log_subsection("Mint selection applied - Sardi icons")
+    fn.show_in_app_notification(
+        self, "We have selected the mint selection - sardi icons"
+    )
+    set_att_checkboxes_theming_sardi_mint_icons(self)
+
+def on_click_att_sardi_icon_theming_mixing_selection(self, widget):
+    fn.log_subsection("Mixing selection applied - Sardi icons")
+    fn.show_in_app_notification(
+        self, "We have selected the mixing selection - sardi icons"
+    )
+    set_att_checkboxes_theming_sardi_mixing_icons(self)
+
+def on_click_att_sardi_icon_theming_variations_selection(self, widget):
+    fn.log_subsection("Variations selection applied - Sardi icons")
+    fn.show_in_app_notification(
+        self, "We have selected the variation selection - sardi icons"
+    )
+    set_att_checkboxes_theming_sardi_icons_variations(self)
+
+def on_click_att_sardi_icon_theming_none_selection(self, widget):
+    fn.log_subsection("No Sardi icons selected")
+    fn.show_in_app_notification(self, "We have selected no sardiicons")
+    set_att_checkboxes_theming_sardi_icons_none(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_selection(self, widget):
+    fn.log_subsection("Sardi family selected")
+    fn.show_in_app_notification(self, "We have selected the Sardi family themes")
+    set_att_fam_checkboxes_theming_sardi_icons(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_flexible_selection(self, widget):
+    fn.log_subsection("Sardi flexible family selected")
+    fn.show_in_app_notification(
+        self, "We have selected the Sardi flexible family themes"
+    )
+    set_att_fam_checkboxes_theming_sardi_flexible(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_mono_selection(self, widget):
+    fn.log_subsection("Sardi mono family selected")
+    fn.show_in_app_notification(
+        self, "We have selected the Sardi mono family themes"
+    )
+    set_att_fam_checkboxes_theming_sardi_mono(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_flat_selection(self, widget):
+    fn.log_subsection("Sardi flat family selected")
+    fn.show_in_app_notification(
+        self, "We have selected the Sardi flat family themes"
+    )
+    set_att_fam_checkboxes_theming_sardi_flat(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_ghost_selection(self, widget):
+    fn.log_subsection("Sardi ghost family selected")
+    fn.show_in_app_notification(
+        self, "We have selected the Sardi ghost family themes"
+    )
+    set_att_fam_checkboxes_theming_sardi_ghost(self)
+
+def on_click_att_fam_sardi_icon_theming_sardi_orb_selection(self, widget):
+    fn.log_subsection("Sardi orb family selected")
+    fn.show_in_app_notification(
+        self, "We have selected the Sardi orb family themes"
+    )
+    set_att_fam_checkboxes_theming_sardi_orb(self)
+
+def on_click_att_surfn_theming_all_selection(self, widget):
+    fn.log_subsection("All Surfn icons selected")
+    fn.show_in_app_notification(self, "We have selected all cursors")
+    set_att_checkboxes_theming_surfn_icons_all(self)
+
+def on_click_att_surfn_theming_normal_selection(self, widget):
+    fn.log_subsection("Normal selection applied - Surfn icons")
+    fn.show_in_app_notification(
+        self, "We have selected the normal selection - cursors"
+    )
+    set_att_checkboxes_theming_surfn_icons_normal(self)
+
+def on_click_att_surfn_theming_minimal_selection(self, widget):
+    fn.log_subsection("Minimal selection applied - Surfn icons")
+    fn.show_in_app_notification(
+        self, "We have selected the minimal selection - cursors"
+    )
+    set_att_checkboxes_theming_surfn_icons_minimal(self)
+
+def on_click_att_surfn_theming_none_selection(self, widget):
+    fn.log_subsection("No Surfn icons selected")
+    fn.show_in_app_notification(self, "We have selected no cursors")
+    set_att_checkboxes_theming_surfn_icons_none(self)
+
+def on_install_extras_clicked(self, widget):
+    fn.log_subsection("Installing selected Neo Candy icon packages...")
+    install_att_extras(self)
+
+def on_remove_extras_clicked(self, widget):
+    fn.log_subsection("Removing selected Neo Candy icon packages...")
+    remove_att_extras(self)
+
+def on_find_extras_clicked(self, widget):
+    fn.log_subsection("Showing installed projects...")
+    fn.show_in_app_notification(self, "We show the installed projects")
+    find_att_extras(self)
+
+def on_click_extras_theming_all_selection(self, widget):
+    fn.log_subsection("All projects selected")
+    fn.show_in_app_notification(self, "We have selected all projects")
+    set_att_checkboxes_extras_all(self)
+
+def on_click_extras_theming_none_selection(self, widget):
+    fn.log_subsection("No projects selected")
+    fn.show_in_app_notification(self, "We have selected none of the projects")
+    set_att_checkboxes_extras_none(self)
+
+def on_install_att_sardi_icon_themes_clicked(self, widget):
+    fn.log_subsection("Installing selected Sardi icon themes...")
+    install_sardi_icons(self)
+
+def on_remove_att_sardi_icon_themes_clicked(self, widget):
+    fn.log_subsection("Removing selected Sardi icon themes...")
+    remove_sardi_icons(self)
+
+def on_find_att_sardi_icon_themes_clicked(self, widget):
+    fn.log_subsection("Showing installed Sardi icon themes...")
+    fn.show_in_app_notification(self, "We show the installed sardi icon themes")
+    find_sardi_icons(self)
+
+def on_install_att_surfn_icon_themes_clicked(self, widget):
+    fn.log_subsection("Installing selected Surfn icon themes...")
+    install_surfn_icons(self)
+
+def on_remove_att_surfn_icon_themes_clicked(self, widget):
+    fn.log_subsection("Removing selected Surfn icon themes...")
+    remove_surfn_icons(self)
+
+def on_find_att_surfn_icon_themes_clicked(self, widget):
+    fn.log_subsection("Showing all installed Surfn icon themes...")
+    fn.show_in_app_notification(self, "We show all the installed Surfn icon themes")
+    find_surfn_icons(self)
+
+
 
 #    #====================================================================
 #    #                       ICONS SARDI
@@ -380,8 +525,8 @@ def install_sardi_icons(self):
         fn.show_in_app_notification(self, "No Sardi icons selected for installation")
         return
 
-    print(f"\n[INFO] Installing {len(packages)} Sardi icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Installing {len(packages)} Sardi icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_install_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Installing {len(packages)} Sardi icon packages...")
     fn.wait_and_notify(process, self, f"Sardi icons installation complete")
@@ -442,8 +587,8 @@ def remove_sardi_icons(self):
         fn.show_in_app_notification(self, "No Sardi icons selected for removal")
         return
 
-    print(f"\n[INFO] Removing {len(packages)} Sardi icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Removing {len(packages)} Sardi icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Removing {len(packages)} Sardi icon packages...")
     fn.wait_and_notify(process, self, f"Sardi icons removal complete")
@@ -571,8 +716,8 @@ def install_surfn_icons(self):
         fn.show_in_app_notification(self, "No Surfn icons selected for installation")
         return
 
-    print(f"\n[INFO] Installing {len(packages)} Surfn icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Installing {len(packages)} Surfn icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_install_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Installing {len(packages)} Surfn icon packages...")
     fn.wait_and_notify(process, self, f"Surfn icons installation complete")
@@ -597,8 +742,8 @@ def remove_surfn_icons(self):
         fn.show_in_app_notification(self, "No Surfn icons selected for removal")
         return
 
-    print(f"\n[INFO] Removing {len(packages)} Surfn icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Removing {len(packages)} Surfn icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Removing {len(packages)} Surfn icon packages...")
     fn.wait_and_notify(process, self, f"Surfn icons removal complete")
@@ -677,8 +822,8 @@ def install_att_extras(self):
         fn.show_in_app_notification(self, "No Neo Candy icons selected for installation")
         return
 
-    print(f"\n[INFO] Installing {len(packages)} Neo Candy icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Installing {len(packages)} Neo Candy icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_install_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Installing {len(packages)} Neo Candy icon packages...")
     fn.wait_and_notify(process, self, f"Neo Candy icons installation complete")
@@ -708,8 +853,8 @@ def remove_att_extras(self):
         fn.show_in_app_notification(self, "No Neo Candy icons selected for removal")
         return
 
-    print(f"\n[INFO] Removing {len(packages)} Neo Candy icon packages")
-    print(f"[INFO] Packages: {', '.join(packages)}")
+    fn.log_subsection(f"Removing {len(packages)} Neo Candy icon packages...")
+    fn.debug_print(f"Packages: {', '.join(packages)}")
     process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
     fn.show_in_app_notification(self, f"Removing {len(packages)} Neo Candy icon packages...")
     fn.wait_and_notify(process, self, f"Neo Candy icons removal complete")

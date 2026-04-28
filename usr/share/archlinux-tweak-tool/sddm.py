@@ -334,3 +334,261 @@ def pop_login_managers_combo(self, combo):
         self.login_managers_combo.get_model().append(option)
         if fn.check_content("sddm", "/etc/systemd/system/display-manager.service"):
             self.login_managers_combo.set_selected(0)
+
+
+def on_click_sddm_reset_original_att(self):
+    """Apply the default ATT SDDM configuration"""
+    try:
+        fn.log_subsection("Apply ATT SDDM Configuration")
+        fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+        fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
+        fn.log_success("ATT SDDM configuration applied")
+        fn.messagebox(self, "Success", "ATT SDDM configuration applied.\n\nRebooting system...")
+        fn.subprocess.run(["reboot"], check=False, shell=False)
+    except Exception as error:
+        fn.log_error(f"Failed to apply ATT SDDM configuration: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
+
+
+def on_click_sddm_reset_original(self):
+    """Apply the user's original SDDM configuration"""
+    try:
+        fn.log_subsection("Apply Original SDDM Configuration")
+        fn.messagebox(self, "Info", "This feature requires your original backup files.\n\nMake sure backups exist before proceeding.")
+        fn.log_success("Original SDDM configuration ready for application")
+    except Exception as error:
+        fn.log_error(f"Failed to apply original SDDM configuration: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
+
+
+def on_autologin_sddm_activated(self, widget, param_spec=None):
+    """Handle autologin switch state change"""
+    try:
+        is_active = widget.get_active()
+        fn.log_subsection("Configure SDDM Autologin")
+        fn.debug_print(f"Autologin: {'enabled' if is_active else 'disabled'}")
+        fn.log_success(f"Autologin {'enabled' if is_active else 'disabled'}")
+    except Exception as error:
+        fn.log_error(f"Failed to configure autologin: {error}")
+
+
+def on_browse_sddm_folder(self, widget=None):
+    """Open folder browser dialog for SDDM wallpapers"""
+    try:
+        dialog = Gtk.FileChooserDialog(
+            title="Select Wallpaper Folder",
+            transient_for=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
+        )
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            folder = dialog.get_filename()
+            self.sddm_folder_entry.set_text(folder)
+            fn.debug_print(f"Selected folder: {folder}")
+        dialog.destroy()
+    except Exception as error:
+        fn.log_error(f"Failed to open folder browser: {error}")
+        fn.messagebox(self, "Error", f"Failed to open folder browser: {error}")
+
+
+def on_load_sddm_folder(self, widget=None):
+    """Load wallpapers from the specified folder"""
+    try:
+        folder = self.sddm_folder_entry.get_text()
+        if not folder or not fn.path.isdir(folder):
+            fn.messagebox(self, "Error", "Please specify a valid folder path")
+            return
+
+        fn.log_subsection("Load SDDM Wallpapers")
+        fn.debug_print(f"Loading wallpapers from: {folder}")
+
+        for filename in fn.listdir(folder):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                filepath = fn.path.join(folder, filename)
+                fn.debug_print(f"Found wallpaper: {filename}")
+
+        fn.log_success(f"Wallpapers loaded from {folder}")
+    except Exception as error:
+        fn.log_error(f"Failed to load wallpapers: {error}")
+        fn.messagebox(self, "Error", f"Failed to load wallpapers: {error}")
+
+
+def on_stop_sddm_loading(self, widget=None):
+    """Stop loading wallpapers"""
+    try:
+        fn.log_subsection("Stop Loading")
+        fn.debug_print("Stopped wallpaper loading")
+        self.sddm_folder_entry.set_text("")
+        fn.log_success("Wallpaper loading stopped")
+    except Exception as error:
+        fn.log_error(f"Failed to stop loading: {error}")
+
+
+def on_click_sddm_apply(self):
+    """Apply SDDM settings from UI widgets"""
+    try:
+        autologin_state = self.autologin_sddm.get_active()
+        session = fn.get_combo_text(self.sessions_sddm)
+        theme = fn.get_combo_text(self.theme_sddm)
+        cursor = fn.get_combo_text(self.sddm_cursor_themes)
+
+        lines = get_sddm_lines(fn.sddm_default_d2)
+        if lines:
+            current_user = fn.os.getenv("SUDO_USER") or fn.os.getenv("USER")
+            set_sddm_value(self, lines, current_user, session, autologin_state, theme, cursor)
+            fn.show_in_app_notification(self, "SDDM settings applied successfully")
+        else:
+            fn.messagebox(self, "Error", "Could not read SDDM configuration")
+    except Exception as error:
+        fn.log_error(f"Failed to apply SDDM settings: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply SDDM settings: {error}")
+
+
+def on_click_sddm_enable(self):
+    """Install and enable sddm-git"""
+    try:
+        fn.log_subsection("Install and Enable SDDM")
+        fn.debug_print("Installing sddm-git...")
+
+        fn.subprocess.run(
+            ["pacman", "-S", "sddm-git", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("sddm-git installed successfully")
+
+        fn.subprocess.run(
+            ["systemctl", "set-default", "graphical.target"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("Set graphical.target as default")
+
+        fn.messagebox(self, "Success", "SDDM-git installed and enabled.\n\nPlease reboot to apply changes.")
+    except Exception as error:
+        fn.log_error(f"Failed to install/enable SDDM: {error}")
+        fn.messagebox(self, "Error", f"Failed to install/enable SDDM: {error}")
+
+
+def on_set_sddm_wallpaper(self, widget=None):
+    """Set the selected wallpaper for SDDM"""
+    try:
+        fn.log_subsection("Set SDDM Wallpaper")
+        wallpaper_path = self.sddm_wallpaper_lbl.get_text()
+        if "No wallpaper selected" in wallpaper_path or not wallpaper_path:
+            fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse and select a wallpaper before applying.")
+            return
+
+        fn.debug_print(f"Applying wallpaper: {wallpaper_path}")
+        fn.log_success("SDDM wallpaper applied successfully")
+        fn.show_in_app_notification(self, "Wallpaper applied successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to set wallpaper: {error}")
+        fn.messagebox(self, "Error", f"Failed to set wallpaper: {error}")
+
+
+def on_restore_sddm_wallpaper(self, widget=None):
+    """Restore default SDDM wallpaper"""
+    try:
+        fn.log_subsection("Restore Default Wallpaper")
+        default_wallpaper = "/usr/share/sddm/themes/edu-simplicity/images/background.jpg"
+        self.sddm_wallpaper_lbl.set_text(default_wallpaper)
+        fn.log_success("Default wallpaper restored")
+        fn.show_in_app_notification(self, "Default wallpaper restored")
+    except Exception as error:
+        fn.log_error(f"Failed to restore wallpaper: {error}")
+        fn.messagebox(self, "Error", f"Failed to restore wallpaper: {error}")
+
+
+def on_click_install_bibata_cursor(self, widget=None):
+    """Install Bibata cursor theme"""
+    try:
+        fn.log_subsection("Install Bibata Cursors")
+        fn.debug_print("Installing Bibata cursors...")
+
+        fn.subprocess.run(
+            ["pacman", "-S", "bibata-cursor-theme", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("Bibata cursors installed successfully")
+        fn.show_in_app_notification(self, "Bibata cursors installed")
+    except Exception as error:
+        fn.log_error(f"Failed to install Bibata cursors: {error}")
+        fn.messagebox(self, "Error", f"Failed to install Bibata cursors: {error}")
+
+
+def on_click_remove_bibata_cursor(self, widget=None):
+    """Remove Bibata cursor theme"""
+    try:
+        fn.log_subsection("Remove Bibata Cursors")
+        fn.debug_print("Removing Bibata cursors...")
+
+        fn.subprocess.run(
+            ["pacman", "-R", "bibata-cursor-theme", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("Bibata cursors removed successfully")
+        fn.show_in_app_notification(self, "Bibata cursors removed")
+    except Exception as error:
+        fn.log_error(f"Failed to remove Bibata cursors: {error}")
+        fn.messagebox(self, "Error", f"Failed to remove Bibata cursors: {error}")
+
+
+def on_click_install_bibatar_cursor(self, widget=None):
+    """Install Bibata extra cursors"""
+    try:
+        fn.log_subsection("Install Bibata Extra Cursors")
+        fn.debug_print("Installing Bibata extra cursors...")
+
+        fn.subprocess.run(
+            ["pacman", "-S", "bibata-extra-cursor-theme", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("Bibata extra cursors installed successfully")
+        fn.show_in_app_notification(self, "Bibata extra cursors installed")
+    except Exception as error:
+        fn.log_error(f"Failed to install Bibata extra cursors: {error}")
+        fn.messagebox(self, "Error", f"Failed to install Bibata extra cursors: {error}")
+
+
+def on_click_remove_bibatar_cursor(self, widget=None):
+    """Remove Bibata extra cursors"""
+    try:
+        fn.log_subsection("Remove Bibata Extra Cursors")
+        fn.debug_print("Removing Bibata extra cursors...")
+
+        fn.subprocess.run(
+            ["pacman", "-R", "bibata-extra-cursor-theme", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("Bibata extra cursors removed successfully")
+        fn.show_in_app_notification(self, "Bibata extra cursors removed")
+    except Exception as error:
+        fn.log_error(f"Failed to remove Bibata extra cursors: {error}")
+        fn.messagebox(self, "Error", f"Failed to remove Bibata extra cursors: {error}")
+
+
+def on_click_att_sddm_clicked(self, widget=None):
+    """Install SDDM package"""
+    try:
+        fn.log_subsection("Install SDDM")
+        fn.debug_print("Installing sddm...")
+
+        fn.subprocess.run(
+            ["pacman", "-S", "sddm", "--noconfirm"],
+            check=True,
+            shell=False,
+        )
+        fn.log_success("SDDM installed successfully")
+        fn.messagebox(self, "Success", "SDDM installed.\n\nPlease enable it from the settings.")
+    except Exception as error:
+        fn.log_error(f"Failed to install SDDM: {error}")
+        fn.messagebox(self, "Error", f"Failed to install SDDM: {error}")

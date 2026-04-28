@@ -2,6 +2,9 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+import user
+
 
 def gui(self, Gtk, vboxStack10, user, fn):
     """create a gui"""
@@ -96,7 +99,7 @@ audio, video, network, storage, rfkill, wheel, autologin, sambashare"
 
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     apply_settings = Gtk.Button(label="Apply settings")
-    apply_settings.connect("clicked", self.on_click_user_apply)
+    apply_settings.connect("clicked", functools.partial(user.on_click_user_apply, self))
     hbox2.append(apply_settings)
 
     hbox40 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -122,11 +125,11 @@ audio, video, network, storage, rfkill, wheel, autologin, sambashare"
     hbox8_label = Gtk.Label(xalign=0)
     hbox8_label.set_text("Remove the selected user")
     button_delete_user = Gtk.Button(label="Remove the selected user")
-    button_delete_user.connect("clicked", self.on_click_delete_user)
+    button_delete_user.connect("clicked", functools.partial(user.on_click_delete_user, self))
     button_delete_all_user = Gtk.Button(
         label="Remove the selected user and the home folder"
     )
-    button_delete_all_user.connect("clicked", self.on_click_delete_all_user)
+    button_delete_all_user.connect("clicked", functools.partial(user.on_click_delete_all_user, self))
     self.cbt_users = Gtk.DropDown.new_from_strings([])
     user.pop_cbt_users(self, self.cbt_users)
     hbox8_label.set_margin_start(10)

@@ -624,3 +624,50 @@ def install_desktop(self, desktop, state):
         print(desktop + " has NOT been installed")
         print("----------------------------------------------------------------")
     fn.create_log(self)
+
+# ====================================================================
+# DESKTOPR CALLBACKS
+# ====================================================================
+
+def on_d_combo_changed(self, widget, pspec=None):
+    from gi.repository import Gdk, GdkPixbuf
+    import desktopr_gui
+
+    try:
+        pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            self.base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",
+            desktopr_gui.IMAGE_PREVIEW_LOAD,
+            desktopr_gui.IMAGE_PREVIEW_LOAD,
+        )
+        texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
+        self.image_DE.set_paintable(texture)
+    except:
+        self.image_DE.set_paintable(None)
+    if check_desktop(fn.get_combo_text(self.d_combo)):
+        self.desktop_status.set_markup('<span size="x-large"><b>This desktop is installed</b></span>')
+    else:
+        self.desktop_status.set_markup('<span size="x-large"><b>This desktop is NOT installed</b></span>')
+
+
+def on_install_clicked(self, widget, state):
+    fn.create_log(self)
+    print("installing " + fn.get_combo_text(self.d_combo))
+    check_lock(self, fn.get_combo_text(self.d_combo), state)
+
+
+def on_default_clicked(self, widget):
+    fn.create_log(self)
+    if check_desktop(fn.get_combo_text(self.d_combo)) is True:
+        import settings
+        secs = settings.read_section()
+        if "DESKTOP" in secs:
+            settings.write_settings(
+                "DESKTOP", "default", fn.get_combo_text(self.d_combo)
+            )
+        else:
+            settings.new_settings(
+                "DESKTOP", {"default": fn.get_combo_text(self.d_combo)}
+            )
+    else:
+        fn.show_in_app_notification(self, "That desktop is not installed")
+        print("Desktop is not installed")

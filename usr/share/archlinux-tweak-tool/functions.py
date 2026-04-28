@@ -38,6 +38,135 @@ import logging
 import time
 from queue import Queue
 import pwd
+import sys
+import subprocess
+
+# Debug flag - set by archlinux-tweak-tool when --debug flag is used
+DEBUG = False
+
+# =====================================================
+# Color support detection
+# =====================================================
+def _has_color_support():
+    """Check if terminal supports colors"""
+    try:
+        if not sys.stdout.isatty():
+            return False
+        result = subprocess.run(
+            ["tput", "colors"],
+            capture_output=True,
+            text=True,
+            timeout=1
+        )
+        return result.returncode == 0 and int(result.stdout.strip()) >= 8
+    except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
+        return False
+
+
+COLORS_ENABLED = _has_color_support()
+
+# Color codes
+if COLORS_ENABLED:
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    PURPLE = "\033[35m"
+    CYAN = "\033[36m"
+    RESET = "\033[0m"
+else:
+    RED = ""
+    GREEN = ""
+    YELLOW = ""
+    BLUE = ""
+    PURPLE = ""
+    CYAN = ""
+    RESET = ""
+
+
+def set_debug(value):
+    """Set the global DEBUG flag"""
+    global DEBUG
+    DEBUG = value
+
+
+def debug_print(message):
+    """Print debug message if DEBUG mode is enabled"""
+    if DEBUG:
+        print(f"{CYAN}[DEBUG]{RESET} {message}")
+
+
+# =====================================================
+# Logging functions with color support
+# =====================================================
+def _print_with_separator(message, color):
+    """Print message with colored separators"""
+    sep = "=" * 72
+    print()
+    print(f"{color}{sep}{RESET}")
+    print(message)
+    print(f"{color}{sep}{RESET}")
+    print()
+
+
+def log_section(message):
+    """Major section header (GREEN with separators)"""
+    _print_with_separator(message, GREEN)
+
+
+def log_subsection(message):
+    """Minor section header (CYAN with separators)"""
+    _print_with_separator(message, CYAN)
+
+
+def log_info(message):
+    """Informational message (BLUE with separators)"""
+    _print_with_separator(message, BLUE)
+
+
+def log_success(message):
+    """Success message (GREEN with separators)"""
+    _print_with_separator(message, GREEN)
+
+
+def log_warn(message):
+    """Warning message (YELLOW with separators)"""
+    _print_with_separator(message, YELLOW)
+
+
+def log_error(message, lineno=None, cmd=None):
+    """Error message (RED with separators)"""
+    print()
+    sep = "=" * 72
+    print(f"{RED}{sep}{RESET}")
+    print(f"{RED}⚠️ ERROR DETECTED{RESET}")
+    if lineno:
+        print(f"{YELLOW}✳️  Line: {lineno}{RESET}")
+    if cmd:
+        print(f"{YELLOW}📌  Command: '{cmd}'{RESET}")
+    print(message)
+    print(f"{RED}{sep}{RESET}")
+    print()
+
+
+def info(message):
+    """Simple info message (no separators)"""
+    print(f"{BLUE}ℹ️  {message}{RESET}")
+
+
+def success(message):
+    """Simple success message (no separators)"""
+    print(f"{GREEN}✓ {message}{RESET}")
+
+
+def warn(message):
+    """Simple warning message (no separators)"""
+    print(f"{YELLOW}⚠️  {message}{RESET}")
+
+
+def error(message):
+    """Simple error message (no separators)"""
+    print(f"{RED}✗ {message}{RESET}")
 
 # =====================================================
 # =====================================================
@@ -55,8 +184,8 @@ home = "/home/" + str(sudo_username)
 gpg_conf = "/etc/pacman.d/gnupg/gpg.conf"
 gpg_conf_local = home + "/.gnupg/gpg.conf"
 
-gpg_conf_original = "/usr/share/archlinux-tweak-tool/data/any/gpg.conf"
-gpg_conf_local_original = "/usr/share/archlinux-tweak-tool/data/any/gpg.conf"
+gpg_conf_original = "/usr/share/archlinux-tweak-tool/data/kiro/gpg.conf"
+gpg_conf_local_original = "/usr/share/archlinux-tweak-tool/data/kiro/gpg.conf"
 
 # login managers
 
@@ -119,10 +248,6 @@ qtile_config_theme = home + "/.config/qtile/themes/"
 leftwm_config = home + "/.config/leftwm/config.ron"
 leftwm_config_theme = home + "/.config/leftwm/themes/"
 leftwm_config_theme_current = home + "/.config/leftwm/themes/current"
-
-chaotics_repo = "[chaotic-aur]\n\
-SigLevel = Required DatabaseOptional\n\
-Include = /etc/pacman.d/chaotic-mirrorlist"
 
 nemesis_repo = "[nemesis_repo]\n\
 SigLevel = Never\n\
@@ -596,6 +721,30 @@ def messagebox(self, title, message):
     loop.run()
 
 
+def confirm_dialog(self, title, message):
+    """Show confirmation dialog, return True if user clicked 'Yes'"""
+    response_value = [False]
+    md = Gtk.MessageDialog(
+        transient_for=self,
+        message_type=Gtk.MessageType.WARNING,
+        buttons=Gtk.ButtonsType.YES_NO,
+        text=title,
+    )
+    md.props.secondary_text = message
+    md.props.secondary_use_markup = True
+    loop = GLib.MainLoop()
+
+    def on_response(d, response_id):
+        response_value[0] = (response_id == Gtk.ResponseType.YES)
+        loop.quit()
+        d.destroy()
+
+    md.connect("response", on_response)
+    md.show()
+    loop.run()
+    return response_value[0]
+
+
 def show_in_app_notification(self, message):
     if self.timeout_id is not None:
         GLib.source_remove(self.timeout_id)
@@ -643,7 +792,7 @@ def restart_program():
 # =====================================================
 
 
-def check_edu_repos_active():
+def check_nemesis_repo_active():
     with open(pacman, "r", encoding="utf-8") as f:
         lines = f.readlines()
         f.close()
@@ -731,16 +880,16 @@ def install_package(self, package):
         binary_path = f"/usr/bin/{binary_name}"
 
         if path.exists(binary_path):
-            print(f"\n[INFO] {package} already installed")
+            debug_print(f"{package} already installed")
             GLib.idle_add(show_in_app_notification, self, f"{package} already installed")
             return
 
-        print(f"\n[INFO] {package} not installed, starting installation")
+        log_subsection(f"Installing {package}...")
         process = launch_pacman_install_in_terminal(package)
         GLib.idle_add(show_in_app_notification, self, f"{package} installation started")
         wait_install_and_update(process, binary_path, None, None, self, f"{package} installed", package)
     except Exception as error:
-        print(error)
+        log_error(f"Error installing {package}: {error}")
         GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
 
 
@@ -748,12 +897,12 @@ def install_local_package(self, package):
     command = "pacman -U " + package + " --noconfirm"
     # if more than one package - checf fails and will install
     try:
-        print(f"[INFO] Executing: {command}")
-        print(f"[INFO] Installing package: {package}")
-        print(f"[INFO] Verifying package file exists: {package}")
+        log_subsection(f"Installing local package: {package}...")
+        debug_print(f"Executing: {command}")
+        debug_print(f"Verifying package file exists: {package}")
         if not os.path.exists(package):
             raise Exception(f"Package file not found: {package}")
-        print(f"[INFO] Package file verified")
+        debug_print(f"Package file verified")
         result = subprocess.run(
             command.split(" "),
             shell=False,
@@ -810,7 +959,7 @@ def remove_file(file_path):
 def remove_package(self, package):
     command = "pacman -R " + package + " --noconfirm"
     if check_package_installed(package):
-        print(command)
+        log_subsection(f"Removing {package}...")
         try:
             subprocess.call(
                 command.split(" "),
@@ -818,19 +967,19 @@ def remove_package(self, package):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(package + " is now removed")
+            log_success(f"{package} is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
         except Exception as error:
-            print(error)
+            log_error(f"Error removing {package}: {error}")
     else:
-        print(package + " is already removed")
+        log_warn(f"{package} is already removed")
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
 def remove_package_s(self, package):
     command = "pacman -Rs " + package + " --noconfirm"
     if check_package_installed(package):
-        print(command)
+        log_subsection(f"Removing {package}...")
         try:
             subprocess.call(
                 command.split(" "),
@@ -838,19 +987,19 @@ def remove_package_s(self, package):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(package + " is now removed")
+            log_success(f"{package} is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
         except Exception as error:
-            print(error)
+            log_error(f"Error removing {package}: {error}")
     else:
-        print(package + " is already removed")
+        log_warn(f"{package} is already removed")
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
 def remove_package_rns(self, package):
     command = "pacman -Rns " + package + " --noconfirm"
     if check_package_installed(package):
-        print(command)
+        log_subsection(f"Removing {package}...")
         try:
             subprocess.call(
                 command.split(" "),
@@ -858,19 +1007,19 @@ def remove_package_rns(self, package):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(package + " is now removed")
+            log_success(f"{package} is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
         except Exception as error:
-            print(error)
+            log_error(f"Error removing {package}: {error}")
     else:
-        print(package + " is already removed")
+        log_warn(f"{package} is already removed")
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
 def remove_package_ss(self, package):
     command = "pacman -Rss " + package + " --noconfirm"
     if check_package_installed(package):
-        print(command)
+        log_subsection(f"Removing {package}...")
         try:
             subprocess.call(
                 command.split(" "),
@@ -878,19 +1027,19 @@ def remove_package_ss(self, package):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(package + " is now removed")
+            log_success(f"{package} is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
         except Exception as error:
-            print(error)
+            log_error(f"Error removing {package}: {error}")
     else:
-        print(package + " is already removed")
+        log_warn(f"{package} is already removed")
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
 def remove_package_dd(self, package):
     command = "pacman -Rdd " + package + " --noconfirm"
     if check_package_installed(package):
-        print(command)
+        log_subsection(f"Removing {package}...")
         try:
             subprocess.call(
                 command.split(" "),
@@ -898,115 +1047,13 @@ def remove_package_dd(self, package):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(package + " is now removed")
+            log_success(f"{package} is now removed")
             GLib.idle_add(show_in_app_notification, self, package + " is now removed")
         except Exception as error:
-            print(error)
+            log_error(f"Error removing {package}: {error}")
     else:
-        print(package + " is already removed")
+        log_warn(f"{package} is already removed")
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
-
-
-def install_reborn(self):
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/reborn/packages/keyring/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("RebornOS keyring is now installed")
-    except Exception as error:
-        print(error)
-
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/reborn/packages/mirrorlist/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("RebornOS mirrorlist is now installed")
-    except Exception as error:
-        print(error)
-
-
-def install_chaotics(self):
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/garuda/packages/keyring/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("Chaotics keyring is now installed")
-    except Exception as error:
-        print(error)
-
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/garuda/packages/mirrorlist/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("Chaotics mirrorlist is now installed")
-    except Exception as error:
-        print(error)
-
-
-def install_endeavouros(self):
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/eos/packages/keyring/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("EndeavourOS keyring is now installed")
-    except Exception as error:
-        print(error)
-
-    base_dir = path.dirname(path.realpath(__file__))
-    pathway = base_dir + "/data/eos/packages/mirrorlist/"
-    file = listdir(pathway)
-    try:
-        install = "pacman -U " + pathway + str(file).strip("[]'") + " --noconfirm"
-        print(install)
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("EndeavourOS mirrorlist is now installed")
-    except Exception as error:
-        print(error)
 
 
 def install_arcolinux(self):
@@ -1140,6 +1187,7 @@ def remove_debug_from_makepkg_conf():
         print(f"[DEBUG] Total lines read: {len(lines)}")
 
         modified = False
+        already_fixed = False
         for i, line in enumerate(lines):
             if line.startswith("OPTIONS="):
                 print(f"[DEBUG] Found OPTIONS line at line {i+1}")
@@ -1151,6 +1199,9 @@ def remove_debug_from_makepkg_conf():
                     modified = True
                     print(f"[DEBUG] Modified line: {lines[i].strip()}")
                     print(f"[INFO] Successfully replaced debug with !debug")
+                elif " !debug " in line or line.endswith("!debug)\n"):
+                    print(f"[DEBUG] debug is already disabled (!debug)")
+                    already_fixed = True
                 else:
                     print(f"[DEBUG] debug not found in OPTIONS line")
                 break
@@ -1161,6 +1212,9 @@ def remove_debug_from_makepkg_conf():
                 f.writelines(lines)
             print(f"[INFO] Successfully removed debug from /etc/makepkg.conf")
             return True
+        elif already_fixed:
+            print(f"[INFO] Debug is already disabled (!debug) in {makepkg_conf}")
+            return 2
         else:
             print(f"[WARNING] debug not found in OPTIONS line, no changes made")
             return False
@@ -1178,11 +1232,11 @@ def launch_pacman_install_in_terminal(packages):
     import shutil
 
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        log_info("alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            log_error(f"Failed to install alacritty: {install_proc.stderr}")
             return None
 
     temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
@@ -1227,7 +1281,6 @@ echo '=== Operation Finished ==='
 echo 'You can close this window'
 read -p 'Press Enter to close...'
 """
-    print(f"[INFO] Launching pacman install with output to: {temp_path}")
     process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.temp_file = temp_path
     return process
@@ -1238,11 +1291,11 @@ def launch_pacman_remove_in_terminal(packages):
     import shutil
 
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        log_info("alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            log_error(f"Failed to install alacritty: {install_proc.stderr}")
             return None
 
     temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
@@ -1287,7 +1340,6 @@ echo '=== Operation Finished ==='
 echo 'You can close this window'
 read -p 'Press Enter to close...'
 """
-    print(f"[INFO] Launching pacman remove with output to: {temp_path}")
     process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.temp_file = temp_path
     return process
@@ -1949,12 +2001,13 @@ def get_shell_config():
 
 
 def hblock_get_state(self):
-    lines = int(
-        subprocess.check_output("wc -l /etc/hosts", shell=True).strip().split()[0]
-    )
-    if path.exists("/usr/bin/hblock") and lines > 100:
-        return True
-
+    try:
+        with open("/etc/hosts", "r", encoding="utf-8") as f:
+            lines = sum(1 for _ in f)
+        if path.exists("/usr/bin/hblock") and lines > 100:
+            return True
+    except Exception:
+        pass
     self.firstrun = False
     return False
 
@@ -2218,39 +2271,36 @@ def check_pacman_lockfile():
 def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
     def _wait():
         try:
-            print(f"\n[INFO] wait_install_and_update() started for package: {package_name}")
-            print(f"[INFO] Binary path: {binary_path}")
-            print(f"[INFO] Waiting for process to complete...")
+            debug_print(f"Binary path: {binary_path}")
+            debug_print("Waiting for process to complete...")
+
             process.communicate()
             time.sleep(1)
 
             error_output = ""
             if hasattr(process, 'temp_file') and process.temp_file:
                 try:
-                    print(f"[INFO] Reading temp file: {process.temp_file}")
+                    debug_print(f"Reading temp file: {process.temp_file}")
                     with open(process.temp_file, 'r') as f:
                         error_output = f.read()
-                    print(f"[INFO] Temp file contents: {len(error_output)} bytes")
+                    debug_print(f"Temp file contents: {len(error_output)} bytes")
                     import os as os_module
                     os_module.unlink(process.temp_file)
                 except Exception as e:
-                    print(f"[INFO] Error reading temp file: {e}")
+                    log_warn(f"Error reading temp file: {e}")
 
             if path.exists(binary_path):
-                print(f"[INFO] Binary exists at {binary_path}, installation successful")
+                log_success(f"{package_name or 'Package'} installed successfully")
                 if label_widget:
                     GLib.idle_add(label_widget.set_markup, installed_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
             else:
-                print(f"[INFO] Binary NOT found at {binary_path}, checking for errors...")
-                print(f"[INFO] Total error output length: {len(error_output)} bytes")
+                log_warn(f"Binary NOT found at {binary_path}, checking for errors...")
                 if package_name:
-                    print(f"[INFO] Calling check_missing_repo_error with package: {package_name}")
+                    debug_print(f"Calling check_missing_repo_error with package: {package_name}")
                     check_missing_repo_error(self_ref, error_output, package_name)
-                else:
-                    print(f"[INFO] No package_name provided, skipping error check")
         except Exception as e:
-            print(f"[ERROR] Exception in wait_install_and_update: {e}")
+            log_error(f"Exception in wait_install_and_update: {e}")
             import traceback
             traceback.print_exc()
     threading.Thread(target=_wait, daemon=True).start()
@@ -2259,40 +2309,35 @@ def wait_install_and_update(process, binary_path, label_widget, installed_markup
 def wait_remove_and_update(process, binary_path, label_widget, plain_markup, self_ref, notification):
     def _wait():
         try:
-            print(f"\n[INFO] wait_remove_and_update() started")
-            print(f"[INFO] Binary path to check: {binary_path}")
-            print(f"[INFO] Waiting for removal process to complete...")
+            debug_print(f"Binary path to check: {binary_path}")
+            debug_print("Waiting for removal process to complete...")
+
             stdout_data, stderr_data = process.communicate()
-            print(f"[INFO] Process completed")
-            print(f"[INFO] Captured output: stdout={len(stdout_data) if stdout_data else 0} bytes, stderr={len(stderr_data) if stderr_data else 0} bytes")
+            debug_print("Process completed")
             time.sleep(1)
 
             error_output = ""
             if hasattr(process, 'temp_file') and process.temp_file:
                 try:
-                    print(f"[INFO] Reading output from temp file: {process.temp_file}")
+                    debug_print(f"Reading output from temp file: {process.temp_file}")
                     with open(process.temp_file, 'r') as f:
                         error_output = f.read()
-                    print(f"[INFO] Temp file size: {len(error_output)} bytes")
-                    print(f"[INFO] Parsing output for errors...")
+                    debug_print(f"Temp file size: {len(error_output)} bytes")
                     import os as os_module
                     os_module.unlink(process.temp_file)
-                    print(f"[INFO] Cleaned up temp file")
+                    debug_print("Cleaned up temp file")
                 except Exception as e:
-                    print(f"[INFO] Could not read temp file: {e}")
+                    debug_print(f"Could not read temp file: {e}")
 
-            print(f"[INFO] Checking if binary still exists at: {binary_path}")
+            debug_print(f"Checking if binary still exists at: {binary_path}")
             if not path.exists(binary_path):
-                print(f"[INFO] ✓ Binary successfully removed from {binary_path}")
-                print(f"[INFO] Updating UI and showing notification")
+                log_success("Package removed successfully")
                 GLib.idle_add(label_widget.set_markup, plain_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
-                print(f"[INFO] {notification}")
             else:
-                print(f"[INFO] ✗ Binary still exists at {binary_path}")
-                print(f"[INFO] Removal may have failed or encountered issues")
+                log_warn("Removal may have failed or encountered issues")
         except Exception as e:
-            print(f"[ERROR] Exception in wait_remove_and_update: {e}")
+            log_error(f"Exception in wait_remove_and_update: {e}")
             import traceback
             traceback.print_exc()
     threading.Thread(target=_wait, daemon=True).start()
@@ -2308,8 +2353,63 @@ def wait_and_notify(process, self_ref, notification):
                     os_module.unlink(process.temp_file)
                 except Exception:
                     pass
-            print(f"[INFO] {notification}")
+            debug_print(notification)
             GLib.idle_add(show_in_app_notification, self_ref, notification)
         except Exception as e:
-            print(f"[ERROR] Exception in wait_and_notify: {e}")
+            log_error(f"Exception in wait_and_notify: {e}")
     threading.Thread(target=_wait, daemon=True).start()
+
+def update_image(self, widget, image, theme_type, att_base, image_width, image_height):
+    from gi.repository import Gdk, GdkPixbuf
+
+    sample_path = ""
+    preview_path = ""
+    random_option = False
+    if theme_type == "zsh":
+        sample_path = att_base + "/images/zsh-sample.jpg"
+        preview_path = (
+            att_base + "/images/zsh_previews/" + get_combo_text(widget) + ".jpg"
+        )
+        if get_combo_text(widget) == "random":
+            random_option = True
+    elif theme_type == "qtile":
+        sample_path = att_base + "/images/qtile-sample.jpg"
+        preview_path = (
+            att_base + "/themer_data/qtile/" + get_combo_text(widget) + ".jpg"
+        )
+    elif theme_type == "leftwm":
+        sample_path = att_base + "/images/leftwm-sample.jpg"
+        preview_path = (
+            att_base + "/themer_data/leftwm/" + get_combo_text(widget) + ".jpg"
+        )
+    elif theme_type == "i3":
+        sample_path = att_base + "/images/i3-sample.jpg"
+        preview_path = (
+            att_base + "/themer_data/i3/" + get_combo_text(widget) + ".jpg"
+        )
+    elif theme_type == "awesome":
+        tree_iter = self.awesome_combo.get_active_iter()
+        if tree_iter is not None:
+            model = self.awesome_combo.get_model()
+            row_id, name = model[tree_iter][:2]
+
+        sample_path = att_base + "/images/awesome-sample.jpg"
+        preview_path = att_base + "/themer_data/awesomewm/" + name + ".jpg"
+    else:
+        print(
+            "Function update_image passed an incorrect value for theme_type. Value passed was: "
+            + theme_type
+        )
+        print(
+            "Remember that the order for using this function is: self, widget, image, theme_type, att_base_path, image_width, image_height."
+        )
+    if path.isfile(preview_path) and not random_option:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            preview_path, image_width, image_height
+        )
+    else:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            sample_path, image_width, image_height
+        )
+    texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+    image.set_paintable(texture)

@@ -65,10 +65,8 @@ wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc
 ########### Arch Linux
 echo "getting archlinux keyring"
 rm $workdir/usr/share/archlinux-tweak-tool/data/arch/packages/keyring/*
-#rm $workdir/usr/share/archlinux-tweak-tool/data/arch/packages/mirrorlist/*
 #get latest archlinux-keyring
-wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/arch/packages/keyring/
-#wget https://archlinux.org/packages/core/any/archlinux-mirrorlist/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/arch/packages/mirrorlist/
+wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/
 
 # Below command will backup everything inside the project folder
 git add --all .

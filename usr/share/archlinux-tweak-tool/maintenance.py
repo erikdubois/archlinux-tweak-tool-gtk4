@@ -328,17 +328,6 @@ def check_cursor_global(lists, value):
             print(error)
 
 
-def check_parallel_downloads(lists, value):
-    """find number of parellel downloads"""
-    if fn.path.isfile(fn.pacman):
-        try:
-            pos = fn.get_position(lists, value)
-            val = lists[pos].strip()
-            return val
-        except Exception as error:
-            print(error)
-
-
 def set_global_cursor(self, cursor):
     """Set cursor in common user and desktop-specific configuration files."""
     if not cursor:
@@ -452,56 +441,6 @@ def pop_gtk_cursor_names(combo):
             combo.set_selected(i)
 
 
-def set_parallel_downloads(self, widget):
-    """set number of parallel downloads in pacman.conf"""
-    if fn.path.isfile(fn.pacman):
-        try:
-            with open(fn.pacman, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                f.close()
-            par_downloads = fn.get_combo_text(self.parallel_downloads)
-            pos_par_down = fn.get_position(lines, "ParallelDownloads")
-            lines[pos_par_down] = "ParallelDownloads = " + par_downloads + "\n"
-
-            with open(fn.pacman, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-                f.close()
-            print("Saved to /etc/pacman.conf")
-            print(lines[pos_par_down])
-            fn.show_in_app_notification(self, "Settings Saved Successfully")
-
-            # GLib.idle_add(fn.messagebox,self, "Success!!", "Settings applied successfully")
-        except Exception as error:
-            print(error)
-            fn.messagebox(
-                self,
-                "Failed!!",
-                'There seems to have been a problem in "set_parallel_downloads"',
-            )
-
-
-def pop_parallel_downloads(self):
-    """populate parallel downloads for pacman"""
-    if fn.path.isfile(fn.pacman):
-        try:
-            with open(fn.pacman, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                f.close()
-        except Exception as error:
-            print(error)
-            fn.messagebox(
-                self,
-                "Failed!!",
-                'There seems to have been a problem in "pop_parallel_downloads"',
-            )
-    try:
-        parallel_downloads = check_parallel_downloads(lines, "ParallelDownloads").split(
-            "="
-        )[1]
-        active_number = int(parallel_downloads) - 1
-        return active_number
-    except IndexError:
-        active_number = ""
 
 
 # ====================================================================
@@ -514,21 +453,38 @@ def pop_parallel_downloads(self):
 
 # System Maintenance
 def on_click_apply_global_cursor(self, widget):
-    print("[INFO] Starting global cursor application")
+    cursor = fn.get_combo_text(self.cursor_themes)
+    if not cursor:
+        fn.show_in_app_notification(self, "Please select a cursor theme first")
+        return
+
+    message = (
+        "This will apply the cursor theme globally to:\n\n"
+        "• System xcursor configuration\n"
+        "• User xcursor configuration\n"
+        "• GTK2, GTK3, and GTK4 settings\n"
+        "• XFCE settings (if installed)\n"
+        "• GNOME settings (gsettings)\n"
+        "• KDE Plasma settings (if installed)\n"
+        "• SDDM login screen (if installed)\n\n"
+        "This affects all applications and the SDDMlogin screen."
+    )
+
+    if not fn.confirm_dialog(self, "Apply Global Cursor Theme", message):
+        return
+
+    fn.log_subsection("Applying global cursor theme...")
     try:
-        cursor = fn.get_combo_text(self.cursor_themes)
-        print(f"[INFO] Selected cursor theme: {cursor}")
-        print("[INFO] Applying global cursor theme...")
+        fn.debug_print(f"Selected cursor theme: {cursor}")
         set_global_cursor(self, cursor)
-        print(f"[INFO] Cursor '{cursor}' is saved in /usr/share/icons/default")
-        print("[INFO] Global cursor theme applied successfully")
+        fn.log_success(f"Cursor '{cursor}' saved globally")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Cursor is saved globally",
         )
     except Exception as error:
-        print(f"[ERROR] Failed to apply global cursor: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -537,11 +493,9 @@ def on_click_apply_global_cursor(self, widget):
 
 
 def on_click_update_system(self, widget):
+    fn.log_subsection("Starting system update...")
     try:
-        print("[INFO] Starting system update")
-        print("[INFO] Installing alacritty terminal...")
         fn.install_package(self, "alacritty")
-        print("[INFO] Launching system update...")
         GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
         fn.subprocess.call(
             "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
@@ -549,14 +503,14 @@ def on_click_update_system(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("[INFO] System update completed")
+        fn.log_success("System update completed")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "System update completed",
         )
     except Exception as error:
-        print(f"[ERROR] Update system failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -565,11 +519,9 @@ def on_click_update_system(self, widget):
 
 
 def on_click_clean_cache(self, widget):
+    fn.log_subsection("Launching pacman cache cleanup...")
     try:
-        print("[INFO] Starting pacman cache cleanup")
-        print("[INFO] Installing alacritty terminal...")
         fn.install_package(self, "alacritty")
-        print("[INFO] Launching pacman cache cleanup...")
         GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
         fn.subprocess.call(
             "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
@@ -577,14 +529,14 @@ def on_click_clean_cache(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("[INFO] Pacman cache cleanup completed")
+        fn.log_success("Pacman cache cleaned")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Pacman cache cleaned",
         )
     except Exception as error:
-        print(f"[ERROR] Clean cache failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -593,12 +545,10 @@ def on_click_clean_cache(self, widget):
 
 
 def on_click_remove_pacman_lock(self, widget):
+    fn.log_subsection("Removing pacman lock...")
     try:
-        print("[INFO] Starting pacman lock removal")
-        print("[INFO] Installing alacritty terminal...")
         fn.install_package(self, "alacritty")
-        print("[INFO] Checking pacman lock file: /var/lib/pacman/db.lck")
-        print("[INFO] Launching pacman lock removal...")
+        fn.debug_print("Checking pacman lock file: /var/lib/pacman/db.lck")
         GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
         fn.subprocess.call(
             "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
@@ -606,14 +556,14 @@ def on_click_remove_pacman_lock(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("[INFO] Pacman lock removal completed")
+        fn.log_success("Pacman lock removed")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Pacman lock removed",
         )
     except Exception as error:
-        print(f"[ERROR] Remove pacman lock failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
@@ -623,44 +573,40 @@ def on_click_remove_pacman_lock(self, widget):
 
 # Pacman Keyring Management
 def on_click_install_arch_keyring(self, widget):
-    print("[INFO] Starting local archlinux-keyring installation")
+    fn.log_subsection("Installing local archlinux-keyring...")
     GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
     try:
         import os
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        pathway = base_dir + "/data/arch/packages/keyring/"
-        print(f"[INFO] Package pathway: {pathway}")
-        print("[INFO] Searching for archlinux-keyring package...")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        pathway = base_dir + "/data/kiro/packages/keyring/"
+        fn.debug_print(f"Package pathway: {pathway}")
         files = fn.listdir(pathway)
         if not files:
             raise Exception("No package files found in pathway")
         package_file = pathway + str(files).strip("[]'")
-        print(f"[INFO] Found package: {package_file}")
-        print(f"[INFO] Package size check...")
+        fn.debug_print(f"Found package: {package_file}")
         if fn.os.path.exists(package_file):
             size = fn.os.path.getsize(package_file)
-            print(f"[INFO] Package file size: {size} bytes")
+            fn.debug_print(f"Package file size: {size} bytes")
         else:
             raise Exception(f"Package file not found: {package_file}")
-        print("[INFO] Starting package installation...")
         GLib.idle_add(fn.show_in_app_notification, self, "Installing archlinux-keyring...")
         fn.install_local_package(self, package_file)
     except Exception as error:
-        print(f"[ERROR] Local installation failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
 
 
 def on_click_install_arch_keyring_online(self, widget):
-    print("[INFO] Starting online archlinux-keyring installation")
+    fn.log_subsection("Installing archlinux-keyring online...")
     pathway = "/tmp/att-installation/"
-    print(f"[INFO] Creating temporary directory: {pathway}")
+    fn.debug_print(f"Creating temporary directory: {pathway}")
     fn.mkdir(pathway)
     command = (
         "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
         + pathway
     )
     try:
-        print("[INFO] Downloading archlinux-keyring package...")
         GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
         fn.subprocess.call(
             command,
@@ -668,31 +614,29 @@ def on_click_install_arch_keyring_online(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("[INFO] Download completed successfully")
+        fn.debug_print("Download completed successfully")
         GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
-        print("[INFO] Locating downloaded package file...")
         files = fn.listdir(pathway)
         if not files:
             raise Exception("No files found after download")
         package_file = pathway + str(files).strip("[]'")
-        print(f"[INFO] Found package: {package_file}")
+        fn.debug_print(f"Found package: {package_file}")
         if not fn.os.path.exists(package_file):
             raise Exception(f"Package file not found: {package_file}")
-        print("[INFO] Starting package installation...")
         fn.install_local_package(self, package_file)
     except Exception as error:
-        print(f"[ERROR] Installation failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
     finally:
-        print("[INFO] Cleaning up temporary files...")
         try:
             fn.shutil.rmtree(pathway)
-            print("[INFO] Cleanup completed")
+            fn.debug_print("Temporary files cleaned up")
         except Exception as error:
-            print(f"[WARNING] Cleanup failed: {error}")
+            fn.log_warn(f"Cleanup failed: {error}")
 
 
 def on_click_fix_pacman_keys(self, widget):
+    fn.log_subsection("Fixing pacman keys...")
     fn.install_package(self, "alacritty")
     try:
         fn.subprocess.call(
@@ -701,21 +645,18 @@ def on_click_fix_pacman_keys(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Pacman has been reset (gpg, libraries,keys)")
+        fn.log_success("Pacman reset (gpg, libraries, keys)")
         GLib.idle_add(fn.show_in_app_notification, self, "Pacman keys fixed")
     except Exception as error:
-        print(error)
+        fn.log_error(f"Error: {error}")
 
 
 # Mirror & System Management
 def on_click_probe(self, widget):
-    print("[INFO] Starting hardware probe")
-    print("[INFO] Installing hw-probe package...")
+    fn.log_subsection("Running hardware probe...")
     fn.install_package(self, "hw-probe")
-    print("[INFO] Installing alacritty terminal...")
     fn.install_package(self, "alacritty")
     try:
-        print("[INFO] Launching hardware probe...")
         GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
         fn.subprocess.call(
             "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
@@ -723,18 +664,19 @@ def on_click_probe(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("[INFO] Probe link has been created")
+        fn.log_success("Probe link created")
         GLib.idle_add(
             fn.show_in_app_notification, self, "Probe link has been created"
         )
     except Exception as error:
-        print(f"[ERROR] Hardware probe failed: {error}")
+        fn.log_error(f"Error: {error}")
         GLib.idle_add(
             fn.show_in_app_notification, self, f"Probe failed: {error}"
         )
 
 
 def on_click_fix_mainstream(self, widget):
+    fn.log_subsection("Setting mainstream servers...")
     fn.install_package(self, "alacritty")
     try:
         command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers; read -p \"Press Enter to close...\"'"
@@ -744,21 +686,22 @@ def on_click_fix_mainstream(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Mainstream servers have been set")
+        fn.log_success("Mainstream servers set")
         GLib.idle_add(
             fn.show_in_app_notification, self, "Mainstream servers have been saved"
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Error: {error}")
 
 
 def on_click_reset_mirrorlist(self, widget):
+    fn.log_subsection("Resetting mirrorlist...")
     try:
         if fn.path.isfile(fn.mirrorlist + ".bak"):
             fn.shutil.copy(fn.mirrorlist + ".bak", fn.mirrorlist)
     except Exception as error:
-        print(error)
-    print("Your original mirrorlist is back")
+        fn.log_warn(f"Restore from backup failed: {error}")
+    fn.log_success("Original mirrorlist restored")
     GLib.idle_add(
         fn.show_in_app_notification, self, "Your original mirrorlist is back"
     )
@@ -771,10 +714,11 @@ def on_click_reset_mirrorlist(self, widget):
             stderr=fn.subprocess.STDOUT,
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Error: {error}")
 
 
 def on_click_get_arch_mirrors(self, widget):
+    fn.log_subsection("Setting fastest Arch Linux mirrors with reflector...")
     fn.install_package(self, "alacritty")
     try:
         fn.install_package(self, "reflector")
@@ -784,17 +728,18 @@ def on_click_get_arch_mirrors(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Fastest Arch Linux servers have been set using reflector")
+        fn.log_success("Fastest Arch Linux servers set with reflector")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Fastest Arch Linux servers saved - reflector",
         )
-    except:
-        print("Install alacritty")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
 
 
 def on_click_get_arch_mirrors2(self, widget):
+    fn.log_subsection("Setting fastest Arch Linux mirrors with rate-mirrors...")
     fn.install_package(self, "alacritty")
     try:
         fn.subprocess.call(
@@ -803,18 +748,19 @@ def on_click_get_arch_mirrors2(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Fastest Arch Linux servers have been set using rate-mirrors")
+        fn.log_success("Fastest Arch Linux servers set with rate-mirrors")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Fastest Arch Linux servers saved - rate-mirrors",
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Error: {error}")
 
 
 # Pacman Configuration
 def on_click_fix_sddm_conf(self, widget):
+    fn.log_subsection("Fixing SDDM configuration...")
     fn.install_package(self, "alacritty")
     try:
         command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-fix-sddm-config"
@@ -824,20 +770,18 @@ def on_click_fix_sddm_conf(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("We use the default setup from plasma")
-        print("Two files:")
-        print(" - /etc/sddm.conf")
-        print(" - /etc/sddm.d.conf/kde_settings.conf")
+        fn.log_success("SDDM configuration saved (default setup from plasma)")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "Saved the original SDDM configuration",
         )
-    except:
-        print("Install alacritty")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
 
 
 def on_click_fix_pacman_conf(self, widget):
+    fn.log_subsection("Fixing pacman.conf...")
     try:
         command = "alacritty --hold -e /usr/local/bin/arcolinux-fix-pacman-conf"
         fn.subprocess.call(
@@ -846,33 +790,36 @@ def on_click_fix_pacman_conf(self, widget):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Saved the original /etc/pacman.conf")
+        fn.log_success("Original /etc/pacman.conf saved")
         GLib.idle_add(
             fn.show_in_app_notification, self, "Saved the original /etc/pacman.conf"
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Error: {error}")
 
 
 def on_click_fix_pacman_gpg_conf(self, widget):
-    print("[INFO] Starting gpg.conf backup and reset")
+    fn.log_subsection("Resetting gpg.conf...")
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    gpg_conf_path = base_dir + "/data/kiro/gpg.conf"
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
-        print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf}.bak")
+        fn.debug_print(f"Creating backup to {fn.gpg_conf}.bak")
         fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
-    print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_original}")
-    print("[INFO] Content of original gpg.conf:")
-    print("=" * 70)
+    fn.debug_print(f"Restoring from {gpg_conf_path}")
     try:
-        with open(fn.gpg_conf_original, 'r') as f:
+        with open(gpg_conf_path, 'r') as f:
             content = f.read()
-            print(content)
     except Exception as e:
-        print(f"[ERROR] Could not read gpg.conf: {e}")
-    print("=" * 70)
-    fn.shutil.copy(fn.gpg_conf_original, fn.gpg_conf)
-    print("[INFO] The new /etc/pacman.d/gnupg/gpg.conf has been saved")
-    print("[INFO] Backup is in /etc/pacman.d/gnupg/gpg.conf.bak")
-    print("[INFO] We only add servers to the config")
+        fn.log_error(f"Error reading gpg.conf: {e}")
+        return
+    fn.log_info("=" * 70)
+    fn.log_info("Content of restored gpg.conf:")
+    fn.log_info("=" * 70)
+    fn.log_info(content)
+    fn.log_info("=" * 70)
+    fn.shutil.copy(gpg_conf_path, fn.gpg_conf)
+    fn.log_success("/etc/pacman.d/gnupg/gpg.conf saved")
     GLib.idle_add(
         fn.show_in_app_notification,
         self,
@@ -881,40 +828,41 @@ def on_click_fix_pacman_gpg_conf(self, widget):
 
 
 def on_click_fix_pacman_gpg_conf_local(self, widget):
-    print("[INFO] Starting local gpg.conf backup and reset")
+    fn.log_subsection("Resetting local gpg.conf...")
     if not fn.path.isdir(fn.home + "/.gnupg"):
         try:
-            print(f"[INFO] Creating directory: {fn.home}/.gnupg")
+            fn.debug_print(f"Creating directory: {fn.home}/.gnupg")
             fn.makedirs(fn.home + "/.gnupg", 0o766)
             fn.permissions(fn.home + "/.gnupg")
-            print("[INFO] Directory created and permissions set")
         except Exception as error:
-            print(f"[ERROR] Failed to create directory: {error}")
+            fn.log_error(f"Error creating directory: {error}")
 
     if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
         try:
-            print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf_local}.bak")
+            fn.debug_print(f"Creating backup to {fn.gpg_conf_local}.bak")
             fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
             fn.permissions(fn.gpg_conf_local + ".bak")
-            print("[INFO] Backup created successfully")
         except Exception as error:
-            print(f"[ERROR] Failed to create backup: {error}")
+            fn.log_error(f"Error creating backup: {error}")
 
-    print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_local_original}")
-    print("[INFO] Content of original local gpg.conf:")
-    print("=" * 70)
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    gpg_conf_local_path = base_dir + "/data/kiro/gpg.conf"
+    fn.debug_print(f"Restoring from {gpg_conf_local_path}")
     try:
-        with open(fn.gpg_conf_local_original, 'r') as f:
+        with open(gpg_conf_local_path, 'r') as f:
             content = f.read()
-            print(content)
     except Exception as e:
-        print(f"[ERROR] Could not read local gpg.conf: {e}")
-    print("=" * 70)
-    fn.shutil.copy(fn.gpg_conf_local_original, fn.gpg_conf_local)
+        fn.log_error(f"Error reading local gpg.conf: {e}")
+        return
+    fn.log_info("=" * 70)
+    fn.log_info("Content of restored local gpg.conf:")
+    fn.log_info("=" * 70)
+    fn.log_info(content)
+    fn.log_info("=" * 70)
+    fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)
     fn.permissions(fn.gpg_conf_local)
-    print("[INFO] The new ~/.gnupg/gpg.conf has been saved")
-    print("[INFO] Backup is in ~/.gnupg/gpg.conf.bak")
-    print("[INFO] We only add servers to the config")
+    fn.log_success("~/.gnupg/gpg.conf saved")
     GLib.idle_add(
         fn.show_in_app_notification,
         self,
@@ -933,425 +881,10 @@ def on_click_install_arch_mirrors2(self, widget):
 
 
 def on_update_pacman_databases_clicked(self, Widget):
+    fn.log_subsection("Updating pacman databases...")
     fn.show_in_app_notification(self, "Opening terminal to update pacman databases")
     fn.subprocess.Popen(
         ["alacritty", "-e", "bash", "-c", "sudo pacman -Sy; read -p 'Press Enter to exit...'"],
         stdout=fn.subprocess.PIPE,
         stderr=fn.subprocess.PIPE,
     )
-
-
-# Repository Management
-def on_arcolinux_clicked(self, widget):
-    fn.install_arcolinux(self)
-    print("ArcoLinux repo added + activated")
-    fn.show_in_app_notification(
-        self, "ArcoLinux repo added + activated"
-    )
-    self.on_pacman_arepo_toggle(self.arepo_button, True)
-    self.on_pacman_a3p_toggle(self.a3prepo_button, True)
-    fn.update_repos(self)
-    fn.restart_program()
-
-
-def on_pacman_atestrepo_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[arcolinux_repo_testing]"):
-        append_repo(self, fn.atestrepo)
-        print("Repo has been added to /etc/pacman.conf")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Repo has been added to /etc/pacman.conf",
-        )
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "arco_testing")
-
-
-def on_pacman_arepo_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[arcolinux_repo]"):
-        append_repo(self, fn.arepo)
-        print("Repo has been added to /etc/pacman.conf")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Repo has been added to /etc/pacman.conf",
-        )
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "arco_base")
-            if check_arco_repos_active() is True:
-                self.button_install.set_sensitive(True)
-                self.button_reinstall.set_sensitive(True)
-            else:
-                self.button_install.set_sensitive(False)
-                self.button_reinstall.set_sensitive(False)
-
-
-def on_pacman_a3p_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[arcolinux_repo_3party]"):
-        append_repo(self, fn.a3drepo)
-        print("Repo has been added to /etc/pacman.conf")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Repo has been added to /etc/pacman.conf",
-        )
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "arco_a3p")
-            if check_arco_repos_active() is True:
-                self.button_install.set_sensitive(True)
-                self.button_reinstall.set_sensitive(True)
-            else:
-                self.button_install.set_sensitive(False)
-                self.button_reinstall.set_sensitive(False)
-
-
-def on_pacman_axl_toggle(self, widget, active):
-    if not repo_exist("[arcolinux_repo_xlarge]"):
-        append_repo(self, fn.axlrepo)
-        print("Repo has been added to /etc/pacman.conf")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Repo has been added to /etc/pacman.conf",
-        )
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "arco_axl")
-
-
-def on_reborn_clicked(self, widget):
-    fn.install_reborn(self)
-    print("Reborn keyring and mirrors added")
-    print("Restart Att and select the repos")
-    GLib.idle_add(
-        fn.show_in_app_notification, self, "Reborn keyring and mirrors added"
-    )
-    fn.update_repos(self)
-
-
-def on_reborn_toggle(self, widget, active):
-    if not repo_exist("[Reborn-OS]"):
-        append_repo(self, fn.reborn_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "reborn")
-
-
-def on_garuda_clicked(self, widget):
-    fn.install_chaotics(self)
-    print("Chaotics keyring and mirrors added")
-    print("Restart Att and select the repos")
-    GLib.idle_add(
-        fn.show_in_app_notification, self, "Chaotics keyring and mirrors added"
-    )
-    fn.update_repos(self)
-
-
-def on_garuda_toggle(self, widget, active):
-    if not repo_exist("[garuda]"):
-        append_repo(self, fn.garuda_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "garuda")
-
-
-def on_chaotics_clicked(self, widget):
-    fn.install_chaotics(self)
-    print("Chaotics keyring and mirrors added")
-    print("Restart Att and select the repos")
-    GLib.idle_add(
-        fn.show_in_app_notification, self, "Chaotics keyring and mirrors added"
-    )
-    fn.update_repos(self)
-
-
-def on_chaotics_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[chaotic-aur]"):
-        append_repo(self, fn.chaotics_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "chaotics")
-    fn.GLib.timeout_add(100, self.refresh_aur_buttons)
-
-
-def on_endeavouros_clicked(self, widget):
-    fn.install_endeavouros(self)
-    print("EndeavourOS keyring and mirrors added")
-    print("Restart Att and select the repo")
-    fn.show_in_app_notification(self, "Restart Att and select the repo")
-    fn.update_repos(self)
-
-
-def on_endeavouros_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[endeavouros]"):
-        append_repo(self, fn.endeavouros_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "endeavouros")
-
-
-def on_nemesis_toggle(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    import desktopr_gui
-    if not repo_exist("[nemesis_repo]"):
-        append_repo(self, fn.nemesis_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "nemesis")
-    fn.update_repos(self)
-    desktopr_gui.update_button_state(self, fn)
-    fn.GLib.timeout_add(100, self.refresh_aur_buttons)
-
-
-def on_pacman_toggle1(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[core-testing]"):
-        append_repo(self, fn.arch_testing_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "testing")
-
-
-def on_pacman_toggle2(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[core]"):
-        append_repo(self, fn.arch_core_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "core")
-
-
-def on_pacman_toggle3(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[extra]"):
-        append_repo(self, fn.arch_extra_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "extra")
-
-
-def on_pacman_toggle4(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[extra-testing]"):
-        append_repo(self, fn.arch_community_testing_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "extra-testing")
-
-
-def on_pacman_toggle5(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[extra-testing]"):
-        append_repo(self, fn.arch_extra_testing_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Repo has been added to /etc/pacman.conf",
-        )
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "community")
-
-
-def on_pacman_toggle6(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[multilib-testing]"):
-        append_repo(self, fn.arch_multilib_testing_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "multilib-testing")
-
-
-def on_pacman_toggle7(self, widget, active):
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[multilib]"):
-        append_repo(self, fn.arch_multilib_repo)
-        print("Repo has been added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "multilib")
-
-
-def custom_repo_clicked(self, widget):
-    from pacman_functions import append_repo
-    custom_repo_text = self.textview_custom_repo.get_buffer()
-    startiter, enditer = custom_repo_text.get_bounds()
-    repo_content = custom_repo_text.get_text(startiter, enditer, True)
-
-    if len(repo_content.strip()) < 5:
-        print("[INFO] No custom repo defined")
-        fn.show_in_app_notification(self, "No custom repo defined")
-        return
-
-    print(repo_content)
-    append_repo(self, repo_content)
-    try:
-        fn.update_repos(self)
-    except Exception as error:
-        print(error)
-        print("Is the code correct? - check /etc/pacman.conf")
-
-
-def blank_pacman(source, target):
-    fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
-    if fn.distr == "arch":
-        fn.shutil.copy(fn.blank_pacman_arch, fn.pacman)
-    if fn.distr == "arcolinux":
-        fn.shutil.copy(fn.blank_pacman_arco, fn.pacman)
-    if fn.distr == "endeavouros":
-        fn.shutil.copy(fn.blank_pacman_eos, fn.pacman)
-    if fn.distr == "garuda":
-        fn.shutil.copy(fn.blank_pacman_garuda, fn.pacman)
-    print("We have now a blank pacman /etc/pacman.conf depending on the distro")
-    print("ATT will reboot automatically")
-    print(
-        "Now add the repositories in the order you would like them to appear in the /etc/pacman.conf"
-    )
-    fn.restart_program()
-
-
-def reset_pacman_local(self, widget):
-    if fn.path.isfile(fn.pacman + ".bak"):
-        fn.shutil.copy(fn.pacman + ".bak", fn.pacman)
-        print("We have used /etc/pacman.conf.bak to reset /etc/pacman.conf")
-        fn.show_in_app_notification(
-            self, "Default Settings Applied - check in a terminal"
-        )
-    fn.GLib.timeout_add(500, self.update_repos_switches)
-
-
-def reset_pacman_online(self, widget):
-    if fn.distr == "arch":
-        fn.shutil.copy(fn.pacman_arch, fn.pacman)
-    if fn.distr == "arcolinux":
-        fn.shutil.copy(fn.pacman_arco, fn.pacman)
-    if fn.distr == "endeavouros":
-        fn.shutil.copy(fn.pacman_eos, fn.pacman)
-    if fn.distr == "garuda":
-        fn.shutil.copy(fn.blank_pacman_garuda, fn.pacman)
-    print("The online version of /etc/pacman.conf is saved")
-    fn.show_in_app_notification(
-        self, "Default Settings Applied - check in a terminal"
-    )
-    fn.GLib.timeout_add(500, self.update_repos_switches)
-
-
-def edit_pacman_conf_clicked(self, widget):
-    fn.show_in_app_notification(self, "Opening pacman.conf in terminal")
-    fn.subprocess.Popen(
-        ["alacritty", "-e", "sudo", "nano", fn.pacman],
-        stdout=fn.subprocess.PIPE,
-        stderr=fn.subprocess.PIPE,
-    )
-
-
-def update_repos_switches(self):
-    from pacman_functions import check_repo
-    self.chaotics_switch.set_active(check_repo("[chaotic-aur]"))
-    self.nemesis_switch.set_active(check_repo("[nemesis_repo]"))
-
-
-# Mirror Management
-def on_mirror_seed_repo_toggle(self, widget, active):
-    from pacman_functions import mirror_exist, append_mirror, toggle_mirrorlist
-    if not mirror_exist(
-        "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_seed")
-
-
-def on_mirror_gitlab_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://gitlab.com/arcolinux/$repo/-/raw/main/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_gitlab")
-
-
-def on_mirror_belnet_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_belnet")
-
-
-def on_mirror_funami_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://mirror.funami.tech/arcolinux/$repo/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_funami")
-
-
-def on_mirror_jingk_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://mirror.jingk.ai/arcolinux/$repo/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_jingk")
-
-
-def on_mirror_accum_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://mirror.accum.se/mirror/arcolinux.info/$repo/$arch"
-    ):
-        append_mirror(self, fn.seedhostmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_accum")
-
-
-def on_mirror_aarnet_repo_toggle(self, widget, active):
-    if not mirror_exist(
-        "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch"
-    ):
-        append_mirror(self, fn.aarnetmirror)
-    else:
-        if self.opened is False:
-            toggle_mirrorlist(self, widget.get_active(), "arco_mirror_aarnet")
-
-
-def on_click_apply_parallel_downloads(self, widget):
-    set_parallel_downloads(self, widget)

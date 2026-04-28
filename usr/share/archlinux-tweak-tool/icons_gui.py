@@ -3,7 +3,9 @@
 # ============================================================
 # pylint:disable=C0103,
 
+import functools
 import desktopr_gui
+import icons
 
 
 def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out_pics=None):
@@ -211,22 +213,22 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label23 = Gtk.Label()
     label23.set_text("Choose what to select with a button")
     btn_all_sardi = Gtk.Button(label="All")
-    btn_all_sardi.connect("clicked", self.on_click_att_sardi_icon_theming_all_selection)
+    btn_all_sardi.connect("clicked", functools.partial(icons.on_click_att_sardi_icon_theming_all_selection, self))
     btn_mint_sardi = Gtk.Button(label="Mint")
     btn_mint_sardi.connect(
-        "clicked", self.on_click_att_sardi_icon_theming_mint_selection
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_mint_selection, self)
     )
     btn_mixing_sardi = Gtk.Button(label="Mixing")
     btn_mixing_sardi.connect(
-        "clicked", self.on_click_att_sardi_icon_theming_mixing_selection
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_mixing_selection, self)
     )
     btn_variation_sardi = Gtk.Button(label="Variations")
     btn_variation_sardi.connect(
-        "clicked", self.on_click_att_sardi_icon_theming_variations_selection
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_variations_selection, self)
     )
     btn_none_sardi = Gtk.Button(label="None")
     btn_none_sardi.connect(
-        "clicked", self.on_click_att_sardi_icon_theming_none_selection
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_none_selection, self)
     )
     label23.set_margin_start(10)
     label23.set_margin_end(10)
@@ -253,27 +255,27 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label22.set_text("Choose the family with a button")
     btn_sardi_fam = Gtk.Button(label="Sardi")
     btn_sardi_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_selection, self)
     )
     btn_sardi_flexible_fam = Gtk.Button(label="Sardi Flexible")
     btn_sardi_flexible_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_flexible_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_flexible_selection, self)
     )
     btn_sardi_mono_fam = Gtk.Button(label="Sardi Mono")
     btn_sardi_mono_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_mono_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_mono_selection, self)
     )
     btn_sardi_flat_fam = Gtk.Button(label="Sardi Flat")
     btn_sardi_flat_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_flat_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_flat_selection, self)
     )
     btn_sardi_ghost_fam = Gtk.Button(label="Sardi Ghost")
     btn_sardi_ghost_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_ghost_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_ghost_selection, self)
     )
     btn_sardi_orb_fam = Gtk.Button(label="Sardi Orb")
     btn_sardi_orb_fam.connect(
-        "clicked", self.on_click_att_fam_sardi_icon_theming_sardi_orb_selection
+        "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_orb_selection, self)
     )
     label22.set_margin_start(10)
     label22.set_margin_end(10)
@@ -300,15 +302,15 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_install_sardi = Gtk.Button(label="Install the selected icon themes")
     button_install_sardi.connect(
-        "clicked", self.on_install_att_sardi_icon_themes_clicked
+        "clicked", functools.partial(icons.on_install_att_sardi_icon_themes_clicked, self)
     )
     button_find_sardi_icons = Gtk.Button(label="Show the installed icon themes")
     button_find_sardi_icons.connect(
-        "clicked", self.on_find_att_sardi_icon_themes_clicked
+        "clicked", functools.partial(icons.on_find_att_sardi_icon_themes_clicked, self)
     )
     button_remove_sardi_icons = Gtk.Button(label="Uninstall the selected icon themes")
     button_remove_sardi_icons.connect(
-        "clicked", self.on_remove_att_sardi_icon_themes_clicked
+        "clicked", functools.partial(icons.on_remove_att_sardi_icon_themes_clicked, self)
     )
     button_remove_sardi_icons.set_margin_start(10)
     button_remove_sardi_icons.set_margin_end(10)
@@ -368,7 +370,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label32 = Gtk.Label()
     label32.set_text("Choose what to select with a button")
     btn_all_surfn = Gtk.Button(label="All")
-    btn_all_surfn.connect("clicked", self.on_click_att_surfn_theming_all_selection)
+    btn_all_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_all_selection, self))
     # btn_normal_selection = Gtk.Button(label="Normal")
     # btn_normal_selection.connect(
     #     "clicked", self.on_click_att_surfn_theming_normal_selection
@@ -378,7 +380,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     #     "clicked", self.on_click_att_surfn_theming_minimal_selection
     # )
     btn_none_surfn = Gtk.Button(label="None")
-    btn_none_surfn.connect("clicked", self.on_click_att_surfn_theming_none_selection)
+    btn_none_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_none_selection, self))
     label32.set_margin_start(10)
     label32.set_margin_end(10)
     label32.set_hexpand(True)
@@ -395,15 +397,15 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox39 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_install_surfn_icons = Gtk.Button(label="Install the selected icon themes")
     button_install_surfn_icons.connect(
-        "clicked", self.on_install_att_surfn_icon_themes_clicked
+        "clicked", functools.partial(icons.on_install_att_surfn_icon_themes_clicked, self)
     )
     button_find_surfn_icons = Gtk.Button(label="Show the installed icon themes")
     button_find_surfn_icons.connect(
-        "clicked", self.on_find_att_surfn_icon_themes_clicked
+        "clicked", functools.partial(icons.on_find_att_surfn_icon_themes_clicked, self)
     )
     button_remove_surfn_icons = Gtk.Button(label="Uninstall the selected icon themes")
     button_remove_surfn_icons.connect(
-        "clicked", self.on_remove_att_surfn_icon_themes_clicked
+        "clicked", functools.partial(icons.on_remove_att_surfn_icon_themes_clicked, self)
     )
     button_remove_surfn_icons.set_margin_start(10)
     button_remove_surfn_icons.set_margin_end(10)
@@ -471,9 +473,9 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label42 = Gtk.Label()
     label42.set_text("Choose what to select with a button")
     btn_all_extra = Gtk.Button(label="All")
-    btn_all_extra.connect("clicked", self.on_click_extras_theming_all_selection)
+    btn_all_extra.connect("clicked", functools.partial(icons.on_click_extras_theming_all_selection, self))
     btn_none_extra = Gtk.Button(label="None")
-    btn_none_extra.connect("clicked", self.on_click_extras_theming_none_selection)
+    btn_none_extra.connect("clicked", functools.partial(icons.on_click_extras_theming_none_selection, self))
     label42.set_margin_start(10)
     label42.set_margin_end(10)
     label42.set_hexpand(True)
@@ -487,11 +489,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     hbox49 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_install_icons = Gtk.Button(label="Install the selected packages")
-    button_install_icons.connect("clicked", self.on_install_extras_clicked)
+    button_install_icons.connect("clicked", functools.partial(icons.on_install_extras_clicked, self))
     button_find_icons = Gtk.Button(label="Show  the installed packages")
-    button_find_icons.connect("clicked", self.on_find_extras_clicked)
+    button_find_icons.connect("clicked", functools.partial(icons.on_find_extras_clicked, self))
     button_remove_icons = Gtk.Button(label="Uninstall the selected packages")
-    button_remove_icons.connect("clicked", self.on_remove_extras_clicked)
+    button_remove_icons.connect("clicked", functools.partial(icons.on_remove_extras_clicked, self))
     button_remove_icons.set_margin_start(10)
     button_remove_icons.set_margin_end(10)
     button_remove_icons.set_hexpand(True)

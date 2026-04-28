@@ -111,12 +111,13 @@ def install_themes(self):
         themes_to_install.append("arcolinux-arc-warm-pink-git")
 
     if not themes_to_install:
+        fn.log_warn("No themes selected for installation")
         fn.show_in_app_notification(self, "No themes selected for installation")
         return
 
     packages_str = " ".join(themes_to_install)
-    print(f"\n[INFO] Installing {len(themes_to_install)} Arc themes")
-    print(f"[INFO] Packages: {', '.join(themes_to_install)}")
+    fn.debug_print(f"Installing {len(themes_to_install)} Arc themes")
+    fn.debug_print(f"Packages: {', '.join(themes_to_install)}")
     process = fn.launch_pacman_install_in_terminal(packages_str)
     fn.show_in_app_notification(self, f"Installing {len(themes_to_install)} themes...")
     fn.wait_and_notify(process, self, "Arc themes installation complete")
@@ -228,12 +229,13 @@ def remove_themes(self):
         themes_to_remove.append("arcolinux-arc-warm-pink-git")
 
     if not themes_to_remove:
+        fn.log_warn("No themes selected for removal")
         fn.show_in_app_notification(self, "No themes selected for removal")
         return
 
     packages_str = " ".join(themes_to_remove)
-    print(f"\n[INFO] Removing {len(themes_to_remove)} Arc themes")
-    print(f"[INFO] Packages: {', '.join(themes_to_remove)}")
+    fn.debug_print(f"Removing {len(themes_to_remove)} Arc themes")
+    fn.debug_print(f"Packages: {', '.join(themes_to_remove)}")
     process = fn.launch_pacman_remove_in_terminal(packages_str)
     fn.show_in_app_notification(self, f"Removing {len(themes_to_remove)} themes...")
     fn.wait_and_notify(process, self, "Arc themes removal complete")
@@ -603,3 +605,53 @@ def set_att_checkboxes_theming_none(self):
     self.arcolinux_arc_tory.set_active(False)
     self.arcolinux_arc_vampire.set_active(False)
     self.arcolinux_arc_warm_pink.set_active(False)
+
+# ====================================================================
+# THEMES CALLBACKS
+# ====================================================================
+
+def on_install_att_themes_clicked(self, widget):
+    fn.log_subsection("Install Arc Themes")
+    fn.debug_print("Installing selected Arc themes")
+    install_themes(self)
+
+
+def on_remove_att_themes_clicked(self, widget):
+    fn.log_subsection("Remove Arc Themes")
+    fn.debug_print("Removing selected Arc themes")
+    remove_themes(self)
+
+
+def on_find_att_themes_clicked(self, widget):
+    fn.log_subsection("Scan for Installed Themes")
+    fn.debug_print("Checking which Arc themes are installed")
+    find_themes(self)
+    fn.log_success("Theme scan complete")
+
+
+def on_click_att_theming_all_selection(self, widget):
+    fn.log_subsection("Select All Themes")
+    fn.debug_print("Enabling all Arc themes for installation")
+    set_att_checkboxes_theming_all(self)
+    fn.log_success("All themes selected")
+
+
+def on_click_att_theming_blue_selection(self, widget):
+    fn.log_subsection("Select Blue Themes")
+    fn.debug_print("Enabling blue-themed Arc themes")
+    set_att_checkboxes_theming_blue(self)
+    fn.log_success("Blue themes selected")
+
+
+def on_click_att_theming_dark_selection(self, widget):
+    fn.log_subsection("Select Dark Themes")
+    fn.debug_print("Enabling dark-themed Arc themes")
+    set_att_checkboxes_theming_dark(self)
+    fn.log_success("Dark themes selected")
+
+
+def on_click_att_theming_none_selection(self, widget):
+    fn.log_subsection("Clear Theme Selection")
+    fn.debug_print("Deselecting all Arc themes")
+    set_att_checkboxes_theming_none(self)
+    fn.log_success("All themes deselected")

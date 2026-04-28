@@ -387,3 +387,218 @@ def reset_leftwm_themes(theme):
         check=True,
         stdout=fn.subprocess.PIPE,
     )
+
+# ====================================================================
+# THEMER CALLBACKS
+# ====================================================================
+
+def on_polybar_toggle(self, widget, active):
+    fn.log_subsection("Toggle Polybar")
+    try:
+        if widget.get_active():
+            fn.debug_print("Enabling polybar")
+            toggle_polybar(self, get_list(fn.i3wm_config), True)
+            fn.log_success("Polybar enabled")
+        else:
+            fn.debug_print("Disabling polybar")
+            toggle_polybar(self, get_list(fn.i3wm_config), False)
+            if fn.check_if_process_is_running("polybar"):
+                fn.debug_print("Stopping polybar process")
+                fn.subprocess.run(
+                    ["killall", "-q", "polybar"], check=True, shell=False
+                )
+            fn.log_success("Polybar disabled")
+    except Exception as error:
+        fn.log_error(f"Failed to toggle polybar: {error}")
+        fn.messagebox(self, "Error", f"Failed to toggle polybar: {error}")
+
+
+def awesome_apply_clicked(self, widget):
+    fn.log_subsection("Apply Awesome Theme")
+    try:
+        if not fn.path.isfile(fn.awesome_config + ".bak"):
+            fn.debug_print(f"Creating backup: {fn.awesome_config}.bak")
+            fn.shutil.copy(fn.awesome_config, fn.awesome_config + ".bak")
+
+        tree_iter = self.awesome_combo.get_active_iter()
+        if tree_iter is not None:
+            model = self.awesome_combo.get_model()
+            row_id, name = model[tree_iter][:2]
+        nid = str(row_id + 1)
+        fn.debug_print(f"Applying awesome theme: {nid}")
+        set_awesome_theme(get_list(fn.awesome_config), nid)
+        fn.log_success("Awesome theme applied successfully")
+        fn.show_in_app_notification(self, "Theme set successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to apply awesome theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply theme: {error}")
+
+
+def awesome_reset_clicked(self, widget):
+    fn.log_subsection("Reset Awesome Theme")
+    try:
+        if fn.path.isfile(fn.awesome_config + ".bak"):
+            fn.debug_print(f"Restoring awesome config from backup")
+            fn.shutil.copy(fn.awesome_config + ".bak", fn.awesome_config)
+            fn.log_success("Awesome configuration reset")
+            fn.show_in_app_notification(self, "Config reset successfully")
+
+            awesome_list = get_list(fn.awesome_config)
+            awesome_lines = get_awesome_themes(awesome_list)
+
+            self.store.clear()
+            for x in range(len(awesome_lines)):
+                self.store.append([x, awesome_lines[x]])
+            val = int(
+                get_value(awesome_list, "local chosen_theme =")
+                .replace("themes[", "")
+                .replace("]", "")
+            )
+            self.awesome_combo.set_active(val - 1)
+        else:
+            fn.log_warn("Backup configuration not found")
+    except Exception as error:
+        fn.log_error(f"Failed to reset awesome theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to reset theme: {error}")
+
+
+def i3wm_apply_clicked(self, widget):
+    fn.log_subsection("Apply I3WM Theme")
+    try:
+        if fn.path.isfile(fn.i3wm_config):
+            fn.debug_print(f"Creating backup: {fn.i3wm_config}.bak")
+            fn.shutil.copy(fn.i3wm_config, fn.i3wm_config + ".bak")
+
+        fn.debug_print(f"Applying i3wm theme: {fn.get_combo_text(self.i3_combo)}")
+        set_i3_themes(
+            get_list(fn.i3wm_config), fn.get_combo_text(self.i3_combo)
+        )
+        if not check_polybar(get_list(fn.i3wm_config)):
+            fn.debug_print("Updating polybar configuration")
+            set_i3_themes_bar(
+                get_list(fn.i3wm_config), fn.get_combo_text(self.i3_combo)
+            )
+        fn.log_success("I3WM theme applied successfully")
+        fn.show_in_app_notification(self, "Theme applied successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to apply i3wm theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply theme: {error}")
+
+
+def i3wm_reset_clicked(self, widget):
+    fn.log_subsection("Reset I3WM Theme")
+    try:
+        if fn.path.isfile(fn.i3wm_config + ".bak"):
+            fn.debug_print(f"Restoring i3wm config from backup")
+            fn.shutil.copy(fn.i3wm_config + ".bak", fn.i3wm_config)
+            fn.log_success("I3WM configuration reset")
+            fn.show_in_app_notification(self, "Config reset successfully")
+
+            i3_list = get_list(fn.i3wm_config)
+
+            get_i3_themes(self.i3_combo, i3_list)
+        else:
+            fn.log_warn("Backup configuration not found")
+    except Exception as error:
+        fn.log_error(f"Failed to reset i3wm theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to reset theme: {error}")
+
+
+def qtile_apply_clicked(self, widget):
+    fn.log_subsection("Apply Qtile Theme")
+    try:
+        if fn.path.isfile(fn.qtile_config):
+            fn.debug_print(f"Creating backup: {fn.qtile_config}.bak")
+            fn.shutil.copy(fn.qtile_config, fn.qtile_config + ".bak")
+
+        fn.debug_print(f"Applying qtile theme: {fn.get_combo_text(self.qtile_combo)}")
+        set_qtile_themes(
+            get_list(fn.qtile_config), fn.get_combo_text(self.qtile_combo)
+        )
+        fn.log_success("Qtile theme applied successfully")
+        fn.show_in_app_notification(self, "Theme applied successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to apply qtile theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply theme: {error}")
+
+
+def qtile_reset_clicked(self, widget):
+    fn.log_subsection("Reset Qtile Theme")
+    try:
+        if fn.path.isfile(fn.qtile_config + ".bak"):
+            fn.debug_print(f"Restoring qtile config from backup")
+            fn.shutil.copy(fn.qtile_config + ".bak", fn.qtile_config)
+            fn.log_success("Qtile configuration reset")
+            fn.show_in_app_notification(self, "Config reset successfully")
+
+            qtile_list = get_list(fn.qtile_config)
+
+            get_qtile_themes(self.qtile_combo, qtile_list)
+        else:
+            fn.log_warn("Backup configuration not found")
+    except Exception as error:
+        fn.log_error(f"Failed to reset qtile theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to reset theme: {error}")
+
+
+def leftwm_apply_clicked(self, widget):
+    fn.log_subsection("Apply Leftwm Theme")
+    try:
+        theme_name = fn.get_combo_text(self.leftwm_combo)
+        fn.debug_print(f"Applying leftwm theme: {theme_name}")
+        set_leftwm_themes(theme_name)
+        fn.log_success(f"Leftwm theme {theme_name} applied successfully")
+        fn.show_in_app_notification(
+            self,
+            "Theme " + theme_name + " applied successfully",
+        )
+        self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
+    except Exception as error:
+        fn.log_error(f"Failed to apply leftwm theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply theme: {error}")
+
+
+def leftwm_reset_clicked(self, widget):
+    fn.log_subsection("Reset Leftwm Theme")
+    try:
+        theme_name = fn.get_combo_text(self.leftwm_combo)
+        fn.debug_print(f"Reverting to candy as fallback")
+        reset_leftwm_themes(theme_name)
+        fn.debug_print(f"Resetting theme: {theme_name}")
+        fn.log_success(f"Leftwm theme {theme_name} reset successfully")
+        fn.show_in_app_notification(
+            self, "Theme " + theme_name + " reset successfully"
+        )
+        self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
+    except Exception as error:
+        fn.log_error(f"Failed to reset leftwm theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to reset theme: {error}")
+
+
+def leftwm_remove_clicked(self, widget):
+    fn.log_subsection("Remove Leftwm Theme")
+    try:
+        theme_name = fn.get_combo_text(self.leftwm_combo)
+        fn.debug_print(f"Reverting to candy as fallback")
+        remove_leftwm_themes(theme_name)
+        fn.debug_print(f"Removing theme: {theme_name}")
+        fn.log_success(f"Leftwm theme {theme_name} removed successfully")
+        fn.show_in_app_notification(
+            self,
+            "Theme " + theme_name + " removed successfully",
+        )
+    except Exception as error:
+        fn.log_error(f"Failed to remove leftwm theme: {error}")
+        fn.messagebox(self, "Error", f"Failed to remove theme: {error}")
+
+
+def on_leftwm_combo_changed(self, widget, pspec=None):
+    link_theme = fn.path.basename(readlink(fn.leftwm_config_theme_current))
+    theme = fn.get_combo_text(self.leftwm_combo)
+    if fn.path_check(fn.leftwm_config_theme + theme):
+        self.status_leftwm.set_markup("<b>Theme is installed</b>")
+    else:
+        self.status_leftwm.set_markup("<b>Theme is NOT installed</b>")
+
+    if fn.path_check(fn.leftwm_config_theme + theme) and link_theme == theme:
+        self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")

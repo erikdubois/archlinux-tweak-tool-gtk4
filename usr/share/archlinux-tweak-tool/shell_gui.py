@@ -2,6 +2,9 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+import shell
+
 
 def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
     """create a gui"""
@@ -74,11 +77,11 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
             )
         install_bash_completion = Gtk.Button(label="Install bash-completion")
         install_bash_completion.connect(
-            "clicked", self.on_install_bash_completion_clicked
+            "clicked", functools.partial(shell.on_install_bash_completion_clicked, self)
         )
         remove_bash_completion = Gtk.Button(label="Remove bash-completion")
         remove_bash_completion.connect(
-            "clicked", self.on_remove_bash_completion_clicked
+            "clicked", functools.partial(shell.on_remove_bash_completion_clicked, self)
         )
         hbox7_lbl.set_margin_start(10)
         hbox7_lbl.set_margin_end(10)
@@ -95,9 +98,9 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox8_lbl = Gtk.Label(xalign=0)
         hbox8_lbl.set_markup("Overwrite your ~/.bashrc with the ATT bashrc")
         self.arcolinux_bash = Gtk.Button(label="Install the ATT bashrc configuration")
-        self.arcolinux_bash.connect("clicked", self.on_arcolinux_bash_clicked)
+        self.arcolinux_bash.connect("clicked", functools.partial(shell.on_arcolinux_bash_clicked, self))
         self.bash_reset = Gtk.Button(label="Reset back to the original ~/.bashrc")
-        self.bash_reset.connect("clicked", self.on_bash_reset_clicked)
+        self.bash_reset.connect("clicked", functools.partial(shell.on_bash_reset_clicked, self))
         hbox8_lbl.set_margin_start(10)
         hbox8_lbl.set_margin_end(10)
         hbox8_lbl.set_hexpand(True)
@@ -123,13 +126,13 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
 
         hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         tobash = Gtk.Button(label="Apply bash")
-        tobash.connect("clicked", self.tobash_apply)
+        tobash.connect("clicked", functools.partial(shell.tobash_apply, self))
         tofish = Gtk.Button(label="Apply fish")
-        tofish.connect("clicked", self.tofish_apply)
+        tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
         tozsh = Gtk.Button(label="Apply zsh")
-        tozsh.connect("clicked", self.tozsh_apply)
+        tozsh.connect("clicked", functools.partial(shell.tozsh_apply, self))
         # bashreset = Gtk.Button(label="Reset bash")
-        # bashreset.connect("clicked", self.on_bash_reset_clicked)
+        # bashreset.connect("clicked", functools.partial(shell.on_bash_reset_clicked, self))
 
         hbox10.append(tobash)
         if not fn.distr == "archcraft":
@@ -203,11 +206,11 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
 
         self.install_zsh_completions = Gtk.Button(label="Install zsh-completion")
         self.install_zsh_completions.connect(
-            "clicked", self.on_install_zsh_completions_clicked
+            "clicked", functools.partial(shell.on_install_zsh_completions_clicked, self)
         )
         self.remove_zsh_completions = Gtk.Button(label="Remove zsh-completion")
         self.remove_zsh_completions.connect(
-            "clicked", self.on_remove_zsh_completions_clicked
+            "clicked", functools.partial(shell.on_remove_zsh_completions_clicked, self)
         )
         hbox26_lbl.set_margin_start(10)
         hbox26_lbl.set_margin_end(10)
@@ -228,11 +231,11 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
             hbox27_lbl.set_markup("Zsh-syntax-highlighting is not installed")
         self.install_zsh_syntax_highlighting = Gtk.Button(label="Install Zsh-syntax-highlighting")
         self.install_zsh_syntax_highlighting.connect(
-            "clicked", self.on_install_zsh_syntax_highlighting_clicked
+            "clicked", functools.partial(shell.on_install_zsh_syntax_highlighting_clicked, self)
         )
         self.remove_zsh_syntax_highlighting = Gtk.Button(label="Remove Zsh-syntax-highlighting")
         self.remove_zsh_syntax_highlighting.connect(
-            "clicked", self.on_remove_zsh_syntax_highlighting_clicked
+            "clicked", functools.partial(shell.on_remove_zsh_syntax_highlighting_clicked, self)
         )
         hbox27_lbl.set_margin_start(10)
         hbox27_lbl.set_margin_end(10)
@@ -252,9 +255,9 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         else:
             hbox28_lbl.set_markup("Oh-my-zsh-git is not installed")
         self.install_zsh_omz = Gtk.Button(label="Install Oh-my-zsh")
-        self.install_zsh_omz.connect("clicked", self.install_oh_my_zsh)
+        self.install_zsh_omz.connect("clicked", functools.partial(shell.install_oh_my_zsh, self))
         self.remove_zsh_omz = Gtk.Button(label="Remove Oh-my-zsh")
-        self.remove_zsh_omz.connect("clicked", self.remove_oh_my_zsh)
+        self.remove_zsh_omz.connect("clicked", functools.partial(shell.remove_oh_my_zsh, self))
         hbox28_lbl.set_margin_start(10)
         hbox28_lbl.set_margin_end(10)
         hbox28_lbl.set_hexpand(False)
@@ -270,9 +273,9 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox25_lbl = Gtk.Label()
         hbox25_lbl.set_markup("Overwrite your ~/.zshrc with the ATT zshrc")
         self.arcolinux_zsh = Gtk.Button(label="Install the ATT zshrc configuration")
-        self.arcolinux_zsh.connect("clicked", self.on_arcolinux_zshrc_clicked)
+        self.arcolinux_zsh.connect("clicked", functools.partial(shell.on_arcolinux_zshrc_clicked, self))
         self.zsh_reset = Gtk.Button(label="Reset back to the original ~/.zshrc")
-        self.zsh_reset.connect("clicked", self.on_zshrc_reset_clicked)
+        self.zsh_reset.connect("clicked", functools.partial(shell.on_zshrc_reset_clicked, self))
         hbox25_lbl.set_margin_start(10)
         hbox25_lbl.set_margin_end(10)
         hbox25_lbl.set_hexpand(False)
@@ -300,7 +303,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
 
         hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.termset = Gtk.Button(label="Apply Zsh theme")
-        self.termset.connect("clicked", self.on_zsh_apply_theme)
+        self.termset.connect("clicked", functools.partial(shell.on_zsh_apply_theme, self))
         if not fn.check_package_installed("zsh"):
             self.termset.set_sensitive(False)
         self.termset.set_margin_start(10)
@@ -339,7 +342,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
 
         self.zsh_themes.connect(
             "notify::selected",
-            lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
+            lambda w, _p, img, tt, ab, iw, ih: fn.update_image(self, w, img, tt, ab, iw, ih),
             image,
             "zsh",
             base_dir,
@@ -364,10 +367,10 @@ If you just switched shell, log-out first</b>\n"
         tofish = Gtk.Button(label="Apply fish")
         termreset = Gtk.Button(label="Reset or create ~/.zshrc")
 
-        tozsh.connect("clicked", self.tozsh_apply)
-        tobash.connect("clicked", self.tobash_apply)
-        tofish.connect("clicked", self.tofish_apply)
-        termreset.connect("clicked", self.on_zsh_reset)
+        tozsh.connect("clicked", functools.partial(shell.tozsh_apply, self))
+        tobash.connect("clicked", functools.partial(shell.tobash_apply, self))
+        tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
+        termreset.connect("clicked", functools.partial(shell.on_zsh_reset, self))
 
         hbox24.append(tozsh)
         hbox24.append(tobash)
@@ -415,7 +418,7 @@ If you just switched shell, log-out first</b>\n"
         install_only_zsh = Gtk.Button(
             label="Install only Zsh and restart ATT to configure"
         )
-        install_only_zsh.connect("clicked", self.on_clicked_install_only_zsh)
+        install_only_zsh.connect("clicked", functools.partial(shell.on_clicked_install_only_zsh, self))
 
         vboxstack2.append(hbox32)
         vboxstack2.append(hbox41)
@@ -449,9 +452,9 @@ If you just switched shell, log-out first</b>\n"
         else:
             hbox32_lbl.set_markup("Fish is not installed")
         install_fish = Gtk.Button(label="Install Fish")
-        install_fish.connect("clicked", self.on_install_only_fish_clicked)
+        install_fish.connect("clicked", functools.partial(shell.on_install_only_fish_clicked, self))
         remove_fish = Gtk.Button(label="Remove Fish")
-        remove_fish.connect("clicked", self.on_remove_only_fish_clicked)
+        remove_fish.connect("clicked", functools.partial(shell.on_remove_only_fish_clicked, self))
         hbox32_lbl.set_margin_start(10)
         hbox32_lbl.set_margin_end(10)
         hbox32_lbl.set_hexpand(False)
@@ -474,7 +477,7 @@ If you just switched shell, log-out first</b>\n"
                 "ATT fish incl. oh-my-fish, themes and plugins is not installed"
             )
         self.arcolinux_fish = Gtk.Button(label="Install the ATT Fish package")
-        self.arcolinux_fish.connect("clicked", self.on_arcolinux_fish_package_clicked)
+        self.arcolinux_fish.connect("clicked", functools.partial(shell.on_arcolinux_fish_package_clicked, self))
         hbox33_lbl.set_margin_start(10)
         hbox33_lbl.set_margin_end(10)
         hbox33_lbl.set_hexpand(False)
@@ -487,9 +490,9 @@ If you just switched shell, log-out first</b>\n"
         hbox38_lbl = Gtk.Label()
         hbox38_lbl.set_markup("Overwrite your config.fish with the ATT config")
         self.arcolinux_fish = Gtk.Button(label="Install just the ATT config.fish")
-        self.arcolinux_fish.connect("clicked", self.on_arcolinux_only_fish_clicked)
+        self.arcolinux_fish.connect("clicked", functools.partial(shell.on_arcolinux_only_fish_clicked, self))
         self.fish_reset = Gtk.Button(label="Reset back to the original ~/.config/config.fish")
-        self.fish_reset.connect("clicked", self.on_fish_reset_clicked)
+        self.fish_reset.connect("clicked", functools.partial(shell.on_fish_reset_clicked, self))
         hbox38_lbl.set_margin_start(10)
         hbox38_lbl.set_margin_end(10)
         hbox38_lbl.set_hexpand(True)
@@ -520,15 +523,15 @@ if you installed the ATT Fish configuration\n\n<b>If you just switched shell, lo
 
         hbox35 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         tofish = Gtk.Button(label="Apply fish")
-        tofish.connect("clicked", self.tofish_apply)
+        tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
         tobash = Gtk.Button(label="Apply bash")
-        tobash.connect("clicked", self.tobash_apply)
+        tobash.connect("clicked", functools.partial(shell.tobash_apply, self))
         tozsh = Gtk.Button(label="Apply zsh")
-        tozsh.connect("clicked", self.tozsh_apply)
+        tozsh.connect("clicked", functools.partial(shell.tozsh_apply, self))
         termreset = Gtk.Button(label="Reset fish")
-        termreset.connect("clicked", self.on_fish_reset_clicked)
+        termreset.connect("clicked", functools.partial(shell.on_fish_reset_clicked, self))
         remove_fish_all = Gtk.Button(label="Remove all Fish related packages")
-        remove_fish_all.connect("clicked", self.on_remove_fish_all)
+        remove_fish_all.connect("clicked", functools.partial(shell.on_remove_fish_all, self))
 
         if not fn.distr == "archcraft":
             hbox35.append(tofish)
@@ -570,7 +573,7 @@ Restart Att to see the information</b>"
         )
 
         install_only_fish = Gtk.Button(label="Install Fish - auto reboot")
-        install_only_fish.connect("clicked", self.on_install_only_fish_clicked_reboot)
+        install_only_fish.connect("clicked", functools.partial(shell.on_install_only_fish_clicked_reboot, self))
 
         vboxstack3.append(hbox36)
         vboxstack3.append(hbox37)
@@ -592,7 +595,7 @@ Applications that were NOT installed will be <b>unselected</b> again\n\
 Activate the necessary repos"
     )
     self.select_all = Gtk.CheckButton(label="Select them all")
-    self.select_all.connect("notify::active", self.on_select_all_toggle)
+    self.select_all.connect("notify::active", functools.partial(shell.on_select_all_toggle, self))
     hbox51_lbl.set_margin_top(20)
     hbox51_lbl.set_margin_start(10)
     hbox51_lbl.set_margin_end(10)
@@ -634,7 +637,7 @@ Activate the necessary repos"
 
     extra_shell_applications = Gtk.Button(label="Install these applications")
     extra_shell_applications.connect(
-        "clicked", self.on_extra_shell_applications_clicked
+        "clicked", functools.partial(shell.on_extra_shell_applications_clicked, self)
     )
 
     vboxstack4.append(hbox51)

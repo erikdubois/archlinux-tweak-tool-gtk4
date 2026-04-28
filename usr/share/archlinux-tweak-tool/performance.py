@@ -102,36 +102,46 @@ def refresh_performance_status_label(self):
 
 def install_tuned_tools(widget, self):
     """Install tuned for dynamic power management."""
-    # Remove conflicting files that may exist from previous installations
-    conflicting_files = [
-        "/etc/modprobe.d/tuned.conf",
-    ]
-    for file_path in conflicting_files:
-        if fn.path.exists(file_path):
-            try:
-                fn.unlink(file_path)
-                print(f"Removed conflicting file: {file_path}")
-            except Exception as e:
-                print(f"Could not remove {file_path}: {e}")
+    fn.log_subsection("Install Tuned")
+    try:
+        conflicting_files = [
+            "/etc/modprobe.d/tuned.conf",
+        ]
+        for file_path in conflicting_files:
+            if fn.path.exists(file_path):
+                try:
+                    fn.debug_print(f"Removing conflicting file: {file_path}")
+                    fn.unlink(file_path)
+                except Exception as e:
+                    fn.log_warn(f"Could not remove {file_path}: {e}")
 
-    remove_power_profiles_daemon_if_present(self)
-    fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
-    disable_tlp_if_present(self)
-    GLib.timeout_add(500, refresh_tuned_buttons, self)
-    GLib.timeout_add(500, refresh_tuned_profile_choices, self)
-    GLib.timeout_add(500, refresh_tuned_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed")
+        remove_power_profiles_daemon_if_present(self)
+        fn.debug_print("Installing tuned and tuned-ppd packages")
+        fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
+        disable_tlp_if_present(self)
+        fn.log_success("Tuned installed successfully")
+        GLib.timeout_add(500, refresh_tuned_buttons, self)
+        GLib.timeout_add(500, refresh_tuned_profile_choices, self)
+        GLib.timeout_add(500, refresh_tuned_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed")
+    except Exception as error:
+        fn.log_error(f"Failed to install tuned: {error}")
 
 
 def remove_tuned_tools(widget, self):
     """Remove tuned and tuned-ppd."""
-    print("Disabling tuned services before removal")
-    fn.disable_service("tuned")
-    fn.disable_service("tuned-ppd")
-    fn.remove_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
-    GLib.idle_add(refresh_tuned_buttons, self)
-    GLib.idle_add(refresh_tuned_profile_status, self)
-    GLib.idle_add(refresh_tuned_status_label, self)
+    fn.log_subsection("Remove Tuned")
+    try:
+        fn.debug_print("Disabling tuned services before removal")
+        fn.disable_service("tuned")
+        fn.disable_service("tuned-ppd")
+        fn.remove_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
+        fn.log_success("Tuned removed successfully")
+        GLib.idle_add(refresh_tuned_buttons, self)
+        GLib.idle_add(refresh_tuned_profile_status, self)
+        GLib.idle_add(refresh_tuned_status_label, self)
+    except Exception as error:
+        fn.log_error(f"Failed to remove tuned: {error}")
 
 
 def refresh_tuned_buttons(self):
@@ -181,34 +191,52 @@ def disable_tlp_if_present(self):
 
 
 def enable_tuned_services(widget, self):
-    print("Enabling tuned and tuned-ppd services")
-    disable_tlp_if_present(self)
-    fn.enable_service("tuned")
-    fn.enable_service("tuned-ppd")
-    GLib.timeout_add(500, refresh_tuned_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been enabled and started")
+    fn.log_subsection("Enable Tuned Services")
+    try:
+        disable_tlp_if_present(self)
+        fn.debug_print("Enabling tuned and tuned-ppd services")
+        fn.enable_service("tuned")
+        fn.enable_service("tuned-ppd")
+        fn.log_success("Tuned and Tuned-PPD enabled successfully")
+        GLib.timeout_add(500, refresh_tuned_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been enabled and started")
+    except Exception as error:
+        fn.log_error(f"Failed to enable tuned services: {error}")
 
 
 def disable_tuned_services(widget, self):
-    print("Disabling tuned and tuned-ppd services")
-    fn.disable_service("tuned")
-    fn.disable_service("tuned-ppd")
-    GLib.timeout_add(500, refresh_tuned_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been disabled and stopped")
+    fn.log_subsection("Disable Tuned Services")
+    try:
+        fn.debug_print("Disabling tuned and tuned-ppd services")
+        fn.disable_service("tuned")
+        fn.disable_service("tuned-ppd")
+        fn.log_success("Tuned and Tuned-PPD disabled successfully")
+        GLib.timeout_add(500, refresh_tuned_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been disabled and stopped")
+    except Exception as error:
+        fn.log_error(f"Failed to disable tuned services: {error}")
 
 
 def restart_tuned_service(widget, self):
-    print("Restarting tuned service")
-    fn.restart_service("tuned")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+    fn.log_subsection("Restart Tuned Service")
+    try:
+        fn.restart_service("tuned")
+        fn.log_success("Tuned service restarted")
+        GLib.timeout_add(500, refresh_performance_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+    except Exception as error:
+        fn.log_error(f"Failed to restart tuned: {error}")
 
 
 def restart_tuned_ppd_service(widget, self):
-    print("Restarting tuned-ppd service")
-    fn.restart_service("tuned-ppd")
-    GLib.timeout_add(500, refresh_performance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+    fn.log_subsection("Restart Tuned-PPD Service")
+    try:
+        fn.restart_service("tuned-ppd")
+        fn.log_success("Tuned-PPD service restarted")
+        GLib.timeout_add(500, refresh_performance_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+    except Exception as error:
+        fn.log_error(f"Failed to restart tuned-ppd: {error}")
 
 
 # ============================================================
@@ -349,20 +377,22 @@ def apply_tuned_profile(widget, self):
 
 def set_tuned_profile(self, profile_name):
     """Set and enable a tuned profile."""
-    if not fn.check_package_installed("tuned"):
-        fn.install_package(self, "tuned")
-
-    if fn.shutil.which("tuned-adm") is None:
-        print("tuned-adm is not installed")
-        GLib.idle_add(fn.show_in_app_notification, self, "tuned-adm is not installed")
-        return
-
+    fn.log_subsection("Apply Tuned Profile")
     try:
-        # Ensure tuned service is started before applying profile
-        print("Starting tuned service...")
+        if not fn.check_package_installed("tuned"):
+            fn.debug_print("Installing tuned package")
+            fn.install_package(self, "tuned")
+
+        if fn.shutil.which("tuned-adm") is None:
+            fn.log_error("tuned-adm is not installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "tuned-adm is not installed")
+            return
+
+        fn.debug_print("Starting tuned service")
         fn.enable_service("tuned")
         fn.restart_service("tuned")
 
+        fn.debug_print(f"Applying profile: {profile_name}")
         result = fn.subprocess.run(
             ["tuned-adm", "profile", profile_name],
             check=False,
@@ -371,7 +401,7 @@ def set_tuned_profile(self, profile_name):
             stderr=fn.subprocess.STDOUT,
         )
         if result.returncode != 0:
-            print(result.stdout.decode().strip())
+            fn.log_error(f"Could not set tuned profile to {profile_name}")
             GLib.idle_add(
                 fn.show_in_app_notification, self, f"Could not set tuned profile to {profile_name}"
             )
@@ -379,12 +409,12 @@ def set_tuned_profile(self, profile_name):
 
         refresh_performance_status_label(self)
         refresh_tuned_profile_status(self)
-        print(f"Tuned profile set to {profile_name}")
+        fn.log_success(f"Tuned profile set to {profile_name}")
         GLib.idle_add(
             fn.show_in_app_notification, self, f"Tuned profile set to {profile_name}"
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to set tuned profile: {error}")
         GLib.idle_add(fn.show_in_app_notification, self, "Could not set tuned profile")
 
 
@@ -562,16 +592,18 @@ def disable_tlp_if_present(self):
 
 def enable_zram(widget, self):
     """Enable zram with the selected compressed swap size."""
+    fn.log_subsection("Enable zram")
     try:
         fn.install_package(self, "alacritty")
         size = fn.get_combo_text(self.zram_size)
+        fn.debug_print(f"Enabling zram with size: {size}")
         fn.subprocess.call(
             ["alacritty", "--hold", "-e", zram_enable_script, size],
             shell=False,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Enabling zram: " + size)
+        fn.log_success(f"zram enabled ({size})")
         refresh_zram_status_label(self)
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -579,20 +611,22 @@ def enable_zram(widget, self):
             "zram enabled (" + size + ")",
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to enable zram: {error}")
 
 
 def disable_zram(widget, self):
     """Disable zram."""
+    fn.log_subsection("Disable zram")
     try:
         fn.install_package(self, "alacritty")
+        fn.debug_print("Disabling zram")
         fn.subprocess.call(
             ["alacritty", "--hold", "-e", zram_disable_script],
             shell=False,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Disabling zram")
+        fn.log_success("zram disabled")
         refresh_zram_status_label(self)
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -600,7 +634,7 @@ def disable_zram(widget, self):
             "zram disabled",
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to disable zram: {error}")
 
 
 def get_root_filesystem_type():
@@ -646,16 +680,18 @@ def refresh_swapfile_label(self):
 
 def create_swapfile(widget, self):
     """Create a swapfile with the selected size."""
+    fn.log_subsection("Create Swapfile")
     try:
         fn.install_package(self, "alacritty")
         size = fn.get_combo_text(self.swapfile_size)
+        fn.debug_print(f"Creating swapfile with size: {size}")
         fn.subprocess.call(
             ["alacritty", "--hold", "-e", swapfile_create_script, size],
             shell=False,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Creating swapfile: " + size)
+        fn.log_success(f"Swapfile ({size}) created at /swapfile")
         GLib.idle_add(refresh_swapfile_label, self)
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -663,20 +699,22 @@ def create_swapfile(widget, self):
             "Swapfile (" + size + ") created at /swapfile",
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to create swapfile: {error}")
 
 
 def remove_swapfile(widget, self):
     """Remove the swapfile."""
+    fn.log_subsection("Remove Swapfile")
     try:
         fn.install_package(self, "alacritty")
+        fn.debug_print("Removing swapfile at /swapfile")
         fn.subprocess.call(
             ["alacritty", "--hold", "-e", swapfile_remove_script],
             shell=False,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Removing swapfile")
+        fn.log_success("Swapfile removed")
         GLib.idle_add(refresh_swapfile_label, self)
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -684,11 +722,12 @@ def remove_swapfile(widget, self):
             "Swapfile removed",
         )
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to remove swapfile: {error}")
 
 
 def enable_fstrim_timer(widget, self):
     """Enable the weekly fstrim timer."""
+    fn.log_subsection("Enable fstrim Timer")
     try:
         fn.subprocess.call(
             ["systemctl", "enable", "--now", fstrim_timer],
@@ -696,15 +735,16 @@ def enable_fstrim_timer(widget, self):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Enabling fstrim.timer")
+        fn.log_success("fstrim.timer enabled for weekly TRIM")
         refresh_fstrim_status_label(self)
         GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer enabled")
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to enable fstrim.timer: {error}")
 
 
 def disable_fstrim_timer(widget, self):
     """Disable the weekly fstrim timer."""
+    fn.log_subsection("Disable fstrim Timer")
     try:
         fn.subprocess.call(
             ["systemctl", "disable", "--now", fstrim_timer],
@@ -712,16 +752,18 @@ def disable_fstrim_timer(widget, self):
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
         )
-        print("Disabling fstrim.timer")
+        fn.log_success("fstrim.timer disabled")
         refresh_fstrim_status_label(self)
         GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer disabled")
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to disable fstrim.timer: {error}")
 
 
 def run_fstrim_now(widget, self):
     """Run fstrim once through the systemd service."""
+    fn.log_subsection("Run fstrim Now")
     try:
+        fn.debug_print("Starting fstrim.service for immediate TRIM")
         result = fn.subprocess.run(
             ["systemctl", "start", fstrim_service],
             check=False,
@@ -730,47 +772,65 @@ def run_fstrim_now(widget, self):
             stderr=fn.subprocess.STDOUT,
         )
         if result.returncode == 0:
-            print("Running fstrim.service")
+            fn.log_success("TRIM operation started")
             GLib.idle_add(fn.show_in_app_notification, self, "TRIM run started")
         else:
-            print(result.stdout.decode().strip())
+            fn.log_error(f"Failed to run TRIM: {result.stdout.decode().strip()}")
             GLib.idle_add(fn.show_in_app_notification, self, "Could not run TRIM")
 
         refresh_fstrim_status_label(self)
     except Exception as error:
-        print(error)
+        fn.log_error(f"Failed to run fstrim: {error}")
         GLib.idle_add(fn.show_in_app_notification, self, "Could not run TRIM")
 
 
 def install_irqbalance(widget, self):
     """Install irqbalance."""
-    fn.install_package(self, "irqbalance")
-    GLib.timeout_add(500, refresh_irqbalance_package_label, self)
-    GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
-    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    fn.log_subsection("Install irqbalance")
+    try:
+        fn.install_package(self, "irqbalance")
+        fn.log_success("irqbalance installed")
+        GLib.timeout_add(500, refresh_irqbalance_package_label, self)
+        GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
+        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    except Exception as error:
+        fn.log_error(f"Failed to install irqbalance: {error}")
 
 
 def remove_irqbalance(widget, self):
     """Remove irqbalance."""
-    fn.disable_service("irqbalance")
-    fn.remove_package(self, "irqbalance")
-    GLib.timeout_add(500, refresh_irqbalance_package_label, self)
-    GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
-    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    fn.log_subsection("Remove irqbalance")
+    try:
+        fn.disable_service("irqbalance")
+        fn.remove_package(self, "irqbalance")
+        fn.log_success("irqbalance removed")
+        GLib.timeout_add(500, refresh_irqbalance_package_label, self)
+        GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
+        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+    except Exception as error:
+        fn.log_error(f"Failed to remove irqbalance: {error}")
 
 
 def enable_irqbalance_service(widget, self):
-    print("Enabling irqbalance service")
-    fn.enable_service("irqbalance")
-    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled and started")
+    fn.log_subsection("Enable irqbalance Service")
+    try:
+        fn.enable_service("irqbalance")
+        fn.log_success("irqbalance service enabled")
+        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled and started")
+    except Exception as error:
+        fn.log_error(f"Failed to enable irqbalance: {error}")
 
 
 def disable_irqbalance_service(widget, self):
-    print("Disabling irqbalance service")
-    fn.disable_service("irqbalance")
-    GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled and stopped")
+    fn.log_subsection("Disable irqbalance Service")
+    try:
+        fn.disable_service("irqbalance")
+        fn.log_success("irqbalance service disabled")
+        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled and stopped")
+    except Exception as error:
+        fn.log_error(f"Failed to disable irqbalance: {error}")
 
 
 # ============================================================
@@ -834,33 +894,51 @@ def refresh_ananicy_service_buttons(self):
 
 def install_ananicy(widget, self):
     """Install ananicy-cpp and cachyos-ananicy-rules-git."""
-    fn.install_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
-    refresh_ananicy_package_label(self)
-    refresh_ananicy_service_buttons(self)
-    refresh_ananicy_status_label(self)
+    fn.log_subsection("Install ananicy")
+    try:
+        fn.install_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
+        fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git installed")
+        refresh_ananicy_package_label(self)
+        refresh_ananicy_service_buttons(self)
+        refresh_ananicy_status_label(self)
+    except Exception as error:
+        fn.log_error(f"Failed to install ananicy: {error}")
 
 
 def remove_ananicy(widget, self):
     """Remove ananicy-cpp and cachyos-ananicy-rules-git."""
-    fn.disable_service(ANANICY_PACKAGE)
-    fn.remove_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
-    refresh_ananicy_package_label(self)
-    refresh_ananicy_service_buttons(self)
-    refresh_ananicy_status_label(self)
+    fn.log_subsection("Remove ananicy")
+    try:
+        fn.disable_service(ANANICY_PACKAGE)
+        fn.remove_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
+        fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git removed")
+        refresh_ananicy_package_label(self)
+        refresh_ananicy_service_buttons(self)
+        refresh_ananicy_status_label(self)
+    except Exception as error:
+        fn.log_error(f"Failed to remove ananicy: {error}")
 
 
 def enable_ananicy_service(widget, self):
-    print("Enabling ananicy-cpp service")
-    fn.enable_service(ANANICY_PACKAGE)
-    GLib.timeout_add(500, refresh_ananicy_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been enabled and started")
+    fn.log_subsection("Enable ananicy Service")
+    try:
+        fn.enable_service(ANANICY_PACKAGE)
+        fn.log_success("ananicy-cpp service enabled")
+        GLib.timeout_add(500, refresh_ananicy_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been enabled and started")
+    except Exception as error:
+        fn.log_error(f"Failed to enable ananicy: {error}")
 
 
 def disable_ananicy_service(widget, self):
-    print("Disabling ananicy-cpp service")
-    fn.disable_service(ANANICY_PACKAGE)
-    GLib.timeout_add(500, refresh_ananicy_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been disabled and stopped")
+    fn.log_subsection("Disable ananicy Service")
+    try:
+        fn.disable_service(ANANICY_PACKAGE)
+        fn.log_success("ananicy-cpp service disabled")
+        GLib.timeout_add(500, refresh_ananicy_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been disabled and stopped")
+    except Exception as error:
+        fn.log_error(f"Failed to disable ananicy: {error}")
 
 
 # ============================================================
@@ -962,19 +1040,29 @@ def refresh_gamemode_service_buttons(self):
 
 def install_gamemode(widget, self):
     """Install gamemode."""
-    fn.install_package(self, GAMEMODE_PACKAGE)
-    refresh_gamemode_package_label(self)
-    refresh_gamemode_service_buttons(self)
-    refresh_gamemode_status_label(self)
+    fn.log_subsection("Install gamemode")
+    try:
+        fn.install_package(self, GAMEMODE_PACKAGE)
+        fn.log_success("gamemode installed")
+        refresh_gamemode_package_label(self)
+        refresh_gamemode_service_buttons(self)
+        refresh_gamemode_status_label(self)
+    except Exception as error:
+        fn.log_error(f"Failed to install gamemode: {error}")
 
 
 def remove_gamemode(widget, self):
     """Remove gamemode."""
-    fn.disable_service(GAMEMODE_PACKAGE)
-    fn.remove_package(self, GAMEMODE_PACKAGE)
-    refresh_gamemode_package_label(self)
-    refresh_gamemode_service_buttons(self)
-    refresh_gamemode_status_label(self)
+    fn.log_subsection("Remove gamemode")
+    try:
+        fn.disable_service(GAMEMODE_PACKAGE)
+        fn.remove_package(self, GAMEMODE_PACKAGE)
+        fn.log_success("gamemode removed")
+        refresh_gamemode_package_label(self)
+        refresh_gamemode_service_buttons(self)
+        refresh_gamemode_status_label(self)
+    except Exception as error:
+        fn.log_error(f"Failed to remove gamemode: {error}")
 
 
 def run_gamemoded_user_command(action):
@@ -996,14 +1084,22 @@ def run_gamemoded_user_command(action):
 
 
 def enable_gamemode_service(widget, self):
-    print("Enabling gamemoded service")
-    run_gamemoded_user_command("enable")
-    GLib.timeout_add(500, refresh_gamemode_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been enabled and started")
+    fn.log_subsection("Enable gamemode Service")
+    try:
+        run_gamemoded_user_command("enable")
+        fn.log_success("gamemode service enabled")
+        GLib.timeout_add(500, refresh_gamemode_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been enabled and started")
+    except Exception as error:
+        fn.log_error(f"Failed to enable gamemode: {error}")
 
 
 def disable_gamemode_service(widget, self):
-    print("Disabling gamemoded service")
-    run_gamemoded_user_command("disable")
-    GLib.timeout_add(500, refresh_gamemode_status_label, self)
-    GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been disabled and stopped")
+    fn.log_subsection("Disable gamemode Service")
+    try:
+        run_gamemoded_user_command("disable")
+        fn.log_success("gamemode service disabled")
+        GLib.timeout_add(500, refresh_gamemode_status_label, self)
+        GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been disabled and stopped")
+    except Exception as error:
+        fn.log_error(f"Failed to disable gamemode: {error}")

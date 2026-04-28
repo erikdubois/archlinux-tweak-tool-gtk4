@@ -422,3 +422,108 @@ def _ensure_separator_commented():
 
         with open(fn.fastfetch_config, "w", encoding="utf-8") as f:
             f.writelines(lines)
+
+# ====================================================================
+# FASTFETCH CALLBACKS
+# ====================================================================
+
+def on_install_fast(self, widget):
+    fn.install_package(self, "fastfetch-git")
+
+
+def on_apply_fast(self, widget):
+    small_ascii = "auto"
+    backend = "off"
+    apply_config(self, backend, small_ascii)
+
+
+def on_reset_fast_att(self, widget):
+    if fn.path.isfile(fn.fastfetch_arco):
+        fn.shutil.copy(fn.fastfetch_arco, fn.fastfetch_config)
+        fn.permissions(fn.fastfetch_config)
+        fn.log_success("Fastfetch default ATT settings applied")
+        fn.show_in_app_notification(self, "Default settings applied")
+        get_checkboxes(self)
+
+
+def on_reset_fast(self, widget):
+    if fn.path.isfile(fn.fastfetch_config + ".bak"):
+        fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
+        get_checkboxes(self)
+        fn.log_success("fastfetch default settings applied")
+        fn.show_in_app_notification(self, "Default settings applied")
+
+
+def lolcat_toggle(self, widget, active, utility):
+    lolcat_state = widget.get_active()
+    util_state = utilities.get_util_state(self, utility)
+
+    if lolcat_state:
+        utilities.install_util(self, "lolcat")
+        if not util_state or utility == "fastfetch":
+            util_state = True
+            utilities.set_util_state(self, utility, True, True)
+    elif not lolcat_state and utility == "fastfetch":
+        utilities.set_util_state(self, utility, True, False)
+
+
+def on_fast_util_toggled(self, switch, gparam):
+    util_state = switch.get_active()
+    lolcat_state = self.fast_lolcat.get_active()
+
+    if util_state and not fn.path.exists("/usr/bin/fastfetch"):
+        fn.log_subsection("Installing fastfetch-git...")
+        fn.install_package(self, "fastfetch-git")
+        return
+
+    toggle_fastfetch(util_state)
+
+    if not util_state:
+        self.fast_lolcat.set_active(False)
+        lolcat_state = False
+
+    write_configs(util_state, lolcat_state)
+    self.fast_lolcat.set_sensitive(util_state)
+
+
+def on_fast_lolcat_toggled(self, switch, gparam):
+    lolcat_state = switch.get_active()
+    util_state = self.fast_util.get_active()
+
+    if util_state:
+        toggle_lolcat(lolcat_state)
+        write_configs(util_state, lolcat_state)
+
+
+def util_toggle(self, widget, active, utility):
+    util_state = widget.get_active()
+    lolcat_state = utilities.get_lolcat_state(self, utility)
+
+    if util_state:
+        utilities.install_util(self, utility)
+        if utility == "fastfetch":
+            utilities.set_util_state(self, utility, True, lolcat_state)
+    else:
+        if lolcat_state:
+            lolcat_state = False
+        utilities.set_util_state(self, utility, False, False)
+
+
+def on_click_fastfetch_all_selection(self, widget):
+    fn.log_subsection("All Fastfetch switches selected")
+    set_checkboxes_all(self)
+
+
+def on_click_fastfetch_normal_selection(self, widget):
+    fn.log_subsection("Normal Fastfetch selection applied")
+    set_checkboxes_normal(self)
+
+
+def on_click_fastfetch_small_selection(self, widget):
+    fn.log_subsection("Small Fastfetch selection applied")
+    set_checkboxes_small(self)
+
+
+def on_click_fastfetch_none_selection(self, widget):
+    fn.log_subsection("No Fastfetch switches selected")
+    set_checkboxes_none(self)

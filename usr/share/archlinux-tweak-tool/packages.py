@@ -50,7 +50,7 @@ class Packages:
 
             fn.logger.info("Exporting packages")
             event = (
-                "%s [INFO]: Exporting packages\n"
+                "[INFO] %s: Exporting packages\n"
                 % fn.datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             )
 
@@ -321,7 +321,11 @@ class Packages:
 
                 for line in process.stdout:
                     print(line.strip())
-                    self.messages_queue.put(line)
+                    formatted_line = "[INFO] %s: %s\n" % (
+                        fn.datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
+                        line.strip()
+                    )
+                    self.messages_queue.put(formatted_line)
 
                 # fn.time.sleep(0.2)
 
@@ -412,8 +416,11 @@ class Packages:
                         break
 
                     for line in process.stdout:
-                        self.messages_queue.put(line)
-
+                        formatted_line = "%s [INFO]: %s\n" % (
+                            fn.datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
+                            line.strip()
+                        )
+                        self.messages_queue.put(formatted_line)
                         output.append(line)
 
                     fn.time.sleep(0.2)
@@ -486,7 +493,11 @@ class Packages:
                                 for line in process.stdout:
                                     process_output.append(line.strip())
 
-                                    self.messages_queue.put(line)
+                                    formatted_line = "%s [INFO]: %s\n" % (
+                                        fn.datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
+                                        line.strip()
+                                    )
+                                    self.messages_queue.put(formatted_line)
 
                                 fn.time.sleep(0.2)
 
@@ -595,11 +606,15 @@ def on_click_export_packages(
     rb_export_explicit,
     gui_parts,
 ):
+    fn.log_subsection("Export Package List")
     try:
         if not os.path.exists(packages_obj.export_dir):
+            fn.debug_print(f"Creating export directory: {packages_obj.export_dir}")
             fn.makedirs(packages_obj.export_dir)
             fn.permissions(packages_obj.export_dir)
+
         if fn.check_pacman_lockfile() is True:
+            fn.log_error("Pacman lockfile exists - another pacman process may be running")
             fn.logger.warning(
                 "Export aborted, failed to lock database, pacman lockfile exists at %s"
             )
@@ -635,16 +650,21 @@ def on_click_export_packages(
             rb_export_selected = None
             if rb_export_all.get_active():
                 rb_export_selected = "export_all"
+                fn.debug_print("Exporting all installed packages")
             if rb_export_explicit.get_active():
                 rb_export_selected = "export_explicit"
+                fn.debug_print("Exporting explicitly installed packages")
+
             export_ok = packages_obj.export_packages(rb_export_selected, gui_parts)
             if export_ok is False:
+                fn.log_error("Failed to export package list")
                 fn.messagebox(
                     self,
                     "Export failed",
                     "Failed to export list of packages",
                 )
             else:
+                fn.log_success("Package list exported successfully")
                 fn.messagebox(
                     self,
                     "Export completed",
@@ -652,15 +672,18 @@ def on_click_export_packages(
                 )
 
     except Exception as e:
+        fn.log_error(f"Exception during package export: {e}")
         fn.logger.error("Exception in on_click_export_packages(): %s" % e)
 
 
 def on_message_dialog_yes_response(self, widget):
+    fn.debug_print("User confirmed package installation")
     fn.logger.info("Ok to proceed to install")
     widget.destroy()
 
 
 def on_message_dialog_no_response(self, widget):
+    fn.log_warn("Package installation skipped by user")
     fn.logger.info("Packages install skipped by user")
     widget.destroy()
 
@@ -696,14 +719,17 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
             return
         handled[0] = True
 
-        print(f"Response ID: {response_id}")
         if response_id == -5 or response_id == -4:
             selected_file = dialog.get_file()
             if selected_file:
                 file_path = selected_file.get_path()
-                print(f"Selected packages file: {file_path}")
+                filename = fn.path.basename(file_path)
+                fn.log_subsection(f"Install Packages from File")
+                fn.debug_print(f"Package file: {filename}")
+                fn.debug_print(f"Full path: {file_path}")
+                fn.log_success("Package installation terminal opened")
                 fn.show_in_app_notification(
-                    self, f"Opening terminal to install from: {fn.path.basename(file_path)}"
+                    self, f"Installing packages from {filename}..."
                 )
                 fn.subprocess.Popen(
                     ["alacritty", "-e", "bash", "-c", f"pacman -S --needed $(cat {file_path} | grep -v '^#' | tr '\\n' ' '); read -p 'Press Enter to exit...'"],
@@ -711,7 +737,7 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
                     stderr=fn.subprocess.PIPE,
                 )
         else:
-            print("Package selection cancelled")
+            fn.log_warn("Package selection cancelled")
             fn.show_in_app_notification(self, "Package selection cancelled")
         dialog.close()
 
@@ -720,12 +746,18 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
 
 
 def on_click_remove_debug(self, widget):
+    fn.log_subsection("Remove debug from /etc/makepkg.conf")
     try:
         result = fn.remove_debug_from_makepkg_conf()
-        if result:
+        if result is True:
+            fn.log_success("Debug successfully removed from /etc/makepkg.conf")
             fn.show_in_app_notification(self, "Debug successfully removed from /etc/makepkg.conf")
+        elif result == 2:
+            fn.log_info("Debug is already disabled (!debug) in /etc/makepkg.conf")
+            fn.show_in_app_notification(self, "Debug is already disabled (!debug)")
         else:
+            fn.log_warn("Failed to remove debug from /etc/makepkg.conf")
             fn.show_in_app_notification(self, "Failed to remove debug from /etc/makepkg.conf")
     except Exception as error:
-        print(f"[ERROR] on_click_remove_debug: {error}")
+        fn.log_error(f"Error removing debug: {error}")
         fn.show_in_app_notification(self, "Error removing debug from makepkg.conf")

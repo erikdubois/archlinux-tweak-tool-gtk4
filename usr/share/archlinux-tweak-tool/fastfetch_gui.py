@@ -2,15 +2,44 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 # pylint:disable=C0103,
+import functools
 import fastfetch
 import utilities
+import functions_startup
 
 import desktopr_gui
+
+
+def init_fastfetch_lazy_load(self, fn):
+    """Lazy load fastfetch switch states when page is visible"""
+    try:
+        import time
+        start = time.time()
+        fastfetch_enabled = fastfetch.get_term_rc() and fn.path.exists("/usr/bin/fastfetch")
+        lolcat_enabled = False
+        if fastfetch_enabled:
+            config = utilities.get_config_file()
+            if config:
+                with open(config, "r", encoding="utf-8") as f:
+                    content = f.read()
+                lolcat_enabled = "fastfetch | lolcat" in content
+        if hasattr(self, 'fast_util'):
+            self.fast_util.set_active(fastfetch_enabled)
+        if hasattr(self, 'fast_lolcat'):
+            self.fast_lolcat.set_active(lolcat_enabled)
+            self.fast_lolcat.set_sensitive(fastfetch_enabled)
+        elapsed = time.time() - start
+        fn.debug_print(f"[LAZY] Fastfetch page switches loaded in {elapsed:.3f}s")
+    except Exception:
+        pass
 
 
 def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     """create a gui"""
     from gi.repository import Gdk
+
+    # Setup fastfetch config on-demand
+    functions_startup.setup_fastfetch_config()
 
     img_load = desktopr_gui.IMAGE_PREVIEW_LOAD
     img_min = desktopr_gui.IMAGE_PREVIEW_MIN
@@ -46,27 +75,14 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     fast_lolcat_label = Gtk.Label(xalign=0)
     fast_lolcat_label.set_markup("Lolcat install/enable")
 
-    # Set initial switch states from shell config before connecting signals
-    fastfetch_enabled = fastfetch.get_term_rc() and fn.path.exists("/usr/bin/fastfetch")
-    lolcat_enabled = False
-    if fastfetch_enabled:
-        config = utilities.get_config_file()
-        if config:
-            with open(config, "r", encoding="utf-8") as f:
-                content = f.read()
-            lolcat_enabled = "fastfetch | lolcat" in content
-    self.fast_util.set_active(fastfetch_enabled)
-    self.fast_lolcat.set_active(lolcat_enabled)
-    self.fast_lolcat.set_sensitive(fastfetch_enabled)
-
-    self.fast_util.connect("notify::active", self.on_fast_util_toggled)
-    self.fast_lolcat.connect("notify::active", self.on_fast_lolcat_toggled)
+    self.fast_util.connect("notify::active", functools.partial(fastfetch.on_fast_util_toggled, self))
+    self.fast_lolcat.connect("notify::active", functools.partial(fastfetch.on_fast_lolcat_toggled, self))
 
     applyfastfetch = Gtk.Button(label="Apply Fastfetch configuration")
     resetnormalfastfetch = Gtk.Button(label="Reset Fastfetch")
 
-    applyfastfetch.connect("clicked", self.on_apply_fast)
-    resetnormalfastfetch.connect("clicked", self.on_reset_fast)
+    applyfastfetch.connect("clicked", functools.partial(fastfetch.on_apply_fast, self))
+    resetnormalfastfetch.connect("clicked", functools.partial(fastfetch.on_reset_fast, self))
 
     hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox22.set_margin_top(10)
@@ -112,13 +128,13 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     label21 = Gtk.Label()
     label21.set_text("Or choose what to select with a button")
     btn_all_selection = Gtk.Button(label="All")
-    btn_all_selection.connect("clicked", self.on_click_fastfetch_all_selection)
+    btn_all_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_all_selection, self))
     btn_normal_selection = Gtk.Button(label="Normal")
-    btn_normal_selection.connect("clicked", self.on_click_fastfetch_normal_selection)
+    btn_normal_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_normal_selection, self))
     btn_small_selection = Gtk.Button(label="Small")
-    btn_small_selection.connect("clicked", self.on_click_fastfetch_small_selection)
+    btn_small_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_small_selection, self))
     btn_none_selection = Gtk.Button(label="None")
-    btn_none_selection.connect("clicked", self.on_click_fastfetch_none_selection)
+    btn_none_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_none_selection, self))
     label21.set_margin_start(10)
     label21.set_margin_end(10)
     hbox21.append(label21)
@@ -260,6 +276,8 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
         vboxstack8.append(hbox29)
 
     vboxstack8.append(hbox24)  # pack_end
+
+    fn.GLib.idle_add(init_fastfetch_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)
 
 
 def on_fast_util_toggled(self, switch, gparam):

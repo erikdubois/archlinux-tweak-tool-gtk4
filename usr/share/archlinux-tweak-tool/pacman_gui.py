@@ -4,7 +4,9 @@
 
 import functools
 import pacman_functions
+import pacman
 import maintenance
+import functions as fn
 
 
 def get_parallel_downloads(fn):
@@ -18,6 +20,36 @@ def get_parallel_downloads(fn):
     except Exception:
         pass
     return "Not set"
+
+
+def init_repos_lazy_load(self):
+    """Lazy load and check repository status when page is visible"""
+    try:
+        import time
+        start = time.time()
+        # Check all repos
+        arch_testing = pacman_functions.check_repo("[core-testing]")
+        arch_core = pacman_functions.check_repo("[core]")
+        arch_extra = pacman_functions.check_repo("[extra]")
+        arch_community = pacman_functions.check_repo("[extra-testing]")
+        arch_multilib_testing = pacman_functions.check_repo("[multilib-testing]")
+        arch_multilib = pacman_functions.check_repo("[multilib]")
+        nemesis_repo = pacman_functions.check_repo("[nemesis_repo]")
+        chaotic_repo = pacman_functions.check_repo("[chaotic-aur]")
+
+        # Update switches without triggering callbacks
+        self.checkbutton2.set_active(arch_testing)
+        self.checkbutton6.set_active(arch_core)
+        self.checkbutton7.set_active(arch_extra)
+        self.checkbutton5.set_active(arch_community)
+        self.checkbutton3.set_active(arch_multilib_testing)
+        self.checkbutton8.set_active(arch_multilib)
+        self.nemesis_switch.set_active(nemesis_repo)
+        self.chaotic_switch.set_active(chaotic_repo)
+        elapsed = time.time() - start
+        fn.debug_print(f"[LAZY] Pacman repositories checked in {elapsed:.3f}s")
+    except Exception:
+        pass
 
 
 def gui(self, Gtk, vboxstack1, fn):
@@ -52,15 +84,15 @@ def gui(self, Gtk, vboxstack1, fn):
     # ========================================================
 
     self.custom_repo = Gtk.Button(label="Apply custom repo")
-    self.custom_repo.connect("clicked", functools.partial(maintenance.custom_repo_clicked, self))
+    self.custom_repo.connect("clicked", functools.partial(pacman.custom_repo_clicked, self))
     reset_pacman_local = Gtk.Button(label="Reset pacman local")
-    reset_pacman_local.connect("clicked", functools.partial(maintenance.reset_pacman_local, self))
+    reset_pacman_local.connect("clicked", functools.partial(pacman.reset_pacman_local, self))
     reset_pacman_online = Gtk.Button(label="Reset pacman online")
-    reset_pacman_online.connect("clicked", functools.partial(maintenance.reset_pacman_online, self))
+    reset_pacman_online.connect("clicked", functools.partial(pacman.reset_pacman_online, self))
     blank_pacman = Gtk.Button(label="Blank pacman (auto reboot) and select")
-    blank_pacman.connect("clicked", functools.partial(maintenance.blank_pacman, self))
+    blank_pacman.connect("clicked", functools.partial(pacman.reset_pacman_blank, self))
     edit_pacman_conf = Gtk.Button(label="Edit pacman.conf in terminal")
-    edit_pacman_conf.connect("clicked", functools.partial(maintenance.edit_pacman_conf_clicked, self))
+    edit_pacman_conf.connect("clicked", functools.partial(pacman.edit_pacman_conf_clicked, self))
     label_backup = Gtk.Label(xalign=0)
     label_backup.set_text("You can find the backup at /etc/pacman.conf.bak")
 
@@ -99,37 +131,37 @@ def gui(self, Gtk, vboxstack1, fn):
     framelbl.set_markup("<b>Arch Linux repos</b>")
 
     self.checkbutton2 = Gtk.Switch()
-    self.checkbutton2.connect("notify::active", functools.partial(maintenance.on_pacman_toggle1, self))
+    self.checkbutton2.connect("notify::active", functools.partial(pacman.on_pacman_toggle1, self))
     label3 = Gtk.Label(xalign=0)
     label3.set_markup("# Enable Arch Linux core testing repo")
 
     self.checkbutton6 = Gtk.Switch()
-    self.checkbutton6.connect("notify::active", functools.partial(maintenance.on_pacman_toggle2, self))
+    self.checkbutton6.connect("notify::active", functools.partial(pacman.on_pacman_toggle2, self))
     label13 = Gtk.Label(xalign=0)
     label13.set_markup("Enable Arch Linux core repo")
 
     self.checkbutton5 = Gtk.Switch()
-    self.checkbutton5.connect("notify::active", functools.partial(maintenance.on_pacman_toggle5, self))
+    self.checkbutton5.connect("notify::active", functools.partial(pacman.on_pacman_toggle5, self))
     label12 = Gtk.Label(xalign=0)
     label12.set_markup("#Enable Arch Linux extra-testing repo")
 
     self.checkbutton7 = Gtk.Switch()
-    self.checkbutton7.connect("notify::active", functools.partial(maintenance.on_pacman_toggle3, self))
+    self.checkbutton7.connect("notify::active", functools.partial(pacman.on_pacman_toggle3, self))
     label14 = Gtk.Label(xalign=0)
     label14.set_markup("Enable Arch Linux extra repo")
 
     self.checkbutton4 = Gtk.Switch()
-    self.checkbutton4.connect("notify::active", functools.partial(maintenance.on_pacman_toggle4, self))
+    self.checkbutton4.connect("notify::active", functools.partial(pacman.on_pacman_toggle4, self))
     label10 = Gtk.Label(xalign=0)
     label10.set_markup("# Enable Arch Linux core testing repo")
 
     self.checkbutton3 = Gtk.Switch()
-    self.checkbutton3.connect("notify::active", functools.partial(maintenance.on_pacman_toggle6, self))
+    self.checkbutton3.connect("notify::active", functools.partial(pacman.on_pacman_toggle6, self))
     label4 = Gtk.Label(xalign=0)
     label4.set_markup("# Enable Arch Linux multilib testing repo")
 
     self.checkbutton8 = Gtk.Switch()
-    self.checkbutton8.connect("notify::active", functools.partial(maintenance.on_pacman_toggle7, self))
+    self.checkbutton8.connect("notify::active", functools.partial(pacman.on_pacman_toggle7, self))
     label15 = Gtk.Label(xalign=0)
     label15.set_markup("Enable Arch Linux multilib repo")
 
@@ -142,16 +174,14 @@ def gui(self, Gtk, vboxstack1, fn):
     frame2lbl.set_markup("<b>Other repos</b>")
 
     self.nemesis_switch = Gtk.Switch()
-    self.nemesis_switch.connect("notify::active", functools.partial(maintenance.on_nemesis_toggle, self))
+    self.nemesis_switch.connect("notify::active", functools.partial(pacman.on_nemesis_toggle, self))
     label11 = Gtk.Label(xalign=0)
     label11.set_markup("Enable Nemesis repo")
 
-    self.chaotics_button = Gtk.Button(label="Install keys and mirrors")
-    self.chaotics_button.connect("clicked", functools.partial(maintenance.on_chaotics_clicked, self))
-    self.chaotics_switch = Gtk.Switch()
-    self.chaotics_switch.connect("notify::active", functools.partial(maintenance.on_chaotics_toggle, self))
-    label9 = Gtk.Label(xalign=0)
-    label9.set_markup("Enable Chaotic-aur repo")
+    self.chaotic_switch = Gtk.Switch()
+    self.chaotic_switch.connect("notify::active", functools.partial(pacman.on_chaotic_toggle, self))
+    label_chaotic = Gtk.Label(xalign=0)
+    label_chaotic.set_markup("Enable Chaotic-AUR repo")
 
     # ========================================================
     #               CUSTOM REPOS
@@ -240,27 +270,18 @@ def gui(self, Gtk, vboxstack1, fn):
     self.nemesis_switch.set_margin_end(10)
     hboxstack13.append(self.nemesis_switch)  # pack_end
 
-    if not fn.check_package_installed("chaotic-keyring"):
-        label9.set_margin_start(10)
-        label9.set_margin_end(10)
-        label9.set_hexpand(True)
-        hboxstack11.append(label9)
-        self.chaotics_button.set_margin_start(10)
-        self.chaotics_button.set_margin_end(10)
-        hboxstack11.append(self.chaotics_button)  # pack_end
-
-    if fn.check_package_installed("chaotic-keyring"):
-        label9.set_margin_start(10)
-        label9.set_margin_end(10)
-        label9.set_hexpand(True)
-        hboxstack11.append(label9)
-        self.chaotics_switch.set_margin_start(10)
-        self.chaotics_switch.set_margin_end(10)
-        self.chaotics_switch.set_halign(Gtk.Align.END)
-        hboxstack11.append(self.chaotics_switch)  # pack_end
+    hboxstack_chaotic = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_chaotic.set_margin_start(10)
+    label_chaotic.set_margin_end(10)
+    label_chaotic.set_hexpand(True)
+    hboxstack_chaotic.append(label_chaotic)
+    self.chaotic_switch.set_margin_start(10)
+    self.chaotic_switch.set_margin_end(10)
+    hboxstack_chaotic.append(self.chaotic_switch)  # pack_end
 
     vboxstack4 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack4.append(hboxstack13)
+    vboxstack4.append(hboxstack_chaotic)
     hboxstack11.set_margin_bottom(20)
     vboxstack4.append(hboxstack11)
 
@@ -481,3 +502,7 @@ def gui(self, Gtk, vboxstack1, fn):
 
     hboxstack4.remove(blank_pacman)
     vboxstack1.append(hboxstack4)  # pack_end
+
+    # Lazy load repository states when page becomes visible
+    from gi.repository import GLib
+    GLib.idle_add(init_repos_lazy_load, self, priority=GLib.PRIORITY_LOW)

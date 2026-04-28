@@ -21,7 +21,7 @@ import packages
 # =============GUI=================
 import icons_gui
 import themes_gui
-import autostart_gui
+import autostart
 import desktopr_gui
 import maintenance_gui
 import fastfetch_gui
@@ -128,7 +128,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     #                AUTOSTART
     # ==========================================================
 
-    autostart_gui.gui(self, Gtk, vboxstack13, fn)
+    autostart.gui(self, Gtk, vboxstack13, fn)
 
     # ==========================================================
     #                DESKTOP
@@ -308,6 +308,7 @@ themes</i> you can customize <b>fastfetch</b>"
     lbl_distro.set_markup("Working on\n" + fn.change_distro_label(fn.distr))
     btn_restart_att = Gtk.Button(label="Restart ATT")
     btn_restart_att.set_size_request(100, 30)
+    btn_restart_att.set_visible(False)
     btn_restart_att.connect("clicked", self.on_refresh_att_clicked)
     btn_quit_att = Gtk.Button(label="Quit ATT")
     btn_quit_att.set_size_request(100, 30)

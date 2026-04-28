@@ -2,6 +2,9 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+import log_callbacks
+
 
 def gui(self, Gtk, vboxstack_logging, fn):
     """create a gui"""
@@ -23,7 +26,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log1_label = Gtk.Label(xalign=0)
     hbox_log1_label.set_text("View current boot journal")
     btn_log_current_boot = Gtk.Button(label="Open")
-    btn_log_current_boot.connect("clicked", self.on_click_log_current_boot)
+    btn_log_current_boot.connect("clicked", functools.partial(log_callbacks.on_click_log_current_boot, self))
     hbox_log1_label.set_margin_start(10)
     hbox_log1_label.set_margin_end(10)
     hbox_log1_label.set_hexpand(True)
@@ -36,7 +39,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log2_label = Gtk.Label(xalign=0)
     hbox_log2_label.set_text("View previous boot journal")
     btn_log_prev_boot = Gtk.Button(label="Open")
-    btn_log_prev_boot.connect("clicked", self.on_click_log_prev_boot)
+    btn_log_prev_boot.connect("clicked", functools.partial(log_callbacks.on_click_log_prev_boot, self))
     hbox_log2_label.set_margin_start(10)
     hbox_log2_label.set_margin_end(10)
     hbox_log2_label.set_hexpand(True)
@@ -49,7 +52,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log3_label = Gtk.Label(xalign=0)
     hbox_log3_label.set_text("View journal errors (current boot)")
     btn_log_errors = Gtk.Button(label="Open")
-    btn_log_errors.connect("clicked", self.on_click_log_errors)
+    btn_log_errors.connect("clicked", functools.partial(log_callbacks.on_click_log_errors, self))
     hbox_log3_label.set_margin_start(10)
     hbox_log3_label.set_margin_end(10)
     hbox_log3_label.set_hexpand(True)
@@ -62,7 +65,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log4_label = Gtk.Label(xalign=0)
     hbox_log4_label.set_text("View recent journal (last 20 minutes)")
     btn_log_recent = Gtk.Button(label="Open")
-    btn_log_recent.connect("clicked", self.on_click_log_recent)
+    btn_log_recent.connect("clicked", functools.partial(log_callbacks.on_click_log_recent, self))
     hbox_log4_label.set_margin_start(10)
     hbox_log4_label.set_margin_end(10)
     hbox_log4_label.set_hexpand(True)
@@ -75,7 +78,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log5_label = Gtk.Label(xalign=0)
     hbox_log5_label.set_text("View Xorg log")
     btn_log_xorg = Gtk.Button(label="Open")
-    btn_log_xorg.connect("clicked", self.on_click_log_xorg)
+    btn_log_xorg.connect("clicked", functools.partial(log_callbacks.on_click_log_xorg, self))
     hbox_log5_label.set_margin_start(10)
     hbox_log5_label.set_margin_end(10)
     hbox_log5_label.set_hexpand(True)
@@ -88,7 +91,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log6_label = Gtk.Label(xalign=0)
     hbox_log6_label.set_text("View pacman log")
     btn_log_pacman = Gtk.Button(label="Open")
-    btn_log_pacman.connect("clicked", self.on_click_log_pacman)
+    btn_log_pacman.connect("clicked", functools.partial(log_callbacks.on_click_log_pacman, self))
     hbox_log6_label.set_margin_start(10)
     hbox_log6_label.set_margin_end(10)
     hbox_log6_label.set_hexpand(True)
@@ -101,7 +104,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log7_label = Gtk.Label(xalign=0)
     hbox_log7_label.set_text("View X session errors (~/.xsession-errors or Xorg.0.log)")
     btn_log_xsession = Gtk.Button(label="Open")
-    btn_log_xsession.connect("clicked", self.on_click_log_xsession)
+    btn_log_xsession.connect("clicked", functools.partial(log_callbacks.on_click_log_xsession, self))
     hbox_log7_label.set_margin_start(10)
     hbox_log7_label.set_margin_end(10)
     hbox_log7_label.set_hexpand(True)
@@ -114,7 +117,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log8_label = Gtk.Label(xalign=0)
     hbox_log8_label.set_text("Analyze boot performance (systemd-analyze blame)")
     btn_log_blame = Gtk.Button(label="Open")
-    btn_log_blame.connect("clicked", self.on_click_log_blame)
+    btn_log_blame.connect("clicked", functools.partial(log_callbacks.on_click_log_blame, self))
     hbox_log8_label.set_margin_start(10)
     hbox_log8_label.set_margin_end(10)
     hbox_log8_label.set_hexpand(True)
@@ -127,7 +130,7 @@ def gui(self, Gtk, vboxstack_logging, fn):
     hbox_log9_label = Gtk.Label(xalign=0)
     hbox_log9_label.set_text("View kernel ring buffer (dmesg)")
     btn_log_dmesg = Gtk.Button(label="Open")
-    btn_log_dmesg.connect("clicked", self.on_click_log_dmesg)
+    btn_log_dmesg.connect("clicked", functools.partial(log_callbacks.on_click_log_dmesg, self))
     hbox_log9_label.set_margin_start(10)
     hbox_log9_label.set_margin_end(10)
     hbox_log9_label.set_hexpand(True)

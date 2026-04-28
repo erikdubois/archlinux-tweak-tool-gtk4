@@ -4,6 +4,7 @@
 
 import functools
 import struct
+import pacman
 
 
 XCURSOR_IMAGE_TYPE = 0xFFFD0002
@@ -340,12 +341,12 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     ]
 
     btn_apply_parallel_downloads = Gtk.Button(label="Apply")
-    btn_apply_parallel_downloads.connect("clicked", functools.partial(maintenance.on_click_apply_parallel_downloads, self))
+    btn_apply_parallel_downloads.connect("clicked", functools.partial(pacman.on_click_apply_parallel_downloads, self))
 
     if fn.check_content("ParallelDownloads", fn.pacman):
         for number in numbers:
             self.parallel_downloads.get_model().append(number)  # string
-        act_number = maintenance.pop_parallel_downloads(self)
+        act_number = pacman.pop_parallel_downloads(self)
         self.parallel_downloads.set_selected(act_number)
 
     else:
@@ -485,6 +486,16 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
 
     vboxstack19.append(hbox_sec_sys_config)
     vboxstack19.append(hbox13)
+
+    hbox_cursor_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    cursor_info_label = Gtk.Label(xalign=0, wrap=True)
+    cursor_info_label.set_text("Applies cursor theme globally to: System & user xcursor, GTK2/3/4, XFCE, GNOME (gsettings), KDE Plasma, and SDDM login screen. Affects all applications and SDDM login screen.")
+    cursor_info_label.set_margin_start(40)
+    cursor_info_label.set_margin_end(10)
+    cursor_info_label.set_margin_top(0)
+    cursor_info_label.set_margin_bottom(5)
+    hbox_cursor_info.append(cursor_info_label)
+    vboxstack19.append(hbox_cursor_info)
 
     vboxstack19.append(hbox_sec_diagnostics)
     vboxstack19.append(hbox14)

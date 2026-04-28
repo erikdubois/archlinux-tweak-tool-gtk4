@@ -3,7 +3,26 @@
 # ============================================================
 # pylint:disable=C0103,W0612
 
+import functools
 import desktopr_gui
+import themer
+
+
+def init_themer_lazy_load(self, fn):
+    """Lazy load themer switch states when page is visible"""
+    try:
+        import time
+        start = time.time()
+        if hasattr(self, 'poly'):
+            if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed(
+                "edu-i3-git"
+            ):
+                if themer.check_polybar(themer.get_list(fn.i3wm_config)):
+                    self.poly.set_active(True)
+        elapsed = time.time() - start
+        fn.debug_print(f"[LAZY] Themer page switches loaded in {elapsed:.3f}s")
+    except Exception:
+        pass
 
 
 def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
@@ -88,18 +107,13 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     vbox2.append(self.i3_combo)
 
     applyi3 = Gtk.Button(label="Apply theme")
-    applyi3.connect("clicked", self.i3wm_apply_clicked)
+    applyi3.connect("clicked", functools.partial(themer.i3wm_apply_clicked, self))
     reseti3 = Gtk.Button(label="Reset")
-    reseti3.connect("clicked", self.i3wm_reset_clicked)
+    reseti3.connect("clicked", functools.partial(themer.i3wm_reset_clicked, self))
 
     lbls = Gtk.Label(label="Toggle polybar")
     self.poly = Gtk.Switch()
-    if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed(
-        "edu-i3-git"
-    ):
-        if themer.check_polybar(themer.get_list(fn.i3wm_config)):
-            self.poly.set_active(True)
-    self.poly.connect("notify::active", self.on_polybar_toggle)
+    self.poly.connect("notify::active", functools.partial(themer.on_polybar_toggle, self))
 
     if not fn.os.path.isfile(fn.i3wm_config) or not fn.check_package_installed(
         "edu-i3-git"
@@ -140,7 +154,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     self.i3_combo.connect(
         "notify::selected",
-        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
+        lambda w, _p, img, tt, ab, iw, ih: fn.update_image(self, w, img, tt, ab, iw, ih),
         i3_image,
         "i3",
         base_dir,
@@ -277,7 +291,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     self.awesome_combo.connect(
         "changed",
-        self.update_image,
+        functools.partial(fn.update_image, self),
         self.image,
         "awesome",
         base_dir,
@@ -295,9 +309,9 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     hbox5.append(frame)
 
     apply = Gtk.Button(label="Apply theme")
-    apply.connect("clicked", self.awesome_apply_clicked)
+    apply.connect("clicked", functools.partial(themer.awesome_apply_clicked, self))
     reset = Gtk.Button(label="Reset")
-    reset.connect("clicked", self.awesome_reset_clicked)
+    reset.connect("clicked", functools.partial(themer.awesome_reset_clicked, self))
 
     if not fn.os.path.isfile(fn.awesome_config) or not fn.check_package_installed(
         "edu-awesome-git"
@@ -347,9 +361,9 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     vbox4.append(self.qtile_combo)
 
     applyqtile = Gtk.Button(label="Apply theme")
-    applyqtile.connect("clicked", self.qtile_apply_clicked)
+    applyqtile.connect("clicked", functools.partial(themer.qtile_apply_clicked, self))
     resetqtile = Gtk.Button(label="Reset")
-    resetqtile.connect("clicked", self.qtile_reset_clicked)
+    resetqtile.connect("clicked", functools.partial(themer.qtile_reset_clicked, self))
 
     if not fn.os.path.isfile(fn.qtile_config_theme) or not fn.check_package_installed(
         "edu-qtile-git"
@@ -392,7 +406,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     self.qtile_combo.connect(
         "notify::selected",
-        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
+        lambda w, _p, img, tt, ab, iw, ih: fn.update_image(self, w, img, tt, ab, iw, ih),
         qtile_image,
         "qtile",
         base_dir,
@@ -430,7 +444,7 @@ install them in one go"
     labellft = Gtk.Label(label="Select theme - candy is the default theme")
     self.leftwm_combo = Gtk.DropDown.new_from_strings(list(fn.leftwm_themes_list))
     self.leftwm_combo.set_size_request(280, 0)
-    self.leftwm_combo.connect("notify::selected", self.on_leftwm_combo_changed)
+    self.leftwm_combo.connect("notify::selected", functools.partial(themer.on_leftwm_combo_changed, self))
     if fn.path_check(fn.leftwm_config_theme_current):
         link_theme = fn.os.path.basename(fn.readlink(fn.leftwm_config_theme_current))
         # TODO: enumerate
@@ -447,11 +461,11 @@ install them in one go"
     vbox5.append(self.leftwm_combo)
 
     applyleftwm = Gtk.Button(label="Install and apply selected theme")
-    applyleftwm.connect("clicked", self.leftwm_apply_clicked)
+    applyleftwm.connect("clicked", functools.partial(themer.leftwm_apply_clicked, self))
     removeleftwm = Gtk.Button(label="Remove selected theme and apply Candy")
-    removeleftwm.connect("clicked", self.leftwm_remove_clicked)
+    removeleftwm.connect("clicked", functools.partial(themer.leftwm_remove_clicked, self))
     resetleftwm = Gtk.Button(label="Reset selected theme")
-    resetleftwm.connect("clicked", self.leftwm_reset_clicked)
+    resetleftwm.connect("clicked", functools.partial(themer.leftwm_reset_clicked, self))
 
     if not fn.os.path.isfile(fn.leftwm_config) or not fn.check_package_installed(
         "edu-leftwm-git"
@@ -496,7 +510,7 @@ install them in one go"
 
     self.leftwm_combo.connect(
         "notify::selected",
-        lambda w, _p, img, tt, ab, iw, ih: self.update_image(w, img, tt, ab, iw, ih),
+        lambda w, _p, img, tt, ab, iw, ih: fn.update_image(self, w, img, tt, ab, iw, ih),
         leftwm_image,
         "leftwm",
         base_dir,
@@ -538,3 +552,5 @@ install them in one go"
     vbox.set_hexpand(True)
     vbox.set_vexpand(True)
     vboxstack10.append(vbox)
+
+    fn.GLib.idle_add(init_themer_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)

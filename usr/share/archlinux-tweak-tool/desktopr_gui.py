@@ -2,6 +2,8 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+
 # Desktop preview: decode at this max edge (sharp when scaled); minimum widget size (GTK size_request).
 IMAGE_PREVIEW_LOAD = 900
 IMAGE_PREVIEW_MIN = 480
@@ -10,6 +12,8 @@ IMAGE_PREVIEW_MIN = 480
 def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
     """create a gui"""
     from gi.repository import Gdk
+
+    self.base_dir = base_dir
 
     hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -47,7 +51,7 @@ the nemesis and/or chaotic-aur repo"
     self.d_combo = Gtk.DropDown.new_from_strings(list(desktopr.desktops))
     self.d_combo.set_size_request(220, 0)
     self.d_combo.set_selected(0)
-    self.d_combo.connect("notify::selected", self.on_d_combo_changed)
+    self.d_combo.connect("notify::selected", functools.partial(desktopr.on_d_combo_changed, self))
     # removed in GTK4: set_wrap_width
 
     dropbox.append(label_warning)
@@ -75,16 +79,16 @@ the nemesis and/or chaotic-aur repo"
     self.button_install = Gtk.Button(label="Install")
     self.button_reinstall = Gtk.Button(label="Re-Install")
 
-    self.button_install.connect("clicked", self.on_install_clicked, "inst")
-    self.button_reinstall.connect("clicked", self.on_install_clicked, "reinst")
+    self.button_install.connect("clicked", functools.partial(desktopr.on_install_clicked, self, state="inst"))
+    self.button_reinstall.connect("clicked", functools.partial(desktopr.on_install_clicked, self, state="reinst"))
 
     self.button_install.set_hexpand(True)
     self.button_install.set_vexpand(False)
-    self.button_install.set_sensitive(fn.check_edu_repos_active())
+    self.button_install.set_sensitive(fn.check_nemesis_repo_active())
     buttonbox.append(self.button_install)
     self.button_reinstall.set_hexpand(True)
     self.button_reinstall.set_vexpand(False)
-    self.button_reinstall.set_sensitive(fn.check_edu_repos_active())
+    self.button_reinstall.set_sensitive(fn.check_nemesis_repo_active())
     buttonbox.append(self.button_reinstall)
 
     # =======================================
@@ -187,6 +191,6 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
 
 def update_button_state(self, fn):
     """Update install/reinstall button sensitivity based on nemesis repo status."""
-    nemesis_active = fn.check_edu_repos_active()
+    nemesis_active = fn.check_nemesis_repo_active()
     self.button_install.set_sensitive(nemesis_active)
     self.button_reinstall.set_sensitive(nemesis_active)

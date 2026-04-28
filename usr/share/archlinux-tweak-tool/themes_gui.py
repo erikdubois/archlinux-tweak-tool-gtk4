@@ -3,7 +3,10 @@
 # ============================================================
 # pylint:disable=C0103,
 
+import functools
 import desktopr_gui
+import themes
+import functions_startup
 
 
 def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out_pics=None):
@@ -48,6 +51,9 @@ def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out
 def gui(self, Gtk, GdkPixbuf, vboxstack_themes, themes_module, fn, base_dir):
     """create themes gui"""
     from gi.repository import Gdk
+
+    # Setup icon/cursor theme defaults on-demand
+    functions_startup.setup_icon_theme()
 
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
@@ -210,18 +216,18 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label18 = Gtk.Label()
     label18.set_text("Choose what to select with a button")
     btn_all_selection_themes = Gtk.Button(label="All")
-    btn_all_selection_themes.connect("clicked", self.on_click_att_theming_all_selection)
+    btn_all_selection_themes.connect("clicked", functools.partial(themes.on_click_att_theming_all_selection, self))
     btn_blue_selection_themes = Gtk.Button(label="Blue")
     btn_blue_selection_themes.connect(
-        "clicked", self.on_click_att_theming_blue_selection
+        "clicked", functools.partial(themes.on_click_att_theming_blue_selection, self)
     )
     btn_dark_selection_themes = Gtk.Button(label="Dark")
     btn_dark_selection_themes.connect(
-        "clicked", self.on_click_att_theming_dark_selection
+        "clicked", functools.partial(themes.on_click_att_theming_dark_selection, self)
     )
     btn_none_selection_themes = Gtk.Button(label="None")
     btn_none_selection_themes.connect(
-        "clicked", self.on_click_att_theming_none_selection
+        "clicked", functools.partial(themes.on_click_att_theming_none_selection, self)
     )
     label18.set_margin_start(10)
     label18.set_margin_end(10)
@@ -243,11 +249,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_install_themes = Gtk.Button(label="Install the selected themes")
-    button_install_themes.connect("clicked", self.on_install_att_themes_clicked)
+    button_install_themes.connect("clicked", functools.partial(themes.on_install_att_themes_clicked, self))
     button_remove_themes = Gtk.Button(label="Uninstall the selected themes")
-    button_remove_themes.connect("clicked", self.on_remove_att_themes_clicked)
+    button_remove_themes.connect("clicked", functools.partial(themes.on_remove_att_themes_clicked, self))
     button_find_themes = Gtk.Button(label="Show the installed themes")
-    button_find_themes.connect("clicked", self.on_find_att_themes_clicked)
+    button_find_themes.connect("clicked", functools.partial(themes.on_find_att_themes_clicked, self))
 
     button_remove_themes.set_margin_start(10)
     button_remove_themes.set_margin_end(10)

@@ -2,6 +2,9 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+import services
+
 
 def gui(self, Gtk, vboxstack_network, fn):
     """create a gui"""
@@ -40,9 +43,9 @@ def gui(self, Gtk, vboxstack_network, fn):
         "Discover other computers in your network"
     )
     button_install_discovery = Gtk.Button(label="Install network discovery")
-    button_install_discovery.connect("clicked", self.on_install_discovery_clicked)
+    button_install_discovery.connect("clicked", functools.partial(services.on_install_discovery_clicked, self))
     button_remove_discovery = Gtk.Button(label="Uninstall network discovery")
-    button_remove_discovery.connect("clicked", self.on_remove_discovery_clicked)
+    button_remove_discovery.connect("clicked", functools.partial(services.on_remove_discovery_clicked, self))
     hbox2_label.set_margin_start(10)
     hbox2_label.set_margin_end(10)
     hbox2_label.set_hexpand(True)
@@ -76,9 +79,9 @@ def gui(self, Gtk, vboxstack_network, fn):
 
     hbox_nsswitch_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_apply_nsswitch = Gtk.Button(label="Apply selected nsswitch.conf")
-    button_apply_nsswitch.connect("clicked", self.on_click_apply_nsswitch)
+    button_apply_nsswitch.connect("clicked", functools.partial(services.on_click_apply_nsswitch, self))
     button_reset_nsswitch = Gtk.Button(label="Reset to your default nsswitch.conf")
-    button_reset_nsswitch.connect("clicked", self.on_click_reset_nsswitch)
+    button_reset_nsswitch.connect("clicked", functools.partial(services.on_click_reset_nsswitch, self))
     button_apply_nsswitch.set_margin_start(10)
     button_apply_nsswitch.set_margin_end(10)
     hbox_nsswitch_buttons.append(button_apply_nsswitch)
@@ -88,7 +91,7 @@ def gui(self, Gtk, vboxstack_network, fn):
 
     hbox_edit_nsswitch = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_edit_nsswitch = Gtk.Button(label="Edit the /etc/nsswitch.conf in terminal")
-    button_edit_nsswitch.connect("clicked", self.on_click_edit_nsswitch)
+    button_edit_nsswitch.connect("clicked", functools.partial(services.on_click_edit_nsswitch, self))
     button_edit_nsswitch.set_margin_start(10)
     button_edit_nsswitch.set_margin_end(10)
     hbox_edit_nsswitch.append(button_edit_nsswitch)
@@ -141,9 +144,9 @@ if it is not already there\n ")
     else:
         hbox4_label.set_text("1. Install the samba server")
     button_install_samba = Gtk.Button(label="Install Samba")
-    button_install_samba.connect("clicked", self.on_click_install_samba)
+    button_install_samba.connect("clicked", functools.partial(services.on_click_install_samba, self))
     button_uninstall_samba = Gtk.Button(label="Uninstall Samba")
-    button_uninstall_samba.connect("clicked", self.on_click_uninstall_samba)
+    button_uninstall_samba.connect("clicked", functools.partial(services.on_click_uninstall_samba, self))
     hbox4_label.set_margin_start(10)
     hbox4_label.set_margin_end(10)
     hbox4_label.set_hexpand(True)
@@ -164,9 +167,9 @@ if it is not already there\n ")
 
     hbox4bis_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_apply_samba = Gtk.Button(label="Apply selected samba.conf")
-    button_apply_samba.connect("clicked", self.on_click_apply_samba)
+    button_apply_samba.connect("clicked", functools.partial(services.on_click_apply_samba, self))
     button_reset_samba = Gtk.Button(label="Reset to default samba.conf")
-    button_reset_samba.connect("clicked", self.on_click_reset_samba)
+    button_reset_samba.connect("clicked", functools.partial(services.on_click_reset_samba, self))
     button_apply_samba.set_margin_start(10)
     button_apply_samba.set_margin_end(10)
     hbox4bis_buttons.append(button_apply_samba)
@@ -176,7 +179,7 @@ if it is not already there\n ")
 
     hbox_edit_samba = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_edit_samba = Gtk.Button(label="Edit samba.conf in terminal")
-    button_edit_samba.connect("clicked", self.on_click_edit_samba_nano)
+    button_edit_samba.connect("clicked", functools.partial(services.on_click_edit_samba_nano, self))
     button_edit_samba.set_margin_start(10)
     button_edit_samba.set_margin_end(10)
     hbox_edit_samba.append(button_edit_samba)
@@ -194,7 +197,7 @@ if it is not already there\n ")
     button_create_samba_user = Gtk.Button(
         label="Create a password for the current user (pop-up)"
     )
-    button_create_samba_user.connect("clicked", self.on_click_create_samba_user)
+    button_create_samba_user.connect("clicked", functools.partial(services.on_click_create_samba_user, self))
     button_create_samba_user.set_margin_start(10)
     button_create_samba_user.set_margin_end(10)
     hbox5_button.append(button_create_samba_user)
@@ -231,7 +234,7 @@ All computers in your network must have a unique name /etc/hostname"
     hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     install_arco_thunar_plugin = Gtk.Button(label="Install Thunar share plugin")
     install_arco_thunar_plugin.connect(
-        "clicked", self.on_click_install_arco_thunar_plugin
+        "clicked", functools.partial(services.on_click_install_arco_thunar_plugin, self)
     )
     install_arco_thunar_plugin.set_margin_start(10)
     install_arco_thunar_plugin.set_margin_end(10)
@@ -250,7 +253,7 @@ All computers in your network must have a unique name /etc/hostname"
     hbox_status.append(self.network_status_label)
 
     restart_smb_button3 = Gtk.Button(label="Restart Smb")
-    restart_smb_button3.connect("clicked", self.on_click_restart_smb)
+    restart_smb_button3.connect("clicked", functools.partial(services.on_click_restart_smb, self))
     restart_smb_button3.set_margin_start(10)
     restart_smb_button3.set_margin_end(10)
     hbox_status.append(restart_smb_button3)

@@ -2,6 +2,8 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+
 
 def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
     """create the sddm gui"""
@@ -39,14 +41,14 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         reset_sddm_original_att = Gtk.Button(
             label="Apply the Sddm configuration from ATT - auto reboot"
         )
-        reset_sddm_original_att.connect("clicked", self.on_click_sddm_reset_original_att)
+        reset_sddm_original_att.connect("clicked", functools.partial(sddm.on_click_sddm_reset_original_att, self))
         reset_sddm_original_att.set_margin_start(10)
         reset_sddm_original_att.set_margin_end(10)
         hbox13.append(reset_sddm_original_att)
         reset_sddm_original = Gtk.Button(
             label="Apply your original Sddm configuration - auto reboot"
         )
-        reset_sddm_original.connect("clicked", self.on_click_sddm_reset_original)
+        reset_sddm_original.connect("clicked", functools.partial(sddm.on_click_sddm_reset_original, self))
         reset_sddm_original.set_margin_end(10)
         hbox13.append(reset_sddm_original)
 
@@ -61,7 +63,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         hbox_auto_lbl.set_margin_start(10)
         hbox_auto_lbl.set_hexpand(True)
         self.autologin_sddm = Gtk.Switch()
-        self.autologin_sddm.connect("notify::active", self.on_autologin_sddm_activated)
+        self.autologin_sddm.connect("notify::active", functools.partial(sddm.on_autologin_sddm_activated, self))
         self.autologin_sddm.set_margin_end(10)
         hbox_auto.append(hbox_auto_lbl)
         hbox_auto.append(self.autologin_sddm)
@@ -102,18 +104,18 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
 
         hbox_wp_folder = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         btn_browse_folder = Gtk.Button(label="Browse folder")
-        btn_browse_folder.connect("clicked", self.on_browse_sddm_folder)
+        btn_browse_folder.connect("clicked", functools.partial(sddm.on_browse_sddm_folder, self))
         btn_browse_folder.set_margin_start(10)
         btn_browse_folder.set_margin_end(10)
         self.sddm_folder_entry = Gtk.Entry()
         self.sddm_folder_entry.set_hexpand(True)
         self.sddm_folder_entry.set_placeholder_text("Paste or type a folder path")
         btn_load_folder = Gtk.Button(label="Load")
-        btn_load_folder.connect("clicked", self.on_load_sddm_folder)
+        btn_load_folder.connect("clicked", functools.partial(sddm.on_load_sddm_folder, self))
         btn_load_folder.set_margin_start(10)
         btn_load_folder.set_margin_end(10)
         btn_stop_loading = Gtk.Button(label="Stop")
-        btn_stop_loading.connect("clicked", self.on_stop_sddm_loading)
+        btn_stop_loading.connect("clicked", functools.partial(sddm.on_stop_sddm_loading, self))
         btn_stop_loading.set_margin_end(10)
         hbox_wp_folder.append(btn_browse_folder)
         hbox_wp_folder.append(self.sddm_folder_entry)
@@ -165,33 +167,33 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
 
         hbox_wp_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         btn_apply_wallpaper = Gtk.Button(label="Apply wallpaper")
-        btn_apply_wallpaper.connect("clicked", self.on_set_sddm_wallpaper)
+        btn_apply_wallpaper.connect("clicked", functools.partial(sddm.on_set_sddm_wallpaper, self))
         btn_apply_wallpaper.set_margin_start(10)
         btn_apply_wallpaper.set_margin_end(10)
         btn_restore_wallpaper = Gtk.Button(label="Restore default")
-        btn_restore_wallpaper.connect("clicked", self.on_restore_sddm_wallpaper)
+        btn_restore_wallpaper.connect("clicked", functools.partial(sddm.on_restore_sddm_wallpaper, self))
         btn_restore_wallpaper.set_margin_end(10)
         hbox_wp_btns.append(btn_apply_wallpaper)
         hbox_wp_btns.append(btn_restore_wallpaper)
 
         hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         install_bibata_cursor = Gtk.Button(label="Install Bibata cursors")
-        install_bibata_cursor.connect("clicked", self.on_click_install_bibata_cursor)
+        install_bibata_cursor.connect("clicked", functools.partial(sddm.on_click_install_bibata_cursor, self))
         install_bibata_cursor.set_margin_start(10)
         install_bibata_cursor.set_margin_end(10)
         remove_bibata_cursor = Gtk.Button(label="Remove Bibata cursors")
-        remove_bibata_cursor.connect("clicked", self.on_click_remove_bibata_cursor)
+        remove_bibata_cursor.connect("clicked", functools.partial(sddm.on_click_remove_bibata_cursor, self))
         remove_bibata_cursor.set_margin_end(10)
         hbox16.append(install_bibata_cursor)
         hbox16.append(remove_bibata_cursor)
 
         hbox28 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         install_bibata_cursorr = Gtk.Button(label="Install Bibata extra cursors")
-        install_bibata_cursorr.connect("clicked", self.on_click_install_bibatar_cursor)
+        install_bibata_cursorr.connect("clicked", functools.partial(sddm.on_click_install_bibatar_cursor, self))
         install_bibata_cursorr.set_margin_start(10)
         install_bibata_cursorr.set_margin_end(10)
         remove_bibata_cursorr = Gtk.Button(label="Remove Bibata extra cursors")
-        remove_bibata_cursorr.connect("clicked", self.on_click_remove_bibatar_cursor)
+        remove_bibata_cursorr.connect("clicked", functools.partial(sddm.on_click_remove_bibatar_cursor, self))
         remove_bibata_cursorr.set_margin_end(10)
         hbox28.append(install_bibata_cursorr)
         hbox28.append(remove_bibata_cursorr)
@@ -217,11 +219,11 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
 
         hbox90 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         apply_sddm_settings = Gtk.Button(label="Apply the above mentioned settings")
-        apply_sddm_settings.connect("clicked", self.on_click_sddm_apply)
+        apply_sddm_settings.connect("clicked", functools.partial(sddm.on_click_sddm_apply, self))
         apply_sddm_settings.set_margin_start(10)
         apply_sddm_settings.set_margin_end(10)
         enable_sddm = Gtk.Button(label="Install and enable sddm-git (when not yet active)")
-        enable_sddm.connect("clicked", self.on_click_sddm_enable)
+        enable_sddm.connect("clicked", functools.partial(sddm.on_click_sddm_enable, self))
         enable_sddm.set_margin_end(10)
         hbox90.append(apply_sddm_settings)
         hbox90.append(enable_sddm)
@@ -269,7 +271,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         install_sddm = Gtk.Button(
             label="Install Sddm - auto reboot - do not forget to enable it"
         )
-        install_sddm.connect("clicked", self.on_click_att_sddm_clicked)
+        install_sddm.connect("clicked", functools.partial(sddm.on_click_att_sddm_clicked, self))
         install_sddm.set_margin_start(10)
         install_sddm.set_margin_end(10)
 

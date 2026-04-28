@@ -7,35 +7,55 @@ import functions as fn
 
 def append_repo(self, text):
     """Append a new repo"""
-    with open(fn.pacman, "a", encoding="utf-8") as myfile:
-        myfile.write("\n\n")
-        myfile.write(text)
-
-    fn.show_in_app_notification(self, "Settings Saved Successfully")
+    if hasattr(self, 'initializing') and self.initializing:
+        with open(fn.pacman, "a", encoding="utf-8") as myfile:
+            myfile.write("\n\n")
+            myfile.write(text)
+        return
+    fn.debug_print(f"Appending repository to {fn.pacman}")
+    try:
+        with open(fn.pacman, "a", encoding="utf-8") as myfile:
+            myfile.write("\n\n")
+            myfile.write(text)
+        fn.log_success("Repository appended successfully")
+        fn.show_in_app_notification(self, "Settings Saved Successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to append repository: {error}")
+        fn.show_in_app_notification(self, "Failed to save settings")
 
 
 def append_mirror(self, text):
     """Append a new mirror"""
-    with open(fn.arcolinux_mirrorlist, "a", encoding="utf-8") as myfile:
-        myfile.write("\n\n")
-        myfile.write(text)
-
-    fn.show_in_app_notification(self, "Settings Saved Successfully")
+    fn.debug_print(f"Appending mirror to {fn.arcolinux_mirrorlist}")
+    try:
+        with open(fn.arcolinux_mirrorlist, "a", encoding="utf-8") as myfile:
+            myfile.write("\n\n")
+            myfile.write(text)
+        fn.log_success("Mirror appended successfully")
+        fn.show_in_app_notification(self, "Settings Saved Successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to append mirror: {error}")
+        fn.show_in_app_notification(self, "Failed to save settings")
 
 
 def insert_repo(self, text):
     """insert a repo"""
-    with open(fn.pacman, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-        f.close()
-    pos = fn.get_position(lines, "[custom]")
-    num = pos + 3
+    fn.debug_print(f"Inserting repository into {fn.pacman}")
+    try:
+        with open(fn.pacman, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            f.close()
+        pos = fn.get_position(lines, "[custom]")
+        num = pos + 3
 
-    lines.insert(num, "\n" + text + "\n")
+        lines.insert(num, "\n" + text + "\n")
 
-    with open(fn.pacman, "w", encoding="utf-8") as f:
-        f.writelines(lines)
-        f.close()
+        with open(fn.pacman, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+            f.close()
+        fn.log_success("Repository inserted successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to insert repository: {error}")
 
 
 def check_repo(value):
@@ -157,15 +177,22 @@ def spin_off(repo, lines, i, line):
 
 def toggle_test_repos(self, state, widget):
     """toggle test repo"""
+    if hasattr(self, 'initializing') and self.initializing:
+        return
+    action = "Enable" if state is True else "Disable"
+    fn.log_subsection(f"{action} Repository: {widget}")
+
     if not fn.os.path.isfile(fn.pacman + ".bak"):
+        fn.debug_print(f"Creating backup: {fn.pacman}.bak")
         fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
+
     lines = ""
     if state is True:
         with open(fn.pacman, "r", encoding="utf-8") as f:
             lines = f.readlines()
             f.close()
         try:
-            # TODO enumerate
+            fn.debug_print(f"Enabling {widget} repository")
             for i in range(0, len(lines)):
                 line = lines[i]
                 if widget == "chaotics":
@@ -188,22 +215,22 @@ def toggle_test_repos(self, state, widget):
                     pacman_on("[multilib]", lines, i, line)
 
             with open(fn.pacman, "w", encoding="utf-8") as f:
-                # lines = f.readlines()
                 f.writelines(lines)
                 f.close()
+            fn.log_success(f"Repository {widget} enabled successfully")
         except Exception as error:
-            print(error)
+            fn.log_error(f"Failed to enable {widget}: {error}")
             fn.messagebox(
                 self,
                 "ERROR!!",
-                "An error has occurred setting this setting 'toggle_test_repos On'",
+                f"An error has occurred enabling repository {widget}",
             )
     else:
         with open(fn.pacman, "r", encoding="utf-8") as f:
             lines = f.readlines()
             f.close()
         try:
-            # TODO enumerate
+            fn.debug_print(f"Disabling {widget} repository")
             for i in range(0, len(lines)):
                 line = lines[i]
                 if widget == "chaotics":
@@ -228,11 +255,13 @@ def toggle_test_repos(self, state, widget):
             with open(fn.pacman, "w", encoding="utf-8") as f:
                 f.writelines(lines)
                 f.close()
-        except:
+            fn.log_success(f"Repository {widget} disabled successfully")
+        except Exception as error:
+            fn.log_error(f"Failed to disable {widget}: {error}")
             fn.messagebox(
                 self,
                 "ERROR!!",
-                "An error has occurred setting this setting 'toggle_test_repos Off'",
+                f"An error has occurred disabling repository {widget}",
             )
 
 # ============================================================
@@ -256,7 +285,9 @@ def is_chaotic_aur_enabled():
 
 def install_yay_pacman(self):
     """Install yay-git from chaotic-aur repository."""
-    print("\n[INFO] Installing yay-git from chaotic-aur")
+    fn.log_subsection("Install yay from Chaotic-AUR")
+    fn.debug_print("Installing yay-git from chaotic-aur repository")
+    fn.log_success("Installation terminal opened")
     fn.show_in_app_notification(self, "Opening terminal to install yay-git")
     fn.subprocess.Popen(
         ["alacritty", "-e", "bash", "-c", "sudo pacman -S yay-git; read -p 'Press Enter to exit...'"],
@@ -267,21 +298,31 @@ def install_yay_pacman(self):
 
 def install_yay_git(self):
     """Install yay-git from source in a terminal window. Returns the Popen process."""
-    print("\n[INFO] Installing yay-git from source (git)")
-    if not fn.ensure_git_installed():
-        print("[ERROR] Git installation failed, cannot proceed with yay-git installation")
+    fn.log_subsection("Install yay from Source")
+    fn.debug_print("Installing yay-git from source (git)")
+    try:
+        if not fn.ensure_git_installed():
+            fn.log_error("Git installation failed")
+            return None
+        fn.debug_print("Installing dependencies: alacritty base-devel")
+        fn.install_package(self, "alacritty base-devel")
+        fn.debug_print("Starting yay-git build process")
+        build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
+        fn.log_success("Build terminal opened")
+        return fn.subprocess.Popen(
+            ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+            shell=False,
+        )
+    except Exception as error:
+        fn.log_error(f"Failed to install yay from source: {error}")
         return None
-    fn.install_package(self, "alacritty base-devel")
-    build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
-    return fn.subprocess.Popen(
-        ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
-        shell=False,
-    )
 
 
 def install_paru_pacman(self):
     """Install paru-git from chaotic-aur repository."""
-    print("\n[INFO] Installing paru-git from chaotic-aur")
+    fn.log_subsection("Install paru from Chaotic-AUR")
+    fn.debug_print("Installing paru-git from chaotic-aur repository")
+    fn.log_success("Installation terminal opened")
     fn.show_in_app_notification(self, "Opening terminal to install paru-git")
     fn.subprocess.Popen(
         ["alacritty", "-e", "bash", "-c", "sudo pacman -S paru-git; read -p 'Press Enter to exit...'"],
@@ -292,29 +333,38 @@ def install_paru_pacman(self):
 
 def install_paru_git(self):
     """Install paru-git from source in a terminal window. Returns the Popen process."""
-    print("\n[INFO] Installing paru-git from source (git)")
-    if not fn.ensure_git_installed():
-        print("[ERROR] Git installation failed, cannot proceed with paru-git installation")
+    fn.log_subsection("Install paru from Source")
+    fn.debug_print("Installing paru-git from source (git)")
+    try:
+        if not fn.ensure_git_installed():
+            fn.log_error("Git installation failed")
+            return None
+        fn.debug_print("Installing dependencies: alacritty base-devel")
+        fn.install_package(self, "alacritty base-devel")
+        fn.debug_print("Starting paru-git build process")
+        build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
+        fn.log_success("Build terminal opened")
+        return fn.subprocess.Popen(
+            ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+            shell=False,
+        )
+    except Exception as error:
+        fn.log_error(f"Failed to install paru from source: {error}")
         return None
-    fn.install_package(self, "alacritty base-devel")
-    build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
-    return fn.subprocess.Popen(
-        ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
-        shell=False,
-    )
 
 
 def remove_aur_helper(self, binary):
     """Remove yay or paru by detecting the package that owns the binary."""
+    fn.log_subsection(f"Remove AUR Helper: {binary}")
     try:
-        print(f"\n[INFO] Removing {binary}")
+        fn.debug_print(f"Detecting package for {binary}")
         result = fn.subprocess.check_output(
             ["pacman", "-Qo", f"/usr/bin/{binary}"],
             stderr=fn.subprocess.STDOUT,
         ).decode().strip()
-        # output: "/usr/bin/yay is owned by yay-git 12.1.0-1"
         pkg = result.split(" is owned by ")[1].split(" ")[0]
-        print(f"[INFO] Found package: {pkg}")
+        fn.debug_print(f"Found package: {pkg}")
+        fn.log_success("Removal terminal opened")
         fn.show_in_app_notification(self, f"Opening terminal to remove {pkg}")
         fn.subprocess.Popen(
             ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press Enter to exit...'"],
@@ -322,5 +372,5 @@ def remove_aur_helper(self, binary):
             stderr=fn.subprocess.PIPE,
         )
     except Exception as e:
-        print(f"[INFO] Could not find package owning {binary}: {e}")
+        fn.log_error(f"Could not find package owning {binary}")
         fn.show_in_app_notification(self, f"Could not find package owning {binary}")

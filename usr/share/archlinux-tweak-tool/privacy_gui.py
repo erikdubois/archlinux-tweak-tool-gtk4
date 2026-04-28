@@ -2,6 +2,37 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+import privacy
+
+
+def init_privacy_lazy_load(self, fn):
+    """Lazy load privacy switch states when page is visible"""
+    try:
+        import time
+        start = time.time()
+
+        t1 = time.time()
+        hblock_state = fn.hblock_get_state(self)
+        ublock_state = fn.ublock_get_state(self)
+        state_check_time = time.time() - t1
+
+        # Debug: check initializing flag
+        is_init = getattr(self, 'initializing', 'UNSET')
+        fn.debug_print(f"[LAZY] Privacy: initializing={is_init}")
+
+        t2 = time.time()
+        if hasattr(self, 'hbswich'):
+            self.hbswich.set_active(hblock_state)
+        if hasattr(self, 'firefox_ublock_switch'):
+            self.firefox_ublock_switch.set_active(ublock_state)
+        setactive_time = time.time() - t2
+
+        elapsed = time.time() - start
+        fn.debug_print(f"[LAZY] Privacy: state_check={state_check_time:.3f}s set_active={setactive_time:.3f}s total={elapsed:.3f}s")
+    except Exception:
+        pass
+
 
 def gui(self, Gtk, vboxstack3, fn):
     """create a gui"""
@@ -36,11 +67,9 @@ def gui(self, Gtk, vboxstack3, fn):
     label_ublock.set_halign(Gtk.Align.START)
     label_ublock.set_hexpand(True)
 
-    state = fn.ublock_get_state(self)
-
     self.firefox_ublock_switch = Gtk.Switch()
-    self.firefox_ublock_switch.connect("notify::active", self.set_ublock_firefox)
-    self.firefox_ublock_switch.set_active(state)
+    self.firefox_ublock_switch.connect("notify::active", functools.partial(privacy.set_ublock_firefox, self))
+    self.firefox_ublock_switch.set_active(False)
     self.firefox_ublock_switch.set_margin_start(10)
     self.firefox_ublock_switch.set_margin_end(10)
     self.firefox_ublock_switch.set_halign(Gtk.Align.END)
@@ -70,11 +99,9 @@ def gui(self, Gtk, vboxstack3, fn):
     self.progress.set_pulse_step(0.2)
     self.progress.set_visible(False)
 
-    state = fn.hblock_get_state(self)
-
     self.hbswich = Gtk.Switch()
-    self.hbswich.connect("notify::active", self.set_hblock)
-    self.hbswich.set_active(state)
+    self.hbswich.connect("notify::active", functools.partial(privacy.set_hblock, self))
+    self.hbswich.set_active(False)
 
     label_hblock.set_margin_start(30)
     label_hblock.set_margin_end(10)
@@ -99,3 +126,5 @@ def gui(self, Gtk, vboxstack3, fn):
 
     vboxstack3.append(self.label7)
     vboxstack3.append(self.progress)
+
+    fn.GLib.idle_add(init_privacy_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)

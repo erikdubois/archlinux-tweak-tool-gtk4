@@ -491,18 +491,18 @@ def set_default_boot_entry(entry_id):
             text=True,
         )
         if result.returncode != 0:
-            print(f"bootctl set-default failed: {result.stderr.strip()}")
+            fn.log_error(f"bootctl set-default failed: {result.stderr.strip()}")
             return False
         return True
     except Exception as e:
-        print(f"set_default_boot_entry error: {e}")
+        fn.log_error(f"set_default_boot_entry error: {e}")
         return False
 
 
 def install_kernel(self, pkg, headers):
     """Install kernel and headers with detailed logging."""
-    print(f"\n[INFO] Installing kernel: {pkg}")
-    print(f"[INFO] Headers: {headers}")
+    fn.log_subsection(f"Installing kernel: {pkg}")
+    fn.debug_print(f"Headers: {headers}")
     script = f"""#!/bin/bash
 tput setaf 6
 echo "================================================================"
@@ -542,8 +542,8 @@ read -p 'Press Enter to close...'
 
 def remove_kernel(self, pkg, headers):
     """Remove kernel and headers with detailed logging."""
-    print(f"\n[INFO] Removing kernel: {pkg}")
-    print(f"[INFO] Headers: {headers}")
+    fn.log_subsection(f"Removing kernel: {pkg}")
+    fn.debug_print(f"Headers: {headers}")
     script = f"""#!/bin/bash
 tput setaf 6
 echo "================================================================"
