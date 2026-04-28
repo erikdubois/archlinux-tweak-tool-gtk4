@@ -4,6 +4,47 @@
 
 import functions as fn
 import os
+from gi.repository import Gtk
+
+
+def ensure_sddm_config(self):
+    """Check if SDDM config files exist. If not, ask user for permission to create them."""
+    files_missing = not fn.path.isfile(fn.sddm_default_d1) or not fn.path.isfile(fn.sddm_default_d2)
+
+    if files_missing:
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text="SDDM Configuration Not Found"
+        )
+        dialog.format_secondary_text(
+            "The SDDM configuration files are missing or incomplete:\n"
+            "  • /etc/sddm.conf\n"
+            "  • /etc/sddm.conf.d/kde_settings.conf\n\n"
+            "Do you want to create them with default ATT settings?\n\n"
+            "Your current settings (if any) will be backed up."
+        )
+        response = dialog.run()
+        dialog.destroy()
+
+        if response == Gtk.ResponseType.YES:
+            try:
+                fn.create_sddm_k_dir()
+                fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+                fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
+                print("[INFO] SDDM configuration files created successfully")
+                return True
+            except Exception as error:
+                print(f"[ERROR] Failed to create SDDM files: {error}")
+                fn.messagebox(self, "Error", f"Failed to create SDDM files: {error}")
+                return False
+        else:
+            fn.show_in_app_notification(self, "SDDM configuration not modified")
+            return False
+
+    return True
 
 
 def check_sddmk_complete():

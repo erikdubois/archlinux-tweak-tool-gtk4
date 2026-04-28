@@ -21,78 +21,16 @@ def set_util_state(self, util, util_state, lolcat_state):
 
 def get_util_state(self, util):
     """get utility state"""
-    if util == "neofetch":
-        return self.neofetch_util.get_active()
-    elif util == "fastfetch":
+    if util == "fastfetch":
         return self.fastfetch_util.get_active()
-    elif util == "screenfetch":
-        return self.screenfetch_util.get_active()
-    elif util == "ufetch":
-        return self.ufetch_util.get_active()
-    elif util == "ufetch-arco":
-        return self.ufetch_arco_util.get_active()
-    elif util == "pfetch":
-        return self.pfetch_util.get_active()
-    elif util == "paleofetch":
-        return self.paleofetch_util.get_active()
-    elif util == "alsi":
-        return self.alsi_util.get_active()
-    elif util == "hfetch":
-        return self.hfetch_util.get_active()
-    elif util == "fetch":
-        return self.fetch_util.get_active()
-    elif util == "sfetch":
-        return self.sfetch_util.get_active()
-    elif util == "sysinfo":
-        return self.sysinfo_util.get_active()
-    elif util == "sysinfo-retro":
-        return self.sysinfo_retro_util.get_active()
-    elif util == "cpufetch":
-        return self.cpufetch_util.get_active()
-    elif util == "hyfetch":
-        return self.hyfetch_util.get_active()
-    elif util == "colorscript random":
-        return self.colorscripts.get_active()
-    else:
-        return False
+    return False
 
 
 def get_lolcat_state(self, util):
     """get lolcat state"""
-    if util == "neofetch":
-        return self.neofetch_lolcat.get_active()
-    elif util == "fastfetch":
+    if util == "fastfetch":
         return self.fastfetch_lolcat.get_active()
-    elif util == "screenfetch":
-        return self.screenfetch_lolcat.get_active()
-    elif util == "ufetch":
-        return self.ufetch_lolcat.get_active()
-    elif util == "ufetch-arco":
-        return self.ufetch_arco_lolcat.get_active()
-    elif util == "pfetch":
-        return self.pfetch_lolcat.get_active()
-    elif util == "paleofetch":
-        return self.paleofetch_lolcat.get_active()
-    elif util == "alsi":
-        return self.alsi_lolcat.get_active()
-    elif util == "hfetch":
-        return self.hfetch_lolcat.get_active()
-    elif util == "fetch":
-        return self.fetch_lolcat.get_active()
-    elif util == "sfetch":
-        return self.sfetch_lolcat.get_active()
-    elif util == "sysinfo":
-        return self.sysinfo_lolcat.get_active()
-    elif util == "sysinfo-retro":
-        return self.sysinfo_retro_lolcat.get_active()
-    elif util == "cpufetch":
-        return self.cpufetch_lolcat.get_active()
-    elif util == "hyfetch":
-        return self.hyfetch_lolcat.get_active()
-    elif util == "colorscript random":  # no lolcat for colorscripts
-        return False
-    else:
-        return False
+    return False
 
 
 def install_util(self, util):

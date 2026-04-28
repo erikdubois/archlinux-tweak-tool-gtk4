@@ -2,6 +2,23 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 # pylint:disable=C0103,C0116,C0411,C0413,I1101,R1705,W0621,W0611,W0622
+#
+# TABLE OF CONTENTS
+# =================
+# 1. Constants & Paths
+# 2. General Utilities
+# 3. UI Utilities
+# 4. App Control
+# 5. Package Management
+# 6. Terminal Launch
+# 7. Threading & Queue
+# 8. Services (systemd)
+# 9. Network & Samba
+# 10. Shell
+# 11. Privacy
+# 12. Fastfetch
+# 13. Logging/Pacman Log
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -23,7 +40,11 @@ from queue import Queue
 import pwd
 
 # =====================================================
-#              BEGIN DECLARATION OF VARIABLES
+# =====================================================
+# =====================================================
+#                      SECTION 1: CONSTANTS & PATHS
+# =====================================================
+# =====================================================
 # =====================================================
 
 distr = id()
@@ -56,29 +77,20 @@ samba_config = "/etc/samba/smb.conf"
 mirrorlist = "/etc/pacman.d/mirrorlist"
 pacman = "/etc/pacman.conf"
 pacman_arch = "/usr/share/archlinux-tweak-tool/data/arch/pacman/pacman.conf"
-pacman_arco = "/usr/share/archlinux-tweak-tool/data/arco/pacman/pacman.conf"
 pacman_eos = "/usr/share/archlinux-tweak-tool/data/eos/pacman/pacman.conf"
 pacman_garuda = "/usr/share/archlinux-tweak-tool/data/garuda/pacman/pacman.conf"
 blank_pacman_arch = "/usr/share/archlinux-tweak-tool/data/arch/pacman/blank/pacman.conf"
-blank_pacman_arco = "/usr/share/archlinux-tweak-tool/data/arco/pacman/blank/pacman.conf"
 blank_pacman_eos = "/usr/share/archlinux-tweak-tool/data/eos/pacman/blank/pacman.conf"
 blank_pacman_garuda = (
     "/usr/share/archlinux-tweak-tool/data/garuda/pacman/blank/pacman.conf"
 )
-neofetch_arco = "/usr/share/archlinux-tweak-tool/data/arco/neofetch/config.conf"
-fastfetch_arco = "/usr/share/archlinux-tweak-tool/data/arco/fastfetch/config.jsonc"
-alacritty_arco = "/usr/share/archlinux-tweak-tool/data/arco/alacritty/alacritty.toml"
 
-oblogout_conf = "/etc/oblogout.conf"
 gtk3_settings = home + "/.config/gtk-3.0/settings.ini"
 gtk2_settings = home + "/.gtkrc-2.0"
 xfce_config = home + "/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml"
 xfce4_terminal_config = home + "/.config/xfce4/terminal/terminalrc"
 alacritty_config = home + "/.config/alacritty/alacritty.toml"
 alacritty_config_dir = home + "/.config/alacritty"
-slimlock_conf = "/etc/slim.conf"
-termite_config = home + "/.config/termite/config"
-neofetch_config = home + "/.config/neofetch/config.conf"
 fastfetch_config = home + "/.config/fastfetch/config.jsonc"
 nsswitch_config = "/etc/nsswitch.conf"
 bd = ".att_backups"
@@ -99,64 +111,22 @@ if path.isfile(home + "/.zshrc"):
 if path.isfile(home + "/.bashrc"):
     bash_config = home + "/.bashrc"
 
-bashrc_arco = "/usr/share/archlinux-tweak-tool/data/arco/.bashrc"
-zshrc_arco = "/usr/share/archlinux-tweak-tool/data/arco/.zshrc"
-fish_arco = "/usr/share/archlinux-tweak-tool/data/arco/config.fish"
 account_list = ["Standard", "Administrator"]
 i3wm_config = home + "/.config/i3/config"
 awesome_config = home + "/.config/awesome/rc.lua"
 qtile_config = home + "/.config/qtile/config.py"
-qtile_config_theme = home + "/.config/qtile/themes/arcolinux-default.theme"
+qtile_config_theme = home + "/.config/qtile/themes/"
 leftwm_config = home + "/.config/leftwm/config.ron"
 leftwm_config_theme = home + "/.config/leftwm/themes/"
 leftwm_config_theme_current = home + "/.config/leftwm/themes/current"
-
-seedhostmirror = "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
-aarnetmirror = "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch"
-
-atestrepo = "#[arcolinux_repo_testing]\n\
-#SigLevel = Never\n\
-#Server = https://arcolinux.github.io/$repo/$arch"
-
-arepo = "[arcolinux_repo]\n\
-SigLevel = Never\n\
-Server = https://arcolinux.github.io/$repo/$arch"
-
-a3drepo = "[arcolinux_repo_3party]\n\
-SigLevel = Never\n\
-Server = https://arcolinux.github.io/$repo/$arch"
-
-axlrepo = "#[arcolinux_repo_xlarge]\n\
-#SigLevel = Never\n\
-#Server = https://arcolinux.github.io/$repo/$arch"
-
-garuda_repo = "[garuda]\n\
-SigLevel = Required DatabaseOptional\n\
-Include = /etc/pacman.d/chaotic-mirrorlist"
 
 chaotics_repo = "[chaotic-aur]\n\
 SigLevel = Required DatabaseOptional\n\
 Include = /etc/pacman.d/chaotic-mirrorlist"
 
-endeavouros_repo = "[endeavouros]\n\
-SigLevel = PackageRequired\n\
-Include = /etc/pacman.d/endeavouros-mirrorlist"
-
 nemesis_repo = "[nemesis_repo]\n\
 SigLevel = Never\n\
 Server = https://erikdubois.github.io/$repo/$arch"
-
-# xero_repo = "[xerolinux_repo]\n\
-# SigLevel = Optional TrustAll\n\
-# Include = /etc/pacman.d/xero-mirrorlist"
-
-# xero_xl_repo = "[xerolinux_repo_xl]\n\
-# SigLevel = Optional TrustAll\n\
-# Include = /etc/pacman.d/xero-mirrorlist"
-
-# xero_nv_repo = "[xerolinux_nvidia_repo]\n\
-# SigLevel = Optional TrustAll\n\
-# Include = /etc/pacman.d/xero-mirrorlist"
 
 arch_testing_repo = "[core-testing]\n\
 Include = /etc/pacman.d/mirrorlist"
@@ -175,10 +145,6 @@ Include = /etc/pacman.d/mirrorlist"
 
 arch_multilib_repo = "[multilib]\n\
 Include = /etc/pacman.d/mirrorlist"
-
-reborn_repo = "[Reborn-OS]\n\
-SigLevel = PackageRequired DatabaseNever\n\
-Include = /etc/pacman.d/reborn-mirrorlist"
 
 leftwm_themes_list = [
     "arise",
@@ -219,6 +185,10 @@ pacman_cache_dir = "/var/cache/pacman/pkg/"
 # pacman lock file
 pacman_lockfile = "/var/lib/pacman/db.lck"
 
+# logging directories
+log_dir = "/var/log/archlinux/"
+att_log_dir = "/var/log/archlinux/att/"
+
 # logging setup
 logger = logging.getLogger("logger")
 # create console handler and set level to debug
@@ -239,13 +209,11 @@ logger.addHandler(ch)
 
 
 # =====================================================
-#              END DECLARATION OF VARIABLES
 # =====================================================
 # =====================================================
+#              SECTION 2: GENERAL UTILITIES
 # =====================================================
 # =====================================================
-# =====================================================
-#               BEGIN GLOBAL FUNCTIONS
 # =====================================================
 
 
@@ -264,7 +232,6 @@ def get_lines(files):
             return lines
     except Exception as error:
         print(error)
-    # get position in list
 
 
 def get_position(lists, value):
@@ -275,18 +242,12 @@ def get_position(lists, value):
     return 0
 
 
-# get positions in list
-
-
 def get_positions(lists, value):
     data = [string for string in lists if value in string]
     position = []
     for d in data:
         position.append(lists.index(d))
     return position
-
-
-# get variable from list
 
 
 def _get_variable(lists, value):
@@ -303,9 +264,6 @@ def _get_variable(lists, value):
     return data_clean
 
 
-# Check  value exists remove data
-
-
 def check_value(list, value):
     data = [string for string in list if value in string]
     if len(data) >= 1:
@@ -316,16 +274,10 @@ def check_value(list, value):
     return data
 
 
-# check backups
-
-
 def check_backups(now):
     if not path.exists(home + "/" + bd + "/Backup-" + now.strftime("%Y-%m-%d %H")):
         makedirs(home + "/" + bd + "/Backup-" + now.strftime("%Y-%m-%d %H"), 0o777)
         permissions(home + "/" + bd + "/Backup-" + now.strftime("%Y-%m-%d %H"))
-
-
-# check process is running
 
 
 def check_if_process_is_running(processName):
@@ -337,9 +289,6 @@ def check_if_process_is_running(processName):
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
     return False
-
-
-# copytree
 
 
 def copytree(self, src, dst, symlinks=False, ignore=None):  # noqa
@@ -369,15 +318,9 @@ def copytree(self, src, dst, symlinks=False, ignore=None):  # noqa
                 self.ecode = 1
 
 
-# check sddm value
-
-
 def check_sddm_value(list, value):
     data = [string for string in list if value in string]
     return data
-
-
-# check if file exists
 
 
 def file_check(file):
@@ -387,17 +330,11 @@ def file_check(file):
     return False
 
 
-# check if path exists
-
-
 def path_check(path):
     if os.path.isdir(path):
         return True
 
     return False
-
-
-# check if directory is empty
 
 
 def is_empty_directory(path):
@@ -406,9 +343,6 @@ def is_empty_directory(path):
             return True
         else:
             return False
-
-
-# check if value is true or false in file
 
 
 def check_content(value, file):
@@ -428,7 +362,6 @@ def check_content(value, file):
         return False
 
 
-# check if package is installed or not
 def check_package_installed(package):  # noqa
     try:
         subprocess.check_output(
@@ -439,9 +372,6 @@ def check_package_installed(package):  # noqa
     except subprocess.CalledProcessError:
         # package is not installed
         return False
-
-
-# check if service is active
 
 
 def check_service(service):  # noqa
@@ -482,9 +412,6 @@ def check_socket(socket):  # noqa
         return False
 
 
-# list normal users
-
-
 def list_users(filename):  # noqa
     try:
         data = []
@@ -504,9 +431,6 @@ def list_users(filename):  # noqa
             return data
     except Exception as error:
         print(error)
-
-
-# check if user is part of the group
 
 
 def check_group(group):
@@ -536,36 +460,187 @@ def check_systemd_boot():
         return False
 
 
+def permissions(dst):
+    try:
+        groups = subprocess.run(
+            ["sh", "-c", "id " + sudo_username],
+            check=True,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        group = None
+        for x in groups.stdout.decode().split(" "):
+            if "gid" in x.lower():  # match gid and GID
+                try:
+                    g = x.split("(")[1]
+                    group = g.replace(")", "").strip()
+                    break
+                except IndexError:
+                    raise ValueError("Unexpected format in 'id' command output.")
+
+        # Ensure the group is retrieved
+        if not group:
+            raise ValueError(f"Could not determine group for user {sudo_username}.")
+
+        subprocess.call(["chown", "-R", sudo_username + ":" + group, dst], shell=False)
+    except Exception as error:
+        print(error)
+
+def findgroup():
+    try:
+        groups = subprocess.run(
+            ["sh", "-c", "id " + sudo_username],
+            check=True,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        group = None
+        for x in groups.stdout.decode().split(" "):
+            if "gid" in x.lower():  # match gid and GID
+                try:
+                    g = x.split("(")[1]
+                    group = g.replace(")", "").strip()
+                    break
+                except IndexError:
+                    raise ValueError("Unexpected format in 'id' command output.")
+
+        # Ensure the group is retrieved
+        if not group:
+            raise ValueError(f"Could not determine group for user {sudo_username}.")
+        print("[INFO] : Group = " + group)
+
+    except Exception as error:
+        print(error)
+
+
 # =====================================================
-#               END GLOBAL FUNCTIONS
 # =====================================================
+# =====================================================
+#              SECTION 3: UI UTILITIES
 # =====================================================
 # =====================================================
 # =====================================================
 
 
-def check_arco_repos_active():
-    with open(pacman, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-        f.close()
+def rgb_to_hex(rgb):
+    if "rgb" in rgb:
+        rgb = rgb.replace("rgb(", "").replace(")", "")
+        vals = rgb.split(",")
+        return "#{0:02x}{1:02x}{2:02x}".format(
+            clamp(int(vals[0])), clamp(int(vals[1])), clamp(int(vals[2]))
+        )
+    return rgb
 
-        arco_base = "[arcolinux_repo]"
-        arco_3p = "[arcolinux_repo_3party]"
-        # arco_xl = "[arcolinux_repo_xlarge]"
 
-    for line in lines:
-        if arco_base in line:
-            if "#" + arco_base in line:
-                return False
-            else:
-                return True
+def clamp(x):
+    return max(0, min(x, 255))
 
-    for line in lines:
-        if arco_3p in line:
-            if "#" + arco_3p in line:
-                return False
-            else:
-                return True
+
+def copy_func(src, dst, isdir=False):
+    if isdir:
+        subprocess.run(["cp", "-Rp", src, dst], check=True, shell=False)
+    else:
+        subprocess.run(["cp", "-p", src, dst], check=True, shell=False)
+
+
+# exceptions
+if distr == "manjaro" and check_content("biglinux", "/etc/os-release"):
+    distr = "biglinux"
+
+
+def change_distro_label(name):  # noqa
+    if name == "biglinux":
+        name = "BigLinux"
+    if name == "garuda":
+        name = "Garuda"
+    if name == "endeavouros":
+        name = "EndeavourOS"
+    if name == "arch":
+        name = "Arch Linux"
+    if name == "manjaro":
+        name = "Manjaro"
+    if name == "xerolinux":
+        name = "Xerolinux"
+    if name == "rebornos":
+        name = "RebornOS"
+    if name == "archcraft":
+        name = "Archcraft"
+    if name == "artix":
+        name = "Artix"
+    if name == "Archman":
+        name = "ArchMan"
+    if name == "cachyos":
+        name = "CachyOS"
+    return name
+
+
+def messagebox(self, title, message):
+    md2 = Gtk.MessageDialog(
+        transient_for=self,
+        message_type=Gtk.MessageType.INFO,
+        buttons=Gtk.ButtonsType.OK,
+        text=title,
+    )
+    md2.props.secondary_text = message
+    md2.props.secondary_use_markup = True
+    loop = GLib.MainLoop()
+
+    def on_response(d, response_id):
+        loop.quit()
+        d.destroy()
+
+    md2.connect("response", on_response)
+    md2.show()
+    loop.run()
+
+
+def show_in_app_notification(self, message):
+    if self.timeout_id is not None:
+        GLib.source_remove(self.timeout_id)
+        self.timeout_id = None
+
+    self.notification_label.set_markup(
+        '<span foreground="white">' + message + "</span>"
+    )
+    self.notification_revealer.set_reveal_child(True)
+    self.timeout_id = GLib.timeout_add(3000, timeOut, self)
+
+
+def timeOut(self):
+    close_in_app_notification(self)
+
+
+def close_in_app_notification(self):
+    self.notification_revealer.set_reveal_child(False)
+    GLib.source_remove(self.timeout_id)
+    self.timeout_id = None
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 4: APP CONTROL
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def restart_program():
+    if path.exists("/tmp/att.lock"):
+        unlink("/tmp/att.lock")
+        python = sys.executable
+        execl(python, python, *sys.argv)
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 5: PACKAGE MANAGEMENT
+# =====================================================
+# =====================================================
+# =====================================================
 
 
 def check_edu_repos_active():
@@ -697,74 +772,6 @@ def install_local_package(self, package):
     except Exception as error:
         print(f"[ERROR] Installation error: {error}")
         GLib.idle_add(show_in_app_notification, self, f"Installation error: {error}")
-
-
-def install_arco_package(self, package):
-    if check_edu_repos_active():
-        command = "pacman -S " + package + " --noconfirm --needed"
-        if check_package_installed(package):
-            print(package + " is already installed - nothing to do")
-            GLib.idle_add(
-                show_in_app_notification,
-                self,
-                package + " is already installed - nothing to do",
-            )
-        else:
-            try:
-                print(command)
-                subprocess.call(
-                    command.split(" "),
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(package + " is now installed")
-                GLib.idle_add(
-                    show_in_app_notification, self, package + " is now installed"
-                )
-            except Exception as error:
-                print(error)
-    else:
-        print("You need to activate the Nemesis repo")
-        print("Check the pacman tab of the ArchLinux Tweak Tool")
-        print("and/or the content of /etc/pacman.conf")
-        GLib.idle_add(
-            show_in_app_notification, self, "You need to activate the Nemesis repo"
-        )
-
-
-def install_edu_package(self, package):
-    if check_edu_repos_active():
-        command = "pacman -S " + package + " --noconfirm --needed"
-        if check_package_installed(package):
-            print(package + " is already installed - nothing to do")
-            GLib.idle_add(
-                show_in_app_notification,
-                self,
-                package + " is already installed - nothing to do",
-            )
-        else:
-            try:
-                print(command)
-                subprocess.call(
-                    command.split(" "),
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(package + " is now installed")
-                GLib.idle_add(
-                    show_in_app_notification, self, package + " is now installed"
-                )
-            except Exception as error:
-                print(error)
-    else:
-        print("You need to activate the Nemesis repo")
-        print("Check the pacman tab of the ArchLinux Tweak Tool")
-        print("and/or the content of /etc/pacman.conf")
-        GLib.idle_add(
-            show_in_app_notification, self, "You need to activate the Nemesis repo"
-        )
 
 
 def clear_skel_directory(path="/etc/skel"):
@@ -900,508 +907,6 @@ def remove_package_dd(self, package):
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
-def enable_login_manager(self, loginmanager):
-    if check_package_installed(loginmanager):
-        try:
-            command = "systemctl enable " + loginmanager + ".service -f"
-            print(command)
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print(loginmanager + " has been enabled - reboot")
-            GLib.idle_add(
-                show_in_app_notification,
-                self,
-                loginmanager + " has been enabled - reboot",
-            )
-        except Exception as error:
-            print(error)
-    else:
-        print(loginmanager + " is not installed")
-        GLib.idle_add(
-            show_in_app_notification, self, loginmanager + " is not installed"
-        )
-
-
-def add_autologin_group(self):
-    com = subprocess.run(
-        ["sh", "-c", "su - " + sudo_username + " -c groups"],
-        check=True,
-        shell=False,
-        stdout=subprocess.PIPE,
-    )
-    groups = com.stdout.decode().strip().split(" ")
-    if "autologin" not in groups:
-        command = "groupadd autologin"
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            print(error)
-        try:
-            subprocess.run(
-                ["gpasswd", "-a", sudo_username, "autologin"], check=True, shell=False
-            )
-        except Exception as error:
-            print(error)
-
-
-# =====================================================
-#              CAJA SHARE PLUGIN
-# =====================================================
-
-
-def install_arco_caja_plugin(self, widget):
-    # install = "pacman -S caja arcolinux-caja-share --noconfirm"
-    install = "pacman -S caja caja-share --noconfirm"
-
-    if check_package_installed("caja-share"):
-        print("caja-share is already installed")
-    else:
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("Caja-share is now installed - reboot")
-        GLib.idle_add(self.label7.set_text, "Caja-share is now installed - reboot")
-    print("Other apps that might be interesting for sharing are :")
-    print(" - thunar-share-plugin (thunar)")
-    print(" - nemo-share (cinnamon)")
-    print(" - nautilus-share (gnome - budgie)")
-    print(" - kdenetwork-filesharing (plasma)")
-
-
-# =====================================================
-#              CHANGE SHELL
-# =====================================================
-
-
-def change_shell(self, shell):
-    command = "sudo chsh " + sudo_username + " -s /bin/" + shell
-    subprocess.call(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    print("Shell changed to " + shell + " for the user - logout")
-    GLib.idle_add(
-        show_in_app_notification,
-        self,
-        "Shell changed to " + shell + " for user - logout",
-    )
-
-
-# =====================================================
-#               CONVERT COLOR
-# =====================================================
-
-
-def rgb_to_hex(rgb):
-    if "rgb" in rgb:
-        rgb = rgb.replace("rgb(", "").replace(")", "")
-        vals = rgb.split(",")
-        return "#{0:02x}{1:02x}{2:02x}".format(
-            clamp(int(vals[0])), clamp(int(vals[1])), clamp(int(vals[2]))
-        )
-    return rgb
-
-
-def clamp(x):
-    return max(0, min(x, 255))
-
-
-# =====================================================
-#               COPY FUNCTION
-# =====================================================
-
-
-def copy_func(src, dst, isdir=False):
-    if isdir:
-        subprocess.run(["cp", "-Rp", src, dst], check=True, shell=False)
-    else:
-        subprocess.run(["cp", "-p", src, dst], check=True, shell=False)
-
-
-# =====================================================
-#               DISTRO LABEL
-# =====================================================
-
-# exceptions
-if distr == "manjaro" and check_content("biglinux", "/etc/os-release"):
-    distr = "biglinux"
-
-
-def change_distro_label(name):  # noqa
-    if name == "arcolinux":
-        name = "ArcoLinux"
-    if name == "biglinux":
-        name = "BigLinux"
-    if name == "garuda":
-        name = "Garuda"
-    if name == "endeavouros":
-        name = "EndeavourOS"
-    if name == "arch":
-        name = "Arch Linux"
-    if name == "manjaro":
-        name = "Manjaro"
-    if name == "xerolinux":
-        name = "Xerolinux"
-    if name == "axyl":
-        name = "Axyl"
-    if name == "rebornos":
-        name = "RebornOS"
-    if name == "amos":
-        name = "AmOs"
-    if name == "archcraft":
-        name = "Archcraft"
-    if name == "artix":
-        name = "Artix"
-    if name == "Archman":
-        name = "ArchMan"
-    if name == "cachyos":
-        name = "CachyOS"
-    return name
-
-
-def reset_login_wallpaper(self, image):
-    if path.isfile(sddm_default_d2):
-        try:
-            with open(sddm_default_d2, "r", encoding="utf-8") as f:
-                lists = f.readlines()
-                f.close()
-            val = get_position(lists, "Current=")
-            theme = lists[val].strip("\n").split("=")[1]
-        except:
-            pass
-
-    if path.isfile("/usr/share/sddm/themes/" + theme + "/theme.conf.user"):
-        try:
-            unlink("/usr/share/sddm/themes/" + theme + "/theme.conf.user")
-            print("Standard background has been reset")
-            show_in_app_notification(self, "Background reset successfully")
-        except:
-            pass
-
-
-# =====================================================
-#               HBLOCK CONF
-# =====================================================
-
-
-def hblock_get_state(self):
-    lines = int(
-        subprocess.check_output("wc -l /etc/hosts", shell=True).strip().split()[0]
-    )
-    if path.exists("/usr/bin/hblock") and lines > 100:
-        return True
-
-    self.firstrun = False
-    return False
-
-
-def do_pulse(data, prog):
-    prog.pulse()
-    return True
-
-
-def set_hblock(self, toggle, state):
-    GLib.idle_add(toggle.set_sensitive, False)
-    GLib.idle_add(self.label7.set_visible, True)
-    GLib.idle_add(self.progress.set_visible, True)
-    GLib.idle_add(self.label7.set_text, "Run..")
-    GLib.idle_add(self.progress.set_fraction, 0.2)
-
-    timeout_id = None
-    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
-
-    if not path.isfile("/etc/hosts.bak"):
-        shutil.copy("/etc/hosts", "/etc/hosts.bak")
-
-    try:
-        install = "pacman -S edu-hblock-git --needed --noconfirm"
-        enable = "/usr/bin/hblock"
-
-        if state:
-            if path.exists("/usr/bin/hblock"):
-                GLib.idle_add(self.label7.set_text, "Database update...")
-                subprocess.call(
-                    [enable],
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-            else:
-                GLib.idle_add(self.label7.set_text, "Install Hblock......")
-                subprocess.call(
-                    install.split(" "),
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                GLib.idle_add(self.label7.set_text, "Database update...")
-                subprocess.call(
-                    [enable],
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-
-        else:
-            GLib.idle_add(self.label7.set_text, "Remove update...")
-            subprocess.run(
-                ["sh", "-c", "HBLOCK_SOURCES='' /usr/bin/hblock"],
-                check=True,
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-        GLib.idle_add(self.label7.set_text, "Complete")
-        GLib.source_remove(timeout_id)
-        timeout_id = None
-        GLib.idle_add(self.progress.set_fraction, 0)
-
-        GLib.idle_add(toggle.set_sensitive, True)
-        if state:
-            GLib.idle_add(self.label7.set_text, "HBlock Active")
-        else:
-            GLib.idle_add(self.label7.set_text, "HBlock Inactive")
-        GLib.idle_add(self.label7.set_visible, False)
-        GLib.idle_add(self.progress.set_visible, False)
-
-    except Exception as error:
-        messagebox(self, "ERROR!!", str(error))
-        print(error)
-
-
-# =====================================================
-#               LOG FILE CREATION
-# =====================================================
-
-
-log_dir = "/var/log/archlinux/"
-att_log_dir = "/var/log/archlinux/att/"
-
-
-def create_log(self):
-    print("Making log in /var/log/archlinux")
-    now = datetime.datetime.now()
-    time = now.strftime("%Y-%m-%d-%H-%M-%S")
-    destination = att_log_dir + "att-log-" + time
-    command = "sudo pacman -Q > " + destination
-    subprocess.call(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    # GLib.idle_add(show_in_app_notification, self, "Log file created")
-
-# =====================================================
-#               MESSAGEBOX
-# =====================================================
-
-
-def messagebox(self, title, message):
-    md2 = Gtk.MessageDialog(
-        transient_for=self,
-        message_type=Gtk.MessageType.INFO,
-        buttons=Gtk.ButtonsType.OK,
-        text=title,
-    )
-    md2.props.secondary_text = message
-    md2.props.secondary_use_markup = True
-    loop = GLib.MainLoop()
-
-    def on_response(d, response_id):
-        loop.quit()
-        d.destroy()
-
-    md2.connect("response", on_response)
-    md2.show()
-    loop.run()
-
-
-# =====================================================
-#              NEMO SHARE PLUGIN
-# =====================================================
-
-
-def install_arco_nemo_plugin(self, widget):
-    # install = "pacman -S nemo arcolinux-nemo-share --noconfirm"
-    install = "pacman -S nemo nemo-share --noconfirm"
-
-    if check_package_installed("nemo-share"):
-        print("Nemo-share is already installed")
-    else:
-        subprocess.call(
-            install.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("Nemo-share is now installed - reboot")
-        GLib.idle_add(self.label7.set_text, "Nemo-share is now installed - reboot")
-    print("Other apps that might be interesting for sharing are :")
-    print(" - thunar-share-plugin (thunar)")
-    print(" - caja-share (mate)")
-    print(" - kdenetwork-filesharing (plasma)")
-    print(" - nautilus-share (gnome - budgie)")
-
-
-# =====================================================
-#               NEOFETCH CONF
-# =====================================================
-
-
-def neofetch_set_value(lists, pos, text, state):
-    if state:
-        if text in lists[pos]:
-            if "#" in lists[pos]:
-                lists[pos] = lists[pos].replace("#", "")
-    else:
-        if text in lists[pos]:
-            if "#" not in lists[pos]:
-                lists[pos] = "#" + lists[pos]
-
-    return lists
-
-
-def neofetch_set_backend_value(lists, pos, text, value):
-    if text in lists[pos] and "#" not in lists[pos]:
-        lists[pos] = text + value + '"\n'
-
-
-# =====================================================
-#               FASTFETCH CONF
-# =====================================================
-
-
-def fastfetch_set_value(lists, pos, text, state):
-    if state:
-        if text in lists[pos]:
-            if "#" in lists[pos]:
-                lists[pos] = lists[pos].replace("#", "")
-    else:
-        if text in lists[pos]:
-            if "#" not in lists[pos]:
-                lists[pos] = "#" + lists[pos]
-
-    return lists
-
-
-def fastfetch_set_backend_value(lists, pos, text, value):
-    if text in lists[pos] and "#" not in lists[pos]:
-        lists[pos] = text + value + '"\n'
-
-def get_shell_config():
-    # Get the actual user's home directory
-    user_name = os.getlogin()
-    user_home = pwd.getpwnam(user_name).pw_dir
-
-    possible_configs = [
-        os.path.join(user_home, '.bashrc'),
-        os.path.join(user_home, '.zshrc'),
-        os.path.join(user_home, '.config', 'fish', 'config.fish')
-    ]
-
-    for config in possible_configs:
-        if os.path.isfile(config):
-            return config
-
-    return None
-
-# =====================================================
-#               NOTIFICATIONS
-# =====================================================
-
-
-def show_in_app_notification(self, message):
-    if self.timeout_id is not None:
-        GLib.source_remove(self.timeout_id)
-        self.timeout_id = None
-
-    self.notification_label.set_markup(
-        '<span foreground="white">' + message + "</span>"
-    )
-    self.notification_revealer.set_reveal_child(True)
-    self.timeout_id = GLib.timeout_add(3000, timeOut, self)
-
-
-def timeOut(self):
-    close_in_app_notification(self)
-
-
-def close_in_app_notification(self):
-    self.notification_revealer.set_reveal_child(False)
-    GLib.source_remove(self.timeout_id)
-    self.timeout_id = None
-
-
-# =====================================================
-#               NSSWITCH CONF COPY
-# =====================================================
-
-
-def copy_nsswitch(new_hosts_line):
-    dest_file = "/etc/nsswitch.conf"
-
-    try:
-        # Read the current nsswitch.conf
-        with open(dest_file, 'r') as f:
-            dest_lines = f.readlines()
-
-        # Find and replace only the hosts: line
-        old_hosts_line = None
-        updated_lines = []
-        for line in dest_lines:
-            if line.startswith('hosts:'):
-                old_hosts_line = line.rstrip('\n')
-                updated_lines.append(new_hosts_line + '\n')
-            else:
-                updated_lines.append(line)
-
-        # Write back to nsswitch.conf
-        with open(dest_file, 'w') as f:
-            f.writelines(updated_lines)
-
-        # Show what changed
-        if old_hosts_line:
-            print(f"[INFO] Previous code: {old_hosts_line}")
-            print(f"[INFO] New code:      {new_hosts_line}")
-    except Exception as e:
-        print(f"[INFO] Error updating nsswitch.conf: {e}")
-
-
-# =====================================================
-#               OBLOGOUT CONF
-# =====================================================
-# Get shortcuts index
-
-
-def get_shortcuts(conflist):
-    sortcuts = _get_variable(conflist, "shortcuts")
-    shortcuts_index = get_position(conflist, sortcuts[0])
-    return int(shortcuts_index)
-
-
-# Get commands index
-
-
-def get_commands(conflist):
-    commands = _get_variable(conflist, "commands")
-    commands_index = get_position(conflist, commands[0])
-    return int(commands_index)
-
-# =====================================================
-#               PACMAN EXTRA KEYS AND MIRRORS
-# =====================================================
-
-
 def install_reborn(self):
     base_dir = path.dirname(path.realpath(__file__))
     pathway = base_dir + "/data/reborn/packages/keyring/"
@@ -1534,652 +1039,6 @@ def install_arcolinux(self):
             print(error)
 
 
-def test(dst):
-    for root, dirs, filesr in walk(dst):
-        for folder in dirs:
-            pass
-            for file in filesr:
-                pass
-        for file in filesr:
-            pass
-
-
-def permissions(dst):
-    try:
-        groups = subprocess.run(
-            ["sh", "-c", "id " + sudo_username],
-            check=True,
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        group = None
-        for x in groups.stdout.decode().split(" "):
-            if "gid" in x.lower():  # match gid and GID
-                try:
-                    g = x.split("(")[1]
-                    group = g.replace(")", "").strip()
-                    break
-                except IndexError:
-                    raise ValueError("Unexpected format in 'id' command output.")
-
-        # Ensure the group is retrieved
-        if not group:
-            raise ValueError(f"Could not determine group for user {sudo_username}.")
-
-        subprocess.call(["chown", "-R", sudo_username + ":" + group, dst], shell=False)
-    except Exception as error:
-        print(error)
-
-def findgroup():
-    try:
-        groups = subprocess.run(
-            ["sh", "-c", "id " + sudo_username],
-            check=True,
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        group = None
-        for x in groups.stdout.decode().split(" "):
-            if "gid" in x.lower():  # match gid and GID
-                try:
-                    g = x.split("(")[1]
-                    group = g.replace(")", "").strip()
-                    break
-                except IndexError:
-                    raise ValueError("Unexpected format in 'id' command output.")
-
-        # Ensure the group is retrieved
-        if not group:
-            raise ValueError(f"Could not determine group for user {sudo_username}.")
-        print("[INFO] : Group = " + group)
-
-    except Exception as error:
-        print(error)
-
-
-# =====================================================
-#               RESTART PROGRAM
-# =====================================================
-
-
-def restart_program():
-    if path.exists("/tmp/att.lock"):
-        unlink("/tmp/att.lock")
-        python = sys.executable
-        execl(python, python, *sys.argv)
-
-
-# =====================================================
-#               SERVICES - GENERAL FUNCTIONS CUPS
-# =====================================================
-
-
-def enable_service(service):
-    try:
-        command = "systemctl enable " + service + ".service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We enabled the following service : " + service)
-    except Exception as error:
-        print(error)
-
-
-def restart_service(service):
-    try:
-        command = "systemctl reload-or-restart " + service + ".service"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We restarted the following service (if avalable) : " + service)
-    except Exception as error:
-        print(error)
-
-
-def disable_service(service):
-    try:
-        command = "systemctl stop " + service
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        command = "systemctl disable " + service
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We stopped and disabled the following service " + service)
-    except Exception as error:
-        print(error)
-
-
-def find_active_audio():
-    output = subprocess.run(["pactl", "info"], check=True, stdout=subprocess.PIPE)
-
-    pipewire_active = check_value(output, "pipewire")
-
-    if pipewire_active == True:
-        return pipewire_active
-    else:
-        return pipewire_active
-
-
-# =====================================================
-#               SERVICES - AVAHI
-# =====================================================
-
-
-def install_discovery(self):
-    try:
-        packages = "avahi nss-mdns gvfs-smb"
-        print(f"[INFO] Opening terminal to install: {packages}")
-        launch_pacman_install_in_terminal(packages)
-
-        command = "systemctl enable avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("[INFO] Avahi daemon enabled")
-    except Exception as error:
-        print(f"[INFO] Error installing discovery: {error}")
-
-
-def remove_discovery(self):
-    try:
-        command = "systemctl stop avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        command = "systemctl disable avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("[INFO] Avahi daemon disabled")
-
-        command = "systemctl stop avahi-daemon.socket -f"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        command = "systemctl disable avahi-daemon.socket -f"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("[INFO] Avahi socket disabled")
-
-        packages = "avahi nss-mdns gvfs-smb"
-        print(f"[INFO] Opening terminal to remove: {packages}")
-        launch_pacman_remove_in_terminal(packages)
-    except Exception as error:
-        print(f"[INFO] Error removing discovery: {error}")
-
-
-# =====================================================
-#               SERVICES - SAMBA
-# =====================================================
-
-
-def install_samba(self):
-    try:
-        install = "pacman -S samba gvfs-smb --needed --noconfirm"
-
-        if not path.isdir("/var/cache/samba"):
-            makedirs("/var/cache/samba", 0o755)
-
-        if check_package_installed("samba") and check_package_installed("gvfs-smb"):
-            pass
-        else:
-            subprocess.call(
-                install.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("Samba and gvfs-smb are now installed")
-
-        command = "systemctl enable smb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We enabled smb.service")
-
-        command = "systemctl enable nmb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We enabled nmb.service")
-    except Exception as error:
-        print(error)
-
-
-def uninstall_samba(self):
-    try:
-        command = "systemctl disable smb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We disabled smb.service")
-
-        command = "systemctl disable nmb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("We disabled nmb.service")
-
-        command = "pacman -Rs samba --noconfirm"
-        if check_package_installed("samba"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("Samba was removed if there were no dependencies")
-
-        command = "pacman -Rs gvfs-smb --noconfirm"
-        if check_package_installed("nss-mdns"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("gvfs-smb was removed")
-    except Exception as error:
-        print(error)
-
-
-# =====================================================
-#               SAMBA CONF COPY
-# =====================================================
-
-
-def copy_samba(choice):
-    command = (
-        "cp /usr/share/archlinux-tweak-tool/data/any/samba/"
-        + choice
-        + "/smb.conf /etc/samba/smb.conf"
-    )
-    subprocess.call(
-        command.split(" "),
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    if choice == "example":
-        if not path.isdir("/home/" + sudo_username + "/Shared"):
-            makedirs("/home/" + sudo_username + "/Shared", 0o755)
-        permissions("/home/" + sudo_username + "/Shared")
-        try:
-            with open(samba_config, "r", encoding="utf-8") as f:
-                lists = f.readlines()
-                f.close()
-
-            val = get_position(lists, "[SAMBASHARE]")
-            lists[val + 1] = "path = " + "/home/" + sudo_username + "/Shared\n"
-
-            print("You have choosen to install Samba with an example share")
-            print("We have added a folder called 'Shared' to your home directory")
-            print("You can access this folder from any computer in your network")
-            print("You can write and remove items from the shared folder")
-            print("Reboot or restart smb first")
-            print(lists[val + 1])
-
-            with open(samba_config, "w", encoding="utf-8") as f:
-                f.writelines(lists)
-                f.close()
-        except Exception as error:
-            print(error)
-
-    if choice == "usershares":
-        # make folder
-        if not path.isdir("/var/lib/samba/usershares"):
-            makedirs("/var/lib/samba/usershares", 0o770)
-
-        # create system sambashare group
-        try:
-            if check_group("sambashare"):
-                pass
-            else:
-                try:
-                    command = "groupadd -r sambashare"
-                    subprocess.call(
-                        command.split(" "),
-                        shell=False,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    )
-                except Exception as error:
-                    print(error)
-
-        except Exception as error:
-            print(error)
-
-        # add user to group
-        try:
-            command = "gpasswd -a " + sudo_username + " sambashare"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            print(error)
-
-        try:
-            command = "chown root:sambashare /var/lib/samba/usershares"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            print(error)
-
-        try:
-            command = "chmod 1770 /var/lib/samba/usershares"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            print(error)
-
-
-# =====================================================
-#               SAMBA EDIT
-# =====================================================
-
-
-# samba advanced - TODO
-def save_samba_config(self):
-    # create smb.conf if there is none?
-    if path.isfile(samba_config):
-        if not path.isfile(samba_config + ".bak"):
-            shutil.copy(samba_config, samba_config + ".bak")
-        try:
-            with open(samba_config, "r", encoding="utf-8") as f:
-                lists = f.readlines()
-                f.close()
-
-            path = self.entry_path.get_text()
-            browseable = self.samba_share_browseable.get_active()
-            if browseable:
-                browseable = "yes"
-            else:
-                browseable = "no"
-            guest = self.samba_share_guest.get_active()
-            if guest:
-                guest = "yes"
-            else:
-                guest = "no"
-            public = self.samba_share_public.get_active()
-            if public:
-                public = "yes"
-            else:
-                public = "no"
-            writable = self.samba_share_writable.get_active()
-            if writable:
-                writable = "yes"
-            else:
-                writable = "no"
-
-            val = get_position(lists, "[SAMBASHARE]")
-            if lists[val] == ";[SAMBASHARE]\n":
-                lists[val] = "[SAMBASHARE]" + "\n"
-            lists[val + 1] = "path = " + path + "\n"
-            lists[val + 2] = "browseable  = " + browseable + "\n"
-            lists[val + 3] = "guest ok = " + guest + "\n"
-            lists[val + 4] = "public = " + public + "\n"
-            lists[val + 5] = "writable = " + writable + "\n"
-
-            print("These lines have been saved at the end of /etc/samba/smb.conf")
-            print("Edit this file to add more shares")
-            print(lists[val])
-            print(lists[val + 1])
-            print(lists[val + 2])
-            print(lists[val + 3])
-            print(lists[val + 4])
-            print(lists[val + 5])
-
-            with open(samba_config, "w", encoding="utf-8") as f:
-                f.writelines(lists)
-                f.close()
-
-            print("Smb.conf has been saved")
-            show_in_app_notification(self, "Smb.conf has been saved")
-        except:
-            pass
-    else:
-        print(
-            "Choose or create your own smb.conf in /etc/samba/smb.conf then change settings"
-        )
-        show_in_app_notification(self, "Choose or create your own smb.conf")
-
-
-# =====================================================
-#                       SDDM
-# =====================================================
-
-
-def create_sddm_k_dir():
-    if not path.isdir(sddm_default_d2_dir):
-        try:
-            mkdir(sddm_default_d2_dir)
-        except Exception as error:
-            print(error)
-
-
-# =====================================================
-#                       SHELL
-# =====================================================
-
-
-def source_shell(self):
-    process = subprocess.run(
-        ["sh", "-c", 'echo "$SHELL"'], check=True, stdout=subprocess.PIPE
-    )
-
-    output = process.stdout.decode().strip()
-    if output == "/bin/bash":
-        subprocess.run(
-            [
-                "bash",
-                "-c",
-                "su - " + sudo_username + ' -c "source ' + home + '/.bashrc"',
-            ],
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-    elif output == "/bin/zsh":
-        subprocess.run(
-            ["zsh", "-c", "su - " + sudo_username + ' -c "source ' + home + '/.zshrc"'],
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-    elif output == "/usr/bin/fish":
-        subprocess.run(
-            [
-                "fish",
-                "-c",
-                "su - "
-                + sudo_username
-                + ' -c "source '
-                + home
-                + '/.config/fish/config.fish"',
-            ],
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-
-
-def get_shell():
-    try:
-        process = subprocess.run(
-            ["su", "-", sudo_username, "-c", 'echo "$SHELL"'],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        output = process.stdout.decode().strip().strip("\n")
-        if output in ("/bin/bash", "/usr/bin/bash"):
-            return "bash"
-        elif output in ("/bin/zsh", "/usr/bin/zsh"):
-            return "zsh"
-        elif output in ("/bin/fish", "/usr/bin/fish"):
-            return "fish"
-    except Exception as error:
-        print(error)
-
-
-def run_as_user(script):
-    subprocess.call(["su - " + sudo_username + " -c " + script], shell=False)
-
-# =====================================================
-#               THUNAR SHARE PLUGIN
-# =====================================================
-
-
-def install_arco_thunar_plugin(self, widget):
-    # install = "pacman -S thunar arcolinux-thunar-shares-plugin --noconfirm"
-    install = "pacman -S thunar thunar-shares-plugin --noconfirm"
-
-    if check_package_installed("thunar-shares-plugin"):
-        print("Thunar-shares-plugin is already installed")
-    else:
-        try:
-            subprocess.call(
-                install.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("Thunar-shares-plugin is now installed - reboot")
-            GLib.idle_add(
-                self.label7.set_text,
-                "Thunar-shares-plugin is now installed - reboot",
-            )
-            print("Other apps that might be interesting for sharing are :")
-            print(" - nemo-share (cinnamon)")
-            print(" - caja-share (mate)")
-            print(" - nautilus-share (gnome - budgie)")
-            print(" - kdenetwork-filesharing (plasma)")
-
-        except Exception as error:
-            print(error)
-
-
-# =====================================================
-#               UBLOCK ORIGIN
-# =====================================================
-
-
-def ublock_get_state(self):
-    if path.exists("/usr/lib/firefox/browser/extensions/uBlock0@raymondhill.net.xpi"):
-        return True
-    return False
-
-
-def set_firefox_ublock(self, toggle, state):
-    GLib.idle_add(toggle.set_sensitive, False)
-    GLib.idle_add(self.label7.set_visible, True)
-    GLib.idle_add(self.progress.set_visible, True)
-    GLib.idle_add(self.label7.set_text, "Run..")
-    GLib.idle_add(self.progress.set_fraction, 0.2)
-
-    timeout_id = None
-    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
-
-    try:
-        install_ublock = "pacman -S firefox-ublock-origin --needed --noconfirm"
-        uninstall_ublock = "pacman -Rs firefox-ublock-origin --noconfirm"
-
-        if state:
-            GLib.idle_add(self.label7.set_text, "Installing ublock Origin...")
-            subprocess.call(
-                install_ublock.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        else:
-            GLib.idle_add(self.label7.set_text, "Removing ublock Origin...")
-            subprocess.call(
-                uninstall_ublock.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-        GLib.idle_add(self.label7.set_text, "Complete")
-        GLib.source_remove(timeout_id)
-        timeout_id = None
-        GLib.idle_add(self.progress.set_fraction, 0)
-
-        GLib.idle_add(toggle.set_sensitive, True)
-        if state:
-            GLib.idle_add(self.label7.set_text, "uBlock Origin installed")
-        else:
-            GLib.idle_add(self.label7.set_text, "uBlock Origin removed")
-        GLib.idle_add(self.label7.set_visible, False)
-        GLib.idle_add(self.progress.set_visible, False)
-
-    except Exception as error:
-        messagebox(self, "ERROR!!", str(error))
-        print(error)
-
-
-# ====================================================================
-#                      UPDATE REPOS
-# ====================================================================
-
-
 def update_repos(self):
     try:
         command = "pacman -Sy"
@@ -2192,251 +1051,14 @@ def update_repos(self):
     except Exception as error:
         print(error)
 
-# =====================================================
-#               THREADING
-# =====================================================
-
-# check if the named thread is running
-def is_thread_alive(thread_name):
-    for thread in threading.enumerate():
-        if thread.name == thread_name and thread.is_alive():
-            return True
-
-    return False
-
 
 # =====================================================
-#               MONITOR PACMAN LOG FILE
 # =====================================================
-
-# write lines from the pacman log onto a queue, this is called from a non-blocking thread
-def _add_pacmanlog_queue(self):
-    try:
-        lines = []
-        with open(pacman_logfile, "r", encoding="utf-8") as f:
-            while True:
-                line = f.readline()
-                if line:
-                    # encode in utf-8
-                    # this fixes Gtk-CRITICAL **: gtk_text_buffer_emit_insert:
-                    # assertion 'g_utf8_validate (text, len, NULL)' failed
-                    lines.append(line.encode("utf-8"))
-                    self.pacmanlog_queue.put(lines)
-                else:
-                    time.sleep(0.5)
-
-    except Exception as e:
-        logger.error("Exception in add_pacmanlog_queue() : %s" % e)
-    finally:
-        logger.debug("No new lines found inside the pacman log file")
-
-
-# un-used code
-
-
-# start log timer to update the textview called from a non-blocking thread
-def _start_log_timer(self, textbuffer_pacmanlog, textview_pacmanlog):
-    while True:
-        # once the pacman process has completed, do not keep updating the textview, so break out the loop
-        if self.start_logtimer is False:
-            break
-
-        GLib.idle_add(
-            _update_textview_pacmanlog,
-            self,
-            textbuffer_pacmanlog,
-            textview_pacmanlog,
-            priority=GLib.PRIORITY_DEFAULT,
-        )
-        time.sleep(2)
-
-
-# un-used code
-
-# update the textview component with new lines from the pacman log file
-# To fix: Gtk-CRITICAL **: gtk_text_buffer_emit_insert: assertion 'g_utf8_validate (text, len, NULL)' failed
-# Make sure the line read from the pacman log file is encoded in utf-8
-# Then decode the line when inserting inside the buffer
-
-
-def _update_textview_pacmanlog(self, textbuffer_pacmanlog, textview_pacmanlog):
-    lines = self.pacmanlog_queue.get()
-
-    try:
-        if len(lines) > 0:
-            end_iter = textbuffer_pacmanlog.get_end_iter()
-            for line in lines:
-                if len(line) > 0:
-                    textbuffer_pacmanlog.insert(
-                        end_iter,
-                        line.decode("utf-8"),
-                        len(line),
-                    )
-
-    except Exception as e:
-        logger.error("Exception in update_textview_pacmanlog() : %s" % e)
-    finally:
-        self.pacmanlog_queue.task_done()
-
-        if len(lines) > 0:
-            text_mark_end = textbuffer_pacmanlog.create_mark(
-                "END", textbuffer_pacmanlog.get_end_iter(), False
-            )
-            # auto-scroll the textview to the bottom as new content is added
-
-            textview_pacmanlog.scroll_mark_onscreen(text_mark_end)
-
-        lines.clear()
-
-
-# update textview with pacman progress
-def update_progress_textview(self, line):
-    try:
-        if len(line) > 0:
-            self.textbuffer.insert(
-                self.textbuffer.get_end_iter(),
-                " %s" % line,
-                len(" %s" % line),
-            )
-
-    except Exception as e:
-        logger.error("Exception in update_progress_textview(): %s" % e)
-    finally:
-        self.messages_queue.task_done()
-        text_mark_end = self.textbuffer.create_mark(
-            "end", self.textbuffer.get_end_iter(), False
-        )
-        # scroll to the end of the textview
-        self.textview.scroll_mark_onscreen(text_mark_end)
-
-
-# update the package install status label called from outside the main thread
-def update_package_status_label(label, text):
-    label.set_markup(text)
-
-
-# check if the pacman lock file exists on the system
-def check_pacman_lockfile():
-    return os.path.exists(pacman_lockfile)
-
-
-# keep track of messages added to the queue, and updates the textview in almost realtime
-def monitor_messages_queue(self):
-    try:
-        while True:
-            message = self.messages_queue.get()
-            GLib.idle_add(
-                update_progress_textview,
-                self,
-                message,
-                priority=GLib.PRIORITY_DEFAULT,
-            )
-    except Exception as e:
-        logger.error("Exception in monitor_messages_queue(): %s" % e)
-
-
 # =====================================================
-#        AUR HELPER & TERMINAL LAUNCH UTILITIES
+#              SECTION 6: TERMINAL LAUNCH
 # =====================================================
-
-def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
-    def _wait():
-        try:
-            print(f"\n[INFO] wait_install_and_update() started for package: {package_name}")
-            print(f"[INFO] Binary path: {binary_path}")
-            print(f"[INFO] Waiting for process to complete...")
-            process.communicate()
-            time.sleep(1)
-
-            error_output = ""
-            if hasattr(process, 'temp_file') and process.temp_file:
-                try:
-                    print(f"[INFO] Reading temp file: {process.temp_file}")
-                    with open(process.temp_file, 'r') as f:
-                        error_output = f.read()
-                    print(f"[INFO] Temp file contents: {len(error_output)} bytes")
-                    import os as os_module
-                    os_module.unlink(process.temp_file)
-                except Exception as e:
-                    print(f"[INFO] Error reading temp file: {e}")
-
-            if path.exists(binary_path):
-                print(f"[INFO] Binary exists at {binary_path}, installation successful")
-                if label_widget:
-                    GLib.idle_add(label_widget.set_markup, installed_markup)
-                GLib.idle_add(show_in_app_notification, self_ref, notification)
-            else:
-                print(f"[INFO] Binary NOT found at {binary_path}, checking for errors...")
-                print(f"[INFO] Total error output length: {len(error_output)} bytes")
-                if package_name:
-                    print(f"[INFO] Calling check_missing_repo_error with package: {package_name}")
-                    check_missing_repo_error(self_ref, error_output, package_name)
-                else:
-                    print(f"[INFO] No package_name provided, skipping error check")
-        except Exception as e:
-            print(f"[ERROR] Exception in wait_install_and_update: {e}")
-            import traceback
-            traceback.print_exc()
-    threading.Thread(target=_wait, daemon=True).start()
-
-
-def wait_remove_and_update(process, binary_path, label_widget, plain_markup, self_ref, notification):
-    def _wait():
-        try:
-            print(f"\n[INFO] wait_remove_and_update() started")
-            print(f"[INFO] Binary path to check: {binary_path}")
-            print(f"[INFO] Waiting for removal process to complete...")
-            stdout_data, stderr_data = process.communicate()
-            print(f"[INFO] Process completed")
-            print(f"[INFO] Captured output: stdout={len(stdout_data) if stdout_data else 0} bytes, stderr={len(stderr_data) if stderr_data else 0} bytes")
-            time.sleep(1)
-
-            error_output = ""
-            if hasattr(process, 'temp_file') and process.temp_file:
-                try:
-                    print(f"[INFO] Reading output from temp file: {process.temp_file}")
-                    with open(process.temp_file, 'r') as f:
-                        error_output = f.read()
-                    print(f"[INFO] Temp file size: {len(error_output)} bytes")
-                    print(f"[INFO] Parsing output for errors...")
-                    import os as os_module
-                    os_module.unlink(process.temp_file)
-                    print(f"[INFO] Cleaned up temp file")
-                except Exception as e:
-                    print(f"[INFO] Could not read temp file: {e}")
-
-            print(f"[INFO] Checking if binary still exists at: {binary_path}")
-            if not path.exists(binary_path):
-                print(f"[INFO] ✓ Binary successfully removed from {binary_path}")
-                print(f"[INFO] Updating UI and showing notification")
-                GLib.idle_add(label_widget.set_markup, plain_markup)
-                GLib.idle_add(show_in_app_notification, self_ref, notification)
-                print(f"[INFO] {notification}")
-            else:
-                print(f"[INFO] ✗ Binary still exists at {binary_path}")
-                print(f"[INFO] Removal may have failed or encountered issues")
-        except Exception as e:
-            print(f"[ERROR] Exception in wait_remove_and_update: {e}")
-            import traceback
-            traceback.print_exc()
-    threading.Thread(target=_wait, daemon=True).start()
-
-
-def wait_and_notify(process, self_ref, notification):
-    def _wait():
-        try:
-            process.communicate()
-            import os as os_module
-            if hasattr(process, 'temp_file') and process.temp_file:
-                try:
-                    os_module.unlink(process.temp_file)
-                except Exception:
-                    pass
-            print(f"[INFO] {notification}")
-            GLib.idle_add(show_in_app_notification, self_ref, notification)
-        except Exception as e:
-            print(f"[ERROR] Exception in wait_and_notify: {e}")
-    threading.Thread(target=_wait, daemon=True).start()
+# =====================================================
+# =====================================================
 
 
 def get_aur_helper():
@@ -2444,18 +1066,6 @@ def get_aur_helper():
         if path.exists("/usr/bin/" + helper):
             return helper
     return None
-
-
-def ensure_firefox_installed():
-    import shutil
-    if not shutil.which("firefox"):
-        print("[INFO] Firefox not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "firefox"],
-                                     capture_output=True, text=True)
-        if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install Firefox: {install_proc.stderr}")
-            return False
-    return True
 
 
 def ensure_nodejs_installed():
@@ -2743,3 +1353,963 @@ def launch_npm_remove_in_terminal(npm_package):
         return None
     script = f"/usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 7: THREADING & QUEUE
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def monitor_messages_queue(self):
+    try:
+        while True:
+            message = self.messages_queue.get()
+            GLib.idle_add(
+                update_progress_textview,
+                self,
+                message,
+                priority=GLib.PRIORITY_DEFAULT,
+            )
+    except Exception as e:
+        logger.error("Exception in monitor_messages_queue(): %s" % e)
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 8: SERVICES (systemd)
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def enable_service(service):
+    try:
+        command = "systemctl enable " + service + ".service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We enabled the following service : " + service)
+    except Exception as error:
+        print(error)
+
+
+def restart_service(service):
+    try:
+        command = "systemctl reload-or-restart " + service + ".service"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We restarted the following service (if avalable) : " + service)
+    except Exception as error:
+        print(error)
+
+
+def disable_service(service):
+    try:
+        command = "systemctl stop " + service
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        command = "systemctl disable " + service
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We stopped and disabled the following service " + service)
+    except Exception as error:
+        print(error)
+
+
+def enable_login_manager(self, loginmanager):
+    if check_package_installed(loginmanager):
+        try:
+            command = "systemctl enable " + loginmanager + ".service -f"
+            print(command)
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            print(loginmanager + " has been enabled - reboot")
+            GLib.idle_add(
+                show_in_app_notification,
+                self,
+                loginmanager + " has been enabled - reboot",
+            )
+        except Exception as error:
+            print(error)
+    else:
+        print(loginmanager + " is not installed")
+        GLib.idle_add(
+            show_in_app_notification, self, loginmanager + " is not installed"
+        )
+
+
+def add_autologin_group(self):
+    com = subprocess.run(
+        ["sh", "-c", "su - " + sudo_username + " -c groups"],
+        check=True,
+        shell=False,
+        stdout=subprocess.PIPE,
+    )
+    groups = com.stdout.decode().strip().split(" ")
+    if "autologin" not in groups:
+        command = "groupadd autologin"
+        try:
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as error:
+            print(error)
+        try:
+            subprocess.run(
+                ["gpasswd", "-a", sudo_username, "autologin"], check=True, shell=False
+            )
+        except Exception as error:
+            print(error)
+
+
+def install_discovery(self):
+    try:
+        packages = "avahi nss-mdns gvfs-smb"
+        print(f"[INFO] Opening terminal to install: {packages}")
+        launch_pacman_install_in_terminal(packages)
+
+        command = "systemctl enable avahi-daemon.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("[INFO] Avahi daemon enabled")
+    except Exception as error:
+        print(f"[INFO] Error installing discovery: {error}")
+
+
+def remove_discovery(self):
+    try:
+        command = "systemctl stop avahi-daemon.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        command = "systemctl disable avahi-daemon.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("[INFO] Avahi daemon disabled")
+
+        command = "systemctl stop avahi-daemon.socket -f"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        command = "systemctl disable avahi-daemon.socket -f"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("[INFO] Avahi socket disabled")
+
+        packages = "avahi nss-mdns gvfs-smb"
+        print(f"[INFO] Opening terminal to remove: {packages}")
+        launch_pacman_remove_in_terminal(packages)
+    except Exception as error:
+        print(f"[INFO] Error removing discovery: {error}")
+
+
+def install_samba(self):
+    try:
+        install = "pacman -S samba gvfs-smb --needed --noconfirm"
+
+        if not path.isdir("/var/cache/samba"):
+            makedirs("/var/cache/samba", 0o755)
+
+        if check_package_installed("samba") and check_package_installed("gvfs-smb"):
+            pass
+        else:
+            subprocess.call(
+                install.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            print("Samba and gvfs-smb are now installed")
+
+        command = "systemctl enable smb.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We enabled smb.service")
+
+        command = "systemctl enable nmb.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We enabled nmb.service")
+    except Exception as error:
+        print(error)
+
+
+def uninstall_samba(self):
+    try:
+        command = "systemctl disable smb.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We disabled smb.service")
+
+        command = "systemctl disable nmb.service -f --now"
+        subprocess.call(
+            command.split(" "),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("We disabled nmb.service")
+
+        command = "pacman -Rs samba --noconfirm"
+        if check_package_installed("samba"):
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            print("Samba was removed if there were no dependencies")
+
+        command = "pacman -Rs gvfs-smb --noconfirm"
+        if check_package_installed("nss-mdns"):
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            print("gvfs-smb was removed")
+    except Exception as error:
+        print(error)
+
+
+def copy_samba(choice):
+    command = (
+        "cp /usr/share/archlinux-tweak-tool/data/any/samba/"
+        + choice
+        + "/smb.conf /etc/samba/smb.conf"
+    )
+    subprocess.call(
+        command.split(" "),
+        shell=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if choice == "example":
+        if not path.isdir("/home/" + sudo_username + "/Shared"):
+            makedirs("/home/" + sudo_username + "/Shared", 0o755)
+        permissions("/home/" + sudo_username + "/Shared")
+        try:
+            with open(samba_config, "r", encoding="utf-8") as f:
+                lists = f.readlines()
+                f.close()
+
+            val = get_position(lists, "[SAMBASHARE]")
+            lists[val + 1] = "path = " + "/home/" + sudo_username + "/Shared\n"
+
+            print("You have choosen to install Samba with an example share")
+            print("We have added a folder called 'Shared' to your home directory")
+            print("You can access this folder from any computer in your network")
+            print("You can write and remove items from the shared folder")
+            print("Reboot or restart smb first")
+            print(lists[val + 1])
+
+            with open(samba_config, "w", encoding="utf-8") as f:
+                f.writelines(lists)
+                f.close()
+        except Exception as error:
+            print(error)
+
+    if choice == "usershares":
+        # make folder
+        if not path.isdir("/var/lib/samba/usershares"):
+            makedirs("/var/lib/samba/usershares", 0o770)
+
+        # create system sambashare group
+        try:
+            if check_group("sambashare"):
+                pass
+            else:
+                try:
+                    command = "groupadd -r sambashare"
+                    subprocess.call(
+                        command.split(" "),
+                        shell=False,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    )
+                except Exception as error:
+                    print(error)
+
+        except Exception as error:
+            print(error)
+
+        # add user to group
+        try:
+            command = "gpasswd -a " + sudo_username + " sambashare"
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as error:
+            print(error)
+
+        try:
+            command = "chown root:sambashare /var/lib/samba/usershares"
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as error:
+            print(error)
+
+        try:
+            command = "chmod 1770 /var/lib/samba/usershares"
+            subprocess.call(
+                command.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as error:
+            print(error)
+
+
+def save_samba_config(self):
+    # create smb.conf if there is none?
+    if path.isfile(samba_config):
+        if not path.isfile(samba_config + ".bak"):
+            shutil.copy(samba_config, samba_config + ".bak")
+        try:
+            with open(samba_config, "r", encoding="utf-8") as f:
+                lists = f.readlines()
+                f.close()
+
+            path_val = self.entry_path.get_text()
+            browseable = self.samba_share_browseable.get_active()
+            if browseable:
+                browseable = "yes"
+            else:
+                browseable = "no"
+            guest = self.samba_share_guest.get_active()
+            if guest:
+                guest = "yes"
+            else:
+                guest = "no"
+            public = self.samba_share_public.get_active()
+            if public:
+                public = "yes"
+            else:
+                public = "no"
+            writable = self.samba_share_writable.get_active()
+            if writable:
+                writable = "yes"
+            else:
+                writable = "no"
+
+            val = get_position(lists, "[SAMBASHARE]")
+            if lists[val] == ";[SAMBASHARE]\n":
+                lists[val] = "[SAMBASHARE]" + "\n"
+            lists[val + 1] = "path = " + path_val + "\n"
+            lists[val + 2] = "browseable  = " + browseable + "\n"
+            lists[val + 3] = "guest ok = " + guest + "\n"
+            lists[val + 4] = "public = " + public + "\n"
+            lists[val + 5] = "writable = " + writable + "\n"
+
+            print("These lines have been saved at the end of /etc/samba/smb.conf")
+            print("Edit this file to add more shares")
+            print(lists[val])
+            print(lists[val + 1])
+            print(lists[val + 2])
+            print(lists[val + 3])
+            print(lists[val + 4])
+            print(lists[val + 5])
+
+            with open(samba_config, "w", encoding="utf-8") as f:
+                f.writelines(lists)
+                f.close()
+
+            print("Smb.conf has been saved")
+            show_in_app_notification(self, "Smb.conf has been saved")
+        except:
+            pass
+    else:
+        print(
+            "Choose or create your own smb.conf in /etc/samba/smb.conf then change settings"
+        )
+        show_in_app_notification(self, "Choose or create your own smb.conf")
+
+
+def create_sddm_k_dir():
+    if not path.isdir(sddm_default_d2_dir):
+        try:
+            mkdir(sddm_default_d2_dir)
+        except Exception as error:
+            print(error)
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 9: NETWORK & SAMBA
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def copy_nsswitch(new_hosts_line):
+    dest_file = "/etc/nsswitch.conf"
+
+    try:
+        # Read the current nsswitch.conf
+        with open(dest_file, 'r') as f:
+            dest_lines = f.readlines()
+
+        # Find and replace only the hosts: line
+        old_hosts_line = None
+        updated_lines = []
+        for line in dest_lines:
+            if line.startswith('hosts:'):
+                old_hosts_line = line.rstrip('\n')
+                updated_lines.append(new_hosts_line + '\n')
+            else:
+                updated_lines.append(line)
+
+        # Write back to nsswitch.conf
+        with open(dest_file, 'w') as f:
+            f.writelines(updated_lines)
+
+        # Show what changed
+        if old_hosts_line:
+            print(f"[INFO] Previous code: {old_hosts_line}")
+            print(f"[INFO] New code:      {new_hosts_line}")
+    except Exception as e:
+        print(f"[INFO] Error updating nsswitch.conf: {e}")
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 10: SHELL
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def change_shell(self, shell):
+    command = "sudo chsh " + sudo_username + " -s /bin/" + shell
+    subprocess.call(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    print("Shell changed to " + shell + " for the user - logout")
+    GLib.idle_add(
+        show_in_app_notification,
+        self,
+        "Shell changed to " + shell + " for user - logout",
+    )
+
+
+def source_shell(self):
+    process = subprocess.run(
+        ["sh", "-c", 'echo "$SHELL"'], check=True, stdout=subprocess.PIPE
+    )
+
+    output = process.stdout.decode().strip()
+    if output == "/bin/bash":
+        subprocess.run(
+            [
+                "bash",
+                "-c",
+                "su - " + sudo_username + ' -c "source ' + home + '/.bashrc"',
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+    elif output == "/bin/zsh":
+        subprocess.run(
+            ["zsh", "-c", "su - " + sudo_username + ' -c "source ' + home + '/.zshrc"'],
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+    elif output == "/usr/bin/fish":
+        subprocess.run(
+            [
+                "fish",
+                "-c",
+                "su - "
+                + sudo_username
+                + ' -c "source '
+                + home
+                + '/.config/fish/config.fish"',
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+
+
+def get_shell():
+    try:
+        process = subprocess.run(
+            ["su", "-", sudo_username, "-c", 'echo "$SHELL"'],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        output = process.stdout.decode().strip().strip("\n")
+        if output in ("/bin/bash", "/usr/bin/bash"):
+            return "bash"
+        elif output in ("/bin/zsh", "/usr/bin/zsh"):
+            return "zsh"
+        elif output in ("/bin/fish", "/usr/bin/fish"):
+            return "fish"
+    except Exception as error:
+        print(error)
+
+
+def get_shell_config():
+    # Get the actual user's home directory
+    user_name = os.getlogin()
+    user_home = pwd.getpwnam(user_name).pw_dir
+
+    possible_configs = [
+        os.path.join(user_home, '.bashrc'),
+        os.path.join(user_home, '.zshrc'),
+        os.path.join(user_home, '.config', 'fish', 'config.fish')
+    ]
+
+    for config in possible_configs:
+        if os.path.isfile(config):
+            return config
+
+    return None
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 11: PRIVACY
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def hblock_get_state(self):
+    lines = int(
+        subprocess.check_output("wc -l /etc/hosts", shell=True).strip().split()[0]
+    )
+    if path.exists("/usr/bin/hblock") and lines > 100:
+        return True
+
+    self.firstrun = False
+    return False
+
+
+def do_pulse(data, prog):
+    prog.pulse()
+    return True
+
+
+def set_hblock(self, toggle, state):
+    GLib.idle_add(toggle.set_sensitive, False)
+    GLib.idle_add(self.label7.set_visible, True)
+    GLib.idle_add(self.progress.set_visible, True)
+    GLib.idle_add(self.label7.set_text, "Run..")
+    GLib.idle_add(self.progress.set_fraction, 0.2)
+
+    timeout_id = None
+    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
+
+    if not path.isfile("/etc/hosts.bak"):
+        shutil.copy("/etc/hosts", "/etc/hosts.bak")
+
+    try:
+        install = "pacman -S edu-hblock-git --needed --noconfirm"
+        enable = "/usr/bin/hblock"
+
+        if state:
+            if path.exists("/usr/bin/hblock"):
+                GLib.idle_add(self.label7.set_text, "Database update...")
+                subprocess.call(
+                    [enable],
+                    shell=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            else:
+                GLib.idle_add(self.label7.set_text, "Install Hblock......")
+                subprocess.call(
+                    install.split(" "),
+                    shell=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                GLib.idle_add(self.label7.set_text, "Database update...")
+                subprocess.call(
+                    [enable],
+                    shell=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+
+        else:
+            GLib.idle_add(self.label7.set_text, "Remove update...")
+            subprocess.run(
+                ["sh", "-c", "HBLOCK_SOURCES='' /usr/bin/hblock"],
+                check=True,
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+        GLib.idle_add(self.label7.set_text, "Complete")
+        GLib.source_remove(timeout_id)
+        timeout_id = None
+        GLib.idle_add(self.progress.set_fraction, 0)
+
+        GLib.idle_add(toggle.set_sensitive, True)
+        if state:
+            GLib.idle_add(self.label7.set_text, "HBlock Active")
+        else:
+            GLib.idle_add(self.label7.set_text, "HBlock Inactive")
+        GLib.idle_add(self.label7.set_visible, False)
+        GLib.idle_add(self.progress.set_visible, False)
+
+    except Exception as error:
+        messagebox(self, "ERROR!!", str(error))
+        print(error)
+
+
+def ublock_get_state(self):
+    if path.exists("/usr/lib/firefox/browser/extensions/uBlock0@raymondhill.net.xpi"):
+        return True
+    return False
+
+
+def set_firefox_ublock(self, toggle, state):
+    GLib.idle_add(toggle.set_sensitive, False)
+    GLib.idle_add(self.label7.set_visible, True)
+    GLib.idle_add(self.progress.set_visible, True)
+    GLib.idle_add(self.label7.set_text, "Run..")
+    GLib.idle_add(self.progress.set_fraction, 0.2)
+
+    timeout_id = None
+    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
+
+    try:
+        install_ublock = "pacman -S firefox-ublock-origin --needed --noconfirm"
+        uninstall_ublock = "pacman -Rs firefox-ublock-origin --noconfirm"
+
+        if state:
+            GLib.idle_add(self.label7.set_text, "Installing ublock Origin...")
+            subprocess.call(
+                install_ublock.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        else:
+            GLib.idle_add(self.label7.set_text, "Removing ublock Origin...")
+            subprocess.call(
+                uninstall_ublock.split(" "),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+        GLib.idle_add(self.label7.set_text, "Complete")
+        GLib.source_remove(timeout_id)
+        timeout_id = None
+        GLib.idle_add(self.progress.set_fraction, 0)
+
+        GLib.idle_add(toggle.set_sensitive, True)
+        if state:
+            GLib.idle_add(self.label7.set_text, "uBlock Origin installed")
+        else:
+            GLib.idle_add(self.label7.set_text, "uBlock Origin removed")
+        GLib.idle_add(self.label7.set_visible, False)
+        GLib.idle_add(self.progress.set_visible, False)
+
+    except Exception as error:
+        messagebox(self, "ERROR!!", str(error))
+        print(error)
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 12:  FASTFETCH
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def fastfetch_set_value(lists, pos, text, state):
+    if state:
+        if text in lists[pos]:
+            if "#" in lists[pos]:
+                lists[pos] = lists[pos].replace("#", "")
+    else:
+        if text in lists[pos]:
+            if "#" not in lists[pos]:
+                lists[pos] = "#" + lists[pos]
+
+    return lists
+
+
+def fastfetch_set_backend_value(lists, pos, text, value):
+    if text in lists[pos] and "#" not in lists[pos]:
+        lists[pos] = text + value + '"\n'
+
+
+# =====================================================
+# =====================================================
+# =====================================================
+#              SECTION 13: LOGGING / PACMAN LOG
+# =====================================================
+# =====================================================
+# =====================================================
+
+
+def create_log(self):
+    print("Making log in /var/log/archlinux")
+    now = datetime.datetime.now()
+    time = now.strftime("%Y-%m-%d-%H-%M-%S")
+    destination = att_log_dir + "att-log-" + time
+    command = "sudo pacman -Q > " + destination
+    subprocess.call(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+
+
+def _add_pacmanlog_queue(self):
+    try:
+        lines = []
+        with open(pacman_logfile, "r", encoding="utf-8") as f:
+            while True:
+                line = f.readline()
+                if line:
+                    # encode in utf-8
+                    # this fixes Gtk-CRITICAL **: gtk_text_buffer_emit_insert:
+                    # assertion 'g_utf8_validate (text, len, NULL)' failed
+                    lines.append(line.encode("utf-8"))
+                    self.pacmanlog_queue.put(lines)
+                else:
+                    time.sleep(0.5)
+
+    except Exception as e:
+        logger.error("Exception in add_pacmanlog_queue() : %s" % e)
+    finally:
+        logger.debug("No new lines found inside the pacman log file")
+
+
+def _update_textview_pacmanlog(self, textbuffer_pacmanlog, textview_pacmanlog):
+    lines = self.pacmanlog_queue.get()
+
+    try:
+        if len(lines) > 0:
+            end_iter = textbuffer_pacmanlog.get_end_iter()
+            for line in lines:
+                if len(line) > 0:
+                    textbuffer_pacmanlog.insert(
+                        end_iter,
+                        line.decode("utf-8"),
+                        len(line),
+                    )
+
+    except Exception as e:
+        logger.error("Exception in update_textview_pacmanlog() : %s" % e)
+    finally:
+        self.pacmanlog_queue.task_done()
+
+        if len(lines) > 0:
+            text_mark_end = textbuffer_pacmanlog.create_mark(
+                "END", textbuffer_pacmanlog.get_end_iter(), False
+            )
+            # auto-scroll the textview to the bottom as new content is added
+
+            textview_pacmanlog.scroll_mark_onscreen(text_mark_end)
+
+        lines.clear()
+
+
+def update_progress_textview(self, line):
+    try:
+        if len(line) > 0:
+            self.textbuffer.insert(
+                self.textbuffer.get_end_iter(),
+                " %s" % line,
+                len(" %s" % line),
+            )
+
+    except Exception as e:
+        logger.error("Exception in update_progress_textview(): %s" % e)
+    finally:
+        self.messages_queue.task_done()
+        text_mark_end = self.textbuffer.create_mark(
+            "end", self.textbuffer.get_end_iter(), False
+        )
+        # scroll to the end of the textview
+        self.textview.scroll_mark_onscreen(text_mark_end)
+
+
+def update_package_status_label(label, text):
+    label.set_markup(text)
+
+
+def check_pacman_lockfile():
+    return os.path.exists(pacman_lockfile)
+
+
+def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
+    def _wait():
+        try:
+            print(f"\n[INFO] wait_install_and_update() started for package: {package_name}")
+            print(f"[INFO] Binary path: {binary_path}")
+            print(f"[INFO] Waiting for process to complete...")
+            process.communicate()
+            time.sleep(1)
+
+            error_output = ""
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    print(f"[INFO] Reading temp file: {process.temp_file}")
+                    with open(process.temp_file, 'r') as f:
+                        error_output = f.read()
+                    print(f"[INFO] Temp file contents: {len(error_output)} bytes")
+                    import os as os_module
+                    os_module.unlink(process.temp_file)
+                except Exception as e:
+                    print(f"[INFO] Error reading temp file: {e}")
+
+            if path.exists(binary_path):
+                print(f"[INFO] Binary exists at {binary_path}, installation successful")
+                if label_widget:
+                    GLib.idle_add(label_widget.set_markup, installed_markup)
+                GLib.idle_add(show_in_app_notification, self_ref, notification)
+            else:
+                print(f"[INFO] Binary NOT found at {binary_path}, checking for errors...")
+                print(f"[INFO] Total error output length: {len(error_output)} bytes")
+                if package_name:
+                    print(f"[INFO] Calling check_missing_repo_error with package: {package_name}")
+                    check_missing_repo_error(self_ref, error_output, package_name)
+                else:
+                    print(f"[INFO] No package_name provided, skipping error check")
+        except Exception as e:
+            print(f"[ERROR] Exception in wait_install_and_update: {e}")
+            import traceback
+            traceback.print_exc()
+    threading.Thread(target=_wait, daemon=True).start()
+
+
+def wait_remove_and_update(process, binary_path, label_widget, plain_markup, self_ref, notification):
+    def _wait():
+        try:
+            print(f"\n[INFO] wait_remove_and_update() started")
+            print(f"[INFO] Binary path to check: {binary_path}")
+            print(f"[INFO] Waiting for removal process to complete...")
+            stdout_data, stderr_data = process.communicate()
+            print(f"[INFO] Process completed")
+            print(f"[INFO] Captured output: stdout={len(stdout_data) if stdout_data else 0} bytes, stderr={len(stderr_data) if stderr_data else 0} bytes")
+            time.sleep(1)
+
+            error_output = ""
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    print(f"[INFO] Reading output from temp file: {process.temp_file}")
+                    with open(process.temp_file, 'r') as f:
+                        error_output = f.read()
+                    print(f"[INFO] Temp file size: {len(error_output)} bytes")
+                    print(f"[INFO] Parsing output for errors...")
+                    import os as os_module
+                    os_module.unlink(process.temp_file)
+                    print(f"[INFO] Cleaned up temp file")
+                except Exception as e:
+                    print(f"[INFO] Could not read temp file: {e}")
+
+            print(f"[INFO] Checking if binary still exists at: {binary_path}")
+            if not path.exists(binary_path):
+                print(f"[INFO] ✓ Binary successfully removed from {binary_path}")
+                print(f"[INFO] Updating UI and showing notification")
+                GLib.idle_add(label_widget.set_markup, plain_markup)
+                GLib.idle_add(show_in_app_notification, self_ref, notification)
+                print(f"[INFO] {notification}")
+            else:
+                print(f"[INFO] ✗ Binary still exists at {binary_path}")
+                print(f"[INFO] Removal may have failed or encountered issues")
+        except Exception as e:
+            print(f"[ERROR] Exception in wait_remove_and_update: {e}")
+            import traceback
+            traceback.print_exc()
+    threading.Thread(target=_wait, daemon=True).start()
+
+
+def wait_and_notify(process, self_ref, notification):
+    def _wait():
+        try:
+            process.communicate()
+            import os as os_module
+            if hasattr(process, 'temp_file') and process.temp_file:
+                try:
+                    os_module.unlink(process.temp_file)
+                except Exception:
+                    pass
+            print(f"[INFO] {notification}")
+            GLib.idle_add(show_in_app_notification, self_ref, notification)
+        except Exception as e:
+            print(f"[ERROR] Exception in wait_and_notify: {e}")
+    threading.Thread(target=_wait, daemon=True).start()

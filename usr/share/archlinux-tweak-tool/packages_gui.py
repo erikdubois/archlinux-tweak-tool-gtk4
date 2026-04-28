@@ -2,7 +2,10 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
+
 import functions as fn
+import packages
 from packages import Packages
 
 
@@ -203,7 +206,7 @@ def gui(self, Gtk, vbox_stack, fn):
 
         button_export_packages.connect(
             "clicked",
-            self.on_click_export_packages,
+            functools.partial(packages.on_click_export_packages, self),
             packages_obj,
             rb_export_all,
             rb_export_explicit,
@@ -212,7 +215,7 @@ def gui(self, Gtk, vbox_stack, fn):
 
         button_install_packages.connect(
             "clicked",
-            self.on_click_install_packages,
+            functools.partial(packages.on_click_install_packages, self),
             packages_obj,
             gui_parts,
         )
@@ -236,7 +239,7 @@ def gui(self, Gtk, vbox_stack, fn):
             f" <b>Build packages from source using makepkg</b>\n"
             f" - Build packages from PKGBUILD files\n"
             f" - Requires base-devel package group to be installed\n"
-            f" - Arch Linux create by default always a -debug package\n"
+            f" - Arch Linux creates a -debug package by default; this behavior can be changed"
         )
 
         label_build_desc.set_selectable(True)
@@ -260,7 +263,7 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_debug.set_margin_bottom(10)
         vbox_build.append(hbox_debug)
 
-        button_remove_debug.connect("clicked", self.on_click_remove_debug)
+        button_remove_debug.connect("clicked", functools.partial(packages.on_click_remove_debug, self))
 
         vbox_build.set_margin_start(10)
         vbox_build.set_margin_end(10)
