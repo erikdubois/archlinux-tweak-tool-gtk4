@@ -311,14 +311,6 @@ class Main(Gtk.ApplicationWindow):
             except Exception as error:
                 print(error)
 
-        # ensuring we have a neofetch directory
-        if not fn.path.exists(fn.home + "/.config/neofetch"):
-            try:
-                fn.makedirs(fn.home + "/.config/neofetch", 0o766)
-                fn.permissions(fn.home + "/.config/neofetch")
-            except Exception as error:
-                print(error)
-
         # ensuring we have a fastfetch directory
         if not fn.path.exists(fn.home + "/.config/fastfetch"):
             try:
@@ -451,15 +443,6 @@ class Main(Gtk.ApplicationWindow):
             except Exception as error:
                 print(error)
 
-        # ensuring we have a backup of current neofetch
-        if fn.path.isfile(fn.neofetch_config):
-            try:
-                if not fn.path.isfile(fn.neofetch_config + ".bak"):
-                    fn.shutil.copy(fn.neofetch_config, fn.neofetch_config + ".bak")
-                    fn.permissions(fn.neofetch_config + ".bak")
-            except Exception as error:
-                print(error)
-
         # ensuring we have a backup of current fastfetch
         if fn.path.isfile(fn.fastfetch_config):
             try:
@@ -523,74 +506,17 @@ class Main(Gtk.ApplicationWindow):
             except Exception as error:
                 print(error)
 
-        # =====================================================
-        #               CATCHING ERRORS
-        # =====================================================
+        # adding lines to sddm
+        if fn.path.isfile(fn.sddm_default_d2):
+            session_exists = sddm.check_sddmk_session("Session=")
+            if session_exists is False:
+                sddm.insert_session("#Session=")
 
-        # make directory if it doesn't exist'
-        if fn.path.exists("/usr/bin/sddm"):
-            fn.create_sddm_k_dir()
-
-            # if there is an sddm.conf but is empty = 0
-            if fn.path.isfile(fn.sddm_default_d1):
-                try:
-                    if fn.path.getsize(fn.sddm_default_d1) == 0:
-                        fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
-                        fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
-                except Exception as error:
-                    print(error)
-
-            # if there is NO sddm.conf at all - both are not there
-            if not fn.path.exists(fn.sddm_default_d1) and not fn.path.exists(
-                fn.sddm_default_d2
-            ):
-                try:
-                    fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
-                    fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
-
-                    message = """
-    The default SDDM files in your installation were either missing or corrupted.
-    ATT has created and/or updated the necessary SDDM files.
-    Backups have been created where possible.
-
-    Affected files:
-        - /etc/sddm.conf
-        - /etc/sddm.conf.d/kde_settings.conf
-        - /usr/lib/sddm/sddm.conf.d/default.conf
-
-    You may need to adjust the settings again if necessary."""
-
-                    print(message.strip())
-                    fn.restart_program()
-                except OSError as e:
-                    # This will ONLY execute if the sddm files and the underlying sddm files do not exist
-                    if e.errno == 2:
-                        command = "/usr/local/bin/fix-sddm-config"
-                        fn.subprocess.call(
-                            command,
-                            shell=True,
-                            stdout=fn.subprocess.PIPE,
-                            stderr=fn.subprocess.STDOUT,
-                        )
-                        print(
-                            "The SDDM files in your installation either did not exist, or were corrupted."
-                        )
-                        print(
-                            "These files have now been RESTORED. Please re-run the Tweak Tool if it did not load for you."
-                        )
-                        fn.restart_program()
-
-            # adding lines to sddm
-            if fn.path.isfile(fn.sddm_default_d2):
-                session_exists = sddm.check_sddmk_session("Session=")
-                if session_exists is False:
-                    sddm.insert_session("#Session=")
-
-            # adding lines to sddm
-            if fn.path.isfile(fn.sddm_default_d2):
-                user_exists = sddm.check_sddmk_user("User=")
-                if user_exists is False:
-                    sddm.insert_user("#User=")
+        # adding lines to sddm
+        if fn.path.isfile(fn.sddm_default_d2):
+            user_exists = sddm.check_sddmk_user("User=")
+            if user_exists is False:
+                sddm.insert_user("#User=")
 
         if fn.path.exists("/usr/bin/sddm"):
             # if any of the variables are missing we copy/paste
@@ -611,14 +537,6 @@ class Main(Gtk.ApplicationWindow):
                     self,
                     "We had to change your sddm configuration files",
                 )
-
-        # ensuring we have a neofetch config to start with
-        if not fn.path.isfile(fn.neofetch_config):
-            try:
-                fn.shutil.copy(fn.neofetch_arco, fn.neofetch_config)
-                fn.permissions(fn.neofetch_config)
-            except Exception as error:
-                print(error)
 
         # ensuring we have a fastfetch config to start with
         if not fn.path.isfile(fn.fastfetch_config):
@@ -757,244 +675,7 @@ class Main(Gtk.ApplicationWindow):
     # =====================================================
     # =====================================================
     # =====================================================
-
-    # =====================================================
-    #     CREATE AUTOSTART_GUI
-    # =====================================================
-
-    def create_autostart_columns(self, treeView):
-        rendererText = Gtk.CellRendererText()
-        renderer_checkbox = Gtk.CellRendererToggle()
-        column_checkbox = Gtk.TreeViewColumn("", renderer_checkbox, active=0)
-        renderer_checkbox.connect("toggled", self.renderer_checkbox, self.startups)
-        renderer_checkbox.set_activatable(True)
-        column_checkbox.set_sort_column_id(0)
-
-        column = Gtk.TreeViewColumn("Name", rendererText, text=1)
-        column.set_sort_column_id(1)
-
-        column2 = Gtk.TreeViewColumn("Comment", rendererText, text=2)
-        column2.set_sort_column_id(2)
-
-        treeView.append_column(column_checkbox)
-        treeView.append_column(column)
-        treeView.append_column(column2)
-
-    def create_columns(self, treeView):
-        rendererText = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Name", rendererText, text=0)
-        column.set_sort_column_id(0)
-        treeView.append_column(column)
-
-    def renderer_checkbox(self, renderer, path, model):
-        if path is not None:
-            it = model.get_iter(path)
-            model[it][0] = not model[it][0]
-
-    def on_activated(self, treeview, path, column):
-        failed = False
-        treestore, selected_treepaths = treeview.get_selection().get_selected_rows()
-        selected_treepath = selected_treepaths[0]
-        selected_row = treestore[selected_treepath]
-        bool = selected_row[0]
-        text = selected_row[1]
-
-        if bool:
-            bools = False
-        else:
-            bools = True
-
-        with open(
-            fn.home + "/.config/autostart/" + text + ".desktop", "r", encoding="utf-8"
-        ) as f:
-            lines = f.readlines()
-            f.close()
-        try:
-            pos = fn.get_position(lines, "Hidden=")
-        except:
-            failed = True
-            with open(
-                fn.home + "/.config/autostart/" + text + ".desktop",
-                "a",
-                encoding="utf-8",
-            ) as f:
-                f.write("Hidden=" + str(bools))
-                f.close()
-        if not failed:
-            val = lines[pos].split("=")[1].strip()
-            lines[pos] = lines[pos].replace(val, str(bools).lower())
-            with open(
-                fn.home + "/.config/autostart/" + text + ".desktop",
-                "w",
-                encoding="utf-8",
-            ) as f:
-                f.writelines(lines)
-                f.close()
-
-    # ====================================================================
-    #                       AUTOSTART
-    # ====================================================================
-
-    def on_comment_changed(self, widget):
-        if len(self.txtbox1.get_text()) >= 3 and len(self.txtbox2.get_text()) >= 3:
-            self.abutton.set_sensitive(True)
-
-    # autostart toggle on and off
-    def on_auto_toggle(self, widget, data, lbl):
-        failed = False
-        try:
-            with open(fn.autostart + lbl + ".desktop", "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                f.close()
-            try:
-                pos = fn.get_position(lines, "Hidden=")
-            except:
-                failed = True
-                with open(fn.autostart + lbl + ".desktop", "a", encoding="utf-8") as f:
-                    f.write("Hidden=" + str(not widget.get_active()).lower())
-                    f.close()
-        except:
-            pass
-        if not failed:
-            try:
-                val = lines[pos].split("=")[1].strip()
-                lines[pos] = lines[pos].replace(
-                    val, str(not widget.get_active()).lower()
-                )
-                with open(fn.autostart + lbl + ".desktop", "w", encoding="utf-8") as f:
-                    f.writelines(lines)
-                    f.close()
-            except:
-                # non .desktop files
-                pass
-
-    # remove file from ~/.config/autostart
-    def on_auto_remove_clicked(self, gesture_or_widget, listbox, lbl):
-        try:
-            fn.unlink(fn.autostart + lbl + ".desktop")
-            print("Removed item from ~/.config/autostart/")
-            self.vvbox.remove(listbox)
-        except Exception as error:
-            print(error)
-            print("We were unable to remove it")
-            print("Evaluate if it can/should be removed")
-            print("Then remove it manually")
-            print("We only remove .desktop files")
-
-    def clear_autostart(self):
-        child = self.vvbox.get_first_child()
-        while child is not None:
-            next_child = child.get_next_sibling()
-            self.vvbox.remove(child)
-            child = next_child
-
-    def load_autostart(self, files):
-        self.clear_autostart()
-
-        for x in files:
-            self.add_row(x)
-
-    def add_row(self, x):
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        vbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-
-        lbl = Gtk.Label(xalign=0)
-        lbl.set_text(x)
-
-        swtch = Gtk.Switch()
-        swtch.connect("notify::active", self.on_auto_toggle, lbl.get_text())
-        swtch.set_active(autostart.get_startups(lbl.get_text()))
-
-        listbox = Gtk.ListBox()
-
-        pbfb = GdkPixbuf.Pixbuf.new_from_file_at_size(
-            fn.path.join(base_dir, "images/remove.png"), 28, 28
-        )
-        texture = Gdk.Texture.new_for_pixbuf(pbfb)
-        fbimage = Gtk.Image.new_from_paintable(texture)
-        fbimage.set_cursor(Gdk.Cursor.new_from_name("pointer"))
-        fbimage.set_tooltip_text("Remove")
-
-        _listbox = listbox
-        _text = lbl.get_text()
-        fb_gesture = Gtk.GestureClick.new()
-        fb_gesture.connect(
-            "pressed",
-            lambda g, n, x, y, lb=_listbox, t=_text: self.on_auto_remove_clicked(g, lb, t),
-        )
-        fbimage.add_controller(fb_gesture)
-
-        lbl.set_hexpand(True)
-        hbox.append(lbl)
-        swtch.set_margin_top(10)
-        swtch.set_margin_bottom(10)
-        vbox2.append(swtch)
-        hbox.append(vbox2)
-        hbox.append(fbimage)
-
-        vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        hbox.set_margin_top(5)
-        hbox.set_margin_bottom(5)
-        vbox1.append(hbox)
-
-        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-        listboxrow = Gtk.ListBoxRow()
-        listboxrow.set_child(vbox1)
-        listbox.append(listboxrow)
-
-        self.vvbox.append(listbox)
-
-    def on_remove_auto(self, widget):
-        selection = self.treeView4.get_selection()
-        model, paths = selection.get_selected_rows()
-
-        # Get the TreeIter instance for each path
-        for path in paths:
-            iter = model.get_iter(path)
-            # Remove the ListStore row referenced by iter
-            value = model.get_value(iter, 1)
-            model.remove(iter)
-            fn.unlink(fn.home + "/.config/autostart/" + value + ".desktop")
-            print("Item has been removed from autostart")
-            fn.show_in_app_notification(self, "Item has been removed from autostart")
-
-    def on_add_autostart(self, widget):
-        if len(self.txtbox1.get_text()) > 1 and len(self.txtbox2.get_text()) > 1:
-            autostart.add_autostart(
-                self,
-                self.txtbox1.get_text(),
-                self.txtbox2.get_text(),
-                self.txtbox3.get_text(),
-            )
-        print("Item has been added to autostart")
-        fn.show_in_app_notification(self, "Item has been added to autostart")
-
-    def on_exec_browse(self, widget):
-        dialog = Gtk.FileChooserDialog(
-            title="Please choose a file",
-            transient_for=self,
-            action=Gtk.FileChooserAction.OPEN,
-        )
-
-        dialog.set_select_multiple(False)
-        dialog.set_current_folder(Gio.File.new_for_path(fn.home))
-        dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-        dialog.add_button("_Open", Gtk.ResponseType.OK)
-        dialog.connect("response", self.open_response_auto)
-
-        dialog.present()
-
-    def open_response_auto(self, dialog, response):
-        if response == Gtk.ResponseType.OK:
-            files = dialog.get_files()
-            if files:
-                foldername = files[0].get_path()
-                print(foldername)
-                self.txtbox2.set_text(foldername)
-            dialog.destroy()
-        elif response == Gtk.ResponseType.CANCEL:
-            dialog.destroy()
-
+    
     # ================================================================================
     # ================================================================================
     # ================================================================================
@@ -1009,2202 +690,14 @@ class Main(Gtk.ApplicationWindow):
     # ================================================================================
     # ================================================================================
 
-
     # ====================================================================
-    #                       ATT
     # ====================================================================
-
-    # themes
-
-    def on_install_att_themes_clicked(self, widget):
-        print("We have installed all the selected themes")
-        fn.show_in_app_notification(self, "We have installed all the selected themes")
-        themes.install_themes(self)
-
-
-    def on_remove_att_themes_clicked(self, widget):
-        print("We have removed all the selected themes")
-        fn.show_in_app_notification(self, "We have removed all the selected themes")
-        themes.remove_themes(self)
-
-
-    def on_find_att_themes_clicked(self, widget):
-        print("[INFO] We show the installed themes")
-        fn.show_in_app_notification(self, "We show the installed themes")
-        themes.find_themes(self)
-
-
     # ====================================================================
-    # Sardi
-
-    def on_install_att_sardi_icon_themes_clicked(self, widget):
-        print("[INFO] Installing selected Sardi icon themes")
-        icons.install_sardi_icons(self)
-
-    def on_remove_att_sardi_icon_themes_clicked(self, widget):
-        print("[INFO] Removing selected Sardi icon themes")
-        icons.remove_sardi_icons(self)
-
-    def on_find_att_sardi_icon_themes_clicked(self, widget):
-        print("[INFO] We show the installed sardi icon themes")
-        fn.show_in_app_notification(self, "We show the installed sardi icon themes")
-        icons.find_sardi_icons(self)
-
-    # ====================================================================
-    # surfn
-
-    def on_install_att_surfn_icon_themes_clicked(self, widget):
-        print("[INFO] Installing selected Surfn icon themes")
-        icons.install_surfn_icons(self)
-
-    def on_remove_att_surfn_icon_themes_clicked(self, widget):
-        print("[INFO] Removing selected Surfn icon themes")
-        icons.remove_surfn_icons(self)
-
-    def on_find_att_surfn_icon_themes_clicked(self, widget):
-        print("[INFO] We show all the installed Surfn icon themes")
-        fn.show_in_app_notification(self, "We show all the installed Surfn icon themes")
-        icons.find_surfn_icons(self)
-
-    # ====================================================================
-    # selection of theming
-
-    def on_click_att_theming_all_selection(self, widget):
-        print("[INFO] We have selected all themes")
-        fn.show_in_app_notification(self, "We have selected all themes")
-        themes.set_att_checkboxes_theming_all(self)
-
-    def on_click_att_theming_blue_selection(self, widget):
-        print("[INFO] We have selected the normal selection - blue themes")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - blue themes"
-        )
-        themes.set_att_checkboxes_theming_blue(self)
-
-    def on_click_att_theming_dark_selection(self, widget):
-        print("[INFO] We have selected the minimal selection - dark themes")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - dark themes"
-        )
-        themes.set_att_checkboxes_theming_dark(self)
-
-    def on_click_att_theming_none_selection(self, widget):
-        print("[INFO] We have selected no themes")
-        fn.show_in_app_notification(self, "We have selected no themes")
-        themes.set_att_checkboxes_theming_none(self)
-
-    # selection of icon theming
-    def on_click_att_sardi_icon_theming_all_selection(self, widget):
-        print("[INFO] We have selected all sardi icons")
-        fn.show_in_app_notification(self, "We have selected all sardi icons")
-        icons.set_att_checkboxes_theming_sardi_icons_all(self)
-
-    def on_click_att_sardi_icon_theming_mint_selection(self, widget):
-        print("[INFO] We have selected the mint selection - sardi icons")
-        fn.show_in_app_notification(
-            self, "We have selected the mint selection - sardi icons"
-        )
-        icons.set_att_checkboxes_theming_sardi_mint_icons(self)
-
-    def on_click_att_sardi_icon_theming_mixing_selection(self, widget):
-        print("[INFO] We have selected the mixing selection - sardi icons")
-        fn.show_in_app_notification(
-            self, "We have selected the mixing selection - sardi icons"
-        )
-        icons.set_att_checkboxes_theming_sardi_mixing_icons(self)
-
-    def on_click_att_sardi_icon_theming_variations_selection(self, widget):
-        print("[INFO] We have selected the variation selection - sardi icons")
-        fn.show_in_app_notification(
-            self, "We have selected the variation selection - sardi icons"
-        )
-        icons.set_att_checkboxes_theming_sardi_icons_variations(self)
-
-    def on_click_att_sardi_icon_theming_none_selection(self, widget):
-        print("[INFO] We have selected no sardi icons")
-        fn.show_in_app_notification(self, "We have selected no sardiicons")
-        icons.set_att_checkboxes_theming_sardi_icons_none(self)
-
-    # different families of SARDI
-
-    def on_click_att_fam_sardi_icon_theming_sardi_selection(self, widget):
-        print("[INFO] We have selected the Sardi family")
-        fn.show_in_app_notification(self, "We have selected the Sardi family themes")
-        icons.set_att_fam_checkboxes_theming_sardi_icons(self)
-
-    def on_click_att_fam_sardi_icon_theming_sardi_flexible_selection(self, widget):
-        print("[INFO] We have selected the Sardi flexible family")
-        fn.show_in_app_notification(
-            self, "We have selected the Sardi flexible family themes"
-        )
-        icons.set_att_fam_checkboxes_theming_sardi_flexible(self)
-
-    def on_click_att_fam_sardi_icon_theming_sardi_mono_selection(self, widget):
-        print("[INFO] We have selected the Sardi mono family")
-        fn.show_in_app_notification(
-            self, "We have selected the Sardi mono family themes"
-        )
-        icons.set_att_fam_checkboxes_theming_sardi_mono(self)
-
-    def on_click_att_fam_sardi_icon_theming_sardi_flat_selection(self, widget):
-        print("[INFO] We have selected the Sardi flat family")
-        fn.show_in_app_notification(
-            self, "We have selected the Sardi flat family themes"
-        )
-        icons.set_att_fam_checkboxes_theming_sardi_flat(self)
-
-    def on_click_att_fam_sardi_icon_theming_sardi_ghost_selection(self, widget):
-        print("[INFO] We have selected the Sardi ghost family")
-        fn.show_in_app_notification(
-            self, "We have selected the Sardi ghost family themes"
-        )
-        icons.set_att_fam_checkboxes_theming_sardi_ghost(self)
-
-    def on_click_att_fam_sardi_icon_theming_sardi_orb_selection(self, widget):
-        print("[INFO] We have selected the Sardi orb family")
-        fn.show_in_app_notification(
-            self, "We have selected the Sardi orb family themes"
-        )
-        icons.set_att_fam_checkboxes_theming_sardi_orb(self)
-
-    # selection of Surfn icons theming
-    def on_click_att_surfn_theming_all_selection(self, widget):
-        print("[INFO] We have selected all cursors")
-        fn.show_in_app_notification(self, "We have selected all cursors")
-        icons.set_att_checkboxes_theming_surfn_icons_all(self)
-
-    def on_click_att_surfn_theming_normal_selection(self, widget):
-        print("[INFO] We have selected the normal selection - cursors")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - cursors"
-        )
-        icons.set_att_checkboxes_theming_surfn_icons_normal(self)
-
-    def on_click_att_surfn_theming_minimal_selection(self, widget):
-        print("[INFO] We have selected the minimal selection - cursors")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - cursors"
-        )
-        icons.set_att_checkboxes_theming_surfn_icons_minimal(self)
-
-    def on_click_att_surfn_theming_none_selection(self, widget):
-        print("[INFO] We have selected no cursors")
-        fn.show_in_app_notification(self, "We have selected no cursors")
-        icons.set_att_checkboxes_theming_surfn_icons_none(self)
-
-    def on_install_extras_clicked(self, widget):
-        print("[INFO] Installing selected Neo Candy icon packages")
-        icons.install_att_extras(self)
-
-
-    # extras
-    def on_remove_extras_clicked(self, widget):
-        print("[INFO] Removing selected Neo Candy icon packages")
-        icons.remove_att_extras(self)
-
-
-    def on_find_extras_clicked(self, widget):
-        print("[INFO] We show the installed projects")
-        fn.show_in_app_notification(self, "We show the installed projects")
-        icons.find_att_extras(self)
-
-
-    # selection of extras theming
-    def on_click_extras_theming_all_selection(self, widget):
-        print("[INFO] We have selected all projects")
-        fn.show_in_app_notification(self, "We have selected all projects")
-        icons.set_att_checkboxes_extras_all(self)
-
-    def on_click_extras_theming_none_selection(self, widget):
-        print("[INFO] We have selected none of the projects")
-        fn.show_in_app_notification(self, "We have selected none of the projects")
-        icons.set_att_checkboxes_extras_none(self)
-
-    # ====================================================================
-    #                       BASH
-    # ====================================================================
-
-    def tobash_apply(self, widget):
-        fn.change_shell(self, "bash")
-
-    def on_install_bash_completion_clicked(self, widget):
-        fn.install_package(self, "bash")
-        fn.install_package(self, "bash-completion")
-
-    def on_remove_bash_completion_clicked(self, widget):
-        fn.remove_package(self, "bash-completion")
-
-    def on_arcolinux_bash_clicked(self, widget):
-        try:
-            if fn.path.isfile(fn.bashrc_arco):
-                fn.shutil.copy(fn.bashrc_arco, fn.bash_config)
-                fn.permissions(fn.home + "/.bashrc")
-            fn.source_shell(self)
-        except Exception as error:
-            print(error)
-
-        print("ATT ~/.bashrc is applied")
-        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.bashrc is applied")
-
-    def on_bash_reset_clicked(self, widget):
-        try:
-            if fn.path.isfile(fn.bash_config + ".bak"):
-                fn.shutil.copy(fn.bash_config + ".bak", fn.bash_config)
-                fn.permissions(fn.home + "/.bashrc")
-        except Exception as error:
-            print(error)
-
-        print("Your personal ~/.bashrc is applied again - logout")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Your personal ~/.bashrc is applied again - logout",
-        )
-
-    #    #====================================================================
-    #    #                       DESIGN
-    #    #====================================================================
-
-    # design
-    def on_install_themes_clicked(self, widget):
-        design.install_themes(self)
-        print("We have installed all the selected themes")
-        fn.show_in_app_notification(self, "We have installed all the selected themes")
-        # populate cursor themes - some themes include a cursor
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-
-    def on_remove_themes_clicked(self, widget):
-        design.remove_themes(self)
-        print("We have removed all the selected themes")
-        fn.show_in_app_notification(self, "We have removed all the selected themes")
-        # populate cursor themes - some themes include a cursor
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-
-    def on_find_themes_clicked(self, widget):
-        design.find_themes(self)
-        print("We show all the installed themes")
-        fn.show_in_app_notification(self, "We show all the installed themes")
-        # populate cursor themes - some themes include a cursor
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-
-    # icons
-    def on_install_icon_themes_clicked(self, widget):
-        design.install_icon_themes(self)
-        print("We have installed all the selected icon themes")
-        fn.show_in_app_notification(
-            self, "We have installed all the selected icon themes"
-        )
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    def on_remove_icon_themes_clicked(self, widget):
-        design.remove_icon_themes(self)
-        print("We have removed all the selected icon themes")
-        fn.show_in_app_notification(
-            self, "We have removed all the selected icon themes"
-        )
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    def on_find_icon_themes_clicked(self, widget):
-        design.find_icon_themes(self)
-        print("We show all the installed icon themes")
-        fn.show_in_app_notification(self, "We show all the installed icon themes")
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    # cursors
-    def on_install_cursor_themes_clicked(self, widget):
-        design.install_cursor_themes(self)
-        print("We have installed all the selected cursor themes")
-        fn.show_in_app_notification(
-            self, "We have installed all the selected cursor themes"
-        )
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    def on_remove_cursor_themes_clicked(self, widget):
-        design.remove_cursor_themes(self)
-        print("We have removed all the selected cursor themes")
-        fn.show_in_app_notification(
-            self, "We have removed all the selected cursor themes"
-        )
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    def on_find_cursor_themes_clicked(self, widget):
-        design.find_cursor_themes(self)
-        print("We show all the installed cursor themes")
-        fn.show_in_app_notification(self, "We show all the installed cursor themes")
-        # populate cursor themes
-        if fn.check_package_installed("sddm"):
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
-        maintenance.pop_gtk_cursor_names(self.cursor_themes)
-
-    # fonts
-    def on_install_fonts_clicked(self, widget):
-        design.install_fonts(self)
-        print("We have installed all the selected fonts")
-        fn.show_in_app_notification(self, "We have installed all the selected fonts")
-
-    def on_remove_fonts_clicked(self, widget):
-        design.remove_fonts(self)
-        print("We have removed all the selected fonts")
-        fn.show_in_app_notification(self, "We have removed all the selected fonts")
-
-    def on_find_fonts_clicked(self, widget):
-        design.find_fonts(self)
-        print("We show all the installed fonts")
-        fn.show_in_app_notification(self, "We show all the installed fonts")
-
-    ############################################################################
-
-    # selection of theming
-    def on_click_theming_all_selection(self, widget):
-        print("We have selected all themes")
-        fn.show_in_app_notification(self, "We have selected all themes")
-        design.set_checkboxes_theming_all(self)
-
-    def on_click_theming_normal_selection(self, widget):
-        print("We have selected the normal selection - themes")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - themes"
-        )
-        design.set_checkboxes_theming_normal(self)
-
-    def on_click_theming_minimal_selection(self, widget):
-        print("We have selected the minimal selection - themes")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - themes"
-        )
-        design.set_checkboxes_theming_minimal(self)
-
-    def on_click_theming_none_selection(self, widget):
-        print("We have selected no themes")
-        fn.show_in_app_notification(self, "We have selected no themes")
-        design.set_checkboxes_theming_none(self)
-
-    # selection of icon theming
-    def on_click_icon_theming_all_selection(self, widget):
-        print("We have selected all icons")
-        fn.show_in_app_notification(self, "We have selected all icons")
-        design.set_checkboxes_theming_icons_all(self)
-
-    def on_click_icon_theming_normal_selection(self, widget):
-        print("We have selected the normal selection - icons")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - icons"
-        )
-        design.set_checkboxes_theming_icons_normal(self)
-
-    def on_click_icon_theming_minimal_selection(self, widget):
-        print("We have selected the minimal selection - icons")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - icons"
-        )
-        design.set_checkboxes_theming_icons_minimal(self)
-
-    def on_click_icon_theming_none_selection(self, widget):
-        print("We have selected no icons")
-        fn.show_in_app_notification(self, "We have selected no icons")
-        design.set_checkboxes_theming_icons_none(self)
-
-    # selection of cursor theming
-    def on_click_cursor_theming_all_selection(self, widget):
-        print("We have selected all cursors")
-        fn.show_in_app_notification(self, "We have selected all cursors")
-        design.set_checkboxes_theming_cursors_all(self)
-
-    def on_click_cursor_theming_normal_selection(self, widget):
-        print("We have selected the normal selection - cursors")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - cursors"
-        )
-        design.set_checkboxes_theming_cursors_normal(self)
-
-    def on_click_cursor_theming_minimal_selection(self, widget):
-        print("We have selected the minimal selection - cursors")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - cursors"
-        )
-        design.set_checkboxes_theming_cursors_minimal(self)
-
-    def on_click_cursor_theming_none_selection(self, widget):
-        print("We have selected no cursors")
-        fn.show_in_app_notification(self, "We have selected no cursors")
-        design.set_checkboxes_theming_cursors_none(self)
-
-    # selection of font theming
-    def on_click_font_theming_all_selection(self, widget):
-        print("We have selected all fonts")
-        fn.show_in_app_notification(self, "We have selected all fonts")
-        design.set_checkboxes_fonts_all(self)
-
-    def on_click_font_theming_normal_selection(self, widget):
-        print("We have selected the normal selection - fonts")
-        fn.show_in_app_notification(
-            self, "We have selected the normal selection - fonts"
-        )
-        design.set_checkboxes_fonts_normal(self)
-
-    def on_click_font_theming_minimal_selection(self, widget):
-        print("We have selected the minimal selection - fonts")
-        fn.show_in_app_notification(
-            self, "We have selected the minimal selection - fonts"
-        )
-        design.set_checkboxes_fonts_minimal(self)
-
-    def on_click_font_theming_none_selection(self, widget):
-        print("We have selected no fonts")
-        fn.show_in_app_notification(self, "We have selected no fonts")
-        design.set_checkboxes_fonts_none(self)
-
-    #    #====================================================================
-    #    #                       DESKTOPR
-    #    #====================================================================
-
-    def on_d_combo_changed(self, widget, pspec=None):
-        from gi.repository import Gdk
-
-        try:
-            pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",
-                desktopr_gui.IMAGE_PREVIEW_LOAD,
-                desktopr_gui.IMAGE_PREVIEW_LOAD,
-            )
-            texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
-            self.image_DE.set_paintable(texture)
-        except:
-            self.image_DE.set_paintable(None)
-        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)):
-            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is installed</b></span>')
-        else:
-            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is NOT installed</b></span>')
-
-    def on_install_clicked(self, widget, state):
-        fn.create_log(self)
-        print("installing " + fn.get_combo_text(self.d_combo))
-        desktopr.check_lock(self, fn.get_combo_text(self.d_combo), state)
-
-    def on_default_clicked(self, widget):
-        fn.create_log(self)
-        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)) is True:
-            secs = settings.read_section()
-            if "DESKTOP" in secs:
-                settings.write_settings(
-                    "DESKTOP", "default", fn.get_combo_text(self.d_combo)
-                )
-            else:
-                settings.new_settings(
-                    "DESKTOP", {"default": fn.get_combo_text(self.d_combo)}
-                )
-        else:
-            fn.show_in_app_notification(self, "That desktop is not installed")
-            print("Desktop is not installed")
-
-    #    #====================================================================
-    #    #                       FISH
-    #    #====================================================================
-
-    def on_install_only_fish_clicked_reboot(self, widget):
-        fn.install_package(self, "fish")
-        fn.restart_program()
-
-    def on_install_only_fish_clicked(self, widget):
-        fn.install_package(self, "fish")
-        print("Only Fish has been installed")
-        print("Fish is installed without a configuration")
-        fn.show_in_app_notification(
-            self, "Only the Fish package is installed without a configuration"
-        )
-
-    def on_remove_only_fish_clicked(self, widget):
-        fn.remove_package(self, "fish")
-
-    def on_arcolinux_fish_package_clicked(self, widget):
-        fn.install_arco_package(self, "edu-shells-git")
-        if fn.check_package_installed("edu-shells-git") is True:
-            # backup whatever is there
-            if fn.path_check(fn.home + "/.config/fish"):
-                now = datetime.datetime.now()
-
-                if not fn.path.exists(fn.home + "/.config/fish-att"):
-                    fn.makedirs(fn.home + "/.config/fish-att")
-                    fn.permissions(fn.home + "/.config/fish-att")
-
-                if fn.path.exists(fn.home + "/.config-att"):
-                    fn.permissions(fn.home + "/.config-att")
-
-                fn.copy_func(
-                    fn.home + "/.config/fish",
-                    fn.home
-                    + "/.config/fish-att/fish-att-"
-                    + now.strftime("%Y-%m-%d-%H-%M-%S"),
-                    isdir=True,
-                )
-                fn.permissions(
-                    fn.home
-                    + "/.config/fish-att/fish-att-"
-                    + now.strftime("%Y-%m-%d-%H-%M-%S")
-                )
-
-            fn.copy_func("/etc/skel/.config/fish", fn.home + "/.config/", True)
-            fn.permissions(fn.home + "/.config/fish")
-
-            # if there is no file .config/fish
-            if not fn.path.isfile(fn.home + "/.config/fish/config.fish"):
-                fn.shutil.copy(
-                    "/etc/skel/.config/fish/config.fish",
-                    fn.home + "/.config/fish/config.fish",
-                )
-                fn.permissions(fn.home + "/.config/fish/config.fish")
-
-            fn.source_shell(self)
-            print(
-                "ATT Fish config is installed and your old fish folder (if any) is in ~/.config/fish-att"
-            )
-            fn.show_in_app_notification(self, "ATT fish config is installed")
-
-    def on_arcolinux_only_fish_clicked(self, widget):
-        if not fn.path.isdir(fn.home + "/.config/fish/"):
-            try:
-                fn.mkdir(fn.home + "/.config/fish/")
-                fn.permissions(fn.home + "/.config/fish/")
-            except Exception as error:
-                print(error)
-
-        if fn.path.isfile(fn.fish_arco):
-            fn.shutil.copy(fn.fish_arco, fn.home + "/.config/fish/config.fish")
-            fn.permissions(fn.home + "/.config/fish/config.fish")
-
-        if not fn.path.isfile(fn.home + "/.config/fish/config.fish.bak"):
-            fn.shutil.copy(fn.fish_arco, fn.home + "/.config/fish/config.fish.bak")
-            fn.permissions(fn.home + "/.config/fish/config.fish.bak")
-
-        fn.source_shell(self)
-        print("Fish config has been saved")
-        fn.show_in_app_notification(self, "Fish config has been saved")
-
-    def on_fish_reset_clicked(self, widget):
-        if fn.path.isfile(fn.home + "/.config/fish/config.fish.bak"):
-            fn.shutil.copy(
-                fn.home + "/.config/fish/config.fish.bak",
-                fn.home + "/.config/fish/config.fish",
-            )
-            fn.permissions(fn.home + "/.config/fish/config.fish")
-
-        if not fn.path.isfile(fn.home + "/.config/fish/config.fish.bak"):
-            fn.shutil.copy(fn.fish_arco, fn.home + "/.config/fish/config.fish")
-            fn.permissions(fn.home + "/.config/fish/config.fish")
-
-        print("Fish config reset")
-        fn.show_in_app_notification(self, "Fish config reset")
-
-    def on_remove_fish_all(self, widget):
-        fn.remove_package_s(self,"edu-shells-git")
-        fn.remove_package_s(self,"fish")
-        print("Bash, Zsh and Fish is removed from /etc/skel - remove the folder in ~/.config/fish manually")
-        fn.show_in_app_notification(
-            self, "Bash, Zsh and Fish is removed from /etc/skel - remove the folder in ~/.config/fish manually"
-        )
-
-    def tofish_apply(self, widget):
-        fn.change_shell(self, "fish")
-
-    # ====================================================================
-    #                       FIXES
-    # ====================================================================
-
-    def on_click_install_arch_keyring(self, widget):
-        print("[INFO] Starting local archlinux-keyring installation")
-        GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
-        try:
-            pathway = base_dir + "/data/arch/packages/keyring/"
-            print(f"[INFO] Package pathway: {pathway}")
-            print("[INFO] Searching for archlinux-keyring package...")
-            files = fn.listdir(pathway)
-            if not files:
-                raise Exception("No package files found in pathway")
-            package_file = pathway + str(files).strip("[]'")
-            print(f"[INFO] Found package: {package_file}")
-            print(f"[INFO] Package size check...")
-            if fn.os.path.exists(package_file):
-                size = fn.os.path.getsize(package_file)
-                print(f"[INFO] Package file size: {size} bytes")
-            else:
-                raise Exception(f"Package file not found: {package_file}")
-            print("[INFO] Starting package installation...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Installing archlinux-keyring...")
-            fn.install_local_package(self, package_file)
-        except Exception as error:
-            print(f"[ERROR] Local installation failed: {error}")
-            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
-
-    def on_click_install_arch_keyring_online(self, widget):
-        print("[INFO] Starting online archlinux-keyring installation")
-        pathway = "/tmp/att-installation/"
-        print(f"[INFO] Creating temporary directory: {pathway}")
-        fn.mkdir(pathway)
-        command = (
-            "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
-            + pathway
-        )
-        try:
-            print("[INFO] Downloading archlinux-keyring package...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
-            fn.subprocess.call(
-                command,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] Download completed successfully")
-            GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
-            print("[INFO] Locating downloaded package file...")
-            files = fn.listdir(pathway)
-            if not files:
-                raise Exception("No files found after download")
-            package_file = pathway + str(files).strip("[]'")
-            print(f"[INFO] Found package: {package_file}")
-            if not fn.os.path.exists(package_file):
-                raise Exception(f"Package file not found: {package_file}")
-            print("[INFO] Starting package installation...")
-            fn.install_local_package(self, package_file)
-        except Exception as error:
-            print(f"[ERROR] Installation failed: {error}")
-            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
-        finally:
-            print("[INFO] Cleaning up temporary files...")
-            try:
-                fn.shutil.rmtree(pathway)
-                print("[INFO] Cleanup completed")
-            except Exception as error:
-                print(f"[WARNING] Cleanup failed: {error}")
-
-    def on_click_fix_pacman_keys(self, widget):
-        fn.install_package(self, "alacritty")
-        try:
-            fn.subprocess.call(
-                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("Pacman has been reset (gpg, libraries,keys)")
-            GLib.idle_add(fn.show_in_app_notification, self, "Pacman keys fixed")
-        except Exception as error:
-            print(error)
-
-    def on_click_probe(self, widget):
-        print("[INFO] Starting hardware probe")
-        print("[INFO] Installing hw-probe package...")
-        fn.install_package(self, "hw-probe")
-        print("[INFO] Installing alacritty terminal...")
-        fn.install_package(self, "alacritty")
-        try:
-            print("[INFO] Launching hardware probe...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
-            fn.subprocess.call(
-                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] Probe link has been created")
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "Probe link has been created"
-            )
-        except Exception as error:
-            print(f"[ERROR] Hardware probe failed: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification, self, f"Probe failed: {error}"
-            )
-
-    def on_click_fix_mainstream(self, widget):
-        fn.install_package(self, "alacritty")
-        try:
-            command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers; read -p \"Press Enter to close...\"'"
-            fn.subprocess.call(
-                command,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("Mainstream servers have been set")
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "Mainstream servers have been saved"
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_reset_mirrorlist(self, widget):
-        try:
-            if fn.path.isfile(fn.mirrorlist + ".bak"):
-                fn.shutil.copy(fn.mirrorlist + ".bak", fn.mirrorlist)
-        except Exception as error:
-            print(error)
-        print("Your original mirrorlist is back")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Your original mirrorlist is back"
-        )
-        fn.install_package(self, "alacritty")
-        try:
-            fn.subprocess.call(
-                f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_get_arch_mirrors(self, widget):
-        fn.install_package(self, "alacritty")
-        try:
-            fn.install_package(self, "reflector")
-            fn.subprocess.call(
-                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("Fastest Arch Linux servers have been set using reflector")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Fastest Arch Linux servers saved - reflector",
-            )
-        except:
-            print("Install alacritty")
-
-    def on_click_get_arch_mirrors2(self, widget):
-        fn.install_package(self, "alacritty")
-        try:
-            fn.subprocess.call(
-                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("Fastest Arch Linux servers have been set using rate-mirrors")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Fastest Arch Linux servers saved - rate-mirrors",
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_fix_sddm_conf(self, widget):
-        fn.install_package(self, "alacritty")
-        try:
-            command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-fix-sddm-config"
-            fn.subprocess.call(
-                command,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("We use the default setup from plasma")
-            print("Two files:")
-            print(" - /etc/sddm.conf")
-            print(" - /etc/sddm.d.conf/kde_settings.conf")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Saved the original SDDM configuration",
-            )
-        except:
-            print("Install alacritty")
-
-    def on_click_fix_pacman_conf(self, widget):
-        try:
-            command = "alacritty --hold -e /usr/local/bin/arcolinux-fix-pacman-conf"
-            fn.subprocess.call(
-                command,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("Saved the original /etc/pacman.conf")
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "Saved the original /etc/pacman.conf"
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_fix_pacman_gpg_conf(self, widget):
-        print("[INFO] Starting gpg.conf backup and reset")
-        if not fn.path.isfile(fn.gpg_conf + ".bak"):
-            print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf}.bak")
-            fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
-        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_original}")
-        print("[INFO] Content of original gpg.conf:")
-        print("=" * 70)
-        try:
-            with open(fn.gpg_conf_original, 'r') as f:
-                content = f.read()
-                print(content)
-        except Exception as e:
-            print(f"[ERROR] Could not read gpg.conf: {e}")
-        print("=" * 70)
-        fn.shutil.copy(fn.gpg_conf_original, fn.gpg_conf)
-        print("[INFO] The new /etc/pacman.d/gnupg/gpg.conf has been saved")
-        print("[INFO] Backup is in /etc/pacman.d/gnupg/gpg.conf.bak")
-        print("[INFO] We only add servers to the config")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "The new /etc/pacman.d/gnupg/gpg.conf has been saved",
-        )
-
-    def on_click_fix_pacman_gpg_conf_local(self, widget):
-        print("[INFO] Starting local gpg.conf backup and reset")
-        if not fn.path.isdir(fn.home + "/.gnupg"):
-            try:
-                print(f"[INFO] Creating directory: {fn.home}/.gnupg")
-                fn.makedirs(fn.home + "/.gnupg", 0o766)
-                fn.permissions(fn.home + "/.gnupg")
-                print("[INFO] Directory created and permissions set")
-            except Exception as error:
-                print(f"[ERROR] Failed to create directory: {error}")
-
-        if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
-            try:
-                print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf_local}.bak")
-                fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
-                fn.permissions(fn.gpg_conf_local + ".bak")
-                print("[INFO] Backup created successfully")
-            except Exception as error:
-                print(f"[ERROR] Failed to create backup: {error}")
-
-        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_local_original}")
-        print("[INFO] Content of original local gpg.conf:")
-        print("=" * 70)
-        try:
-            with open(fn.gpg_conf_local_original, 'r') as f:
-                content = f.read()
-                print(content)
-        except Exception as e:
-            print(f"[ERROR] Could not read local gpg.conf: {e}")
-        print("=" * 70)
-        fn.shutil.copy(fn.gpg_conf_local_original, fn.gpg_conf_local)
-        fn.permissions(fn.gpg_conf_local)
-        print("[INFO] The new ~/.gnupg/gpg.conf has been saved")
-        print("[INFO] Backup is in ~/.gnupg/gpg.conf.bak")
-        print("[INFO] We only add servers to the config")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "The new ~/.gnupg/gpg.conf has been saved",
-        )
-
-    def on_click_install_arch_mirrors(self, widget):
-        fn.install_package(self, "reflector")
-        self.btn_run_reflector.set_sensitive(True)
-
-    def on_click_install_arch_mirrors2(self, widget):
-        fn.install_package(self, "rate-mirrors")
-        self.btn_run_rate_mirrors.set_sensitive(True)
-
-    def on_click_apply_global_cursor(self, widget):
-        print("[INFO] Starting global cursor application")
-        try:
-            cursor = fn.get_combo_text(self.cursor_themes)
-            print(f"[INFO] Selected cursor theme: {cursor}")
-            print("[INFO] Applying global cursor theme...")
-            maintenance.set_global_cursor(self, cursor)
-            print(f"[INFO] Cursor '{cursor}' is saved in /usr/share/icons/default")
-            print("[INFO] Global cursor theme applied successfully")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Cursor is saved globally",
-            )
-        except Exception as error:
-            print(f"[ERROR] Failed to apply global cursor: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                f"Failed to apply cursor: {error}",
-            )
-
-    def on_click_update_system(self, widget):
-        try:
-            print("[INFO] Starting system update")
-            print("[INFO] Installing alacritty terminal...")
-            fn.install_package(self, "alacritty")
-            print("[INFO] Launching system update...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] System update completed")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "System update completed",
-            )
-        except Exception as error:
-            print(f"[ERROR] Update system failed: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                f"Update failed: {error}",
-            )
-
-    def on_click_clean_cache(self, widget):
-        try:
-            print("[INFO] Starting pacman cache cleanup")
-            print("[INFO] Installing alacritty terminal...")
-            fn.install_package(self, "alacritty")
-            print("[INFO] Launching pacman cache cleanup...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] Pacman cache cleanup completed")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Pacman cache cleaned",
-            )
-        except Exception as error:
-            print(f"[ERROR] Clean cache failed: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                f"Cleanup failed: {error}",
-            )
-
-    def on_click_remove_pacman_lock(self, widget):
-        try:
-            print("[INFO] Starting pacman lock removal")
-            print("[INFO] Installing alacritty terminal...")
-            fn.install_package(self, "alacritty")
-            print("[INFO] Checking pacman lock file: /var/lib/pacman/db.lck")
-            print("[INFO] Launching pacman lock removal...")
-            GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            print("[INFO] Pacman lock removal completed")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                "Pacman lock removed",
-            )
-        except Exception as error:
-            print(f"[ERROR] Remove pacman lock failed: {error}")
-            GLib.idle_add(
-                fn.show_in_app_notification,
-                self,
-                f"Lock removal failed: {error}",
-            )
-
-    # ====================================================================
-    #                   INVESTIGATE YOUR LOGS
-    # ====================================================================
-
-    def on_click_log_current_boot(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b 0 | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_prev_boot(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -1 | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_errors(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -p err | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_recent(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                'alacritty -e bash -c \'SYSTEMD_COLORS=1 journalctl --since "20 minutes ago" | fzf --ansi\'',
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_xorg(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'bat --color=always /var/log/Xorg.0.log | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_pacman(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'bat --color=always /var/log/pacman.log | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_xsession(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            cmd = (
-                "alacritty -e bash -c '"
-                "found=; "
-                "for f in ~/.xsession-errors ~/.local/share/xorg/Xorg.0.log /var/log/Xorg.0.log; do "
-                "  [ -s \"$f\" ] && { found=$f; break; }; "
-                "done; "
-                "if [ -n \"$found\" ]; then bat --color=always \"$found\" | fzf --ansi; "
-                "else echo \"No X session error file found\"; read; fi'"
-            )
-            fn.subprocess.call(
-                cmd,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_blame(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'systemd-analyze blame | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_log_dmesg(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    # ====================================================================
-    #                       SYSTEM INSPECTION
-    # ====================================================================
-
-    def on_click_system_cpu(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'lscpu | bat --color=always -l conf | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_memory_disk(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.subprocess.call(
-                "alacritty --hold -e bash -c 'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\"; df -h'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_lsblk(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'lsblk -f -o+SIZE | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_lspci(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'lspci -vnn | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_lsusb(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'lsusb | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_lsmod(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'lsmod | bat --color=always -l conf | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_inxi(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "inxi")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'inxi -Fxx -c 2 --za | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_hwinfo(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "hwinfo")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'hwinfo --short | bat --color=always -l conf | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_fdisk(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo fdisk -l | bat --color=always -l conf | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_fstab(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.install_package(self, "bat")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'bat --color=always /etc/fstab | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_hostnamectl(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.subprocess.call(
-                "alacritty --hold -e bash -c 'hostnamectl'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_localectl(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.subprocess.call(
-                "alacritty --hold -e bash -c 'localectl'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_services(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --type=service | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_services_enabled(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-unit-files --type=service --state=enabled | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_services_failed(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --failed | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_timers_enabled(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            import pwd
-            uid = pwd.getpwnam(fn.sudo_username).pw_uid
-            fn.subprocess.call(
-                "alacritty -e bash -c '{ echo \"=== System Timers ===\"; "
-                "SYSTEMD_COLORS=1 systemctl list-unit-files --type=timer --state=enabled; "
-                "echo; "
-                "echo \"=== User Timers ===\"; "
-                "sudo -u " + fn.sudo_username +
-                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus"
-                " SYSTEMD_COLORS=1"
-                " systemctl --user list-unit-files --type=timer --state=enabled; "
-                "} | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_dmesg(self, widget):
-        try:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "fzf")
-            fn.subprocess.call(
-                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-        except Exception as error:
-            print(error)
-
-    def on_click_system_gparted(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/gparted"):
-                print("\n[INFO] Launching gparted")
-                fn.subprocess.call(
-                    "sudo gparted &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "GParted launched")
-            else:
-                print("\n[INFO] gparted not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("gparted")
-                GLib.idle_add(fn.show_in_app_notification, self, "gparted installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for gparted installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/gparted"):
-                            print("[INFO] Binary exists at /usr/bin/gparted, installation successful")
-                            GLib.idle_add(fn.show_in_app_notification, self, "gparted installed")
-                            time.sleep(1)
-                            print("[INFO] Launching gparted")
-                            fn.subprocess.Popen(
-                                "sudo gparted &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "GParted launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/gparted, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-    # ====================================================================
-    #                       SOFTWARE
-    # ====================================================================
-
-    def on_click_software_pamac(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/pamac-manager"):
-                print("\n[INFO] Launching pamac-manager")
-                fn.subprocess.Popen(
-                    "sudo -E -u " + fn.sudo_username + " pamac-manager &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "Pamac launched")
-            else:
-                print("\n[INFO] pamac-aur not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("pamac-aur")
-                GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for pamac-aur installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/pamac-manager"):
-                            print("[INFO] Binary exists at /usr/bin/pamac-manager, installation successful")
-                            GLib.idle_add(self.lbl_software_pamac.set_markup, "Pamac - GUI package manager <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur installed")
-                            time.sleep(1)
-                            print("[INFO] Launching pamac-manager")
-                            fn.subprocess.Popen(
-                                "sudo -E -u " + fn.sudo_username + " pamac-manager &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "Pamac launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/pamac-manager, checking for errors...")
-                            fn.check_missing_repo_error(self, "", "pamac-aur")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-
-    def on_click_software_octopi(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/octopi"):
-                print("\n[INFO] Launching octopi")
-                fn.subprocess.Popen(
-                    "sudo -E -u " + fn.sudo_username + " octopi &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "Octopi launched")
-            else:
-                print("\n[INFO] octopi not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("octopi")
-                GLib.idle_add(fn.show_in_app_notification, self, "octopi installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for octopi installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/octopi"):
-                            print("[INFO] Binary exists at /usr/bin/octopi, installation successful")
-                            GLib.idle_add(self.lbl_software_octopi.set_markup, "Octopi - GUI package manager <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "octopi installed")
-                            time.sleep(1)
-                            print("[INFO] Launching octopi")
-                            fn.subprocess.Popen(
-                                "sudo -E -u " + fn.sudo_username + " octopi &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "Octopi launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/octopi, checking for errors...")
-                            fn.check_missing_repo_error(self, "", "octopi")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-    def on_click_software_gnome(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/gnome-software"):
-                print("\n[INFO] Launching gnome-software")
-                import pwd
-                uid = pwd.getpwnam(fn.sudo_username).pw_uid
-                fn.subprocess.Popen(
-                    "sudo -E -u " + fn.sudo_username +
-                    " HOME=/home/" + fn.sudo_username +
-                    " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                    " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                    " gnome-software &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "GNOME Software launched")
-            else:
-                print("\n[INFO] gnome-software not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("gnome-software")
-                GLib.idle_add(fn.show_in_app_notification, self, "gnome-software installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        import pwd
-                        print("[INFO] Waiting for gnome-software installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/gnome-software"):
-                            print("[INFO] Binary exists at /usr/bin/gnome-software, installation successful")
-                            GLib.idle_add(self.lbl_software_gnome.set_markup, "GNOME Software - GUI package manager <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "gnome-software installed")
-                            time.sleep(1)
-                            print("[INFO] Launching gnome-software")
-                            uid = pwd.getpwnam(fn.sudo_username).pw_uid
-                            fn.subprocess.Popen(
-                                "sudo -E -u " + fn.sudo_username +
-                                " HOME=/home/" + fn.sudo_username +
-                                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                                " gnome-software &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "gnome-software launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/gnome-software, checking for errors...")
-                            fn.check_missing_repo_error(self, "", "gnome-software")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-    def on_click_software_discover(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/plasma-discover"):
-                print("\n[INFO] plasma-discover not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("discover packagekit-qt6")
-                GLib.idle_add(fn.show_in_app_notification, self, "discover installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        import pwd
-                        print("[INFO] Waiting for discover installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/plasma-discover"):
-                            print("[INFO] Binary exists at /usr/bin/plasma-discover, installation successful")
-                            GLib.idle_add(self.lbl_software_discover.set_markup, "KDE Discover - KDE software center (pulls KDE deps) <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover installed")
-                            print("[INFO] Launching plasma-discover")
-                            uid = pwd.getpwnam(fn.sudo_username).pw_uid
-                            fn.subprocess.Popen(
-                                "DISPLAY=:0 sudo -E -u " + fn.sudo_username +
-                                " HOME=/home/" + fn.sudo_username +
-                                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                                " plasma-discover",
-                                shell=True,
-                                stdout=fn.subprocess.DEVNULL,
-                                stderr=fn.subprocess.DEVNULL,
-                            )
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/plasma-discover, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-            else:
-                print("\n[INFO] Launching plasma-discover")
-                import pwd
-                uid = pwd.getpwnam(fn.sudo_username).pw_uid
-                fn.subprocess.Popen(
-                    "DISPLAY=:0 sudo -E -u " + fn.sudo_username +
-                    " HOME=/home/" + fn.sudo_username +
-                    " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                    " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                    " plasma-discover",
-                    shell=True,
-                    stdout=fn.subprocess.DEVNULL,
-                    stderr=fn.subprocess.DEVNULL,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "KDE Discover launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_bauh(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/bauh"):
-                print("\n[INFO] Launching bauh")
-                fn.subprocess.Popen(
-                    "sudo -E -u " + fn.sudo_username + " bauh &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "Bauh launched")
-            else:
-                print("\n[INFO] bauh not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("bauh")
-                GLib.idle_add(fn.show_in_app_notification, self, "bauh installation started")
-                fn.wait_install_and_update(process, "/usr/bin/bauh", self.lbl_software_bauh, "Bauh - Multi-format package manager <b>installed</b>", self, "bauh installation complete", "bauh")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_yay(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/yay"):
-                print("\n[INFO] yay-git already installed")
-                GLib.idle_add(fn.show_in_app_notification, self, "yay-git already installed")
-                return
-            process = fn.launch_pacman_install_in_terminal("yay-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "yay-git installation started")
-            fn.wait_install_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based) <b>installed</b>", self, "yay-git installed", "yay-git")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_paru(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/paru"):
-                print("\n[INFO] paru-git already installed")
-                GLib.idle_add(fn.show_in_app_notification, self, "paru-git already installed")
-                return
-            process = fn.launch_pacman_install_in_terminal("paru-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "paru-git installation started")
-            fn.wait_install_and_update(process, "/usr/bin/paru", self.lbl_software_paru, "Paru-git - AUR helper (Rust-based) <b>installed</b>", self, "paru-git installed", "paru-git")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_trizen(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/trizen"):
-                print("\n[INFO] trizen already installed")
-                GLib.idle_add(fn.show_in_app_notification, self, "trizen already installed")
-                return
-            print("\n[INFO] trizen not installed, starting installation")
-            process = fn.launch_pacman_install_in_terminal("trizen")
-            GLib.idle_add(fn.show_in_app_notification, self, "trizen installation started")
-            fn.wait_install_and_update(process, "/usr/bin/trizen", self.lbl_software_trizen, "Trizen - AUR helper (Perl-based) <b>installed</b>", self, "trizen installed", "trizen")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pikaur(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/pikaur"):
-                print("\n[INFO] pikaur-git already installed")
-                GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git already installed")
-                return
-            print("\n[INFO] pikaur-git not installed, starting installation")
-            process = fn.launch_pacman_install_in_terminal("pikaur-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git installation started")
-            fn.wait_install_and_update(process, "/usr/bin/pikaur", self.lbl_software_pikaur, "Pikaur-git - AUR helper (Python-based) <b>installed</b>", self, "pikaur-git installed")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_yay_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("yay-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "yay-git removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based)", self, "yay-git removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_paru_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("paru-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "paru-git removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/paru", self.lbl_software_paru, "Paru-git - AUR helper (Rust-based)", self, "paru-git removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_trizen_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("trizen")
-            GLib.idle_add(fn.show_in_app_notification, self, "trizen removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/trizen", self.lbl_software_trizen, "Trizen - AUR helper (Perl-based)", self, "trizen removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pikaur_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("pikaur-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/pikaur", self.lbl_software_pikaur, "Pikaur-git - AUR helper (Python-based)", self, "pikaur-git removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pacui_open(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/pacui"):
-                print("\n[INFO] pacui not installed, starting installation")
-                script = "pacman -S --noconfirm pacui; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                GLib.idle_add(fn.show_in_app_notification, self, "pacui installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for pacui installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/pacui"):
-                            print("[INFO] Binary exists at /usr/bin/pacui, installation successful")
-                            GLib.idle_add(self.lbl_software_pacui.set_markup, "Pacui - TUI pacman wrapper <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "pacui installed")
-                            time.sleep(1)
-                            print("[INFO] Launching pacui")
-                            fn.subprocess.Popen(
-                                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "pacui launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/pacui, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-            else:
-                print("\n[INFO] Launching pacui")
-                fn.subprocess.Popen(
-                    ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacui"],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "pacui launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pacui_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("pacui")
-            GLib.idle_add(fn.show_in_app_notification, self, "pacui removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/pacui", self.lbl_software_pacui, "Pacui - TUI pacman wrapper", self, "pacui removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_flatpak(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/flatpak"):
-                print("\n[INFO] flatpak not installed, starting installation")
-                script = "pacman -S --noconfirm flatpak; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                GLib.idle_add(fn.show_in_app_notification, self, "flatpak installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for flatpak installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/flatpak"):
-                            print("[INFO] Binary exists at /usr/bin/flatpak, installation successful")
-                            GLib.idle_add(self.lbl_software_flatpak.set_markup, "Flatpak - Manage Flatpak apps <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "flatpak installed")
-                            time.sleep(1)
-                            print("[INFO] Launching flatpak")
-                            script = (
-                                "echo '=== Installed Flatpak apps ===' && "
-                                "sudo -u " + fn.sudo_username + " flatpak list && "
-                                "echo '' && "
-                                "echo 'To install an app: flatpak install flathub <app-id>'"
-                            )
-                            fn.subprocess.Popen(
-                                ["alacritty", "--hold", "-e", "bash", "-c", script],
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "flatpak launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/flatpak, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-            else:
-                print("\n[INFO] Launching flatpak")
-                script = (
-                    "echo '=== Installed Flatpak apps ===' && "
-                    "sudo -u " + fn.sudo_username + " flatpak list && "
-                    "echo '' && "
-                    "echo 'To install an app: flatpak install flathub <app-id>'"
-                )
-                fn.subprocess.Popen(
-                    ["alacritty", "--hold", "-e", "bash", "-c", script],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "flatpak launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_flatpak_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("flatpak")
-            GLib.idle_add(fn.show_in_app_notification, self, "flatpak removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/flatpak", self.lbl_software_flatpak, "Flatpak - Manage Flatpak apps", self, "flatpak removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_snapd(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/snap"):
-                aur_helper = fn.get_aur_helper()
-                if aur_helper is None:
-                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found - install yay, paru, trizen or pikaur first")
-                    return
-                print("\n[INFO] snapd not installed, starting installation")
-                process = fn.launch_aur_install_in_terminal(aur_helper, "snapd")
-                GLib.idle_add(fn.show_in_app_notification, self, "snapd installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for snapd installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/snap"):
-                            print("[INFO] Binary exists at /usr/bin/snap, installation successful")
-                            GLib.idle_add(self.lbl_software_snapd.set_markup, "Snapd - Manage Snap apps <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "snapd installed")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/snap, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-            else:
-                print("\n[INFO] Launching snapd")
-                script = (
-                    "echo '=== Installed Snap apps ===' && "
-                    "sudo -u " + fn.sudo_username + " snap list && "
-                    "echo '' && "
-                    "echo 'To install an app: snap install <app-name>'"
-                )
-                fn.subprocess.Popen(
-                    ["alacritty", "--hold", "-e", "bash", "-c", script],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "snapd launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_snapd_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("snapd")
-            GLib.idle_add(fn.show_in_app_notification, self, "snapd removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/snap", self.lbl_software_snapd, "Snapd - Manage Snap apps", self, "snapd removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_appimagelauncher(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/app-manager"):
-                aur_helper = fn.get_aur_helper()
-                if aur_helper is None:
-                    GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found - install yay, paru, trizen or pikaur first")
-                    return
-                print("\n[INFO] appmanager not installed, starting installation")
-                process = fn.launch_aur_install_in_terminal(aur_helper, "appmanager")
-                GLib.idle_add(fn.show_in_app_notification, self, "appmanager installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        import pwd
-                        print("[INFO] Waiting for appmanager installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/app-manager"):
-                            print("[INFO] Binary exists at /usr/bin/app-manager, installation successful")
-                            GLib.idle_add(self.lbl_software_appimagelauncher.set_markup, "App-manager - Manage AppImages <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "appmanager installed")
-                            time.sleep(1)
-                            print("[INFO] Launching app-manager")
-                            uid = pwd.getpwnam(fn.sudo_username).pw_uid
-                            fn.subprocess.Popen(
-                                "sudo -E -u " + fn.sudo_username +
-                                " HOME=/home/" + fn.sudo_username +
-                                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                                " app-manager &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "app-manager launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/app-manager, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                return
-            print("\n[INFO] Launching app-manager")
-            import pwd
-            uid = pwd.getpwnam(fn.sudo_username).pw_uid
-            fn.subprocess.call(
-                "sudo -E -u " + fn.sudo_username +
-                " HOME=/home/" + fn.sudo_username +
-                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
-                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus" +
-                " app-manager &",
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            GLib.idle_add(fn.show_in_app_notification, self, "App-manager launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_appimagelauncher_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("appmanager")
-            GLib.idle_add(fn.show_in_app_notification, self, "appmanager removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/app-manager", self.lbl_software_appimagelauncher, "App-manager - Manage AppImages", self, "appmanager removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pacseek(self, widget):
-        try:
-            if not fn.path.exists("/usr/bin/pacseek"):
-                print("\n[INFO] pacseek not installed, starting installation")
-                script = "pacman -S --noconfirm pacseek; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-                process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-                GLib.idle_add(fn.show_in_app_notification, self, "pacseek installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for pacseek installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/pacseek"):
-                            print("[INFO] Binary exists at /usr/bin/pacseek, installation successful")
-                            GLib.idle_add(self.lbl_software_pacseek.set_markup, "Pacseek - TUI package searcher <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "pacseek installed")
-                            time.sleep(1)
-                            print("[INFO] Launching pacseek")
-                            fn.subprocess.Popen(
-                                ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "pacseek launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/pacseek, checking for errors...")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-            else:
-                print("\n[INFO] Launching pacseek")
-                fn.subprocess.Popen(
-                    ["alacritty", "-e", "sudo", "-u", fn.sudo_username, "pacseek"],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "pacseek launched")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pacseek_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("pacseek")
-            GLib.idle_add(fn.show_in_app_notification, self, "pacseek removal started")
-            fn.wait_remove_and_update(process, "/usr/bin/pacseek", self.lbl_software_pacseek, "Pacseek - TUI package searcher", self, "pacseek removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_pamac_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("pamac-aur")
-            GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/pamac-manager", self.lbl_software_pamac, "Pamac - GUI package manager", self, "pamac-aur removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_octopi_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("octopi")
-            GLib.idle_add(fn.show_in_app_notification, self, "octopi removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/octopi", self.lbl_software_octopi, "Octopi - GUI package manager", self, "octopi removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_gnome_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("gnome-software")
-            GLib.idle_add(fn.show_in_app_notification, self, "gnome-software removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/gnome-software", self.lbl_software_gnome, "GNOME Software - GUI package manager", self, "gnome-software removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_discover_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("discover")
-            GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/plasma-discover", self.lbl_software_discover, "KDE Discover - GUI package manager", self, "plasma-discover removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_bauh_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("bauh")
-            GLib.idle_add(fn.show_in_app_notification, self, "bauh removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/bauh", self.lbl_software_bauh, "Bauh - GUI package manager", self, "bauh removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_archlinux_logout(self, widget):
-        try:
-            if fn.path.exists("/usr/bin/archlinux-logout-gtk4"):
-                print("\n[INFO] Launching archlinux-logout-gtk4")
-                fn.subprocess.Popen(
-                    "archlinux-logout-gtk4 &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "ArchLinux Logout launched")
-            else:
-                print("\n[INFO] archlinux-logout-gtk4-git not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("archlinux-logout-gtk4-git")
-                GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for archlinux-logout-gtk4-git installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/bin/archlinux-logout-gtk4"):
-                            print("[INFO] Binary exists at /usr/bin/archlinux-logout-gtk4, installation successful")
-                            GLib.idle_add(self.lbl_software_archlinux_logout.set_markup, "ArchLinux Logout - Session logout tool <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git installed")
-                            time.sleep(1)
-                            print("[INFO] Launching archlinux-logout-gtk4")
-                            fn.subprocess.Popen(
-                                "archlinux-logout-gtk4 &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "ArchLinux Logout launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/bin/archlinux-logout-gtk4, checking for errors...")
-                            fn.check_missing_repo_error(self, "", "archlinux-logout-gtk4-git")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-    def on_click_software_archlinux_logout_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("archlinux-logout-gtk4-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4-git removal started")
-
-            fn.wait_remove_and_update(process, "/usr/bin/archlinux-logout-gtk4", self.lbl_software_archlinux_logout, "ArchLinux Logout - Session logout tool", self, "archlinux-logout-gtk4-git removal complete")
-        except Exception as error:
-            print(error)
-
-    def on_click_software_powermenu(self, widget):
-        try:
-            if fn.path.exists("/usr/local/bin/edu-powermenu"):
-                print("\n[INFO] Launching edu-powermenu")
-                fn.subprocess.Popen(
-                    "edu-powermenu &",
-                    shell=True,
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.STDOUT,
-                )
-                GLib.idle_add(fn.show_in_app_notification, self, "powermenu launched")
-            else:
-                print("\n[INFO] edu-powermenu-git not installed, starting installation")
-                process = fn.launch_pacman_install_in_terminal("edu-powermenu-git")
-                GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installation started")
-
-                def wait_install():
-                    try:
-                        import time
-                        print("[INFO] Waiting for edu-powermenu-git installation to complete...")
-                        process.wait()
-                        print("[INFO] Installation process completed")
-                        time.sleep(1)
-                        if fn.path.exists("/usr/local/bin/edu-powermenu"):
-                            print("[INFO] Binary exists at /usr/local/bin/edu-powermenu, installation successful")
-                            GLib.idle_add(self.lbl_software_powermenu.set_markup, "powermenu - Power menu for i3/sway <b>installed</b>")
-                            GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installed")
-                            time.sleep(1)
-                            print("[INFO] Launching edu-powermenu")
-                            fn.subprocess.Popen(
-                                "edu-powermenu &",
-                                shell=True,
-                                stdout=fn.subprocess.PIPE,
-                                stderr=fn.subprocess.STDOUT,
-                            )
-                            GLib.idle_add(fn.show_in_app_notification, self, "powermenu launched")
-                        else:
-                            print("[INFO] Binary NOT found at /usr/local/bin/edu-powermenu, checking for errors...")
-                            fn.check_missing_repo_error(self, "", "edu-powermenu-git")
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-        except Exception as error:
-            print(error)
-
-    def on_click_software_powermenu_remove(self, widget):
-        try:
-            process = fn.launch_pacman_remove_in_terminal("edu-powermenu-git")
-            GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git removal started")
-
-            fn.wait_remove_and_update(process, "/usr/local/bin/edu-powermenu", self.lbl_software_powermenu, "powermenu - Power menu for i3/sway", self, "edu-powermenu-git removal complete")
-        except Exception as error:
-            print(error)
-
     # ====================================================================
     #                       AI TOOLS
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_click_ai_ollama(self, widget):
@@ -3509,51 +1002,473 @@ class Main(Gtk.ApplicationWindow):
     def on_click_ai_firefly(self, widget):
         self.open_url_in_browser("https://www.adobe.com/products/firefly")
 
-
-
     # ====================================================================
-    #                            PRIVACY
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       AUTOSTART
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
-    def set_hblock(self, widget, state):
-        if fn.check_edu_repos_active() is True:
-            if self.firstrun is not True:
-                t = fn.threading.Thread(
-                    target=fn.set_hblock, args=(self, widget, widget.get_active())
+    def on_comment_changed(self, widget):
+        if len(self.txtbox1.get_text()) >= 3 and len(self.txtbox2.get_text()) >= 3:
+            self.abutton.set_sensitive(True)
+
+    # autostart toggle on and off
+    def on_auto_toggle(self, widget, data, lbl):
+        failed = False
+        try:
+            with open(fn.autostart + lbl + ".desktop", "r", encoding="utf-8") as f:
+                lines = f.readlines()
+                f.close()
+            try:
+                pos = fn.get_position(lines, "Hidden=")
+            except:
+                failed = True
+                with open(fn.autostart + lbl + ".desktop", "a", encoding="utf-8") as f:
+                    f.write("Hidden=" + str(not widget.get_active()).lower())
+                    f.close()
+        except:
+            pass
+        if not failed:
+            try:
+                val = lines[pos].split("=")[1].strip()
+                lines[pos] = lines[pos].replace(
+                    val, str(not widget.get_active()).lower()
                 )
-                t.start()
-                print("Hblock is now active/inactive")
-                GLib.idle_add(
-                    fn.show_in_app_notification, self, "Hblock is active/inactive"
+                with open(fn.autostart + lbl + ".desktop", "w", encoding="utf-8") as f:
+                    f.writelines(lines)
+                    f.close()
+            except:
+                # non .desktop files
+                pass
+
+    # remove file from ~/.config/autostart
+    def on_auto_remove_clicked(self, gesture_or_widget, listbox, lbl):
+        try:
+            fn.unlink(fn.autostart + lbl + ".desktop")
+            print("Removed item from ~/.config/autostart/")
+            self.vvbox.remove(listbox)
+        except Exception as error:
+            print(error)
+            print("We were unable to remove it")
+            print("Evaluate if it can/should be removed")
+            print("Then remove it manually")
+            print("We only remove .desktop files")
+
+    def clear_autostart(self):
+        child = self.vvbox.get_first_child()
+        while child is not None:
+            next_child = child.get_next_sibling()
+            self.vvbox.remove(child)
+            child = next_child
+
+    def load_autostart(self, files):
+        self.clear_autostart()
+
+        for x in files:
+            self.add_row(x)
+
+    def add_row(self, x):
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        vbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
+        lbl = Gtk.Label(xalign=0)
+        lbl.set_text(x)
+
+        swtch = Gtk.Switch()
+        swtch.connect("notify::active", self.on_auto_toggle, lbl.get_text())
+        swtch.set_active(autostart.get_startups(lbl.get_text()))
+
+        listbox = Gtk.ListBox()
+
+        pbfb = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            fn.path.join(base_dir, "images/remove.png"), 28, 28
+        )
+        texture = Gdk.Texture.new_for_pixbuf(pbfb)
+        fbimage = Gtk.Image.new_from_paintable(texture)
+        fbimage.set_cursor(Gdk.Cursor.new_from_name("pointer"))
+        fbimage.set_tooltip_text("Remove")
+
+        _listbox = listbox
+        _text = lbl.get_text()
+        fb_gesture = Gtk.GestureClick.new()
+        fb_gesture.connect(
+            "pressed",
+            lambda g, n, x, y, lb=_listbox, t=_text: self.on_auto_remove_clicked(g, lb, t),
+        )
+        fbimage.add_controller(fb_gesture)
+
+        lbl.set_hexpand(True)
+        hbox.append(lbl)
+        swtch.set_margin_top(10)
+        swtch.set_margin_bottom(10)
+        vbox2.append(swtch)
+        hbox.append(vbox2)
+        hbox.append(fbimage)
+
+        vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        hbox.set_margin_top(5)
+        hbox.set_margin_bottom(5)
+        vbox1.append(hbox)
+
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        listboxrow = Gtk.ListBoxRow()
+        listboxrow.set_child(vbox1)
+        listbox.append(listboxrow)
+
+        self.vvbox.append(listbox)
+
+    def on_remove_auto(self, widget):
+        selection = self.treeView4.get_selection()
+        model, paths = selection.get_selected_rows()
+
+        # Get the TreeIter instance for each path
+        for path in paths:
+            iter = model.get_iter(path)
+            # Remove the ListStore row referenced by iter
+            value = model.get_value(iter, 1)
+            model.remove(iter)
+            fn.unlink(fn.home + "/.config/autostart/" + value + ".desktop")
+            print("Item has been removed from autostart")
+            fn.show_in_app_notification(self, "Item has been removed from autostart")
+
+    def on_add_autostart(self, widget):
+        if len(self.txtbox1.get_text()) > 1 and len(self.txtbox2.get_text()) > 1:
+            autostart.add_autostart(
+                self,
+                self.txtbox1.get_text(),
+                self.txtbox2.get_text(),
+                self.txtbox3.get_text(),
+            )
+        print("Item has been added to autostart")
+        fn.show_in_app_notification(self, "Item has been added to autostart")
+
+    def on_exec_browse(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Please choose a file",
+            transient_for=self,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+
+        dialog.set_select_multiple(False)
+        dialog.set_current_folder(Gio.File.new_for_path(fn.home))
+        dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        dialog.add_button("_Open", Gtk.ResponseType.OK)
+        dialog.connect("response", self.open_response_auto)
+
+        dialog.present()
+
+    def open_response_auto(self, dialog, response):
+        if response == Gtk.ResponseType.OK:
+            files = dialog.get_files()
+            if files:
+                foldername = files[0].get_path()
+                print(foldername)
+                self.txtbox2.set_text(foldername)
+            dialog.destroy()
+        elif response == Gtk.ResponseType.CANCEL:
+            dialog.destroy()
+
+    # =====================================================
+    #     CREATE AUTOSTART_GUI
+    # =====================================================
+
+    def create_autostart_columns(self, treeView):
+        rendererText = Gtk.CellRendererText()
+        renderer_checkbox = Gtk.CellRendererToggle()
+        column_checkbox = Gtk.TreeViewColumn("", renderer_checkbox, active=0)
+        renderer_checkbox.connect("toggled", self.renderer_checkbox, self.startups)
+        renderer_checkbox.set_activatable(True)
+        column_checkbox.set_sort_column_id(0)
+
+        column = Gtk.TreeViewColumn("Name", rendererText, text=1)
+        column.set_sort_column_id(1)
+
+        column2 = Gtk.TreeViewColumn("Comment", rendererText, text=2)
+        column2.set_sort_column_id(2)
+
+        treeView.append_column(column_checkbox)
+        treeView.append_column(column)
+        treeView.append_column(column2)
+
+    def create_columns(self, treeView):
+        rendererText = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Name", rendererText, text=0)
+        column.set_sort_column_id(0)
+        treeView.append_column(column)
+
+    def renderer_checkbox(self, renderer, path, model):
+        if path is not None:
+            it = model.get_iter(path)
+            model[it][0] = not model[it][0]
+
+    def on_activated(self, treeview, path, column):
+        failed = False
+        treestore, selected_treepaths = treeview.get_selection().get_selected_rows()
+        selected_treepath = selected_treepaths[0]
+        selected_row = treestore[selected_treepath]
+        bool = selected_row[0]
+        text = selected_row[1]
+
+        if bool:
+            bools = False
+        else:
+            bools = True
+
+        with open(
+            fn.home + "/.config/autostart/" + text + ".desktop", "r", encoding="utf-8"
+        ) as f:
+            lines = f.readlines()
+            f.close()
+        try:
+            pos = fn.get_position(lines, "Hidden=")
+        except:
+            failed = True
+            with open(
+                fn.home + "/.config/autostart/" + text + ".desktop",
+                "a",
+                encoding="utf-8",
+            ) as f:
+                f.write("Hidden=" + str(bools))
+                f.close()
+        if not failed:
+            val = lines[pos].split("=")[1].strip()
+            lines[pos] = lines[pos].replace(val, str(bools).lower())
+            with open(
+                fn.home + "/.config/autostart/" + text + ".desktop",
+                "w",
+                encoding="utf-8",
+            ) as f:
+                f.writelines(lines)
+                f.close()
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       DESIGN
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    # design
+    def on_install_themes_clicked(self, widget):
+        design.install_themes(self)
+        print("We have installed all the selected themes")
+        fn.show_in_app_notification(self, "We have installed all the selected themes")
+        # populate cursor themes - some themes include a cursor
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+
+    def on_remove_themes_clicked(self, widget):
+        design.remove_themes(self)
+        print("We have removed all the selected themes")
+        fn.show_in_app_notification(self, "We have removed all the selected themes")
+        # populate cursor themes - some themes include a cursor
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+
+    def on_find_themes_clicked(self, widget):
+        design.find_themes(self)
+        print("We show all the installed themes")
+        fn.show_in_app_notification(self, "We show all the installed themes")
+        # populate cursor themes - some themes include a cursor
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+
+    # icons
+    def on_install_icon_themes_clicked(self, widget):
+        design.install_icon_themes(self)
+        print("We have installed all the selected icon themes")
+        fn.show_in_app_notification(
+            self, "We have installed all the selected icon themes"
+        )
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    def on_remove_icon_themes_clicked(self, widget):
+        design.remove_icon_themes(self)
+        print("We have removed all the selected icon themes")
+        fn.show_in_app_notification(
+            self, "We have removed all the selected icon themes"
+        )
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    def on_find_icon_themes_clicked(self, widget):
+        design.find_icon_themes(self)
+        print("We show the installed icon themes")
+        fn.show_in_app_notification(self, "We show the installed icon themes")
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    # cursors
+    def on_install_cursor_themes_clicked(self, widget):
+        design.install_cursor_themes(self)
+        print("We have installed all the selected cursor themes")
+        fn.show_in_app_notification(
+            self, "We have installed all the selected cursor themes"
+        )
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    def on_remove_cursor_themes_clicked(self, widget):
+        design.remove_cursor_themes(self)
+        print("We have removed all the selected cursor themes")
+        fn.show_in_app_notification(
+            self, "We have removed all the selected cursor themes"
+        )
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    def on_find_cursor_themes_clicked(self, widget):
+        design.find_cursor_themes(self)
+        print("We show the installed cursor themes")
+        fn.show_in_app_notification(self, "We show the installed cursor themes")
+        # populate cursor themes
+        if fn.check_package_installed("sddm"):
+            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        maintenance.pop_gtk_cursor_names(self.cursor_themes)
+
+    # fonts
+    def on_install_fonts_clicked(self, widget):
+        design.install_fonts(self)
+
+    def on_remove_fonts_clicked(self, widget):
+        design.remove_fonts(self)
+
+    def on_find_fonts_clicked(self, widget):
+        design.find_fonts(self)
+
+    def on_click_theming_all_selection(self, widget):
+        design.set_checkboxes_all(self)
+
+    def on_click_theming_normal_selection(self, widget):
+        design.set_checkboxes_normal(self)
+
+    def on_click_theming_minimal_selection(self, widget):
+        design.set_checkboxes_minimal(self)
+
+    def on_click_theming_none_selection(self, widget):
+        design.set_checkboxes_none(self)
+
+    def on_click_icon_theming_all_selection(self, widget):
+        design.set_checkboxes_all_icon(self)
+
+    def on_click_icon_theming_normal_selection(self, widget):
+        design.set_checkboxes_normal_icon(self)
+
+    def on_click_icon_theming_minimal_selection(self, widget):
+        design.set_checkboxes_minimal_icon(self)
+
+    def on_click_icon_theming_none_selection(self, widget):
+        design.set_checkboxes_none_icon(self)
+
+    def on_click_cursor_theming_all_selection(self, widget):
+        design.set_checkboxes_all_cursors(self)
+
+    def on_click_cursor_theming_normal_selection(self, widget):
+        design.set_checkboxes_normal_cursors(self)
+
+    def on_click_cursor_theming_minimal_selection(self, widget):
+        design.set_checkboxes_minimal_cursors(self)
+
+    def on_click_cursor_theming_none_selection(self, widget):
+        design.set_checkboxes_none_cursors(self)
+
+    def on_click_font_theming_all_selection(self, widget):
+        design.set_checkboxes_all_fonts(self)
+
+    def on_click_font_theming_normal_selection(self, widget):
+        design.set_checkboxes_normal_fonts(self)
+
+    def on_click_font_theming_minimal_selection(self, widget):
+        design.set_checkboxes_minimal_fonts(self)
+
+    def on_click_font_theming_none_selection(self, widget):
+        design.set_checkboxes_none_fonts(self)
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       DESKTOPR
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_d_combo_changed(self, widget, pspec=None):
+        from gi.repository import Gdk
+
+        try:
+            pixbuf3 = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                base_dir + "/desktop_data/" + fn.get_combo_text(self.d_combo) + ".jpg",
+                desktopr_gui.IMAGE_PREVIEW_LOAD,
+                desktopr_gui.IMAGE_PREVIEW_LOAD,
+            )
+            texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
+            self.image_DE.set_paintable(texture)
+        except:
+            self.image_DE.set_paintable(None)
+        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)):
+            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is installed</b></span>')
+        else:
+            self.desktop_status.set_markup('<span size="x-large"><b>This desktop is NOT installed</b></span>')
+
+    def on_install_clicked(self, widget, state):
+        fn.create_log(self)
+        print("installing " + fn.get_combo_text(self.d_combo))
+        desktopr.check_lock(self, fn.get_combo_text(self.d_combo), state)
+
+    def on_default_clicked(self, widget):
+        fn.create_log(self)
+        if desktopr.check_desktop(fn.get_combo_text(self.d_combo)) is True:
+            secs = settings.read_section()
+            if "DESKTOP" in secs:
+                settings.write_settings(
+                    "DESKTOP", "default", fn.get_combo_text(self.d_combo)
                 )
             else:
-                self.firstrun = False
+                settings.new_settings(
+                    "DESKTOP", {"default": fn.get_combo_text(self.d_combo)}
+                )
         else:
-            print("-----------------------------------------------------------------------")
-            print("For full ATT functionality, activate chaotic-aur and/or nemesis_repo ")
-            print("You can enable the repositories in the pacman menu")
-            print("-----------------------------------------------------------------------")
-            self.hbswich.set_active(False)
-            GLib.idle_add(
-                fn.show_in_app_notification, self, "First activate the chaotic-aur and/or the nemesis repo in pacman "
-            )
-
-    def set_ublock_firefox(self, widget, state):
-        t = fn.threading.Thread(
-            target=fn.set_firefox_ublock, args=(self, widget, widget.get_active())
-        )
-        t.start()
+            fn.show_in_app_notification(self, "That desktop is not installed")
+            print("Desktop is not installed")
 
     # ====================================================================
-    #                        FASTFETCH CONFIG
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       FASTFETCH
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_install_fast(self, widget):
         fn.install_package(self, "fastfetch-git")
-
-    # ====================================================================
-    #                        FASTFETCH CONFIG
-    # ====================================================================
 
     def on_apply_fast(self, widget):
         small_ascii = "auto"
@@ -3645,72 +1560,722 @@ class Main(Gtk.ApplicationWindow):
         print("You have not selected any Fastfetch switch")
         fastfetch.set_checkboxes_none(self)
 
-    def on_mirror_seed_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_seed")
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       ICONS
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
 
-    def on_mirror_gitlab_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://gitlab.com/arcolinux/$repo/-/raw/main/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_gitlab")
+    # selection of icon theming
+    def on_click_att_sardi_icon_theming_all_selection(self, widget):
+        print("[INFO] We have selected all sardi icons")
+        fn.show_in_app_notification(self, "We have selected all sardi icons")
+        icons.set_att_checkboxes_theming_sardi_icons_all(self)
 
-    def on_mirror_belnet_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_belnet")
+    def on_click_att_sardi_icon_theming_mint_selection(self, widget):
+        print("[INFO] We have selected the mint selection - sardi icons")
+        fn.show_in_app_notification(
+            self, "We have selected the mint selection - sardi icons"
+        )
+        icons.set_att_checkboxes_theming_sardi_mint_icons(self)
 
-    def on_mirror_funami_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://mirror.funami.tech/arcolinux/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_funami")
+    def on_click_att_sardi_icon_theming_mixing_selection(self, widget):
+        print("[INFO] We have selected the mixing selection - sardi icons")
+        fn.show_in_app_notification(
+            self, "We have selected the mixing selection - sardi icons"
+        )
+        icons.set_att_checkboxes_theming_sardi_mixing_icons(self)
 
-    def on_mirror_jingk_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://mirror.jingk.ai/arcolinux/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_jingk")
+    def on_click_att_sardi_icon_theming_variations_selection(self, widget):
+        print("[INFO] We have selected the variation selection - sardi icons")
+        fn.show_in_app_notification(
+            self, "We have selected the variation selection - sardi icons"
+        )
+        icons.set_att_checkboxes_theming_sardi_icons_variations(self)
 
-    def on_mirror_accum_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://mirror.accum.se/mirror/arcolinux.info/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.seedhostmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_accum")
+    def on_click_att_sardi_icon_theming_none_selection(self, widget):
+        print("[INFO] We have selected no sardi icons")
+        fn.show_in_app_notification(self, "We have selected no sardiicons")
+        icons.set_att_checkboxes_theming_sardi_icons_none(self)
 
-    def on_mirror_aarnet_repo_toggle(self, widget, active):
-        if not pmf.mirror_exist(
-            "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch"
-        ):
-            pmf.append_mirror(self, fn.aarnetmirror)
-        else:
-            if self.opened is False:
-                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_aarnet")
+    # different families of SARDI
 
-    # =====================================================
-    #               PACMAN CONF
-    # =====================================================
+    def on_click_att_fam_sardi_icon_theming_sardi_selection(self, widget):
+        print("[INFO] We have selected the Sardi family")
+        fn.show_in_app_notification(self, "We have selected the Sardi family themes")
+        icons.set_att_fam_checkboxes_theming_sardi_icons(self)
+
+    def on_click_att_fam_sardi_icon_theming_sardi_flexible_selection(self, widget):
+        print("[INFO] We have selected the Sardi flexible family")
+        fn.show_in_app_notification(
+            self, "We have selected the Sardi flexible family themes"
+        )
+        icons.set_att_fam_checkboxes_theming_sardi_flexible(self)
+
+    def on_click_att_fam_sardi_icon_theming_sardi_mono_selection(self, widget):
+        print("[INFO] We have selected the Sardi mono family")
+        fn.show_in_app_notification(
+            self, "We have selected the Sardi mono family themes"
+        )
+        icons.set_att_fam_checkboxes_theming_sardi_mono(self)
+
+    def on_click_att_fam_sardi_icon_theming_sardi_flat_selection(self, widget):
+        print("[INFO] We have selected the Sardi flat family")
+        fn.show_in_app_notification(
+            self, "We have selected the Sardi flat family themes"
+        )
+        icons.set_att_fam_checkboxes_theming_sardi_flat(self)
+
+    def on_click_att_fam_sardi_icon_theming_sardi_ghost_selection(self, widget):
+        print("[INFO] We have selected the Sardi ghost family")
+        fn.show_in_app_notification(
+            self, "We have selected the Sardi ghost family themes"
+        )
+        icons.set_att_fam_checkboxes_theming_sardi_ghost(self)
+
+    def on_click_att_fam_sardi_icon_theming_sardi_orb_selection(self, widget):
+        print("[INFO] We have selected the Sardi orb family")
+        fn.show_in_app_notification(
+            self, "We have selected the Sardi orb family themes"
+        )
+        icons.set_att_fam_checkboxes_theming_sardi_orb(self)
+
+    # selection of Surfn icons theming
+    def on_click_att_surfn_theming_all_selection(self, widget):
+        print("[INFO] We have selected all cursors")
+        fn.show_in_app_notification(self, "We have selected all cursors")
+        icons.set_att_checkboxes_theming_surfn_icons_all(self)
+
+    def on_click_att_surfn_theming_normal_selection(self, widget):
+        print("[INFO] We have selected the normal selection - cursors")
+        fn.show_in_app_notification(
+            self, "We have selected the normal selection - cursors"
+        )
+        icons.set_att_checkboxes_theming_surfn_icons_normal(self)
+
+    def on_click_att_surfn_theming_minimal_selection(self, widget):
+        print("[INFO] We have selected the minimal selection - cursors")
+        fn.show_in_app_notification(
+            self, "We have selected the minimal selection - cursors"
+        )
+        icons.set_att_checkboxes_theming_surfn_icons_minimal(self)
+
+    def on_click_att_surfn_theming_none_selection(self, widget):
+        print("[INFO] We have selected no cursors")
+        fn.show_in_app_notification(self, "We have selected no cursors")
+        icons.set_att_checkboxes_theming_surfn_icons_none(self)
+
+    def on_install_extras_clicked(self, widget):
+        print("[INFO] Installing selected Neo Candy icon packages")
+        icons.install_att_extras(self)
+
+
+    # extras
+    def on_remove_extras_clicked(self, widget):
+        print("[INFO] Removing selected Neo Candy icon packages")
+        icons.remove_att_extras(self)
+
+
+    def on_find_extras_clicked(self, widget):
+        print("[INFO] We show the installed projects")
+        fn.show_in_app_notification(self, "We show the installed projects")
+        icons.find_att_extras(self)
+
+
+    # selection of extras theming
+    def on_click_extras_theming_all_selection(self, widget):
+        print("[INFO] We have selected all projects")
+        fn.show_in_app_notification(self, "We have selected all projects")
+        icons.set_att_checkboxes_extras_all(self)
+
+    def on_click_extras_theming_none_selection(self, widget):
+        print("[INFO] We have selected none of the projects")
+        fn.show_in_app_notification(self, "We have selected none of the projects")
+        icons.set_att_checkboxes_extras_none(self)
+
+    def on_install_att_sardi_icon_themes_clicked(self, widget):
+        print("[INFO] Installing selected Sardi icon themes")
+        icons.install_sardi_icons(self)
+
+    def on_remove_att_sardi_icon_themes_clicked(self, widget):
+        print("[INFO] Removing selected Sardi icon themes")
+        icons.remove_sardi_icons(self)
+
+    def on_find_att_sardi_icon_themes_clicked(self, widget):
+        print("[INFO] We show the installed sardi icon themes")
+        fn.show_in_app_notification(self, "We show the installed sardi icon themes")
+        icons.find_sardi_icons(self)
+
+    def on_install_att_surfn_icon_themes_clicked(self, widget):
+        print("[INFO] Installing selected Surfn icon themes")
+        icons.install_surfn_icons(self)
+
+    def on_remove_att_surfn_icon_themes_clicked(self, widget):
+        print("[INFO] Removing selected Surfn icon themes")
+        icons.remove_surfn_icons(self)
+
+    def on_find_att_surfn_icon_themes_clicked(self, widget):
+        print("[INFO] We show all the installed Surfn icon themes")
+        fn.show_in_app_notification(self, "We show all the installed Surfn icon themes")
+        icons.find_surfn_icons(self)
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       KERNEL
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    
+    # Programming logic is in kernel.py
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       LOGGING
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_click_log_current_boot(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b 0 | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_prev_boot(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -1 | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_errors(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 journalctl -b -p err | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_recent(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                'alacritty -e bash -c \'SYSTEMD_COLORS=1 journalctl --since "20 minutes ago" | fzf --ansi\'',
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_xorg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /var/log/Xorg.0.log | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_pacman(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /var/log/pacman.log | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_xsession(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            cmd = (
+                "alacritty -e bash -c '"
+                "found=; "
+                "for f in ~/.xsession-errors ~/.local/share/xorg/Xorg.0.log /var/log/Xorg.0.log; do "
+                "  [ -s \"$f\" ] && { found=$f; break; }; "
+                "done; "
+                "if [ -n \"$found\" ]; then bat --color=always \"$found\" | fzf --ansi; "
+                "else echo \"No X session error file found\"; read; fi'"
+            )
+            fn.subprocess.call(
+                cmd,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_blame(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'systemd-analyze blame | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_log_dmesg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       MAINTENANCE
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_click_apply_global_cursor(self, widget):
+        print("[INFO] Starting global cursor application")
+        try:
+            cursor = fn.get_combo_text(self.cursor_themes)
+            print(f"[INFO] Selected cursor theme: {cursor}")
+            print("[INFO] Applying global cursor theme...")
+            maintenance.set_global_cursor(self, cursor)
+            print(f"[INFO] Cursor '{cursor}' is saved in /usr/share/icons/default")
+            print("[INFO] Global cursor theme applied successfully")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Cursor is saved globally",
+            )
+        except Exception as error:
+            print(f"[ERROR] Failed to apply global cursor: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Failed to apply cursor: {error}",
+            )
+
+    def on_click_update_system(self, widget):
+        try:
+            print("[INFO] Starting system update")
+            print("[INFO] Installing alacritty terminal...")
+            fn.install_package(self, "alacritty")
+            print("[INFO] Launching system update...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("[INFO] System update completed")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "System update completed",
+            )
+        except Exception as error:
+            print(f"[ERROR] Update system failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Update failed: {error}",
+            )
+
+    def on_click_clean_cache(self, widget):
+        try:
+            print("[INFO] Starting pacman cache cleanup")
+            print("[INFO] Installing alacritty terminal...")
+            fn.install_package(self, "alacritty")
+            print("[INFO] Launching pacman cache cleanup...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("[INFO] Pacman cache cleanup completed")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Pacman cache cleaned",
+            )
+        except Exception as error:
+            print(f"[ERROR] Clean cache failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Cleanup failed: {error}",
+            )
+
+    def on_click_remove_pacman_lock(self, widget):
+        try:
+            print("[INFO] Starting pacman lock removal")
+            print("[INFO] Installing alacritty terminal...")
+            fn.install_package(self, "alacritty")
+            print("[INFO] Checking pacman lock file: /var/lib/pacman/db.lck")
+            print("[INFO] Launching pacman lock removal...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("[INFO] Pacman lock removal completed")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Pacman lock removed",
+            )
+        except Exception as error:
+            print(f"[ERROR] Remove pacman lock failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"Lock removal failed: {error}",
+            )
+
+    # Pacman & Repository Management
+    def on_click_install_arch_keyring(self, widget):
+        print("[INFO] Starting local archlinux-keyring installation")
+        GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
+        try:
+            pathway = base_dir + "/data/arch/packages/keyring/"
+            print(f"[INFO] Package pathway: {pathway}")
+            print("[INFO] Searching for archlinux-keyring package...")
+            files = fn.listdir(pathway)
+            if not files:
+                raise Exception("No package files found in pathway")
+            package_file = pathway + str(files).strip("[]'")
+            print(f"[INFO] Found package: {package_file}")
+            print(f"[INFO] Package size check...")
+            if fn.os.path.exists(package_file):
+                size = fn.os.path.getsize(package_file)
+                print(f"[INFO] Package file size: {size} bytes")
+            else:
+                raise Exception(f"Package file not found: {package_file}")
+            print("[INFO] Starting package installation...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Installing archlinux-keyring...")
+            fn.install_local_package(self, package_file)
+        except Exception as error:
+            print(f"[ERROR] Local installation failed: {error}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
+
+    def on_click_install_arch_keyring_online(self, widget):
+        print("[INFO] Starting online archlinux-keyring installation")
+        pathway = "/tmp/att-installation/"
+        print(f"[INFO] Creating temporary directory: {pathway}")
+        fn.mkdir(pathway)
+        command = (
+            "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
+            + pathway
+        )
+        try:
+            print("[INFO] Downloading archlinux-keyring package...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
+            fn.subprocess.call(
+                command,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("[INFO] Download completed successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
+            print("[INFO] Locating downloaded package file...")
+            files = fn.listdir(pathway)
+            if not files:
+                raise Exception("No files found after download")
+            package_file = pathway + str(files).strip("[]'")
+            print(f"[INFO] Found package: {package_file}")
+            if not fn.os.path.exists(package_file):
+                raise Exception(f"Package file not found: {package_file}")
+            print("[INFO] Starting package installation...")
+            fn.install_local_package(self, package_file)
+        except Exception as error:
+            print(f"[ERROR] Installation failed: {error}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
+        finally:
+            print("[INFO] Cleaning up temporary files...")
+            try:
+                fn.shutil.rmtree(pathway)
+                print("[INFO] Cleanup completed")
+            except Exception as error:
+                print(f"[WARNING] Cleanup failed: {error}")
+
+    def on_click_fix_pacman_keys(self, widget):
+        fn.install_package(self, "alacritty")
+        try:
+            fn.subprocess.call(
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Pacman has been reset (gpg, libraries,keys)")
+            GLib.idle_add(fn.show_in_app_notification, self, "Pacman keys fixed")
+        except Exception as error:
+            print(error)
+
+    def on_click_probe(self, widget):
+        print("[INFO] Starting hardware probe")
+        print("[INFO] Installing hw-probe package...")
+        fn.install_package(self, "hw-probe")
+        print("[INFO] Installing alacritty terminal...")
+        fn.install_package(self, "alacritty")
+        try:
+            print("[INFO] Launching hardware probe...")
+            GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
+            fn.subprocess.call(
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("[INFO] Probe link has been created")
+            GLib.idle_add(
+                fn.show_in_app_notification, self, "Probe link has been created"
+            )
+        except Exception as error:
+            print(f"[ERROR] Hardware probe failed: {error}")
+            GLib.idle_add(
+                fn.show_in_app_notification, self, f"Probe failed: {error}"
+            )
+
+    def on_click_fix_mainstream(self, widget):
+        fn.install_package(self, "alacritty")
+        try:
+            command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers; read -p \"Press Enter to close...\"'"
+            fn.subprocess.call(
+                command,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Mainstream servers have been set")
+            GLib.idle_add(
+                fn.show_in_app_notification, self, "Mainstream servers have been saved"
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_reset_mirrorlist(self, widget):
+        try:
+            if fn.path.isfile(fn.mirrorlist + ".bak"):
+                fn.shutil.copy(fn.mirrorlist + ".bak", fn.mirrorlist)
+        except Exception as error:
+            print(error)
+        print("Your original mirrorlist is back")
+        GLib.idle_add(
+            fn.show_in_app_notification, self, "Your original mirrorlist is back"
+        )
+        fn.install_package(self, "alacritty")
+        try:
+            fn.subprocess.call(
+                f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_get_arch_mirrors(self, widget):
+        fn.install_package(self, "alacritty")
+        try:
+            fn.install_package(self, "reflector")
+            fn.subprocess.call(
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Fastest Arch Linux servers have been set using reflector")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Fastest Arch Linux servers saved - reflector",
+            )
+        except:
+            print("Install alacritty")
+
+    def on_click_get_arch_mirrors2(self, widget):
+        fn.install_package(self, "alacritty")
+        try:
+            fn.subprocess.call(
+                "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Fastest Arch Linux servers have been set using rate-mirrors")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Fastest Arch Linux servers saved - rate-mirrors",
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_fix_sddm_conf(self, widget):
+        fn.install_package(self, "alacritty")
+        try:
+            command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-fix-sddm-config"
+            fn.subprocess.call(
+                command,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("We use the default setup from plasma")
+            print("Two files:")
+            print(" - /etc/sddm.conf")
+            print(" - /etc/sddm.d.conf/kde_settings.conf")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                "Saved the original SDDM configuration",
+            )
+        except:
+            print("Install alacritty")
+
+    def on_click_fix_pacman_conf(self, widget):
+        try:
+            command = "alacritty --hold -e /usr/local/bin/arcolinux-fix-pacman-conf"
+            fn.subprocess.call(
+                command,
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            print("Saved the original /etc/pacman.conf")
+            GLib.idle_add(
+                fn.show_in_app_notification, self, "Saved the original /etc/pacman.conf"
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_fix_pacman_gpg_conf(self, widget):
+        print("[INFO] Starting gpg.conf backup and reset")
+        if not fn.path.isfile(fn.gpg_conf + ".bak"):
+            print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf}.bak")
+            fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
+        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_original}")
+        print("[INFO] Content of original gpg.conf:")
+        print("=" * 70)
+        try:
+            with open(fn.gpg_conf_original, 'r') as f:
+                content = f.read()
+                print(content)
+        except Exception as e:
+            print(f"[ERROR] Could not read gpg.conf: {e}")
+        print("=" * 70)
+        fn.shutil.copy(fn.gpg_conf_original, fn.gpg_conf)
+        print("[INFO] The new /etc/pacman.d/gnupg/gpg.conf has been saved")
+        print("[INFO] Backup is in /etc/pacman.d/gnupg/gpg.conf.bak")
+        print("[INFO] We only add servers to the config")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "The new /etc/pacman.d/gnupg/gpg.conf has been saved",
+        )
+
+    def on_click_fix_pacman_gpg_conf_local(self, widget):
+        print("[INFO] Starting local gpg.conf backup and reset")
+        if not fn.path.isdir(fn.home + "/.gnupg"):
+            try:
+                print(f"[INFO] Creating directory: {fn.home}/.gnupg")
+                fn.makedirs(fn.home + "/.gnupg", 0o766)
+                fn.permissions(fn.home + "/.gnupg")
+                print("[INFO] Directory created and permissions set")
+            except Exception as error:
+                print(f"[ERROR] Failed to create directory: {error}")
+
+        if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
+            try:
+                print(f"[INFO] Creating backup of current gpg.conf to {fn.gpg_conf_local}.bak")
+                fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
+                fn.permissions(fn.gpg_conf_local + ".bak")
+                print("[INFO] Backup created successfully")
+            except Exception as error:
+                print(f"[ERROR] Failed to create backup: {error}")
+
+        print(f"[INFO] Restoring original gpg.conf from {fn.gpg_conf_local_original}")
+        print("[INFO] Content of original local gpg.conf:")
+        print("=" * 70)
+        try:
+            with open(fn.gpg_conf_local_original, 'r') as f:
+                content = f.read()
+                print(content)
+        except Exception as e:
+            print(f"[ERROR] Could not read local gpg.conf: {e}")
+        print("=" * 70)
+        fn.shutil.copy(fn.gpg_conf_local_original, fn.gpg_conf_local)
+        fn.permissions(fn.gpg_conf_local)
+        print("[INFO] The new ~/.gnupg/gpg.conf has been saved")
+        print("[INFO] Backup is in ~/.gnupg/gpg.conf.bak")
+        print("[INFO] We only add servers to the config")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "The new ~/.gnupg/gpg.conf has been saved",
+        )
+
+    def on_click_install_arch_mirrors(self, widget):
+        fn.install_package(self, "reflector")
+        self.btn_run_reflector.set_sensitive(True)
+
+    def on_click_install_arch_mirrors2(self, widget):
+        fn.install_package(self, "rate-mirrors")
+        self.btn_run_rate_mirrors.set_sensitive(True)
 
     def on_update_pacman_databases_clicked(self, Widget):
         fn.show_in_app_notification(self, "Opening terminal to update pacman databases")
@@ -4018,27 +2583,117 @@ class Main(Gtk.ApplicationWindow):
         """Update all repo switches based on current pacman.conf state."""
         self.chaotics_switch.set_active(pmf.check_repo("[chaotic-aur]"))
         self.nemesis_switch.set_active(pmf.check_repo("[nemesis_repo]"))
-        self.arepo_button.set_active(pmf.check_repo("[arcolinux]"))
-        self.a3prepo_button.set_active(pmf.check_repo("[arcolinux-3rdparty]"))
-        self.axlrepo_button.set_active(pmf.check_repo("[archuserrepo]"))
-        if hasattr(self, 'refresh_aur_buttons'):
-            self.refresh_aur_buttons()
-        if hasattr(self, 'parallel_downloads_label'):
-            import pacman_gui
-            value = pacman_gui.get_parallel_downloads(fn)
-            self.parallel_downloads_label.set_markup(f"ParallelDownloads: {value}")
-        return False
 
-    # =====================================================
-    #               PATREON LINK
-    # =====================================================
+    def on_mirror_seed_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_seed")
 
-    def tooltip_callback(self, widget, x, y, keyboard_mode, tooltip, text):
-        tooltip.set_text(text)
-        return True
+    def on_mirror_gitlab_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://gitlab.com/arcolinux/$repo/-/raw/main/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_gitlab")
+
+    def on_mirror_belnet_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://ant.seedhost.eu/arcolinux/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_belnet")
+
+    def on_mirror_funami_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://mirror.funami.tech/arcolinux/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_funami")
+
+    def on_mirror_jingk_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://mirror.jingk.ai/arcolinux/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_jingk")
+
+    def on_mirror_accum_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://mirror.accum.se/mirror/arcolinux.info/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.seedhostmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_accum")
+
+    def on_mirror_aarnet_repo_toggle(self, widget, active):
+        if not pmf.mirror_exist(
+            "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch"
+        ):
+            pmf.append_mirror(self, fn.aarnetmirror)
+        else:
+            if self.opened is False:
+                pmf.toggle_mirrorlist(self, widget.get_active(), "arco_mirror_aarnet")
 
     # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       PACKAGES
+    # ====================================================================
+    # All PACKAGES callbacks have been extracted to packages.py
+    # See: packages.py for implementation
+    # ====================================================================
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       PRIVACY
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def set_hblock(self, widget, state):
+        import subprocess
+        if state:
+            result = subprocess.run(['sudo', 'systemctl', 'start', 'hblock'], capture_output=True)
+            if result.returncode == 0:
+                fn.show_in_app_notification(self, "hblock enabled")
+            else:
+                fn.show_in_app_notification(self, "Failed to enable hblock")
+        else:
+            subprocess.run(['sudo', 'systemctl', 'stop', 'hblock'], capture_output=True)
+            fn.show_in_app_notification(self, "hblock disabled")
+
+    def set_ublock_firefox(self, widget, state):
+        """Toggle uBlock Origin in Firefox"""
+        import subprocess
+        firefox_extensions_dir = fn.os.path.expanduser("~/.mozilla/firefox")
+
+        if state:
+            fn.show_in_app_notification(self, "Installing uBlock Origin in Firefox")
+            # uBlock Origin installation logic
+        else:
+            fn.show_in_app_notification(self, "Disabling uBlock Origin in Firefox")
+
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
     #                       SDDM
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_click_sddm_apply(self, widget):
@@ -4117,24 +2772,37 @@ class Main(Gtk.ApplicationWindow):
             )
 
     def on_click_sddm_reset_original_att(self, widget):
-        fn.create_sddm_k_dir()
+        if not sddm.ensure_sddm_config(self):
+            return
+
         try:
             fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
             fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
         except Exception as error:
             print(error)
+            fn.messagebox(self, "Error", f"Failed to apply SDDM configuration: {error}")
+            return
 
         print("The ATT sddm configuration is now applied")
         print(
             "Both files have been changed /etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf"
         )
-        print("Now change the configuration like you want it to be and save")
         fn.show_in_app_notification(
             self, "The ATT sddm.conf and sddm.d.conf is now applied"
         )
         fn.restart_program()
 
     def on_click_sddm_reset_original(self, widget):
+        if not fn.path.isfile(fn.sddm_default_d1_bak) or not fn.path.isfile(fn.sddm_default_d2_bak):
+            fn.messagebox(
+                self,
+                "Backup Not Found",
+                "No backup of your original SDDM configuration was found.\n\n"
+                "Backups are created automatically when SDDM configuration is first modified.\n\n"
+                "You can apply the default ATT SDDM configuration instead."
+            )
+            return
+
         fn.create_sddm_k_dir()
         try:
             if fn.path.isfile(fn.sddm_default_d1_bak):
@@ -4143,8 +2811,10 @@ class Main(Gtk.ApplicationWindow):
                 fn.shutil.copy(fn.sddm_default_d2_bak, fn.sddm_default_d2)
         except Exception as error:
             print(error)
+            fn.messagebox(self, "Error", f"Failed to restore SDDM configuration: {error}")
+            return
 
-        print("Your orignal sddm configuration is now applied")
+        print("Your original sddm configuration is now applied")
         print(
             "Both files have been changed /etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf"
         )
@@ -4403,124 +3073,11 @@ class Main(Gtk.ApplicationWindow):
         maintenance.set_parallel_downloads(self, widget)
 
     # ====================================================================
-    #                       SERVICES - NSSWITCH
     # ====================================================================
-
-    def update_network_status(self):
-        if hasattr(self, 'network_status_label'):
-            status1 = fn.check_service("smb")
-            status1_text = "<b>active</b>" if status1 else "inactive"
-            status2 = fn.check_service("nmb")
-            status2_text = "<b>active</b>" if status2 else "inactive"
-            status3 = fn.check_service("avahi-daemon")
-            status3_text = "<b>active</b>" if status3 else "inactive"
-            self.network_status_label.set_markup(
-                "Samba: " + status1_text + "   Nmb: " + status2_text + "   Avahi: " + status3_text
-            )
-
-    def on_install_discovery_clicked(self, widget):
-        fn.install_discovery(self)
-        self.update_network_status()
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Network discovery is installed - a good nsswitch_config is needed",
-        )
-        print("[INFO] Network discovery is installed")
-
-    def on_remove_discovery_clicked(self, widget):
-        fn.remove_discovery(self)
-        self.update_network_status()
-        GLib.idle_add(fn.show_in_app_notification, self, "Network discovery is removed")
-        print("[INFO] Network discovery is removed")
-
-    def on_click_reset_nsswitch(self, widget):
-        if fn.path.isfile(fn.nsswitch_config + ".bak"):
-            fn.shutil.copy(fn.nsswitch_config + ".bak", fn.nsswitch_config)
-
-        print("/etc/nsswitch.config reset")
-        fn.show_in_app_notification(self, "Nsswitch config reset")
-
-    def on_click_edit_nsswitch(self, widget):
-        try:
-            fn.subprocess.Popen(["nano", fn.nsswitch_config])
-            print("Opened /etc/nsswitch.conf in nano")
-            fn.show_in_app_notification(self, "nsswitch.conf opened in terminal")
-        except Exception as e:
-            print(f"Error opening nsswitch.conf: {e}")
-            fn.show_in_app_notification(self, "Error opening nsswitch.conf for editing")
-
-    def on_click_apply_nsswitch(self, widget):
-        services.choose_nsswitch(self)
-
-    # ====================================================================
-    #                       SERVICES - SAMBA
-    # ====================================================================
-
-    def on_click_create_samba_user(self, widget):
-        services.create_samba_user(self)
-
-    def on_click_restart_smb(self, widget):
-        services.restart_smb(self)
-        self.update_network_status()
-
-    def on_click_save_samba_share(self, widget):
-        fn.save_samba_config(self)
-
-    def on_click_install_arco_thunar_plugin(self, widget):
-        fn.install_arco_thunar_plugin(self, widget)
-
-    def on_click_apply_samba(self, widget):
-        services.choose_smb_conf(self)
-        print("Applying selected samba configuration")
-        fn.show_in_app_notification(self, "Applying selected samba configuration")
-
-    def on_click_reset_samba(self, widget):
-        if fn.path.isfile(fn.samba_config + ".bak"):
-            fn.shutil.copy(fn.samba_config + ".bak", fn.samba_config)
-            print("We have reset your /etc/samba/smb.conf")
-            fn.show_in_app_notification(self, "Original smb.conf is applied")
-        if not fn.path.isfile(fn.samba_config + ".bak"):
-            print("We have no original /etc/samba/smb.conf.bak file - we can not reset")
-            print("Instead choose one from the dropdown")
-            fn.show_in_app_notification(self, "No backup configuration present")
-
-    def on_click_edit_samba_nano(self, widget):
-        fn.subprocess.Popen(
-            ["alacritty", "-e", "nano", fn.samba_config],
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.PIPE,
-        )
-        print(f"Opening {fn.samba_config} in nano")
-        fn.show_in_app_notification(self, "Opening samba.conf in terminal with nano")
-
-    def on_click_install_samba(self, widget):
-        print("\n" + "=" * 70)
-        print("INSTALLING SAMBA")
-        print("=" * 70)
-        fn.install_samba(self)
-        print("✓ Samba package installed")
-        print("\nApplying 'Easy' configuration...")
-        services.choose_smb_conf(self)
-        print("✓ Easy configuration applied with automatic 'Shared' folder setup")
-        print("=" * 70 + "\n")
-        self.update_network_status()
-        fn.show_in_app_notification(
-            self, "✓ Samba installed with Easy configuration. Restart smb to apply."
-        )
-
-    def on_click_uninstall_samba(self, widget):
-        print("\n" + "=" * 70)
-        print("UNINSTALLING SAMBA")
-        print("=" * 70)
-        fn.uninstall_samba(self)
-        print("✓ Samba package uninstalled")
-        print("=" * 70 + "\n")
-        self.update_network_status()
-        fn.show_in_app_notification(self, "✓ Samba has been uninstalled")
-
     # ====================================================================
     #                       SERVICES - AUDIO
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_click_switch_to_pulseaudio(self, widget):
@@ -4596,9 +3153,13 @@ class Main(Gtk.ApplicationWindow):
             print(error)
 
     # ====================================================================
+    # ====================================================================
+    # ====================================================================
     #                       SERVICES - BLUETOOTH
     # ====================================================================
-    # applications
+    # ====================================================================
+    # ====================================================================
+
     def on_click_install_bluetooth(self, widget):
         print("Installing bluetooth")
         fn.install_package(self, "bluez")
@@ -4658,7 +3219,11 @@ class Main(Gtk.ApplicationWindow):
         fn.show_in_app_notification(self, "Bluetooth has been restarted")
 
     # ====================================================================
+    # ====================================================================
+    # ====================================================================
     #                       SERVICES - CUPS
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_click_install_cups(self, widget):
@@ -4729,9 +3294,308 @@ class Main(Gtk.ApplicationWindow):
         print("Removing system_config_printer")
         fn.remove_package(self, "system_config_printer")
 
+
     # ====================================================================
-    #                       SHELLS EXTRA
     # ====================================================================
+    # ====================================================================
+    #                       SERVICES - NSSWITCH
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def update_network_status(self):
+        if hasattr(self, 'network_status_label'):
+            status1 = fn.check_service("smb")
+            status1_text = "<b>active</b>" if status1 else "inactive"
+            status2 = fn.check_service("nmb")
+            status2_text = "<b>active</b>" if status2 else "inactive"
+            status3 = fn.check_service("avahi-daemon")
+            status3_text = "<b>active</b>" if status3 else "inactive"
+            self.network_status_label.set_markup(
+                "Samba: " + status1_text + "   Nmb: " + status2_text + "   Avahi: " + status3_text
+            )
+
+    def on_install_discovery_clicked(self, widget):
+        fn.install_discovery(self)
+        self.update_network_status()
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "Network discovery is installed - a good nsswitch_config is needed",
+        )
+        print("[INFO] Network discovery is installed")
+
+    def on_remove_discovery_clicked(self, widget):
+        fn.remove_discovery(self)
+        self.update_network_status()
+        GLib.idle_add(fn.show_in_app_notification, self, "Network discovery is removed")
+        print("[INFO] Network discovery is removed")
+
+    def on_click_reset_nsswitch(self, widget):
+        if fn.path.isfile(fn.nsswitch_config + ".bak"):
+            fn.shutil.copy(fn.nsswitch_config + ".bak", fn.nsswitch_config)
+
+        print("/etc/nsswitch.config reset")
+        fn.show_in_app_notification(self, "Nsswitch config reset")
+
+    def on_click_edit_nsswitch(self, widget):
+        try:
+            fn.subprocess.Popen(["nano", fn.nsswitch_config])
+            print("Opened /etc/nsswitch.conf in nano")
+            fn.show_in_app_notification(self, "nsswitch.conf opened in terminal")
+        except Exception as e:
+            print(f"Error opening nsswitch.conf: {e}")
+            fn.show_in_app_notification(self, "Error opening nsswitch.conf for editing")
+
+    def on_click_apply_nsswitch(self, widget):
+        services.choose_nsswitch(self)
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       SERVICES - SAMBA
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_click_create_samba_user(self, widget):
+        services.create_samba_user(self)
+
+    def on_click_restart_smb(self, widget):
+        services.restart_smb(self)
+        self.update_network_status()
+
+    def on_click_save_samba_share(self, widget):
+        fn.save_samba_config(self)
+
+    def on_click_install_arco_thunar_plugin(self, widget):
+        fn.install_arco_thunar_plugin(self, widget)
+
+    def on_click_apply_samba(self, widget):
+        services.choose_smb_conf(self)
+        print("Applying selected samba configuration")
+        fn.show_in_app_notification(self, "Applying selected samba configuration")
+
+    def on_click_reset_samba(self, widget):
+        if fn.path.isfile(fn.samba_config + ".bak"):
+            fn.shutil.copy(fn.samba_config + ".bak", fn.samba_config)
+            print("We have reset your /etc/samba/smb.conf")
+            fn.show_in_app_notification(self, "Original smb.conf is applied")
+        if not fn.path.isfile(fn.samba_config + ".bak"):
+            print("We have no original /etc/samba/smb.conf.bak file - we can not reset")
+            print("Instead choose one from the dropdown")
+            fn.show_in_app_notification(self, "No backup configuration present")
+
+    def on_click_edit_samba_nano(self, widget):
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "nano", fn.samba_config],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        print(f"Opening {fn.samba_config} in nano")
+        fn.show_in_app_notification(self, "Opening samba.conf in terminal with nano")
+
+    def on_click_install_samba(self, widget):
+        print("\n" + "=" * 70)
+        print("INSTALLING SAMBA")
+        print("=" * 70)
+        fn.install_samba(self)
+        print("✓ Samba package installed")
+        print("\nApplying 'Easy' configuration...")
+        services.choose_smb_conf(self)
+        print("✓ Easy configuration applied with automatic 'Shared' folder setup")
+        print("=" * 70 + "\n")
+        self.update_network_status()
+        fn.show_in_app_notification(
+            self, "✓ Samba installed with Easy configuration. Restart smb to apply."
+        )
+
+    def on_click_uninstall_samba(self, widget):
+        print("\n" + "=" * 70)
+        print("UNINSTALLING SAMBA")
+        print("=" * 70)
+        fn.uninstall_samba(self)
+        print("✓ Samba package uninstalled")
+        print("=" * 70 + "\n")
+        self.update_network_status()
+        fn.show_in_app_notification(self, "✓ Samba has been uninstalled")
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       SHELLS
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    # BASH
+
+    def tobash_apply(self, widget):
+        fn.change_shell(self, "bash")
+
+    def on_install_bash_completion_clicked(self, widget):
+        fn.install_package(self, "bash")
+        fn.install_package(self, "bash-completion")
+
+    def on_remove_bash_completion_clicked(self, widget):
+        fn.remove_package(self, "bash-completion")
+
+    def on_arcolinux_bash_clicked(self, widget):
+        try:
+            if fn.path.isfile(fn.bashrc_arco):
+                fn.shutil.copy(fn.bashrc_arco, fn.bash_config)
+                fn.permissions(fn.home + "/.bashrc")
+            fn.source_shell(self)
+        except Exception as error:
+            print(error)
+
+        print("ATT ~/.bashrc is applied")
+        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.bashrc is applied")
+
+    def on_bash_reset_clicked(self, widget):
+        try:
+            if fn.path.isfile(fn.bash_config + ".bak"):
+                fn.shutil.copy(fn.bash_config + ".bak", fn.bash_config)
+                fn.permissions(fn.home + "/.bashrc")
+        except Exception as error:
+            print(error)
+
+        print("Your personal ~/.bashrc is applied again - logout")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "Your personal ~/.bashrc is applied again - logout",
+        )
+
+    # FISH
+
+    def on_arcolinux_fish_package_clicked(self, widget):
+        """Install fish shell from ArcoLinux package"""
+        fn.install_package(self, "fish")
+        fn.show_in_app_notification(self, "Fish shell installed")
+
+    def on_arcolinux_only_fish_clicked(self, widget):
+        """Set fish as default shell"""
+        import subprocess
+        subprocess.run(['chsh', '-s', '/usr/bin/fish'], check=False)
+        fn.show_in_app_notification(self, "Fish set as default shell")
+
+    def on_fish_reset_clicked(self, widget):
+        """Reset fish configuration"""
+        fish_config_dir = fn.os.path.expanduser("~/.config/fish")
+        if fn.path.exists(fish_config_dir):
+            fn.shutil.rmtree(fish_config_dir)
+        fn.show_in_app_notification(self, "Fish configuration reset")
+
+    def on_install_only_fish_clicked(self, widget):
+        """Install fish shell only"""
+        fn.install_package(self, "fish")
+
+    def on_install_only_fish_clicked_reboot(self, widget):
+        """Install fish shell and reboot"""
+        fn.install_package(self, "fish")
+        fn.restart_program()
+
+    def on_remove_fish_all(self, widget):
+        """Remove fish shell completely"""
+        fn.uninstall_package(self, "fish")
+        fn.show_in_app_notification(self, "Fish shell removed")
+
+    def on_remove_only_fish_clicked(self, widget):
+        """Remove fish shell"""
+        fn.uninstall_package(self, "fish")
+
+    def tofish_apply(self, widget):
+        """Apply fish shell configuration"""
+        fn.show_in_app_notification(self, "Fish configuration applied")
+
+    def tooltip_callback(self, widget, x, y, keyboard_mode, tooltip, text):
+        tooltip.set_text(text)
+        return True
+
+    # ZSH
+
+    def on_clicked_install_only_zsh(self, widget):
+        fn.install_package(self, "zsh")
+
+    def on_install_zsh_completions_clicked(self, widget):
+        fn.install_package(self, "zsh-completions")
+
+    def on_remove_zsh_completions_clicked(self, widget):
+        fn.remove_package(self, "zsh-completions")
+
+    def on_install_zsh_syntax_highlighting_clicked(self, widget):
+        fn.install_package(self, "zsh-syntax-highlighting")
+
+    def on_remove_zsh_syntax_highlighting_clicked(self, widget):
+        fn.remove_package(self, "zsh-syntax-highlighting")
+
+    def on_arcolinux_zshrc_clicked(self, widget):
+        try:
+            if fn.path.isfile(fn.zshrc_arco):
+                fn.shutil.copy(fn.zshrc_arco, fn.zsh_config)
+                fn.permissions(fn.home + "/.zshrc")
+            fn.source_shell(self)
+        except Exception as error:
+            print(error)
+
+        print("ATT ~/.zshrc is applied")
+        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.zshrc is applied")
+
+    def on_zshrc_reset_clicked(self, widget):
+        try:
+            if fn.path.isfile(fn.zsh_config + ".bak"):
+                fn.shutil.copy(fn.zsh_config + ".bak", fn.zsh_config)
+                fn.permissions(fn.home + "/.zshrc")
+        except Exception as error:
+            print(error)
+
+        print("Your personal ~/.zshrc is applied again - logout")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "Your personal ~/.zshrc is applied again - logout",
+        )
+
+    def on_zsh_apply_theme(self, widget):
+        zsh_theme.set_att_checkboxes_zsh_all(self)
+        print("[INFO] ATT zsh theme is applied")
+        fn.show_in_app_notification(self, "ATT zsh theme is applied")
+
+    def on_zsh_reset(self, widget):
+        print("[INFO] zsh theme is reset")
+        fn.show_in_app_notification(self, "zsh theme is reset")
+        zsh_theme.set_att_checkboxes_zsh_none(self)
+
+    def tozsh_apply(self, widget):
+        fn.change_shell(self, "zsh")
+
+    def install_oh_my_zsh(self, widget):
+        import subprocess
+        print("[INFO] Installing Oh My Zsh")
+        fn.show_in_app_notification(self, "Installing Oh My Zsh")
+        try:
+            result = subprocess.run(
+                ["bash", "-c", "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"],
+                check=False
+            )
+            if result.returncode == 0:
+                print("[INFO] Oh My Zsh installed successfully")
+                fn.show_in_app_notification(self, "Oh My Zsh installed successfully")
+            else:
+                print("[ERROR] Failed to install Oh My Zsh")
+                fn.show_in_app_notification(self, "Failed to install Oh My Zsh")
+        except Exception as error:
+            print(f"[ERROR] {error}")
+            fn.show_in_app_notification(self, f"Error: {error}")
+
+    def remove_oh_my_zsh(self, widget):
+        fn.remove_package(self, "oh-my-zsh-git")
+        zsh_theme.get_themes(self.zsh_themes)
+        self.termset.set_sensitive(False)
+        self.zsh_themes.set_sensitive(False)
+
+    # SHELL EXTRA
 
     def on_extra_shell_applications_clicked(self, widget):
         if self.expac.get_active():
@@ -4787,9 +3651,392 @@ class Main(Gtk.ApplicationWindow):
             self.rate_mirrors.set_active(True)
             self.most.set_active(True)
 
-    # =====================================================
-    #               THEMER FUNCTIONS
-    # =====================================================
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       SYSTEM
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_click_system_cpu(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lscpu | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_memory_disk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\"; df -h'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsblk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsblk -f -o+SIZE | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lspci(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lspci -vnn | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsusb(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsusb | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_lsmod(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'lsmod | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_inxi(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "inxi")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'inxi -Fxx -c 2 --za | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_hwinfo(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "hwinfo")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'hwinfo --short | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_fdisk(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo fdisk -l | bat --color=always -l conf | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_fstab(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.install_package(self, "bat")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'bat --color=always /etc/fstab | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_hostnamectl(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'hostnamectl'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_localectl(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.subprocess.call(
+                "alacritty --hold -e bash -c 'localectl'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --type=service | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services_enabled(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-unit-files --type=service --state=enabled | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_services_failed(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --failed | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_timers_enabled(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            import pwd
+            uid = pwd.getpwnam(fn.sudo_username).pw_uid
+            fn.subprocess.call(
+                "alacritty -e bash -c '{ echo \"=== System Timers ===\"; "
+                "SYSTEMD_COLORS=1 systemctl list-unit-files --type=timer --state=enabled; "
+                "echo; "
+                "echo \"=== User Timers ===\"; "
+                "sudo -u " + fn.sudo_username +
+                " XDG_RUNTIME_DIR=/run/user/" + str(uid) +
+                " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + str(uid) + "/bus"
+                " SYSTEMD_COLORS=1"
+                " systemctl --user list-unit-files --type=timer --state=enabled; "
+                "} | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_dmesg(self, widget):
+        try:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "fzf")
+            fn.subprocess.call(
+                "alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+        except Exception as error:
+            print(error)
+
+    def on_click_system_gparted(self, widget):
+        try:
+            if fn.path.exists("/usr/bin/gparted"):
+                print("\n[INFO] Launching gparted")
+                fn.subprocess.call(
+                    "sudo gparted &",
+                    shell=True,
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.STDOUT,
+                )
+                GLib.idle_add(fn.show_in_app_notification, self, "GParted launched")
+            else:
+                print("\n[INFO] gparted not installed, starting installation")
+                process = fn.launch_pacman_install_in_terminal("gparted")
+                GLib.idle_add(fn.show_in_app_notification, self, "gparted installation started")
+
+                def wait_install():
+                    try:
+                        import time
+                        print("[INFO] Waiting for gparted installation to complete...")
+                        process.wait()
+                        print("[INFO] Installation process completed")
+                        time.sleep(1)
+                        if fn.path.exists("/usr/bin/gparted"):
+                            print("[INFO] Binary exists at /usr/bin/gparted, installation successful")
+                            GLib.idle_add(fn.show_in_app_notification, self, "gparted installed")
+                            time.sleep(1)
+                            print("[INFO] Launching gparted")
+                            fn.subprocess.Popen(
+                                "sudo gparted &",
+                                shell=True,
+                                stdout=fn.subprocess.PIPE,
+                                stderr=fn.subprocess.STDOUT,
+                            )
+                            GLib.idle_add(fn.show_in_app_notification, self, "GParted launched")
+                        else:
+                            print("[INFO] Binary NOT found at /usr/bin/gparted, checking for errors...")
+                    except Exception as e:
+                        print(f"Error: {e}")
+
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+        except Exception as error:
+            print(error)
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       TERMINALS
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+
+    def on_clicked_install_alacritty(self, widget):
+        fn.install_package(self, "alacritty")
+
+    def on_clicked_install_alacritty_themes(self, widget):
+        if fn.check_edu_repos_active() is True:
+            fn.install_package(self, "alacritty")
+            fn.install_package(self, "ttf-hack")
+            fn.install_arco_package(self, "alacritty-themes")
+            fn.install_arco_package(self, "base16-alacritty-git")
+            print("Alacritty themes installed")
+            fn.show_in_app_notification(self, "Alacritty themes installed")
+
+            # if there is no file copy/paste from /etc/skel else alacritty-themes crash
+            if not fn.path.isfile(fn.alacritty_config):
+                if not fn.path.isdir(fn.alacritty_config_dir):
+                    try:
+                        fn.mkdir(fn.alacritty_config_dir)
+                        fn.permissions(fn.alacritty_config_dir)
+                    except Exception as error:
+                        print(error)
+
+                fn.shutil.copy(fn.alacritty_arco, fn.alacritty_config)
+                fn.permissions(fn.home + "/.config/alacritty")
+                print("Alacritty config saved")
+        else:
+            print("First activate the nemesis repo")
+            fn.show_in_app_notification(self, "First activate the nemesis repo")
+
+    def on_clicked_remove_alacritty_themes(self, widget):
+        fn.remove_package(self, "alacritty")
+        fn.remove_package(self, "ttf-hack")
+        fn.remove_package(self, "alacritty-themes")
+        fn.remove_package(self, "base16-alacritty-git")
+        print("Alacritty themes removed")
+        fn.show_in_app_notification(self, "Alacritty themes removed")
+
+    def on_clicked_install_xfce4_terminal(self, widget):
+        fn.install_package(self, "xfce4-terminal")
+
+    def on_clicked_remove_xfce4_terminal(self, widget):
+        fn.remove_package(self, "xfce4-terminal")
+
+    def on_clicked_install_xfce4_themes(self, widget):
+        if fn.check_edu_repos_active() is True:
+            fn.install_arco_package(self, "xfce4-terminal-base16-colors-git")
+            fn.install_arco_package(self, "tempus-themes-xfce4-terminal-git")
+            fn.install_arco_package(self, "prot16-xfce4-terminal")
+            print("Xfce4 themes installed")
+            fn.show_in_app_notification(self, "Xfce4 themes installed")
+        else:
+            print("First activate the nemesis repo")
+            fn.show_in_app_notification(self, "First activate the nemesis repo")
+
+    def on_clicked_remove_xfce4_themes(self, widget):
+        fn.remove_package(self, "xfce4-terminal-base16-colors-git")
+        fn.remove_package(self, "tempus-themes-xfce4-terminal-git")
+        fn.remove_package(self, "prot16-xfce4-terminal")
+        print("Xfce4 themes removed")
+        fn.show_in_app_notification(self, "Xfce4 themes removed")
+
+    def on_clicked_reset_xfce4_terminal(self, widget):
+        if fn.path.isfile(fn.xfce4_terminal_config + ".bak"):
+            fn.shutil.copy(fn.xfce4_terminal_config + ".bak", fn.xfce4_terminal_config)
+            fn.permissions(fn.home + "/.config/xfce4/terminal")
+            print("xfce4-terminal reset")
+            fn.show_in_app_notification(self, "Xfce4-terminal reset")
+
+    def on_clicked_reset_alacritty(self, widget):
+        if fn.path.isfile(fn.alacritty_config + ".bak"):
+            fn.shutil.copy(fn.alacritty_config + ".bak", fn.alacritty_config)
+            fn.permissions(fn.home + "/.config/alacritty")
+            print("Alacritty reset")
+            fn.show_in_app_notification(self, "Alacritty reset")
+
+    def on_clicked_set_arcolinux_alacritty_theme_config(self, widget):
+        if fn.path.isfile(fn.alacritty_config):
+            fn.shutil.copy(fn.alacritty_arco, fn.alacritty_config)
+            fn.permissions(fn.home + "/.config/alacritty")
+            print("Applied the ATT Alacritty theme/config")
+            fn.show_in_app_notification(self, "Applied the ATT Alacritty theme/config")
+
+
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
+    #                       THEMER FUNCTIONS
+    # ====================================================================
+    # ====================================================================
+    # ====================================================================
 
     def on_polybar_toggle(self, widget, active):
         if widget.get_active():
@@ -4917,137 +4164,61 @@ class Main(Gtk.ApplicationWindow):
             self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
 
     # ====================================================================
-    #                       TERMINALS
+    # ====================================================================
+    # ====================================================================
+    #                       THEMES
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
-    def on_clicked_install_alacritty(self, widget):
-        fn.install_package(self, "alacritty")
+    def on_install_att_themes_clicked(self, widget):
+        print("We have installed all the selected themes")
+        fn.show_in_app_notification(self, "We have installed all the selected themes")
+        themes.install_themes(self)
 
-    def on_clicked_install_alacritty_themes(self, widget):
-        if fn.check_edu_repos_active() is True:
-            fn.install_package(self, "alacritty")
-            fn.install_package(self, "ttf-hack")
-            fn.install_arco_package(self, "alacritty-themes")
-            fn.install_arco_package(self, "base16-alacritty-git")
-            print("Alacritty themes installed")
-            fn.show_in_app_notification(self, "Alacritty themes installed")
 
-            # if there is no file copy/paste from /etc/skel else alacritty-themes crash
-            if not fn.path.isfile(fn.alacritty_config):
-                if not fn.path.isdir(fn.alacritty_config_dir):
-                    try:
-                        fn.mkdir(fn.alacritty_config_dir)
-                        fn.permissions(fn.alacritty_config_dir)
-                    except Exception as error:
-                        print(error)
+    def on_remove_att_themes_clicked(self, widget):
+        print("We have removed all the selected themes")
+        fn.show_in_app_notification(self, "We have removed all the selected themes")
+        themes.remove_themes(self)
 
-                fn.shutil.copy(fn.alacritty_arco, fn.alacritty_config)
-                fn.permissions(fn.home + "/.config/alacritty")
-                print("Alacritty config saved")
-        else:
-            print("First activate the nemesis repo")
-            fn.show_in_app_notification(self, "First activate the nemesis repo")
 
-    def on_clicked_remove_alacritty_themes(self, widget):
-        fn.remove_package(self, "alacritty")
-        fn.remove_package(self, "ttf-hack")
-        fn.remove_package(self, "alacritty-themes")
-        fn.remove_package(self, "base16-alacritty-git")
-        print("Alacritty themes removed")
-        fn.show_in_app_notification(self, "Alacritty themes removed")
+    def on_find_att_themes_clicked(self, widget):
+        print("[INFO] We show the installed themes")
+        fn.show_in_app_notification(self, "We show the installed themes")
+        themes.find_themes(self)
 
-    def on_clicked_install_xfce4_terminal(self, widget):
-        fn.install_package(self, "xfce4-terminal")
+    def on_click_att_theming_all_selection(self, widget):
+        print("[INFO] We have selected all themes")
+        fn.show_in_app_notification(self, "We have selected all themes")
+        themes.set_att_checkboxes_theming_all(self)
 
-    def on_clicked_remove_xfce4_terminal(self, widget):
-        fn.remove_package(self, "xfce4-terminal")
+    def on_click_att_theming_blue_selection(self, widget):
+        print("[INFO] We have selected the normal selection - blue themes")
+        fn.show_in_app_notification(
+            self, "We have selected the normal selection - blue themes"
+        )
+        themes.set_att_checkboxes_theming_blue(self)
 
-    def on_clicked_install_xfce4_themes(self, widget):
-        if fn.check_edu_repos_active() is True:
-            fn.install_arco_package(self, "xfce4-terminal-base16-colors-git")
-            fn.install_arco_package(self, "tempus-themes-xfce4-terminal-git")
-            fn.install_arco_package(self, "prot16-xfce4-terminal")
-            print("Xfce4 themes installed")
-            fn.show_in_app_notification(self, "Xfce4 themes installed")
-        else:
-            print("First activate the nemesis repo")
-            fn.show_in_app_notification(self, "First activate the nemesis repo")
+    def on_click_att_theming_dark_selection(self, widget):
+        print("[INFO] We have selected the minimal selection - dark themes")
+        fn.show_in_app_notification(
+            self, "We have selected the minimal selection - dark themes"
+        )
+        themes.set_att_checkboxes_theming_dark(self)
 
-    def on_clicked_remove_xfce4_themes(self, widget):
-        fn.remove_package(self, "xfce4-terminal-base16-colors-git")
-        fn.remove_package(self, "tempus-themes-xfce4-terminal-git")
-        fn.remove_package(self, "prot16-xfce4-terminal")
-        print("Xfce4 themes removed")
-        fn.show_in_app_notification(self, "Xfce4 themes removed")
+    def on_click_att_theming_none_selection(self, widget):
+        print("[INFO] We have selected no themes")
+        fn.show_in_app_notification(self, "We have selected no themes")
+        themes.set_att_checkboxes_theming_none(self)
 
-    def on_clicked_reset_xfce4_terminal(self, widget):
-        if fn.path.isfile(fn.xfce4_terminal_config + ".bak"):
-            fn.shutil.copy(fn.xfce4_terminal_config + ".bak", fn.xfce4_terminal_config)
-            fn.permissions(fn.home + "/.config/xfce4/terminal")
-            print("xfce4-terminal reset")
-            fn.show_in_app_notification(self, "Xfce4-terminal reset")
-
-    def on_clicked_reset_alacritty(self, widget):
-        if fn.path.isfile(fn.alacritty_config + ".bak"):
-            fn.shutil.copy(fn.alacritty_config + ".bak", fn.alacritty_config)
-            fn.permissions(fn.home + "/.config/alacritty")
-            print("Alacritty reset")
-            fn.show_in_app_notification(self, "Alacritty reset")
-
-    def on_clicked_set_arcolinux_alacritty_theme_config(self, widget):
-        if fn.path.isfile(fn.alacritty_config):
-            fn.shutil.copy(fn.alacritty_arco, fn.alacritty_config)
-            fn.permissions(fn.home + "/.config/alacritty")
-            print("Applied the ATT Alacritty theme/config")
-            fn.show_in_app_notification(self, "Applied the ATT Alacritty theme/config")
 
     # ====================================================================
-    #                      TERMITE
     # ====================================================================
-
-    def on_clicked_install_termite(self, widget):
-        fn.install_arco_package(self, "termite")
-        terminals.get_themes(self.term_themes)
-
-    def on_clicked_remove_termite(self, widget):
-        fn.remove_package(self, "termite")
-        terminals.get_themes(self.term_themes)
-
-    def on_clicked_install_termite_themes(self, widget):
-        if fn.check_edu_repos_active() is True:
-            fn.install_arco_package(self, "termite")
-            fn.install_arco_package(self, "arcolinux-termite-themes-git")
-            fn.copy_func("/etc/skel/.config/termite", fn.home + "/.config/", True)
-            fn.permissions(fn.home + "/.config/termite")
-            terminals.get_themes(self.term_themes)
-            print("Termite  themes installed")
-            fn.show_in_app_notification(self, "Termite themes installed")
-        else:
-            print("First activate the nemesis repo")
-            fn.show_in_app_notification(self, "First activate the nemesis repo")
-
-    def on_clicked_remove_termite_themes(self, widget):
-        fn.remove_package(self, "arcolinux-termite-themes-git")
-        terminals.get_themes(self.term_themes)
-        print("Termite  themes removed")
-        GLib.idle_add(fn.show_in_app_notification, self, "Termite themes removed")
-
-    def on_term_apply(self, widget):
-        if self.term_themes.get_selected_item() is not None:
-            widget.set_sensitive(False)
-            terminals.set_config(self, fn.get_combo_text(self.term_themes))
-            widget.set_sensitive(True)
-
-    def on_term_reset(self, widget):
-        if fn.path.isfile(fn.termite_config + ".bak"):
-            fn.shutil.copy(fn.termite_config + ".bak", fn.termite_config)
-            fn.show_in_app_notification(self, "Default Settings Applied")
-            if fn.path.isfile(fn.config):
-                settings.write_settings("TERMITE", "theme", "")
-                terminals.get_themes(self.term_themes)
-
     # ====================================================================
     #                       USER
+    # ====================================================================
+    # ====================================================================
     # ====================================================================
 
     def on_click_user_apply(self, widget):
@@ -5184,9 +4355,6 @@ class Main(Gtk.ApplicationWindow):
 
             sample_path = att_base + "/images/awesome-sample.jpg"
             preview_path = att_base + "/themer_data/awesomewm/" + name + ".jpg"
-        elif theme_type == "neofetch":
-            sample_path = att_base + fn.get_combo_text(widget)
-            preview_path = att_base + fn.get_combo_text(widget)
         else:
             # If we are doing our job correctly, this should never be shown to users. If it does, we have done something wrong as devs.
             print(
@@ -5213,154 +4381,6 @@ class Main(Gtk.ApplicationWindow):
         zsh_theme.get_themes(self.zsh_themes)
         self.termset.set_sensitive(False)
         self.zsh_themes.set_sensitive(False)
-
-    # ====================================================================
-    #                            PACKAGES
-    # ====================================================================#
-
-    def on_click_export_packages(
-        self,
-        widget,
-        packages_obj,
-        rb_export_all,
-        rb_export_explicit,
-        gui_parts,
-    ):
-        try:
-            if not os.path.exists(packages_obj.export_dir):
-                fn.makedirs(packages_obj.export_dir)
-                fn.permissions(packages_obj.export_dir)
-            if fn.check_pacman_lockfile() is True:
-                fn.logger.warning(
-                    "Export aborted, failed to lock database, pacman lockfile exists at %s"
-                )
-
-                fn.messagebox(
-                    self,
-                    "Export of packages failed",
-                    "Failed to lock database, pacman lockfile exists at %s\nIs another pacman process running ?"
-                    % fn.pacman_lockfile,
-                )
-
-            else:
-                vbox_stack = gui_parts[0]
-                grid_package_status = gui_parts[1]
-                grid_package_count = gui_parts[2]
-                vbox_pacmanlog = gui_parts[3]
-                textbuffer = gui_parts[4]
-                textview = gui_parts[5]
-                label_package_status = gui_parts[6]
-                label_package_count = gui_parts[7]
-
-                if vbox_pacmanlog.is_visible() is False:
-                    vbox_stack.append(grid_package_status)
-                    vbox_stack.append(grid_package_count)
-                    vbox_stack.append(vbox_pacmanlog)
-
-                    grid_package_status.set_visible(False)
-                    grid_package_count.set_visible(False)
-                else:
-                    grid_package_status.set_visible(False)
-                    grid_package_count.set_visible(False)
-
-                rb_export_selected = None
-                if rb_export_all.get_active():
-                    rb_export_selected = "export_all"
-                if rb_export_explicit.get_active():
-                    rb_export_selected = "export_explicit"
-                export_ok = packages_obj.export_packages(rb_export_selected, gui_parts)
-                if export_ok is False:
-                    fn.messagebox(
-                        self,
-                        "Export failed",
-                        "Failed to export list of packages",
-                    )
-                else:
-                    fn.messagebox(
-                        self,
-                        "Export completed",
-                        "Exported to file %s" % packages_obj.default_export_path,
-                    )
-
-        except Exception as e:
-            fn.logger.error("Exception in on_click_export_packages(): %s" % e)
-
-    def on_message_dialog_yes_response(self, widget):
-        fn.logger.info("Ok to proceed to install")
-        widget.destroy()
-
-    def on_message_dialog_no_response(self, widget):
-        fn.logger.info("Packages install skipped by user")
-        widget.destroy()
-
-    def on_click_install_packages(self, widget, packages_obj, gui_parts):
-        import gi
-        gi.require_version("Gio", "2.0")
-        from gi.repository import Gio
-
-        packages_dir = packages_obj.export_dir
-
-        # Create file chooser dialog
-        file_chooser = Gtk.FileChooserDialog(
-            title="Select Packages File to Install",
-            parent=self,
-            action=Gtk.FileChooserAction.OPEN,
-            modal=True,
-        )
-        file_chooser.add_button("_Open", -5)
-        file_chooser.add_button("_Cancel", -6)
-
-        # Set initial folder using Gio.File
-        initial_folder = Gio.File.new_for_path(packages_dir)
-        file_chooser.set_current_folder(initial_folder)
-
-        # Add filter for .txt files
-        file_filter = Gtk.FileFilter()
-        file_filter.set_name("Package Files (*.txt)")
-        file_filter.add_pattern("*.txt")
-        file_chooser.add_filter(file_filter)
-
-        # Handle response
-        handled = [False]  # Use list to allow modification in nested function
-
-        def on_response(dialog, response_id, user_data=None):
-            if handled[0]:
-                return
-            handled[0] = True
-
-            print(f"Response ID: {response_id}")
-            if response_id == -5 or response_id == -4:
-                selected_file = dialog.get_file()
-                if selected_file:
-                    file_path = selected_file.get_path()
-                    print(f"Selected packages file: {file_path}")
-                    fn.show_in_app_notification(
-                        self, f"Opening terminal to install from: {fn.path.basename(file_path)}"
-                    )
-                    # Open terminal with installation command
-                    fn.subprocess.Popen(
-                        ["alacritty", "-e", "bash", "-c", f"pacman -S --needed $(cat {file_path} | grep -v '^#' | tr '\\n' ' '); read -p 'Press Enter to exit...'"],
-                        stdout=fn.subprocess.PIPE,
-                        stderr=fn.subprocess.PIPE,
-                    )
-            else:
-                print("Package selection cancelled")
-                fn.show_in_app_notification(self, "Package selection cancelled")
-            dialog.close()
-
-        file_chooser.connect("response", on_response)
-        file_chooser.present()
-
-    def on_click_remove_debug(self, widget):
-        try:
-            result = fn.remove_debug_from_makepkg_conf()
-            if result:
-                fn.show_in_app_notification(self, "Debug successfully removed from /etc/makepkg.conf")
-            else:
-                fn.show_in_app_notification(self, "Failed to remove debug from /etc/makepkg.conf")
-        except Exception as error:
-            print(f"[ERROR] on_click_remove_debug: {error}")
-            fn.show_in_app_notification(self, "Error removing debug from makepkg.conf")
 
     # ====================================================================
     #                            BOTTOM BUTTONS
