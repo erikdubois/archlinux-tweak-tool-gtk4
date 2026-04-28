@@ -528,12 +528,14 @@ def on_click_sddm_enable(self):
 
 def on_set_sddm_wallpaper(self, widget=None):
     """Set the selected wallpaper for SDDM"""
-    try:
-        wallpaper_path = self.sddm_wallpaper_lbl.get_text()
-        if "No wallpaper selected" in wallpaper_path or not wallpaper_path:
-            fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse and select a wallpaper before applying.")
-            return
+    wallpaper_path = self.sddm_wallpaper_lbl.get_text()
+    fn.debug_print(f"Wallpaper path: '{wallpaper_path}'")
 
+    if "No wallpaper selected" in wallpaper_path or not wallpaper_path:
+        fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse and select a wallpaper before applying.")
+        return
+
+    try:
         fn.log_subsection("Apply SDDM Wallpaper")
         fn.debug_print(f"Applying wallpaper: {wallpaper_path}")
         fn.log_success("SDDM wallpaper applied")
