@@ -970,6 +970,7 @@ def on_pacman_atestrepo_toggle(self, widget, active):
 
 
 def on_pacman_arepo_toggle(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[arcolinux_repo]"):
         append_repo(self, fn.arepo)
         print("Repo has been added to /etc/pacman.conf")
@@ -990,6 +991,7 @@ def on_pacman_arepo_toggle(self, widget, active):
 
 
 def on_pacman_a3p_toggle(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[arcolinux_repo_3party]"):
         append_repo(self, fn.a3drepo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1074,6 +1076,7 @@ def on_chaotics_clicked(self, widget):
 
 
 def on_chaotics_toggle(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[chaotic-aur]"):
         append_repo(self, fn.chaotics_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1093,6 +1096,7 @@ def on_endeavouros_clicked(self, widget):
 
 
 def on_endeavouros_toggle(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[endeavouros]"):
         append_repo(self, fn.endeavouros_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1103,6 +1107,7 @@ def on_endeavouros_toggle(self, widget, active):
 
 
 def on_nemesis_toggle(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     import desktopr_gui
     if not repo_exist("[nemesis_repo]"):
         append_repo(self, fn.nemesis_repo)
@@ -1117,6 +1122,7 @@ def on_nemesis_toggle(self, widget, active):
 
 
 def on_pacman_toggle1(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[core-testing]"):
         append_repo(self, fn.arch_testing_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1127,6 +1133,7 @@ def on_pacman_toggle1(self, widget, active):
 
 
 def on_pacman_toggle2(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[core]"):
         append_repo(self, fn.arch_core_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1137,6 +1144,7 @@ def on_pacman_toggle2(self, widget, active):
 
 
 def on_pacman_toggle3(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[extra]"):
         append_repo(self, fn.arch_extra_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1147,6 +1155,7 @@ def on_pacman_toggle3(self, widget, active):
 
 
 def on_pacman_toggle4(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[extra-testing]"):
         append_repo(self, fn.arch_community_testing_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1157,6 +1166,7 @@ def on_pacman_toggle4(self, widget, active):
 
 
 def on_pacman_toggle5(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[extra-testing]"):
         append_repo(self, fn.arch_extra_testing_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1171,6 +1181,7 @@ def on_pacman_toggle5(self, widget, active):
 
 
 def on_pacman_toggle6(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[multilib-testing]"):
         append_repo(self, fn.arch_multilib_testing_repo)
         print("Repo has been added to /etc/pacman.conf")
@@ -1181,6 +1192,7 @@ def on_pacman_toggle6(self, widget, active):
 
 
 def on_pacman_toggle7(self, widget, active):
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[multilib]"):
         append_repo(self, fn.arch_multilib_repo)
         print("Repo has been added to /etc/pacman.conf")
