@@ -99,37 +99,37 @@ def gui(self, Gtk, vboxstack1, fn):
     framelbl.set_markup("<b>Arch Linux repos</b>")
 
     self.checkbutton2 = Gtk.Switch()
-    self.checkbutton2.connect("notify::active", self.on_pacman_toggle1)
+    self.checkbutton2.connect("notify::active", functools.partial(maintenance.on_pacman_toggle1, self))
     label3 = Gtk.Label(xalign=0)
     label3.set_markup("# Enable Arch Linux core testing repo")
 
     self.checkbutton6 = Gtk.Switch()
-    self.checkbutton6.connect("notify::active", self.on_pacman_toggle2)
+    self.checkbutton6.connect("notify::active", functools.partial(maintenance.on_pacman_toggle2, self))
     label13 = Gtk.Label(xalign=0)
     label13.set_markup("Enable Arch Linux core repo")
 
     self.checkbutton5 = Gtk.Switch()
-    self.checkbutton5.connect("notify::active", self.on_pacman_toggle5)
+    self.checkbutton5.connect("notify::active", functools.partial(maintenance.on_pacman_toggle5, self))
     label12 = Gtk.Label(xalign=0)
     label12.set_markup("#Enable Arch Linux extra-testing repo")
 
     self.checkbutton7 = Gtk.Switch()
-    self.checkbutton7.connect("notify::active", self.on_pacman_toggle3)
+    self.checkbutton7.connect("notify::active", functools.partial(maintenance.on_pacman_toggle3, self))
     label14 = Gtk.Label(xalign=0)
     label14.set_markup("Enable Arch Linux extra repo")
 
     self.checkbutton4 = Gtk.Switch()
-    self.checkbutton4.connect("notify::active", self.on_pacman_toggle4)
+    self.checkbutton4.connect("notify::active", functools.partial(maintenance.on_pacman_toggle4, self))
     label10 = Gtk.Label(xalign=0)
     label10.set_markup("# Enable Arch Linux core testing repo")
 
     self.checkbutton3 = Gtk.Switch()
-    self.checkbutton3.connect("notify::active", self.on_pacman_toggle6)
+    self.checkbutton3.connect("notify::active", functools.partial(maintenance.on_pacman_toggle6, self))
     label4 = Gtk.Label(xalign=0)
     label4.set_markup("# Enable Arch Linux multilib testing repo")
 
     self.checkbutton8 = Gtk.Switch()
-    self.checkbutton8.connect("notify::active", self.on_pacman_toggle7)
+    self.checkbutton8.connect("notify::active", functools.partial(maintenance.on_pacman_toggle7, self))
     label15 = Gtk.Label(xalign=0)
     label15.set_markup("Enable Arch Linux multilib repo")
 
@@ -142,14 +142,14 @@ def gui(self, Gtk, vboxstack1, fn):
     frame2lbl.set_markup("<b>Other repos</b>")
 
     self.nemesis_switch = Gtk.Switch()
-    self.nemesis_switch.connect("notify::active", self.on_nemesis_toggle)
+    self.nemesis_switch.connect("notify::active", functools.partial(maintenance.on_nemesis_toggle, self))
     label11 = Gtk.Label(xalign=0)
     label11.set_markup("Enable Nemesis repo")
 
     self.chaotics_button = Gtk.Button(label="Install keys and mirrors")
-    self.chaotics_button.connect("clicked", self.on_chaotics_clicked)
+    self.chaotics_button.connect("clicked", functools.partial(maintenance.on_chaotics_clicked, self))
     self.chaotics_switch = Gtk.Switch()
-    self.chaotics_switch.connect("notify::active", self.on_chaotics_toggle)
+    self.chaotics_switch.connect("notify::active", functools.partial(maintenance.on_chaotics_toggle, self))
     label9 = Gtk.Label(xalign=0)
     label9.set_markup("Enable Chaotic-aur repo")
 
