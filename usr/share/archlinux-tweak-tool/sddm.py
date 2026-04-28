@@ -375,18 +375,20 @@ def on_autologin_sddm_activated(self, widget, param_spec=None):
 def on_browse_sddm_folder(self, widget=None):
     """Open folder browser dialog for SDDM wallpapers"""
     try:
-        chooser = Gtk.FileChooserNative.new(
-            "Select Wallpaper Folder",
-            self,
-            Gtk.FileChooserAction.SELECT_FOLDER,
-            "Open",
-            "Cancel",
+        dialog = Gtk.FileChooserDialog(
+            title="Select Wallpaper Folder",
+            transient_for=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
         )
-        response = chooser.run()
-        if response == Gtk.ResponseType.ACCEPT:
-            folder = chooser.get_file().get_path()
+        dialog.add_buttons(
+            "Cancel", Gtk.ResponseType.CANCEL,
+            "Open", Gtk.ResponseType.ACCEPT,
+        )
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            folder = dialog.get_file().get_path()
             self.sddm_folder_entry.set_text(folder)
             fn.debug_print(f"Selected folder: {folder}")
+        dialog.destroy()
     except Exception as error:
         fn.log_error(f"Failed to open folder browser: {error}")
         fn.messagebox(self, "Error", f"Failed to open folder browser: {error}")
