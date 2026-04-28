@@ -414,15 +414,22 @@ def on_load_sddm_folder(self, widget=None):
         fn.messagebox(self, "Error", f"Failed to load wallpapers: {error}")
 
 
+def _clear_sddm_thumbs(self):
+    """Remove all children from the wallpaper flowbox"""
+    child = self.sddm_thumb_flow.get_first_child()
+    while child:
+        next_child = child.get_next_sibling()
+        self.sddm_thumb_flow.remove(child)
+        child = next_child
+
+
 def on_stop_sddm_loading(self, widget=None):
     """Stop loading wallpapers"""
     try:
         fn.log_subsection("Stop Loading")
         fn.debug_print("Stopped wallpaper loading")
         self.sddm_folder_entry.set_text("")
-        _m = self.sddm_thumb_flow.get_model()
-        if _m:
-            _m.splice(0, _m.get_n_items(), [])
+        _clear_sddm_thumbs(self)
         fn.log_success("Wallpaper loading stopped")
     except Exception as error:
         fn.log_error(f"Failed to stop loading: {error}")
@@ -431,9 +438,7 @@ def on_stop_sddm_loading(self, widget=None):
 def _populate_sddm_thumbs(self, folder):
     """Populate wallpaper thumbnails in the flowbox"""
     try:
-        _m = self.sddm_thumb_flow.get_model()
-        if _m:
-            _m.splice(0, _m.get_n_items(), [])
+        _clear_sddm_thumbs(self)
 
         image_extensions = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp')
         image_files = []
