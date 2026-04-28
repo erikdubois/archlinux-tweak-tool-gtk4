@@ -443,7 +443,7 @@ def _populate_sddm_thumbs(self, folder):
         image_extensions = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp')
         image_files = []
 
-        for filename in fn.listdir(folder):
+        for filename in sorted(fn.listdir(folder)):
             if filename.lower().endswith(image_extensions):
                 filepath = fn.path.join(folder, filename)
                 if fn.path.isfile(filepath):
@@ -451,25 +451,37 @@ def _populate_sddm_thumbs(self, folder):
 
         fn.debug_print(f"Found {len(image_files)} wallpaper(s)")
 
-        for filepath in image_files:
-            try:
-                picture = Gtk.Picture()
-                picture.set_filename(filepath)
-                picture.set_can_shrink(True)
-                picture.set_content_fit(Gtk.ContentFit.COVER)
-                picture.set_size_request(150, 100)
-
-                button = Gtk.Button()
-                button.set_child(picture)
-                button.set_size_request(150, 100)
-                button.connect("clicked", lambda btn, path=filepath: on_sddm_thumb_clicked(self, path))
-
-                self.sddm_thumb_flow.insert(button, -1)
-            except Exception as e:
-                fn.debug_print(f"Failed to load thumbnail {filepath}: {e}")
+        self._sddm_thumb_queue = list(image_files)
+        _add_next_sddm_thumb(self)
 
     except Exception as error:
         fn.log_error(f"Failed to populate thumbnails: {error}")
+
+
+def _add_next_sddm_thumb(self):
+    """Add thumbnails one at a time via idle_add to keep UI responsive"""
+    queue = getattr(self, '_sddm_thumb_queue', [])
+    if not queue:
+        return
+
+    filepath = queue.pop(0)
+    try:
+        picture = Gtk.Picture.new_for_filename(filepath)
+        picture.set_can_shrink(True)
+        picture.set_content_fit(Gtk.ContentFit.COVER)
+        picture.set_size_request(150, 100)
+
+        button = Gtk.Button()
+        button.set_child(picture)
+        button.set_size_request(150, 100)
+        button.connect("clicked", lambda _, path=filepath: on_sddm_thumb_clicked(self, path))
+
+        self.sddm_thumb_flow.insert(button, -1)
+    except Exception as e:
+        fn.debug_print(f"Failed to load thumbnail {filepath}: {e}")
+
+    if queue:
+        fn.GLib.idle_add(_add_next_sddm_thumb, self, priority=fn.GLib.PRIORITY_LOW)
 
 
 def on_sddm_thumb_clicked(self, filepath):
