@@ -1375,7 +1375,6 @@ def on_mirror_accum_repo_toggle(self, widget, active):
 
 def on_mirror_aarnet_repo_toggle(self, widget, active):
     from pacman_manager_functions import mirror_exist, append_mirror, toggle_mirrorlist
-    from pacman_manager_functions import mirror_exist, append_mirror, toggle_mirrorlist
     if not mirror_exist(
         "Server = https://mirror.aarnet.edu.au/pub/arcolinux/$repo/$arch"
     ):
@@ -1383,3 +1382,7 @@ def on_mirror_aarnet_repo_toggle(self, widget, active):
     else:
         if self.opened is False:
             toggle_mirrorlist(self, widget.get_active(), "arco_mirror_aarnet")
+
+
+def on_click_apply_parallel_downloads(self, widget):
+    set_parallel_downloads(self, widget)

@@ -2299,9 +2299,6 @@ class Main(Gtk.ApplicationWindow):
                 self.button_adt.set_label("Remove the ArcoLinux Desktop Trasher")
                 self.adt_installed = True
 
-    def on_click_apply_parallel_downloads(self, widget):
-        maintenance.set_parallel_downloads(self, widget)
-
     # ====================================================================
     # ====================================================================
     # ====================================================================
