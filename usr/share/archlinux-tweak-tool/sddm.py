@@ -34,10 +34,10 @@ def ensure_sddm_config(self):
                 fn.create_sddm_k_dir()
                 fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
                 fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
-                print("[INFO] SDDM configuration files created successfully")
+                fn.log_success("SDDM configuration files created successfully")
                 return True
             except Exception as error:
-                print(f"[ERROR] Failed to create SDDM files: {error}")
+                fn.log_error(f"Failed to create SDDM files: {error}")
                 fn.messagebox(self, "Error", f"Failed to create SDDM files: {error}")
                 return False
         else:
@@ -83,12 +83,8 @@ def check_sddmk_complete():
         else:
             return False
     except FileNotFoundError:
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("If ATT does not launch, type 'fix-sddm-conf' in a terminal and restart")
-        print(
-            "---------------------------------------------------------------------------"
+        fn.debug_print(
+            "If ATT does not launch, type 'fix-sddm-conf' in a terminal and restart"
         )
 
 
@@ -192,7 +188,7 @@ def set_sddm_value(self, lists, value, session, state, theme, cursor):
             f.close()
 
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         fn.messagebox(
             self, "Failed!!", 'There seems to have been a problem in "set_sddm_value"'
         )
@@ -219,7 +215,7 @@ def set_user_autologin_value(self, lists, value, session, state):
             f.close()
 
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         fn.messagebox(
             self, "Failed!!", 'There seems to have been a problem in "set_sddm_value"'
         )
@@ -543,7 +539,7 @@ def on_set_sddm_wallpaper(self, _widget=None):
             f.write("[General]\nbackground=images/background.jpg\n")
         fn.show_in_app_notification(self, "Simplicity wallpaper applied")
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         fn.show_in_app_notification(self, "Failed to apply wallpaper")
 
 
@@ -571,7 +567,7 @@ def on_restore_sddm_wallpaper(self, _widget=None):
         self.login_wallpaper_path = ""
         fn.show_in_app_notification(self, "Default wallpaper restored")
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         fn.show_in_app_notification(self, "Failed to restore wallpaper")
 
 
