@@ -474,6 +474,7 @@ def on_sddm_thumb_clicked(self, filepath):
 
         self.sddm_wallpaper_lbl.set_text(filepath)
         self.sddm_wallpaper_preview.set_filename(filepath)
+        self.sddm_selected_wallpaper = filepath
         fn.debug_print(f"Selected wallpaper: {filepath}")
         fn.show_in_app_notification(self, f"Selected: {fn.path.basename(filepath)}")
     except Exception as error:
@@ -528,16 +529,15 @@ def on_click_sddm_enable(self):
 
 def on_set_sddm_wallpaper(self, widget=None):
     """Set the selected wallpaper for SDDM"""
-    wallpaper_path = self.sddm_wallpaper_lbl.get_text()
-    fn.debug_print(f"Wallpaper path: '{wallpaper_path}'")
+    selected = getattr(self, 'sddm_selected_wallpaper', None)
 
-    if "No wallpaper selected" in wallpaper_path or not wallpaper_path:
-        fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse and select a wallpaper before applying.")
+    if not selected:
+        fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse a folder, then click a wallpaper thumbnail to select it.")
         return
 
     try:
         fn.log_subsection("Apply SDDM Wallpaper")
-        fn.debug_print(f"Applying wallpaper: {wallpaper_path}")
+        fn.debug_print(f"Applying wallpaper: {selected}")
         fn.log_success("SDDM wallpaper applied")
         fn.show_in_app_notification(self, "Wallpaper applied successfully")
     except Exception as error:
