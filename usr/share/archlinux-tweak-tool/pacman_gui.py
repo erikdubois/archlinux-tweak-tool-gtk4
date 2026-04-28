@@ -2,7 +2,9 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
 import pacman_functions
+import maintenance
 
 
 def get_parallel_downloads(fn):
@@ -36,7 +38,7 @@ def gui(self, Gtk, vboxstack1, fn):
     # message = Gtk.Label(xalign=0)
     # message.set_text("Refresh the pacman databases when you toggle the switch on/off")
     button_update_repos = Gtk.Button(label="Update pacman databases")
-    button_update_repos.connect("clicked", self.on_update_pacman_databases_clicked)
+    button_update_repos.connect("clicked", functools.partial(maintenance.on_update_pacman_databases_clicked, self))
     # hbox5.pack_start(message, True, True, 0)
     hbox5.append(button_update_repos)  # pack_end
 
