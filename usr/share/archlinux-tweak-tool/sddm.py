@@ -376,7 +376,7 @@ def on_browse_sddm_folder(self, widget=None):
     """Open folder browser dialog for SDDM wallpapers"""
     dialog = Gtk.FileChooserDialog(
         title="Select Wallpaper Folder",
-        parent=self,
+        transient_for=self,
         action=Gtk.FileChooserAction.SELECT_FOLDER,
         modal=True,
     )
