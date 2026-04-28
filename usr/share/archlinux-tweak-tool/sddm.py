@@ -332,7 +332,7 @@ def pop_login_managers_combo(self, combo):
             self.login_managers_combo.set_selected(0)
 
 
-def on_click_sddm_reset_original_att(self):
+def on_click_sddm_reset_original_att(self, _widget=None):
     """Apply the default ATT SDDM configuration"""
     try:
         fn.log_subsection("Apply ATT SDDM Configuration")
@@ -346,7 +346,7 @@ def on_click_sddm_reset_original_att(self):
         fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
 
 
-def on_click_sddm_reset_original(self):
+def on_click_sddm_reset_original(self, _widget=None):
     """Apply the user's original SDDM configuration"""
     try:
         fn.log_subsection("Apply Original SDDM Configuration")
