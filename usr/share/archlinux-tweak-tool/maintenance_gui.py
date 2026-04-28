@@ -2,6 +2,7 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import functools
 import struct
 
 
@@ -135,7 +136,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox22_label = Gtk.Label(xalign=0)
     hbox22_label.set_text("Update system")
     btn_update_system = Gtk.Button(label="Update")
-    btn_update_system.connect("clicked", self.on_click_update_system)
+    btn_update_system.connect("clicked", functools.partial(maintenance.on_click_update_system, self))
     hbox22_label.set_margin_start(10)
     hbox22_label.set_margin_end(10)
     hbox22_label.set_hexpand(True)
@@ -148,7 +149,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox23_label = Gtk.Label(xalign=0)
     hbox23_label.set_text("Clean cache")
     btn_clean_cache = Gtk.Button(label="Clean")
-    btn_clean_cache.connect("clicked", self.on_click_clean_cache)
+    btn_clean_cache.connect("clicked", functools.partial(maintenance.on_click_clean_cache, self))
     hbox23_label.set_margin_start(10)
     hbox23_label.set_margin_end(10)
     hbox23_label.set_hexpand(True)
@@ -161,7 +162,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox25_label = Gtk.Label(xalign=0)
     hbox25_label.set_text("Remove pacman lock")
     btn_remove_pacman_lock = Gtk.Button(label="Remove")
-    btn_remove_pacman_lock.connect("clicked", self.on_click_remove_pacman_lock)
+    btn_remove_pacman_lock.connect("clicked", functools.partial(maintenance.on_click_remove_pacman_lock, self))
     hbox25_label.set_margin_start(10)
     hbox25_label.set_margin_end(10)
     hbox25_label.set_hexpand(True)
@@ -174,11 +175,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox5_label = Gtk.Label(xalign=0)
     hbox5_label.set_text("Re-install archlinux-keyring")
     btn_install_arch_keyring = Gtk.Button(label="Install keyring (local)")
-    btn_install_arch_keyring.connect("clicked", self.on_click_install_arch_keyring)
+    btn_install_arch_keyring.connect("clicked", functools.partial(maintenance.on_click_install_arch_keyring, self))
     btn_install_arch_keyring_online = Gtk.Button(label="Install keyring (online)")
-    btn_install_arch_keyring_online.connect(
-        "clicked", self.on_click_install_arch_keyring_online
-    )
+    btn_install_arch_keyring_online.connect("clicked", functools.partial(maintenance.on_click_install_arch_keyring_online, self))
     hbox5_label.set_margin_start(10)
     hbox5_label.set_margin_end(10)
     hbox5_label.set_hexpand(True)
@@ -194,7 +193,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox2_label = Gtk.Label(xalign=0)
     hbox2_label.set_text("Reset and reload pacman keys")
     btn_apply_pacman_key_fix = Gtk.Button(label="Fix keys")
-    btn_apply_pacman_key_fix.connect("clicked", self.on_click_fix_pacman_keys)
+    btn_apply_pacman_key_fix.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_keys, self))
     hbox2_label.set_margin_start(10)
     hbox2_label.set_margin_end(10)
     hbox2_label.set_hexpand(True)
@@ -207,9 +206,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox3_label = Gtk.Label(xalign=0)
     hbox3_label.set_text("Set the mainstream servers from Arch Linux")
     btn_apply_osbeck = Gtk.Button(label="Set mainstream")
-    btn_apply_osbeck.connect("clicked", self.on_click_fix_mainstream)
+    btn_apply_osbeck.connect("clicked", functools.partial(maintenance.on_click_fix_mainstream, self))
     button_reset_mirrorlist = Gtk.Button(label="Reset mirrorlist")
-    button_reset_mirrorlist.connect("clicked", self.on_click_reset_mirrorlist)
+    button_reset_mirrorlist.connect("clicked", functools.partial(maintenance.on_click_reset_mirrorlist, self))
     hbox3_label.set_margin_start(10)
     hbox3_label.set_margin_end(10)
     hbox3_label.set_hexpand(True)
@@ -226,9 +225,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox4_label = Gtk.Label(xalign=0)
     hbox4_label.set_text("Get the best Arch Linux servers (takes a while)")
     self.btn_run_reflector = Gtk.Button(label="Run reflector")
-    self.btn_run_reflector.connect("clicked", self.on_click_get_arch_mirrors)
+    self.btn_run_reflector.connect("clicked", functools.partial(maintenance.on_click_get_arch_mirrors, self))
     self.btn_run_rate_mirrors = Gtk.Button(label="Run rate-mirrors")
-    self.btn_run_rate_mirrors.connect("clicked", self.on_click_get_arch_mirrors2)
+    self.btn_run_rate_mirrors.connect("clicked", functools.partial(maintenance.on_click_get_arch_mirrors2, self))
     hbox4_label.set_margin_start(10)
     hbox4_label.set_margin_end(10)
     hbox4_label.set_hexpand(True)
@@ -245,9 +244,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox40_label = Gtk.Label(xalign=0)
     hbox40_label.set_text("Install apps to find the best Arch Linux servers")
     btn_install_mirrors = Gtk.Button(label="Install reflector")
-    btn_install_mirrors.connect("clicked", self.on_click_install_arch_mirrors)
+    btn_install_mirrors.connect("clicked", functools.partial(maintenance.on_click_install_arch_mirrors, self))
     btn_install_rate_mirrors = Gtk.Button(label="Install rate mirrors")
-    btn_install_rate_mirrors.connect("clicked", self.on_click_install_arch_mirrors2)
+    btn_install_rate_mirrors.connect("clicked", functools.partial(maintenance.on_click_install_arch_mirrors2, self))
     hbox40_label.set_margin_start(10)
     hbox40_label.set_margin_end(10)
     hbox40_label.set_hexpand(True)
@@ -268,7 +267,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox6_label = Gtk.Label(xalign=0)
     hbox6_label.set_text("Get the original ArcoLinux /etc/pacman.conf")
     btn_reset_pacman = Gtk.Button(label="Reset pacman.conf")
-    btn_reset_pacman.connect("clicked", self.on_click_fix_pacman_conf)
+    btn_reset_pacman.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_conf, self))
     hbox6_label.set_margin_start(10)
     hbox6_label.set_margin_end(10)
     hbox6_label.set_hexpand(True)
@@ -281,7 +280,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox7_label = Gtk.Label(xalign=0)
     hbox7_label.set_text("Get the best keyservers for /etc/pacman.d/gnupg/gpg.conf")
     btn_apply_pacman_gpg_conf = Gtk.Button(label="Backup and reset gpg.conf")
-    btn_apply_pacman_gpg_conf.connect("clicked", self.on_click_fix_pacman_gpg_conf)
+    btn_apply_pacman_gpg_conf.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_gpg_conf, self))
     hbox7_label.set_margin_start(10)
     hbox7_label.set_margin_end(10)
     hbox7_label.set_hexpand(True)
@@ -294,9 +293,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox8_label = Gtk.Label(xalign=0)
     hbox8_label.set_text("Get the best keyservers for ~/.gnupg/gpg.conf")
     btn_apply_pacman_gpg_conf_local = Gtk.Button(label="Backup and reset gpg.conf")
-    btn_apply_pacman_gpg_conf_local.connect(
-        "clicked", self.on_click_fix_pacman_gpg_conf_local
-    )
+    btn_apply_pacman_gpg_conf_local.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_gpg_conf_local, self))
     hbox8_label.set_margin_start(10)
     hbox8_label.set_margin_end(10)
     hbox8_label.set_hexpand(True)
@@ -343,9 +340,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     ]
 
     btn_apply_parallel_downloads = Gtk.Button(label="Apply")
-    btn_apply_parallel_downloads.connect(
-        "clicked", self.on_click_apply_parallel_downloads
-    )
+    btn_apply_parallel_downloads.connect("clicked", functools.partial(maintenance.on_click_apply_parallel_downloads, self))
 
     if fn.check_content("ParallelDownloads", fn.pacman):
         for number in numbers:
@@ -383,7 +378,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     )
     _update_cursor_preview(self, fn, Gdk, GdkPixbuf, fn.GLib)
     btn_apply_cursor = Gtk.Button(label="Apply")
-    btn_apply_cursor.connect("clicked", self.on_click_apply_global_cursor)
+    btn_apply_cursor.connect("clicked", functools.partial(maintenance.on_click_apply_global_cursor, self))
     hbox13_label.set_margin_start(10)
     hbox13_label.set_margin_end(10)
     hbox13_label.set_hexpand(True)
@@ -402,7 +397,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox14_label = Gtk.Label(xalign=0)
     hbox14_label.set_markup("Provide probe link")
     btn_probe = Gtk.Button(label="Get probe link")
-    btn_probe.connect("clicked", self.on_click_probe)
+    btn_probe.connect("clicked", functools.partial(maintenance.on_click_probe, self))
     hbox14_label.set_margin_start(10)
     hbox14_label.set_margin_end(10)
     hbox14_label.set_hexpand(True)
