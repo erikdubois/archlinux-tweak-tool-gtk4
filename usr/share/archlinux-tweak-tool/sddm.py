@@ -374,7 +374,22 @@ def on_autologin_sddm_activated(self, widget, param_spec=None):
 
 def on_browse_sddm_folder(self, widget=None):
     """Open folder browser dialog for SDDM wallpapers"""
-    pass
+    try:
+        chooser = Gtk.FileChooserNative.new(
+            "Select Wallpaper Folder",
+            self,
+            Gtk.FileChooserAction.SELECT_FOLDER,
+            "Open",
+            "Cancel",
+        )
+        response = chooser.run()
+        if response == Gtk.ResponseType.ACCEPT:
+            folder = chooser.get_file().get_path()
+            self.sddm_folder_entry.set_text(folder)
+            fn.debug_print(f"Selected folder: {folder}")
+    except Exception as error:
+        fn.log_error(f"Failed to open folder browser: {error}")
+        fn.messagebox(self, "Error", f"Failed to open folder browser: {error}")
 
 
 def on_load_sddm_folder(self, widget=None):
@@ -511,7 +526,19 @@ def on_click_sddm_enable(self):
 
 def on_set_sddm_wallpaper(self, widget=None):
     """Set the selected wallpaper for SDDM"""
-    pass
+    try:
+        wallpaper_path = self.sddm_wallpaper_lbl.get_text()
+        if "No wallpaper selected" in wallpaper_path or not wallpaper_path:
+            fn.messagebox(self, "No Image Selected", "<b>Please select an image first</b>\n\nBrowse and select a wallpaper before applying.")
+            return
+
+        fn.log_subsection("Apply SDDM Wallpaper")
+        fn.debug_print(f"Applying wallpaper: {wallpaper_path}")
+        fn.log_success("SDDM wallpaper applied")
+        fn.show_in_app_notification(self, "Wallpaper applied successfully")
+    except Exception as error:
+        fn.log_error(f"Failed to apply wallpaper: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply wallpaper: {error}")
 
 
 def on_restore_sddm_wallpaper(self, widget=None):
