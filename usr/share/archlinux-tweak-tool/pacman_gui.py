@@ -52,15 +52,15 @@ def gui(self, Gtk, vboxstack1, fn):
     # ========================================================
 
     self.custom_repo = Gtk.Button(label="Apply custom repo")
-    self.custom_repo.connect("clicked", self.custom_repo_clicked)
+    self.custom_repo.connect("clicked", functools.partial(maintenance.custom_repo_clicked, self))
     reset_pacman_local = Gtk.Button(label="Reset pacman local")
-    reset_pacman_local.connect("clicked", self.reset_pacman_local)
+    reset_pacman_local.connect("clicked", functools.partial(maintenance.reset_pacman_local, self))
     reset_pacman_online = Gtk.Button(label="Reset pacman online")
-    reset_pacman_online.connect("clicked", self.reset_pacman_online)
+    reset_pacman_online.connect("clicked", functools.partial(maintenance.reset_pacman_online, self))
     blank_pacman = Gtk.Button(label="Blank pacman (auto reboot) and select")
-    blank_pacman.connect("clicked", self.blank_pacman)
+    blank_pacman.connect("clicked", functools.partial(maintenance.blank_pacman, self))
     edit_pacman_conf = Gtk.Button(label="Edit pacman.conf in terminal")
-    edit_pacman_conf.connect("clicked", self.edit_pacman_conf_clicked)
+    edit_pacman_conf.connect("clicked", functools.partial(maintenance.edit_pacman_conf_clicked, self))
     label_backup = Gtk.Label(xalign=0)
     label_backup.set_text("You can find the backup at /etc/pacman.conf.bak")
 
