@@ -53,19 +53,19 @@ if [[ -f "./repo.sh" ]]; then
 fi
 
 echo "getting latest .bashrc"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.bashrc-latest -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/.bashrc
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.bashrc-latest -O $workdir/usr/share/archlinux-tweak-tool/data/.bashrc
 
 echo "getting latest .zshrc"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.zshrc -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/.zshrc
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.zshrc -O $workdir/usr/share/archlinux-tweak-tool/data/.zshrc
 
 echo "getting latest config.fish"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.config/fish/config.fish -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/config.fish
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.config/fish/config.fish -O $workdir/usr/share/archlinux-tweak-tool/data/config.fish
 
 ########### Arch Linux
 echo "getting archlinux keyring"
 rm $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/*
 #get latest archlinux-keyring
-wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/
+wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/packages/keyring/
 
 # Below command will backup everything inside the project folder
 git add --all .
