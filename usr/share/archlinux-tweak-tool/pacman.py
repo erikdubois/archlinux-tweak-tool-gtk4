@@ -155,8 +155,7 @@ def custom_repo_clicked(self, widget):
 def reset_pacman_blank(self, widget):
     fn.log_subsection("Resetting pacman.conf to blank state...")
     fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
-    if fn.distr == "arch":
-        fn.shutil.copy(fn.blank_pacman_arch, fn.pacman)
+    fn.shutil.copy(fn.blank_pacman_att, fn.pacman)
     fn.log_success("Blank pacman.conf created")
     fn.log_info("Add repositories in desired order, ATT will reboot automatically")
     fn.restart_program()
@@ -175,14 +174,7 @@ def reset_pacman_local(self, widget):
 
 def reset_pacman_online(self, widget):
     fn.log_subsection("Resetting pacman.conf to online defaults...")
-    if fn.distr == "arch":
-        fn.shutil.copy(fn.pacman_arch, fn.pacman)
-    if fn.distr == "arcolinux":
-        fn.shutil.copy(fn.pacman_arco, fn.pacman)
-    if fn.distr == "endeavouros":
-        fn.shutil.copy(fn.pacman_eos, fn.pacman)
-    if fn.distr == "garuda":
-        fn.shutil.copy(fn.blank_pacman_garuda, fn.pacman)
+    fn.shutil.copy(fn.pacman_att, fn.pacman)
     fn.log_success("Online version of pacman.conf saved")
     fn.show_in_app_notification(
         self, "Default Settings Applied - check in a terminal"

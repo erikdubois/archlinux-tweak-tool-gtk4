@@ -307,7 +307,7 @@ def install_yay_git(self):
         fn.debug_print("Installing dependencies: alacritty base-devel")
         fn.install_package(self, "alacritty base-devel")
         fn.debug_print("Starting yay-git build process")
-        build_script = "/usr/share/archlinux-tweak-tool/data/any/build-yay-git"
+        build_script = "/usr/share/archlinux-tweak-tool/data/bin/build-yay-git"
         fn.log_success("Build terminal opened")
         return fn.subprocess.Popen(
             ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
@@ -342,7 +342,7 @@ def install_paru_git(self):
         fn.debug_print("Installing dependencies: alacritty base-devel")
         fn.install_package(self, "alacritty base-devel")
         fn.debug_print("Starting paru-git build process")
-        build_script = "/usr/share/archlinux-tweak-tool/data/any/build-paru-git"
+        build_script = "/usr/share/archlinux-tweak-tool/data/bin/build-paru-git"
         fn.log_success("Build terminal opened")
         return fn.subprocess.Popen(
             ["alacritty", "--hold", "-e", build_script, fn.sudo_username],

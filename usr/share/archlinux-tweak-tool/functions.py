@@ -184,8 +184,8 @@ home = "/home/" + str(sudo_username)
 gpg_conf = "/etc/pacman.d/gnupg/gpg.conf"
 gpg_conf_local = home + "/.gnupg/gpg.conf"
 
-gpg_conf_original = "/usr/share/archlinux-tweak-tool/data/kiro/gpg.conf"
-gpg_conf_local_original = "/usr/share/archlinux-tweak-tool/data/kiro/gpg.conf"
+gpg_conf_original = "/usr/share/archlinux-tweak-tool/data/gpg.conf"
+gpg_conf_local_original = "/usr/share/archlinux-tweak-tool/data/gpg.conf"
 
 # login managers
 
@@ -195,9 +195,9 @@ sddm_default_d1_bak = "/etc/bak.sddm.conf"
 sddm_default_d2 = "/etc/sddm.conf.d/kde_settings.conf"
 sddm_default_d2_bak = "/etc/bak.kde_settings.conf"
 sddm_default_d2_dir = "/etc/sddm.conf.d/"
-sddm_default_d1_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/sddm/sddm.conf"
+sddm_default_d1_kiro = "/usr/share/archlinux-tweak-tool/data/sddm/sddm.conf"
 sddm_default_d2_kiro = (
-    "/usr/share/archlinux-tweak-tool/data/kiro/sddm.conf.d/kde_settings.conf"
+    "/usr/share/archlinux-tweak-tool/data/sddm.conf.d/kde_settings.conf"
 )
 icons_default = "/usr/share/icons/default/index.theme"
 
@@ -205,14 +205,8 @@ samba_config = "/etc/samba/smb.conf"
 
 mirrorlist = "/etc/pacman.d/mirrorlist"
 pacman = "/etc/pacman.conf"
-pacman_arch = "/usr/share/archlinux-tweak-tool/data/arch/pacman/pacman.conf"
-pacman_eos = "/usr/share/archlinux-tweak-tool/data/eos/pacman/pacman.conf"
-pacman_garuda = "/usr/share/archlinux-tweak-tool/data/garuda/pacman/pacman.conf"
-blank_pacman_arch = "/usr/share/archlinux-tweak-tool/data/arch/pacman/blank/pacman.conf"
-blank_pacman_eos = "/usr/share/archlinux-tweak-tool/data/eos/pacman/blank/pacman.conf"
-blank_pacman_garuda = (
-    "/usr/share/archlinux-tweak-tool/data/garuda/pacman/blank/pacman.conf"
-)
+pacman_att = "/usr/share/archlinux-tweak-tool/data/pacman/pacman.conf"
+blank_pacman_att = "/usr/share/archlinux-tweak-tool/data/pacman/blank/pacman.conf"
 
 gtk3_settings = home + "/.config/gtk-3.0/settings.ini"
 gtk2_settings = home + "/.gtkrc-2.0"
@@ -221,9 +215,9 @@ xfce4_terminal_config = home + "/.config/xfce4/terminal/terminalrc"
 alacritty_config = home + "/.config/alacritty/alacritty.toml"
 alacritty_config_dir = home + "/.config/alacritty"
 fastfetch_config = home + "/.config/fastfetch/config.jsonc"
-fastfetch_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/fastfetch/config.jsonc"
-zshrc_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/.zshrc"
-bashrc_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/.bashrc"
+fastfetch_kiro = "/usr/share/archlinux-tweak-tool/data/fastfetch/config.jsonc"
+zshrc_kiro = "/usr/share/archlinux-tweak-tool/data/.zshrc"
+bashrc_kiro = "/usr/share/archlinux-tweak-tool/data/.bashrc"
 nsswitch_config = "/etc/nsswitch.conf"
 bd = ".att_backups"
 config = home + "/.config/archlinux-tweak-tool/settings.ini"
@@ -1660,7 +1654,7 @@ def uninstall_samba(self):
 
 def copy_samba(choice):
     command = (
-        "cp /usr/share/archlinux-tweak-tool/data/any/samba/"
+        "cp /usr/share/archlinux-tweak-tool/data/samba/"
         + choice
         + "/smb.conf /etc/samba/smb.conf"
     )

@@ -102,7 +102,7 @@ def setup_icon_theme():
             fn.debug_print("No backup found, installing default from ARCO template")
             try:
                 fn.shutil.copy(
-                    "/usr/share/archlinux-tweak-tool/data/kiro/cursor/index.theme",
+                    "/usr/share/archlinux-tweak-tool/data/cursor/index.theme",
                     "/usr/share/icons/default/index.theme",
                 )
                 fn.debug_print("✓ Default index.theme installed")

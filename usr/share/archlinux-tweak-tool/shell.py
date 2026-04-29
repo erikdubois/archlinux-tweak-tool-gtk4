@@ -45,7 +45,7 @@ def on_arcolinux_bash_clicked(self, widget):
             GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.bashrc applied - open new terminal")
         else:
             fn.debug_print(f"  Result : source file not found - nothing copied")
-            fn.log_warn("ATT bashrc not found - add .bashrc to data/kiro/")
+            fn.log_warn("ATT bashrc not found - add .bashrc to data/")
     except Exception as error:
         fn.debug_print(f"  Result : FAILED - {error}")
         fn.log_error(f"Failed to apply ATT bash configuration: {error}")
@@ -397,7 +397,7 @@ def on_zsh_reset_full(self, widget):
         else:
             fn.debug_print("Applying default ATT zshrc")
             fn.shutil.copy(
-                "/usr/share/archlinux-tweak-tool/data/kiro/.zshrc", fn.home + "/.zshrc"
+                "/usr/share/archlinux-tweak-tool/data/.zshrc", fn.home + "/.zshrc"
             )
             fn.permissions(fn.home + "/.zshrc")
             fn.log_success("Default zshrc applied")

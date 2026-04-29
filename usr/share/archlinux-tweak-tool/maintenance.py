@@ -578,7 +578,7 @@ def on_click_install_arch_keyring(self, widget):
     try:
         import os
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        pathway = base_dir + "/data/kiro/packages/keyring/"
+        pathway = base_dir + "/data/packages/keyring/"
         fn.debug_print(f"Package pathway: {pathway}")
         files = fn.listdir(pathway)
         if not files:
@@ -640,7 +640,7 @@ def on_click_fix_pacman_keys(self, widget):
     fn.install_package(self, "alacritty")
     try:
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -659,7 +659,7 @@ def on_click_probe(self, widget):
     try:
         GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/kiro/bin/probe; read -p \"Press Enter to close...\"'",
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'",
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -679,7 +679,7 @@ def on_click_fix_mainstream(self, widget):
     fn.log_subsection("Setting mainstream servers...")
     fn.install_package(self, "alacritty")
     try:
-        command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/set-mainstream-servers; read -p \"Press Enter to close...\"'"
+        command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
         fn.subprocess.call(
             command,
             shell=True,
@@ -723,7 +723,7 @@ def on_click_get_arch_mirrors(self, widget):
     try:
         fn.install_package(self, "reflector")
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -743,7 +743,7 @@ def on_click_get_arch_mirrors2(self, widget):
     fn.install_package(self, "alacritty")
     try:
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/any/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -763,7 +763,7 @@ def on_click_fix_sddm_conf(self, widget):
     fn.log_subsection("Fixing SDDM configuration...")
     fn.install_package(self, "alacritty")
     try:
-        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/kiro/bin/fix-sddm-config"
+        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
         fn.subprocess.call(
             command,
             shell=True,
@@ -802,7 +802,7 @@ def on_click_fix_pacman_gpg_conf(self, widget):
     fn.log_subsection("Resetting gpg.conf...")
     import os
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    gpg_conf_path = base_dir + "/data/kiro/gpg.conf"
+    gpg_conf_path = base_dir + "/data/gpg.conf"
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
         fn.debug_print(f"Creating backup to {fn.gpg_conf}.bak")
         fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
@@ -847,7 +847,7 @@ def on_click_fix_pacman_gpg_conf_local(self, widget):
 
     import os
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    gpg_conf_local_path = base_dir + "/data/kiro/gpg.conf"
+    gpg_conf_local_path = base_dir + "/data/gpg.conf"
     fn.debug_print(f"Restoring from {gpg_conf_local_path}")
     try:
         with open(gpg_conf_local_path, 'r') as f:
