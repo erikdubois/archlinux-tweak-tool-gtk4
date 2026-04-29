@@ -1,5 +1,44 @@
 # Arch Linux Tweak Tool — Changelog
 
+## Frozen Files — Do Not Edit Without Explicit Permission
+
+These files are tested and working. Any change requires user confirmation first.
+
+| File | Covers |
+| ---- | ------ |
+| `pacman_gui.py` | Pacman page UI — switches, AUR buttons, custom repo, blank pacman, reset/edit row |
+| `pacman.py` | Pacman toggle callbacks, update_repos_switches, parallel downloads |
+| `pacman_functions.py` | Repo read/write helpers, AUR helper install/remove, toggle_test_repos |
+
+---
+
+## 2026.04.29 - Pacman Page — Full Fix & Freeze
+
+### What Changed
+
+- All pacman repo switches now work correctly — toggling enables/disables repos in `/etc/pacman.conf`
+- AUR helper buttons (Install/Remove yay-git, paru-git) update their labels immediately after terminal closes
+- Reset pacman ATT and Reset pacman local now refresh all switches after applying
+- Blank pacman button restored — was disappearing due to GTK4 double-parent conflict
+- Bottom button row (reset/edit) left-aligned to match "Apply custom repo" button above
+- `chaotic_aur_repo` constant added to `functions.py`
+- `arch_community_testing_repo` reference removed — that repo does not exist
+- Pacman files marked frozen: `pacman_gui.py`, `pacman.py`, `pacman_functions.py`
+
+### Technical Details
+
+- Root cause of non-functional switches: `self.opened` always `True` (dead code blocking `toggle_test_repos`); `self.initializing` never cleared (stuck `True` after startup)
+- Fix: removed `if self.opened is False:` guards; added `self.initializing = False` at end of `_finish_background_init()`
+- Blank pacman disappearance: `blank_pacman` appended to `hboxstack4` first, second append to `hboxstack_blank_pacman` silently failed (widget already had parent), then `hboxstack4.remove()` orphaned it; fixed by only adding to `hboxstack_blank_pacman`
+- AUR label refresh: install/remove functions now return `Popen` object; GUI uses `wait_and_refresh` daemon thread that calls `process.wait()` then `GLib.idle_add(refresh_aur_buttons)`
+- `init_repos_lazy_load` and `update_repos_switches` both guard `set_active()` calls with `self.initializing = True/finally: False` to suppress spurious toggle callbacks
+
+### Files Modified
+
+`pacman_gui.py` • `pacman.py` • `pacman_functions.py` • `archlinux-tweak-tool.py` • `functions.py` • `CHANGELOG.md`
+
+---
+
 ## 2026.04.29 - Project Planning & Developer Objectives
 
 ### What Changed

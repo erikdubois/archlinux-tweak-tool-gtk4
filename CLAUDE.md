@@ -145,6 +145,43 @@ GLib.idle_add(expensive_function, priority=GLib.PRIORITY_LOW)
 
 Recent fixes: thumbnail loading, file operations that previously blocked the UI.
 
+### Terminal Actions — wait_and_refresh Pattern
+
+When a button launches an alacritty terminal (install/remove package) and a label or button must update afterward, **always use `wait_and_refresh` in a daemon thread**. Never use a fixed timeout (`GLib.timeout_add`) — the terminal takes longer than any hardcoded delay.
+
+The subprocess function must `return` the `Popen` object so the thread can wait on it:
+
+```python
+# In pacman_functions.py — always return the process
+def install_something(self):
+    fn.log_subsection("Installing something...")
+    fn.show_in_app_notification(self, "Opening terminal...")
+    return fn.subprocess.Popen(
+        ["alacritty", "--hold", "-e", "bash", "-c", "sudo pacman -S something"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
+
+# In the GUI — wait for terminal close, then refresh
+def wait_and_refresh(process):
+    if process is None:
+        fn.GLib.idle_add(refresh_labels)
+        return
+    fn.debug_print("Waiting for terminal to close...")
+    process.wait()
+    fn.debug_print("Terminal closed — refreshing labels")
+    fn.GLib.idle_add(refresh_labels)
+
+btn.connect(
+    "clicked",
+    lambda w: fn.threading.Thread(
+        target=wait_and_refresh,
+        args=(install_something(self),),
+        daemon=True,
+    ).start(),
+)
+```
+
 ### Dialog Patterns
 
 - **File Dialogs**: Use `.connect()` + `.present()` pattern instead of `.run()`

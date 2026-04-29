@@ -287,10 +287,9 @@ def install_yay_pacman(self):
     """Install yay-git from chaotic-aur repository."""
     fn.log_subsection("Install yay from Chaotic-AUR")
     fn.debug_print("Installing yay-git from chaotic-aur repository")
-    fn.log_success("Installation terminal opened")
     fn.show_in_app_notification(self, "Opening terminal to install yay-git")
-    fn.subprocess.Popen(
-        ["alacritty", "-e", "bash", "-c", "sudo pacman -S yay-git; read -p 'Press Enter to exit...'"],
+    return fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", "sudo pacman -S yay-git; read -p 'Press enter to close'"],
         stdout=fn.subprocess.PIPE,
         stderr=fn.subprocess.PIPE,
     )
@@ -322,10 +321,9 @@ def install_paru_pacman(self):
     """Install paru-git from chaotic-aur repository."""
     fn.log_subsection("Install paru from Chaotic-AUR")
     fn.debug_print("Installing paru-git from chaotic-aur repository")
-    fn.log_success("Installation terminal opened")
     fn.show_in_app_notification(self, "Opening terminal to install paru-git")
-    fn.subprocess.Popen(
-        ["alacritty", "-e", "bash", "-c", "sudo pacman -S paru-git; read -p 'Press Enter to exit...'"],
+    return fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", "sudo pacman -S paru-git; read -p 'Press enter to close'"],
         stdout=fn.subprocess.PIPE,
         stderr=fn.subprocess.PIPE,
     )
@@ -357,20 +355,20 @@ def remove_aur_helper(self, binary):
     """Remove yay or paru by detecting the package that owns the binary."""
     fn.log_subsection(f"Remove AUR Helper: {binary}")
     try:
-        fn.debug_print(f"Detecting package for {binary}")
+        fn.debug_print(f"Detecting package for /usr/bin/{binary}")
         result = fn.subprocess.check_output(
             ["pacman", "-Qo", f"/usr/bin/{binary}"],
             stderr=fn.subprocess.STDOUT,
         ).decode().strip()
         pkg = result.split(" is owned by ")[1].split(" ")[0]
-        fn.debug_print(f"Found package: {pkg}")
-        fn.log_success("Removal terminal opened")
+        fn.debug_print(f"Package to remove: {pkg}")
         fn.show_in_app_notification(self, f"Opening terminal to remove {pkg}")
-        fn.subprocess.Popen(
-            ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press Enter to exit...'"],
+        return fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press enter to close'"],
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.PIPE,
         )
-    except Exception as e:
+    except Exception:
         fn.log_error(f"Could not find package owning {binary}")
+        return None
         fn.show_in_app_notification(self, f"Could not find package owning {binary}")

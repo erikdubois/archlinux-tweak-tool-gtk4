@@ -164,9 +164,9 @@ def reset_pacman_local(self, widget):
 
 
 def reset_pacman_online(self, widget):
-    fn.log_subsection("Resetting pacman.conf to online defaults...")
+    fn.log_subsection("Resetting pacman.conf to ATT defaults...")
     fn.shutil.copy(fn.pacman_att, fn.pacman)
-    fn.log_success("Online version of pacman.conf saved")
+    fn.log_success("ATT version of pacman.conf saved")
     fn.show_in_app_notification(
         self, "Default Settings Applied - check in a terminal"
     )

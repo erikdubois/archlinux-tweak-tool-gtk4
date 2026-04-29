@@ -87,7 +87,7 @@ def gui(self, Gtk, vboxstack1, fn):
     self.custom_repo.connect("clicked", functools.partial(pacman.custom_repo_clicked, self))
     reset_pacman_local = Gtk.Button(label="Reset pacman local")
     reset_pacman_local.connect("clicked", functools.partial(pacman.reset_pacman_local, self))
-    reset_pacman_online = Gtk.Button(label="Reset pacman online")
+    reset_pacman_online = Gtk.Button(label="Reset pacman ATT")
     reset_pacman_online.connect("clicked", functools.partial(pacman.reset_pacman_online, self))
     blank_pacman = Gtk.Button(label="Blank pacman (auto reboot) and select")
     blank_pacman.connect("clicked", functools.partial(pacman.reset_pacman_blank, self))
@@ -302,7 +302,6 @@ def gui(self, Gtk, vboxstack1, fn):
     #               BUTTONS PACKING
     # ========================================================
 
-    hboxstack4.append(blank_pacman)  # pack_end
     hboxstack4.append(reset_pacman_online)  # pack_end
     hboxstack4.append(reset_pacman_local)  # pack_end
     hboxstack4.append(edit_pacman_conf)  # pack_end
@@ -403,31 +402,44 @@ def gui(self, Gtk, vboxstack1, fn):
         nemesis_now = pacman_functions.check_repo("[nemesis_repo]")
         nemesis_status.set_text("Nemesis repo: " + ("enabled" if nemesis_now else "disabled"))
 
-        def wait_and_refresh(process):
+        def wait_and_refresh(process, success_msg):
+            if process is None:
+                fn.GLib.idle_add(refresh_aur_buttons)
+                return
+            fn.debug_print("Waiting for terminal to close...")
             process.wait()
+            fn.debug_print("Terminal closed — refreshing AUR button labels")
+            fn.log_success(success_msg)
+            fn.GLib.idle_add(lambda: fn.show_in_app_notification(self, success_msg))
             fn.GLib.idle_add(refresh_aur_buttons)
 
         if fn.path.exists("/usr/bin/yay"):
             btn_aur_yay.set_label("Remove yay-git")
             yay_handler_id[0] = btn_aur_yay.connect(
                 "clicked",
-                lambda w: (pacman_functions.remove_aur_helper(self, "yay"),
-                           fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                lambda w: fn.threading.Thread(
+                    target=wait_and_refresh,
+                    args=(pacman_functions.remove_aur_helper(self, "yay"), "yay-git removed"),
+                    daemon=True,
+                ).start(),
             )
         else:
             btn_aur_yay.set_label("Install yay-git")
             if chaotic_now:
                 yay_handler_id[0] = btn_aur_yay.connect(
                     "clicked",
-                    lambda w: (pacman_functions.install_yay_pacman(self),
-                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                    lambda w: fn.threading.Thread(
+                        target=wait_and_refresh,
+                        args=(pacman_functions.install_yay_pacman(self), "yay-git installed"),
+                        daemon=True,
+                    ).start(),
                 )
             else:
                 yay_handler_id[0] = btn_aur_yay.connect(
                     "clicked",
                     lambda w: fn.threading.Thread(
                         target=wait_and_refresh,
-                        args=(pacman_functions.install_yay_git(self),),
+                        args=(pacman_functions.install_yay_git(self), "yay-git installed"),
                         daemon=True,
                     ).start(),
                 )
@@ -436,23 +448,29 @@ def gui(self, Gtk, vboxstack1, fn):
             btn_aur_paru.set_label("Remove paru-git")
             paru_handler_id[0] = btn_aur_paru.connect(
                 "clicked",
-                lambda w: (pacman_functions.remove_aur_helper(self, "paru"),
-                           fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                lambda w: fn.threading.Thread(
+                    target=wait_and_refresh,
+                    args=(pacman_functions.remove_aur_helper(self, "paru"), "paru-git removed"),
+                    daemon=True,
+                ).start(),
             )
         else:
             btn_aur_paru.set_label("Install paru-git")
             if chaotic_now:
                 paru_handler_id[0] = btn_aur_paru.connect(
                     "clicked",
-                    lambda w: (pacman_functions.install_paru_pacman(self),
-                               fn.GLib.timeout_add(1500, refresh_aur_buttons)),
+                    lambda w: fn.threading.Thread(
+                        target=wait_and_refresh,
+                        args=(pacman_functions.install_paru_pacman(self), "paru-git installed"),
+                        daemon=True,
+                    ).start(),
                 )
             else:
                 paru_handler_id[0] = btn_aur_paru.connect(
                     "clicked",
                     lambda w: fn.threading.Thread(
                         target=wait_and_refresh,
-                        args=(pacman_functions.install_paru_git(self),),
+                        args=(pacman_functions.install_paru_git(self), "paru-git installed"),
                         daemon=True,
                     ).start(),
                 )
@@ -500,7 +518,7 @@ def gui(self, Gtk, vboxstack1, fn):
 
     # =================FOOTER========================
 
-    hboxstack4.remove(blank_pacman)
+    hboxstack4.set_margin_start(10)
     vboxstack1.append(hboxstack4)  # pack_end
 
     # Lazy load repository states when page becomes visible
