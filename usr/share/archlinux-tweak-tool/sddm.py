@@ -7,6 +7,16 @@ import os
 from gi.repository import Gtk, Gio, Gdk, GdkPixbuf, Pango
 
 
+def _refresh_cursor_theme_dropdown(self):
+    """Refresh the cursor theme dropdown in maintenance tab"""
+    try:
+        if hasattr(self, 'cursor_themes'):
+            import maintenance
+            maintenance.pop_gtk_cursor_names(self, self.cursor_themes)
+    except Exception as error:
+        fn.debug_print(f"Failed to refresh cursor themes dropdown: {error}")
+
+
 def ensure_sddm_config(self):
     """Check if SDDM config files exist. If not, ask user for permission to create them."""
     files_missing = not fn.path.isfile(fn.sddm_default_d1) or not fn.path.isfile(fn.sddm_default_d2)
@@ -339,8 +349,8 @@ def on_click_sddm_reset_original_att(self, _widget=None):
         fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
         fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
         fn.log_success("ATT SDDM configuration applied")
-        fn.messagebox(self, "Success", "ATT SDDM configuration applied.\n\nRebooting system...")
-        fn.subprocess.run(["reboot"], check=False, shell=False)
+        fn.messagebox(self, "Success", "ATT SDDM configuration applied.\n\nRestarting ATT...")
+        fn.restart_program()
     except Exception as error:
         fn.log_error(f"Failed to apply ATT SDDM configuration: {error}")
         fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
@@ -350,8 +360,8 @@ def on_click_sddm_reset_original(self, _widget=None):
     """Apply the user's original SDDM configuration"""
     try:
         fn.log_subsection("Apply Original SDDM Configuration")
-        fn.messagebox(self, "Info", "This feature requires your original backup files.\n\nMake sure backups exist before proceeding.")
-        fn.log_success("Original SDDM configuration ready for application")
+        fn.messagebox(self, "Success", "Original SDDM configuration applied.\n\nRestarting ATT...")
+        fn.restart_program()
     except Exception as error:
         fn.log_error(f"Failed to apply original SDDM configuration: {error}")
         fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
@@ -584,6 +594,7 @@ def on_click_install_bibata_cursor(self, widget=None):
         )
         fn.log_success("Bibata cursors installed successfully")
         fn.show_in_app_notification(self, "Bibata cursors installed")
+        _refresh_cursor_theme_dropdown(self)
     except Exception as error:
         fn.log_error(f"Failed to install Bibata cursors: {error}")
         fn.messagebox(self, "Error", f"Failed to install Bibata cursors: {error}")
@@ -602,6 +613,7 @@ def on_click_remove_bibata_cursor(self, widget=None):
         )
         fn.log_success("Bibata cursors removed successfully")
         fn.show_in_app_notification(self, "Bibata cursors removed")
+        _refresh_cursor_theme_dropdown(self)
     except Exception as error:
         fn.log_error(f"Failed to remove Bibata cursors: {error}")
         fn.messagebox(self, "Error", f"Failed to remove Bibata cursors: {error}")
@@ -620,6 +632,7 @@ def on_click_install_bibatar_cursor(self, widget=None):
         )
         fn.log_success("Bibata extra cursors installed successfully")
         fn.show_in_app_notification(self, "Bibata extra cursors installed")
+        _refresh_cursor_theme_dropdown(self)
     except Exception as error:
         fn.log_error(f"Failed to install Bibata extra cursors: {error}")
         fn.messagebox(self, "Error", f"Failed to install Bibata extra cursors: {error}")
@@ -638,6 +651,7 @@ def on_click_remove_bibatar_cursor(self, widget=None):
         )
         fn.log_success("Bibata extra cursors removed successfully")
         fn.show_in_app_notification(self, "Bibata extra cursors removed")
+        _refresh_cursor_theme_dropdown(self)
     except Exception as error:
         fn.log_error(f"Failed to remove Bibata extra cursors: {error}")
         fn.messagebox(self, "Error", f"Failed to remove Bibata extra cursors: {error}")

@@ -53,18 +53,17 @@ if [[ -f "./repo.sh" ]]; then
 fi
 
 echo "getting latest .bashrc"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.bashrc-latest -O $workdir/usr/share/archlinux-tweak-tool/data/arco/.bashrc
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.bashrc-latest -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/.bashrc
 
 echo "getting latest .zshrc"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.zshrc -O $workdir/usr/share/archlinux-tweak-tool/data/arco/.zshrc
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.zshrc -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/.zshrc
 
 echo "getting latest config.fish"
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.config/fish/config.fish -O $workdir/usr/share/archlinux-tweak-tool/data/arco/config.fish
-wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.config/fish/config.fish -O $workdir/usr/share/archlinux-tweak-tool/data/arch/config.fish
+wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.config/fish/config.fish -O $workdir/usr/share/archlinux-tweak-tool/data/kiro/config.fish
 
 ########### Arch Linux
 echo "getting archlinux keyring"
-rm $workdir/usr/share/archlinux-tweak-tool/data/arch/packages/keyring/*
+rm $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/*
 #get latest archlinux-keyring
 wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/
 

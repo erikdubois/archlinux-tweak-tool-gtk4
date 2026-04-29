@@ -320,7 +320,7 @@ class Packages:
                     break
 
                 for line in process.stdout:
-                    print(line.strip())
+                    fn.debug_print(line.strip())
                     formatted_line = "[INFO] %s: %s\n" % (
                         fn.datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
                         line.strip()
@@ -442,7 +442,7 @@ class Packages:
                             "Status: <b> Full system upgrade - failed</b>",
                         )
 
-                        print("%s" % " ".join(output))
+                        fn.debug_print("%s" % " ".join(output))
 
                         event = "%s [ERROR]: Installation of packages aborted due to errors\n" % fn.datetime.datetime.now().strftime(
                             "%Y-%m-%d-%H-%M-%S"

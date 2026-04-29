@@ -27,7 +27,7 @@ def get_startups(name):
             state = not literal_eval(state)
             return state
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
             return True
     else:
         return state
@@ -62,7 +62,7 @@ Hidden=false\n"
         )
 
         with open(
-            fn.home + "/.config/autostart/" + name + ".desktop", "w", encoding="UTF-8"
+            fn.home + "/.config/autostart/" + name + ".desktop", "w", encoding="utf-8"
         ) as f:
             f.write(content)
             f.close()
@@ -110,14 +110,14 @@ def on_auto_toggle(self, widget, data, lbl):
 def on_auto_remove_clicked(self, gesture_or_widget, listbox, lbl):
     try:
         fn.unlink(fn.autostart + lbl + ".desktop")
-        print("Removed item from ~/.config/autostart/")
+        fn.debug_print("Removed item from ~/.config/autostart/")
         self.vvbox.remove(listbox)
     except Exception as error:
-        print(error)
-        print("We were unable to remove it")
-        print("Evaluate if it can/should be removed")
-        print("Then remove it manually")
-        print("We only remove .desktop files")
+        fn.log_error(str(error))
+        fn.debug_print("We were unable to remove it")
+        fn.debug_print("Evaluate if it can/should be removed")
+        fn.debug_print("Then remove it manually")
+        fn.debug_print("We only remove .desktop files")
 
 
 def clear_autostart(self):
@@ -196,7 +196,7 @@ def on_remove_auto(self, widget):
         value = model.get_value(iter, 1)
         model.remove(iter)
         fn.unlink(fn.home + "/.config/autostart/" + value + ".desktop")
-        print("Item has been removed from autostart")
+        fn.debug_print("Item has been removed from autostart")
         fn.show_in_app_notification(self, "Item has been removed from autostart")
 
 
@@ -208,7 +208,7 @@ def on_add_autostart(self, widget):
             self.txtbox2.get_text(),
             self.txtbox3.get_text(),
         )
-    print("Item has been added to autostart")
+    fn.debug_print("Item has been added to autostart")
     fn.show_in_app_notification(self, "Item has been added to autostart")
 
 
@@ -233,7 +233,7 @@ def open_response_auto(dialog, response):
         files = dialog.get_files()
         if files:
             foldername = files[0].get_path()
-            print(foldername)
+            fn.debug_print(foldername)
             dialog.destroy()
     elif response == Gtk.ResponseType.CANCEL:
         dialog.destroy()

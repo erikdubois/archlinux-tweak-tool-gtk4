@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
 <policyconfig>
-  <vendor>ArcoLinux</vendor>
-  <vendor_url>http://arcolinux.info/</vendor_url>
+  <vendor>Kiro</vendor>
+  <vendor_url>https://sourceforge.net/projects/kiro//</vendor_url>
   <icon_name>package-x-generic</icon_name>
-  <action id="org.arcolinux.pkexec.archlinux-tweak-tool">
+  <action id="org.kiro.pkexec.archlinux-tweak-tool">
     <description>Change your own user data</description>
     <description xml:lang="zh_TW">變更您自身的使用者資料</description>
     <description xml:lang="zh_CN">修改您的用户数据</description>

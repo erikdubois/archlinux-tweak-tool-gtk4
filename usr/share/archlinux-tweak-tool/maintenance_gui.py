@@ -90,7 +90,7 @@ def _load_xcursor_pixbuf(path, GdkPixbuf, GLib):
         height = max(1, round(pixbuf.get_height() * scale))
         return pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         return None
 
 

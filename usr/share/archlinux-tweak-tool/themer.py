@@ -22,7 +22,7 @@ def get_value(lists, types):
 
         return color
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
 
 
 def move_file(self, state):
@@ -87,7 +87,7 @@ def check_polybar(lines):
         else:
             return True
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         return False
 
 
@@ -115,7 +115,7 @@ def get_i3_themes(combo, lines):
             combo.get_model().append(sorted_menu[i].replace(".theme", ""))
         combo.set_selected(active)
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
 
 
 def set_i3_themes(lines, theme):
@@ -136,7 +136,7 @@ def set_i3_themes(lines, theme):
             f.writelines(lines)
             f.close()
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
 
 
 def set_i3_themes_bar(lines, theme):
@@ -160,7 +160,7 @@ def set_i3_themes_bar(lines, theme):
             f.writelines(lines)
             f.close()
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
 
 
 # =================================================================
@@ -222,7 +222,7 @@ def get_qtile_themes(combo, lines):
                 combo.get_model().append(sorted_menu[i].replace(".theme", ""))
             combo.set_selected(active)
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
 
 
 def set_qtile_themes(lines, theme):
@@ -248,7 +248,7 @@ def set_qtile_themes(lines, theme):
                 f.writelines(lines)
                 f.close()
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
 
 
 # =================================================================
@@ -280,7 +280,7 @@ def get_leftwm_themes(combo, lines):
                 combo.get_model().append(sorted_menu[i].replace(".theme", ""))
             combo.set_selected(active)
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
 
 
 def set_leftwm_themes(theme):

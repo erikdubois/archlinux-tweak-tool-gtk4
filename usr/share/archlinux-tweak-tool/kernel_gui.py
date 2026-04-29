@@ -159,7 +159,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
 
         def launch_and_wait(process, action, pkg_name):
             process.wait()
-            print(f"[INFO] {action} completed for {pkg_name}")
+            fn.debug_print(f"[INFO] {action} completed for {pkg_name}")
             fn.GLib.idle_add(lambda: (
                 fn.show_in_app_notification(self, f"{action} completed for {pkg_name}"),
                 refresh()
@@ -205,7 +205,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
         if not is_running_init:
             def remove_and_notify():
                 kernel.remove_kernel(self, pkg, headers).wait()
-                print(f"[INFO] Removal completed for {pkg}")
+                fn.debug_print(f"[INFO] Removal completed for {pkg}")
                 fn.GLib.idle_add(lambda: (
                     fn.show_in_app_notification(self, f"Removal completed for {pkg}"),
                     refresh()
@@ -219,7 +219,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
         btn.set_label(f"Install {pkg}")
         def install_and_notify():
             kernel.install_kernel(self, pkg, headers).wait()
-            print(f"[INFO] Installation completed for {pkg}")
+            fn.debug_print(f"[INFO] Installation completed for {pkg}")
             fn.GLib.idle_add(lambda: (
                 fn.show_in_app_notification(self, f"Installation completed for {pkg}"),
                 refresh()
@@ -287,14 +287,14 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
         selected_id = combo.get_active_id()
         if selected_id:
             title = id_to_title.get(selected_id, "")
-            print(f"\n[INFO] Setting default boot entry to: {title}")
+            fn.debug_print(f"\n[INFO] Setting default boot entry to: {title}")
             success = kernel.set_default_boot_entry(selected_id)
             if success:
-                print(f"[INFO] Successfully set default boot entry to: {title}")
+                fn.debug_print(f"[INFO] Successfully set default boot entry to: {title}")
                 _refresh_boot_entry_display(selected_id, lbl_current)
                 fn.show_in_app_notification(self, f"Default boot entry set to: {title} — Reboot to verify")
             else:
-                print(f"[INFO] Failed to set default boot entry to: {title}")
+                fn.debug_print(f"[INFO] Failed to set default boot entry to: {title}")
                 fn.show_in_app_notification(self, f"Failed to set default boot entry: {title}")
 
     btn_set = Gtk.Button(label="Set as Default")

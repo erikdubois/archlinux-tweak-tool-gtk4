@@ -20,7 +20,7 @@ def ensure_root_config_dirs():
             fn.debug_print("✓ /root/.config created")
         except Exception as error:
             fn.debug_print(f"Error creating /root/.config: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("/root/.config already exists")
 
@@ -31,7 +31,7 @@ def ensure_root_config_dirs():
             fn.debug_print("✓ /root/.config/gtk-3.0 created")
         except Exception as error:
             fn.debug_print(f"Error creating /root/.config/gtk-3.0: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("/root/.config/gtk-3.0 already exists")
 
@@ -42,7 +42,7 @@ def ensure_root_config_dirs():
             fn.debug_print("✓ /root/.config/gtk-4.0 created")
         except Exception as error:
             fn.debug_print(f"Error creating /root/.config/gtk-4.0: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("/root/.config/gtk-4.0 already exists")
 
@@ -53,7 +53,7 @@ def ensure_root_config_dirs():
             fn.debug_print("✓ /root/.config/xsettingsd created")
         except Exception as error:
             fn.debug_print(f"Error creating /root/.config/xsettingsd: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("/root/.config/xsettingsd already exists")
 
@@ -77,7 +77,7 @@ def ensure_app_dirs():
             fn.debug_print(f"✓ {fn.log_dir} created")
         except Exception as error:
             fn.debug_print(f"Error creating log directory: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"{fn.log_dir} already exists")
 
@@ -88,7 +88,7 @@ def ensure_app_dirs():
             fn.debug_print(f"✓ {fn.att_log_dir} created")
         except Exception as error:
             fn.debug_print(f"Error creating ATT log directory: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"{fn.att_log_dir} already exists")
 
@@ -101,7 +101,7 @@ def ensure_app_dirs():
             fn.debug_print(f"✓ {fastfetch_dir} created")
         except Exception as error:
             fn.debug_print(f"Error creating fastfetch directory: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"{fastfetch_dir} already exists")
 
@@ -114,7 +114,7 @@ def ensure_app_dirs():
             fn.debug_print(f"✓ {autostart_dir} created")
         except Exception as error:
             fn.debug_print(f"Error creating autostart directory: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"{autostart_dir} already exists")
 
@@ -127,7 +127,7 @@ def ensure_app_dirs():
             fn.debug_print(f"✓ {att_config_dir} created")
         except Exception as error:
             fn.debug_print(f"Error creating ATT config directory: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"{att_config_dir} already exists")
 

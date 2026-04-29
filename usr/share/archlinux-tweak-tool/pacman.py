@@ -212,7 +212,7 @@ def check_parallel_downloads(lists, value):
             val = lists[pos].strip()
             return val
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
 
 
 def set_parallel_downloads(self, widget):
@@ -252,7 +252,7 @@ def pop_parallel_downloads(self):
                 lines = f.readlines()
                 f.close()
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
             fn.messagebox(
                 self,
                 "Failed!!",

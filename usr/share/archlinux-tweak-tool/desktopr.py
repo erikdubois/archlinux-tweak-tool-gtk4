@@ -454,11 +454,11 @@ def install_desktop(self, desktop, state):
 
     timeout_id = None
     timeout_id = GLib.timeout_add(100, fn.do_pulse, None, self.desktopr_prog)
-    print("----------------------------------------------------------------")
-    print("Packages list to install")
-    print("----------------------------------------------------------------")
-    print(command)
-    print("----------------------------------------------------------------")
+    fn.debug_print("----------------------------------------------------------------")
+    fn.debug_print("Packages list to install")
+    fn.debug_print("----------------------------------------------------------------")
+    fn.debug_print(command)
+    fn.debug_print("----------------------------------------------------------------")
 
     if state == "reinst":
         com1 = pkexec_reinstall
@@ -479,7 +479,7 @@ def install_desktop(self, desktop, state):
 
     for line in command:
         package_name = line if isinstance(line, str) else line[0]
-        print(f"   Installing: {package_name}")
+        fn.debug_print(f"   Installing: {package_name}")
         GLib.idle_add(
             self.desktopr_stat.set_text,
             f"   Installing {package_name}...",
@@ -518,7 +518,7 @@ def install_desktop(self, desktop, state):
                 # Check the return code for success or failure
                 if process_return_code == 0:
                     if package_name in group_packages:
-                        print(
+                        fn.debug_print(
                             "There is no way to check if a group package is installed"
                         )
                         GLib.idle_add(
@@ -526,13 +526,13 @@ def install_desktop(self, desktop, state):
                             "There is no way to check if a group package is installed.",
                         )
                     elif fn.check_package_installed(package_name):
-                        print(f"{package_name} is installed")
+                        fn.debug_print(f"{package_name} is installed")
                         GLib.idle_add(
                             self.desktopr_stat.set_text,
                             f"Successfully installed {package_name}.",
                         )
                     else:
-                        print(
+                        fn.debug_print(
                             f"{package_name} IS NOT INSTALLED - REMOVE CONFLICTING PACKAGE(S)"
                         )
                         GLib.idle_add(
@@ -548,26 +548,26 @@ def install_desktop(self, desktop, state):
                             break  # Stop searching once we find a conflict message
 
                     if conflict_message:
-                        print(f"Installation failed due to package conflict: {conflict_message}")
+                        fn.debug_print(f"Installation failed due to package conflict: {conflict_message}")
                         GLib.idle_add(
                             self.desktopr_stat.set_text,
                             f"Installation failed: {conflict_message}",
                         )
                     else:
-                        print(f"Failed to install {package_name}: {stderr}")
+                        fn.debug_print(f"Failed to install {package_name}: {stderr}")
                         GLib.idle_add(
                             self.desktopr_stat.set_text,
                             f"Failed to install {package_name}. Error: {stderr}",
                         )
 
             except Exception as e:
-                print(f"An error occurred while installing {package_name}: {str(e)}")
+                fn.debug_print(f"An error occurred while installing {package_name}: {str(e)}")
                 GLib.idle_add(
                     self.desktopr_stat.set_text,
                     f"An error occurred: {str(e)}",
                 )
         except Exception as e:
-            print(f"An error occurred while installing {package_name}: {str(e)}")
+            fn.debug_print(f"An error occurred while installing {package_name}: {str(e)}")
             GLib.idle_add(
                 self.desktopr_stat.set_text,
                 f"An error occurred: {str(e)}",
@@ -578,11 +578,11 @@ def install_desktop(self, desktop, state):
     GLib.idle_add(self.desktopr_prog.set_fraction, 0)
 
     if check_desktop(desktop):
-        print(src)
+        fn.debug_print(src)
         if twm is True:
             for x in src:
                 if fn.path.isdir(x) or fn.path.isfile(x):
-                    print(x)
+                    fn.debug_print(x)
                     dest = x.replace("/etc/skel", fn.home)
                     if fn.path.isdir(x):
                         dest = fn.path.split(dest)[0]
@@ -606,9 +606,9 @@ def install_desktop(self, desktop, state):
         GLib.idle_add(
             fn.show_in_app_notification, self, desktop + " has been installed"
         )
-        print("----------------------------------------------------------------")
-        print(desktop + " has been installed")
-        print("----------------------------------------------------------------")
+        fn.debug_print("----------------------------------------------------------------")
+        fn.debug_print(desktop + " has been installed")
+        fn.debug_print("----------------------------------------------------------------")
     else:
         GLib.idle_add(
             self.desktop_status.set_markup, '<span size="x-large"><b>This desktop is NOT installed</b></span>'
@@ -620,9 +620,9 @@ def install_desktop(self, desktop, state):
         GLib.idle_add(
             fn.show_in_app_notification, self, desktop + " has not been installed"
         )
-        print("----------------------------------------------------------------")
-        print(desktop + " has NOT been installed")
-        print("----------------------------------------------------------------")
+        fn.debug_print("----------------------------------------------------------------")
+        fn.debug_print(desktop + " has NOT been installed")
+        fn.debug_print("----------------------------------------------------------------")
     fn.create_log(self)
 
 # ====================================================================
@@ -651,7 +651,7 @@ def on_d_combo_changed(self, widget, pspec=None):
 
 def on_install_clicked(self, widget, state):
     fn.create_log(self)
-    print("installing " + fn.get_combo_text(self.d_combo))
+    fn.debug_print("installing " + fn.get_combo_text(self.d_combo))
     check_lock(self, fn.get_combo_text(self.d_combo), state)
 
 
@@ -670,4 +670,4 @@ def on_default_clicked(self, widget):
             )
     else:
         fn.show_in_app_notification(self, "That desktop is not installed")
-        print("Desktop is not installed")
+        fn.debug_print("Desktop is not installed")

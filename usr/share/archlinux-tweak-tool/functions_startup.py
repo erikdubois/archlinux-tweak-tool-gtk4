@@ -72,7 +72,7 @@ def setup_icon_theme():
             fn.debug_print("✓ /usr/share/icons/default removed")
         except Exception as error:
             fn.debug_print(f"Error removing /usr/share/icons/default: {error}")
-            print(error)
+            fn.log_error(str(error))
 
     if not fn.path.isdir("/usr/share/icons/default"):
         fn.debug_print("Creating /usr/share/icons/default directory")
@@ -81,7 +81,7 @@ def setup_icon_theme():
             fn.debug_print("✓ /usr/share/icons/default created")
         except Exception as error:
             fn.debug_print(f"Error creating /usr/share/icons/default: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("/usr/share/icons/default already exists")
 
@@ -97,18 +97,18 @@ def setup_icon_theme():
                 fn.debug_print("✓ index.theme restored from backup")
             except Exception as error:
                 fn.debug_print(f"Error restoring index.theme: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("No backup found, installing default from ARCO template")
             try:
                 fn.shutil.copy(
-                    "/usr/share/archlinux-tweak-tool/data/arco/cursor/index.theme",
+                    "/usr/share/archlinux-tweak-tool/data/kiro/cursor/index.theme",
                     "/usr/share/icons/default/index.theme",
                 )
                 fn.debug_print("✓ Default index.theme installed")
             except Exception as error:
                 fn.debug_print(f"Error installing default index.theme: {error}")
-                print(error)
+                fn.log_error(str(error))
     else:
         fn.debug_print("index.theme already exists, skipping")
 
@@ -127,14 +127,14 @@ def setup_fastfetch_config():
 
     if not fn.path.isfile(fn.fastfetch_config):
         fn.debug_print(f"fastfetch config not found at {fn.fastfetch_config}")
-        fn.debug_print(f"Copying from template: {fn.fastfetch_arco}")
+        fn.debug_print(f"Copying from template: {fn.fastfetch_kiro}")
         try:
-            fn.shutil.copy(fn.fastfetch_arco, fn.fastfetch_config)
+            fn.shutil.copy(fn.fastfetch_kiro, fn.fastfetch_config)
             fn.permissions(fn.fastfetch_config)
             fn.debug_print("✓ fastfetch config installed")
         except Exception as error:
             fn.debug_print(f"Error installing fastfetch config: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"fastfetch config already exists at {fn.fastfetch_config}")
 

@@ -64,7 +64,7 @@ def create_samba_user(self):
 def add_autoconnect_pulseaudio(self):
     if fn.file_check(fn.pulse_default):
         if fn.check_content("load-module module-switch-on-connect\n", fn.pulse_default):
-            print("We have already enabled your headset to autoconnect")
+            fn.debug_print("We have already enabled your headset to autoconnect")
         else:
             try:
                 with open(fn.pulse_default, "r", encoding="utf-8") as f:
@@ -76,56 +76,51 @@ def add_autoconnect_pulseaudio(self):
                 with open(fn.pulse_default, "w", encoding="utf-8") as f:
                     f.writelines(lists)
                     f.close()
-                print("We have added this line to /etc/pulse/default.pa")
-                print("load-module module-switch-on-connect")
+                fn.debug_print("We have added this line to /etc/pulse/default.pa")
+                fn.debug_print("load-module module-switch-on-connect")
                 fn.show_in_app_notification(
                     self, "Pulseaudio bluetooth autoconnection enabled"
                 )
             except Exception as error:
-                print(error)
+                fn.log_error(str(error))
 
 
 def restart_smb(self):
     """restart samba with detailed status checklist"""
-    print("\n" + "=" * 70)
-    print("SAMBA SERVICE RESTART - STATUS CHECKLIST")
-    print("=" * 70)
-    print(f"Configuration: {fn.samba_config}")
-    print("=" * 70)
+    fn.log_subsection("SAMBA SERVICE RESTART - STATUS CHECKLIST")
+    fn.debug_print(f"Configuration: {fn.samba_config}")
 
     smb_active = fn.check_service("smb")
     nmb_active = fn.check_service("nmb")
     avahi_active = fn.check_service("avahi-daemon")
 
-    print(f"✓ Samba (smb):           {'✓ ACTIVE' if smb_active else '✗ INACTIVE'}")
-    print(f"✓ NetBIOS (nmb):         {'✓ ACTIVE' if nmb_active else '✗ INACTIVE'}")
-    print(f"✓ Avahi (discovery):     {'✓ ACTIVE' if avahi_active else '✗ INACTIVE'}")
-    print("=" * 70)
+    fn.debug_print(f"✓ Samba (smb):           {'✓ ACTIVE' if smb_active else '✗ INACTIVE'}")
+    fn.debug_print(f"✓ NetBIOS (nmb):         {'✓ ACTIVE' if nmb_active else '✗ INACTIVE'}")
+    fn.debug_print(f"✓ Avahi (discovery):     {'✓ ACTIVE' if avahi_active else '✗ INACTIVE'}")
 
     if smb_active:
-        print("\nRestarting samba services...")
+        fn.debug_print("Restarting samba services...")
         fn.system("systemctl restart smb")
         if nmb_active:
             fn.system("systemctl restart nmb")
-        print("✓ Samba services restarted successfully")
+        fn.log_success("Samba services restarted successfully")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,
             "✓ Samba restarted. Check other services in the status bar.",
         )
     else:
-        print("\n✗ Samba is not installed or running")
-        print("\nREQUIRED SETUP:")
-        print("1. Install samba package: pacman -S samba")
-        print("2. Enable services:")
-        print("   - systemctl enable smb")
+        fn.log_error("Samba is not installed or running")
+        fn.debug_print("REQUIRED SETUP:")
+        fn.debug_print("1. Install samba package: pacman -S samba")
+        fn.debug_print("2. Enable services:")
+        fn.debug_print("   - systemctl enable smb")
         if not nmb_active:
-            print("   - systemctl enable nmb")
+            fn.debug_print("   - systemctl enable nmb")
         if not avahi_active:
-            print("   - systemctl enable avahi-daemon")
-        print("3. Start services: systemctl start smb (and nmb/avahi if needed)")
-        print("\nFor help, run: sudo systemctl status smb")
-        print("=" * 70 + "\n")
+            fn.debug_print("   - systemctl enable avahi-daemon")
+        fn.debug_print("3. Start services: systemctl start smb (and nmb/avahi if needed)")
+        fn.debug_print("For help, run: sudo systemctl status smb")
         GLib.idle_add(
             fn.show_in_app_notification,
             self,

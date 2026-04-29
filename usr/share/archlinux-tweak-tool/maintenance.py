@@ -81,17 +81,17 @@ def _set_key_value(path, key, value, sep="=", quoted=False, section=None):
 
 def _set_index_theme(path, cursor):
     """Set Inherits in an XCursor index.theme file."""
-    print(f"[INFO] Setting cursor '{cursor}' in {path}")
+    fn.debug_print(f"[INFO] Setting cursor '{cursor}' in {path}")
     lines = []
     found_section = False
     found_inherits = False
 
     if fn.path.isfile(path):
-        print(f"[INFO] File exists: {path}")
+        fn.debug_print(f"[INFO] File exists: {path}")
         with open(path, "r", encoding="utf-8") as f:
             lines = f.readlines()
     else:
-        print(f"[INFO] File does not exist, will create: {path}")
+        fn.debug_print(f"[INFO] File does not exist, will create: {path}")
 
     for pos, line in enumerate(lines):
         stripped = line.strip()
@@ -100,33 +100,33 @@ def _set_index_theme(path, cursor):
         if stripped.startswith("Inherits="):
             lines[pos] = "Inherits=" + cursor + "\n"
             found_inherits = True
-            print(f"[INFO] Updated Inherits line with cursor '{cursor}'")
+            fn.debug_print(f"[INFO] Updated Inherits line with cursor '{cursor}'")
             break
 
     if not found_section:
         if lines and lines[-1].strip():
             lines.append("\n")
         lines.append("[Icon Theme]\n")
-        print("[INFO] Added [Icon Theme] section")
+        fn.debug_print("[INFO] Added [Icon Theme] section")
 
     if not found_inherits:
         lines.append("Inherits=" + cursor + "\n")
-        print(f"[INFO] Added Inherits line with cursor '{cursor}'")
+        fn.debug_print(f"[INFO] Added Inherits line with cursor '{cursor}'")
 
     _write_lines(path, lines)
-    print(f"[INFO] Successfully saved cursor '{cursor}' to {path}")
+    fn.debug_print(f"[INFO] Successfully saved cursor '{cursor}' to {path}")
     return path
 
 
 def _set_xfce_cursor(path, cursor):
     """Set XFCE xsettings CursorThemeName, creating the property if needed."""
-    print(f"[INFO] Setting XFCE cursor '{cursor}' in {path}")
+    fn.debug_print(f"[INFO] Setting XFCE cursor '{cursor}' in {path}")
     if fn.path.isfile(path):
-        print(f"[INFO] File exists: {path}")
+        fn.debug_print(f"[INFO] File exists: {path}")
         tree = ET.parse(path)
         root = tree.getroot()
     else:
-        print(f"[INFO] File does not exist, creating: {path}")
+        fn.debug_print(f"[INFO] File does not exist, creating: {path}")
         _ensure_dir(path)
         root = ET.Element("channel", name="xsettings", version="1.0")
         tree = ET.ElementTree(root)
@@ -137,7 +137,7 @@ def _set_xfce_cursor(path, cursor):
             net = child
             break
     if net is None:
-        print("[INFO] Creating Net property in XFCE config")
+        fn.debug_print("[INFO] Creating Net property in XFCE config")
         net = ET.SubElement(root, "property", name="Net", type="empty")
 
     cursor_prop = None
@@ -146,37 +146,37 @@ def _set_xfce_cursor(path, cursor):
             cursor_prop = child
             break
     if cursor_prop is None:
-        print("[INFO] Creating CursorThemeName property in XFCE config")
+        fn.debug_print("[INFO] Creating CursorThemeName property in XFCE config")
         cursor_prop = ET.SubElement(net, "property", name="CursorThemeName")
 
     cursor_prop.set("type", "string")
     cursor_prop.set("value", cursor)
-    print(f"[INFO] Set CursorThemeName to '{cursor}'")
+    fn.debug_print(f"[INFO] Set CursorThemeName to '{cursor}'")
     tree.write(path, encoding="unicode", xml_declaration=True)
     if path.startswith(fn.home):
         fn.permissions(path)
-    print(f"[INFO] Successfully saved XFCE cursor '{cursor}' to {path}")
+    fn.debug_print(f"[INFO] Successfully saved XFCE cursor '{cursor}' to {path}")
     return path
 
 
 def _set_gsettings_cursor(cursor):
     """Set cursor through gsettings when available."""
-    print(f"[INFO] Setting gsettings cursor '{cursor}'")
+    fn.debug_print(f"[INFO] Setting gsettings cursor '{cursor}'")
     username = fn.sudo_username
     pkexec_uid = fn.os.environ.get("PKEXEC_UID")
 
     if pkexec_uid:
         try:
             username = fn.pwd.getpwuid(int(pkexec_uid)).pw_name
-            print(f"[INFO] Using PKEXEC_UID username: {username}")
+            fn.debug_print(f"[INFO] Using PKEXEC_UID username: {username}")
         except Exception as error:
-            print(f"[ERROR] Could not get username from PKEXEC_UID: {error}")
+            fn.debug_print(f"[ERROR] Could not get username from PKEXEC_UID: {error}")
 
     try:
         user_info = fn.pwd.getpwnam(username)
         uid = user_info.pw_uid
         home = user_info.pw_dir
-        print(f"[INFO] Setting cursor for user: {username} (uid: {uid})")
+        fn.debug_print(f"[INFO] Setting cursor for user: {username} (uid: {uid})")
         env = [
             "HOME=" + home,
             "XDG_RUNTIME_DIR=/run/user/" + str(uid),
@@ -194,7 +194,7 @@ def _set_gsettings_cursor(cursor):
         else:
             command = ["env"] + env + command
 
-        print(f"[INFO] Executing gsettings command for org.gnome.desktop.interface")
+        fn.debug_print(f"[INFO] Executing gsettings command for org.gnome.desktop.interface")
         result = fn.subprocess.run(
             command,
             check=False,
@@ -202,30 +202,30 @@ def _set_gsettings_cursor(cursor):
             stderr=fn.subprocess.STDOUT,
         )
         if result.returncode == 0:
-            print(f"[INFO] Successfully set gsettings cursor to '{cursor}'")
+            fn.debug_print(f"[INFO] Successfully set gsettings cursor to '{cursor}'")
             return "gsettings:" + username + ":org.gnome.desktop.interface"
         else:
             output = result.stdout.decode(errors="ignore")
-            print(f"[ERROR] gsettings failed: {output}")
+            fn.debug_print(f"[ERROR] gsettings failed: {output}")
     except Exception as error:
-        print(f"[ERROR] gsettings error: {error}")
+        fn.debug_print(f"[ERROR] gsettings error: {error}")
     return None
 
 
 def _set_plasma_cursor(cursor):
     """Set KDE Plasma cursor configuration."""
-    print(f"[INFO] Setting KDE Plasma cursor '{cursor}'")
+    fn.debug_print(f"[INFO] Setting KDE Plasma cursor '{cursor}'")
     path = fn.home + "/.config/kcminputrc"
-    print(f"[INFO] Updating KDE Plasma config: {path}")
+    fn.debug_print(f"[INFO] Updating KDE Plasma config: {path}")
     result = _set_key_value(path, "cursorTheme", cursor, section="Mouse")
     if result:
-        print(f"[INFO] Successfully set KDE Plasma cursor to '{cursor}'")
+        fn.debug_print(f"[INFO] Successfully set KDE Plasma cursor to '{cursor}'")
     return result
 
 
 def _set_sddm_cursor(cursor):
     """Set SDDM CursorTheme in existing config files."""
-    print(f"[INFO] Setting SDDM cursor '{cursor}'")
+    fn.debug_print(f"[INFO] Setting SDDM cursor '{cursor}'")
     paths = [
         fn.sddm_default_d2,
         fn.sddm_default_d1,
@@ -240,7 +240,7 @@ def _set_sddm_cursor(cursor):
         if not fn.path.isfile(path):
             continue
 
-        print(f"[INFO] Processing SDDM config: {path}")
+        fn.debug_print(f"[INFO] Processing SDDM config: {path}")
         existing_paths.append(path)
         with open(path, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -251,12 +251,12 @@ def _set_sddm_cursor(cursor):
             if stripped.startswith(key) or stripped.startswith("CursorTheme ="):
                 lines[pos] = new_line
                 has_cursor = True
-                print(f"[INFO] Updated CursorTheme in {path}")
+                fn.debug_print(f"[INFO] Updated CursorTheme in {path}")
 
         if has_cursor:
             _write_lines(path, lines)
             changed.append(path)
-            print(f"[INFO] Successfully saved SDDM cursor '{cursor}' to {path}")
+            fn.debug_print(f"[INFO] Successfully saved SDDM cursor '{cursor}' to {path}")
 
     if changed or not existing_paths:
         return changed
@@ -312,7 +312,7 @@ def get_installed_sessions():
                                 if desktop in value:
                                     sessions.add(desktop)
             except Exception as error:
-                print(error)
+                fn.debug_print(error)
 
     return sessions
 
@@ -325,7 +325,7 @@ def check_cursor_global(lists, value):
             val = lists[pos].strip()
             return val
         except Exception as error:
-            print(error)
+            fn.debug_print(error)
 
 
 def set_global_cursor(self, cursor):
@@ -334,25 +334,25 @@ def set_global_cursor(self, cursor):
         fn.show_in_app_notification(self, "Select a cursor theme first")
         return
 
-    print(f"[INFO] Starting global cursor application: {cursor}")
+    fn.debug_print(f"[INFO] Starting global cursor application: {cursor}")
     changed = []
     failed = []
     sessions = get_installed_sessions()
-    print(f"[INFO] Detected installed sessions: {', '.join(sorted(sessions)) or 'none'}")
+    fn.debug_print(f"[INFO] Detected installed sessions: {', '.join(sorted(sessions)) or 'none'}")
 
     def apply_target(label, target, *args, **kwargs):
         try:
-            print(f"[INFO] Applying cursor to {label}...")
+            fn.debug_print(f"[INFO] Applying cursor to {label}...")
             result = target(*args, **kwargs)
             if result:
                 if isinstance(result, list):
                     changed.extend(result)
                 else:
                     changed.append(result)
-            print(f"[INFO] Successfully applied cursor to {label}")
+            fn.debug_print(f"[INFO] Successfully applied cursor to {label}")
         except Exception as error:
             failed.append(label)
-            print(f"[ERROR] Failed to apply cursor to {label}: {error}")
+            fn.debug_print(f"[ERROR] Failed to apply cursor to {label}: {error}")
 
     apply_target("system xcursor", _set_index_theme, fn.icons_default, cursor)
     apply_target(
@@ -397,14 +397,14 @@ def set_global_cursor(self, cursor):
     if fn.path.exists("/usr/bin/sddm"):
         apply_target("sddm", _set_sddm_cursor, cursor)
 
-    print("=" * 70)
-    print(f"[INFO] Cursor theme successfully saved: {cursor}")
-    print(f"[INFO] Modified locations:")
+    fn.debug_print("=" * 70)
+    fn.debug_print(f"[INFO] Cursor theme successfully saved: {cursor}")
+    fn.debug_print(f"[INFO] Modified locations:")
     for target in changed:
-        print(f"[INFO]  - {target}")
+        fn.debug_print(f"[INFO]  - {target}")
     if failed:
-        print(f"[WARNING] Failed cursor targets: {', '.join(failed)}")
-    print("=" * 70)
+        fn.debug_print(f"[WARNING] Failed cursor targets: {', '.join(failed)}")
+    fn.debug_print("=" * 70)
 
     if changed:
         GLib.idle_add(
@@ -659,7 +659,7 @@ def on_click_probe(self, widget):
     try:
         GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-probe; read -p \"Press Enter to close...\"'",
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/kiro/bin/probe; read -p \"Press Enter to close...\"'",
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -763,7 +763,7 @@ def on_click_fix_sddm_conf(self, widget):
     fn.log_subsection("Fixing SDDM configuration...")
     fn.install_package(self, "alacritty")
     try:
-        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/arco/bin/arcolinux-fix-sddm-config"
+        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/kiro/bin/fix-sddm-config"
         fn.subprocess.call(
             command,
             shell=True,

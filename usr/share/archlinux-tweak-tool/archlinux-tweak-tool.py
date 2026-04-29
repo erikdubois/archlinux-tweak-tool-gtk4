@@ -65,66 +65,17 @@ DEBUG = False
 
 class Main(Gtk.ApplicationWindow):
     def __init__(self, app):
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("If you have errors, report it on the github")
-        print("https://github.com/erikdubois/archlinux-tweak-tool-gyk4")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("Following distros are supported:")
-        print(" - Arch Linux    - https://archlinux.org/")
-        print(" - ArchBang      - https://archbang.org/")
-        print(" - Archcraft     - https://archcraft.io/")
-        print(" - Archman       - https://archman.org/")
-        print(" - Artix         - https://artixlinux.org/")
-        print(" - Axyl          - https://axyl-os.github.io/")
-        print(" - BerserkerOS   - https://berserkarch.xyz/")
-        print(" - BigLinux      - https://www.biglinux.com.br/")
-        print(" - BlendOS       - https://blendos.co/")
-        print(" - Bluestar      - https://sourceforge.net/projects/bluestarlinux/")
-        print(" - CachyOS       - https://cachyos.org/")
-        print(" - Calam-arch    - https://sourceforge.net/projects/blue-arch-installer/")
-        print(" - Crystal Linux - https://getcryst.al/")
-        print(" - EndeavourOS   - https://endeavouros.com/")
-        print(" - Garuda        - https://garudalinux.org/")
-        print(" - Liya          - https://sourceforge.net/projects/liya-2024/")
-        print(" - LinuxHub Prime - https://linuxhub.link/")
-        print(" - Mabox         - https://maboxlinux.org/")
-        print(" - Manjaro       - https://manjaro.org/")
-        print(" - Nyarch        - https://nyarchlinux.moe/")
-        print(" - ParchLinux    - https://parchlinux.ir/")
-        print(" - PrismLinux    - https://www.prismlinux.org/")
-        print(" - RebornOS      - https://rebornos.org/")
-        print(" - StormOS       - https://sourceforge.net/projects/hackman-linux/")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("Other Arch Linux based distros will be visited later")
-        print("Adding repositories should be done with great care - they can conflict")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("We make backups of files related to the ATT.")
-        print("You can recognize them by the extension .bak or .back")
-        print("If we have a reset button, the backup file will be used")
-        print("If you have errors, because of the login managers")
-        print("You can try running one of these scripts:")
-        print("Run fix-sddm-conf")
-        print("You can receive ATT support on https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("[INFO] : pkgver = pkgversion")
-        print("[INFO] : pkgrel = pkgrelease")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-        print("[INFO] : Distro = " + fn.distr)
-        print(
-            "---------------------------------------------------------------------------"
-        )
+        print("-" * 75)
+        print("Arch Linux Tweak Tool - Error reporting: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
+        print("-" * 75)
+        print("Supported distributions: Arch, ArchBang, Archcraft, Archman, Artix, Axyl,")
+        print("BerserkerOS, BigLinux, BlendOS, Bluestar, CachyOS, Calam-arch, Crystal Linux,")
+        print("EndeavourOS, Garuda, Liya, LinuxHub Prime, Mabox, Manjaro, Nyarch, ParchLinux,")
+        print("PrismLinux, RebornOS, StormOS (other Arch-based distros supported)")
+        print("-" * 75)
+        print("Backups: Files modified by ATT are backed up (.bak extension)")
+        print("Support: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
+        print("-" * 75)
 
         _gtk_theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
         if not _gtk_theme:
@@ -141,27 +92,18 @@ class Main(Gtk.ApplicationWindow):
             is_dark = _gtk_theme.lower().endswith("-dark")
             base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
             dark_str = " (dark mode)" if is_dark else ""
-            print("[INFO] : Theme = " + base_theme + dark_str)
+            print(f"[System] Distro={fn.distr} | Theme={base_theme}{dark_str} | User={fn.sudo_username}", flush=True)
         else:
-            print("[INFO] : Theme = not set")
-        print(
-            "---------------------------------------------------------------------------"
-        )
-
-        print("[INFO] : User = " + fn.sudo_username)
+            print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
         fn.findgroup()
-        print(
-            "---------------------------------------------------------------------------"
-        )
         if DEBUG:
-            print("[DEBUG] Debug mode enabled")
+            fn.debug_print("[DEBUG] Debug mode enabled")
         super().__init__(application=app, title="Arch Linux Tweak Tool")
         self.connect("close-request", self.on_close)
         self.set_default_size(1100, 920)
 
         self.opened = True
         self.firstrun = True
-        # self.desktop = ""
         self.timeout_id = None
 
         self.desktop_status = Gtk.Label()
@@ -248,53 +190,28 @@ class Main(Gtk.ApplicationWindow):
         imports_time = time.time()
         fn.debug_print(f"Imports completed in {imports_time - startup_start:.3f}s")
 
-        # Ensure application directories exist first
+        # Ensure directories exist before building GUI
         functions_makedir.ensure_app_dirs()
-
-        # Ensure root config directories exist
         functions_makedir.ensure_root_config_dirs()
 
-        # Backup GTK config from user home to root
-        functions_backup.backup_gtk_config()
-
-        # Create .bak backups of system and user configuration files
-        functions_backup.backup_system_configs()
-        functions_backup.backup_user_configs()
-
-        # Fix directory permissions (must be last)
-        functions_startup.fix_permissions()
-
-        init_time = time.time()
-        fn.debug_print(f"Initialization (dirs, backups, permissions) completed in {init_time - imports_time:.3f}s")
+        makedirs_time = time.time()
+        fn.debug_print(f"Makedirs completed in {makedirs_time - imports_time:.3f}s")
 
         # Build and display GUI
         gui.gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib)
 
-        # Window is now responsive to user interaction
-        gui_complete_time = time.time()
-        fn.debug_print(f"[RESPONSIVE] Window becomes interactive after {gui_complete_time - init_time:.3f}s")
-
-        try:
-            self.present()
-        except Exception:
-            pass
-
-        gui_time = time.time()
-        fn.debug_print(f"GUI creation and display completed in {gui_time - init_time:.3f}s")
-
-        # Set initializing flag to suppress logging during switch initialization
-        # Individual pages will handle switch initialization via lazy loading
         self.initializing = True
 
         if not fn.path.isfile("/tmp/att.lock"):
             with open("/tmp/att.lock", "w", encoding="utf-8") as f:
                 f.write("")
 
-        if not fn.path.isfile("/tmp/att.lock"):
-            with open("/tmp/att.lock", "w", encoding="utf8") as f:
-                f.write("")
+        try:
+            self.present()
+        except Exception:
+            pass
 
-        # Cleanup splash screen
+        # Destroy splash immediately after window is presented
         if getattr(self, "_splash", None) is not None:
             try:
                 self._splash.destroy()
@@ -302,11 +219,24 @@ class Main(Gtk.ApplicationWindow):
                 pass
             self._splash = None
 
-        total_time = time.time()
-        print(f"[INFO] Total startup time: {total_time - startup_start:.3f}s")
-        fn.debug_print(f"Total startup time: {total_time - startup_start:.3f}s")
+        gui_time = time.time()
+        fn.debug_print(f"[RESPONSIVE] Window visible after {gui_time - startup_start:.3f}s")
 
-        # Returning False removes the idle callback.
+        # Defer backups and permissions to after window is visible
+        GLib.idle_add(self._finish_background_init, startup_start, priority=GLib.PRIORITY_LOW)
+
+        return False
+
+    def _finish_background_init(self, startup_start):
+        """Run backups and permission fixes after the window is already visible."""
+        functions_backup.backup_gtk_config()
+        functions_backup.backup_system_configs()
+        functions_backup.backup_user_configs()
+        functions_startup.fix_permissions()
+
+        total_time = time.time()
+        fn.debug_print(f"[INFO] Total startup time (incl. background init): {total_time - startup_start:.3f}s")
+
         return False
 
     # All feature callbacks have been extracted to separate modules
@@ -340,7 +270,7 @@ _app_ref = None
 
 
 def signal_handler(sig, frame):
-    print("\nATT is Closing.")
+    fn.debug_print("\nATT is Closing.")
     fn.unlink("/tmp/att.lock")
     if _app_ref is not None:
         _app_ref.quit()
@@ -348,7 +278,7 @@ def signal_handler(sig, frame):
 
 class ATTApplication(Gtk.Application):
     def __init__(self):
-        super().__init__(application_id="org.arcolinux.archlinux-tweak-tool")
+        super().__init__(application_id="org.kiro.archlinux-tweak-tool")
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):
@@ -464,8 +394,8 @@ class ATTApplication(Gtk.Application):
                 else:
                     fn.unlink("/tmp/att.lock")
             except Exception:
-                print("Make sure there is just one instance of ArchLinux Tweak Tool running")
-                print("Then you can restart the application")
+                fn.debug_print("Make sure there is just one instance of ArchLinux Tweak Tool running")
+                fn.debug_print("Then you can restart the application")
 
         app.quit()
 

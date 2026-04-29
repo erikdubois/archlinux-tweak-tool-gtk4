@@ -221,6 +221,9 @@ xfce4_terminal_config = home + "/.config/xfce4/terminal/terminalrc"
 alacritty_config = home + "/.config/alacritty/alacritty.toml"
 alacritty_config_dir = home + "/.config/alacritty"
 fastfetch_config = home + "/.config/fastfetch/config.jsonc"
+fastfetch_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/fastfetch/config.jsonc"
+zshrc_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/.zshrc"
+bashrc_kiro = "/usr/share/archlinux-tweak-tool/data/kiro/.bashrc"
 nsswitch_config = "/etc/nsswitch.conf"
 bd = ".att_backups"
 config = home + "/.config/archlinux-tweak-tool/settings.ini"
@@ -356,7 +359,7 @@ def get_lines(files):
                 f.close()
             return lines
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def get_position(lists, value):
@@ -426,20 +429,20 @@ def copytree(self, src, dst, symlinks=False, ignore=None):  # noqa
             try:
                 shutil.rmtree(d)
             except Exception as error:
-                print(error)
+                debug_print(error)
                 unlink(d)
         if path.isdir(s):
             try:
                 shutil.copytree(s, d, symlinks, ignore)
             except Exception as error:
-                print(error)
-                print("ERROR2")
+                debug_print(error)
+                debug_print("ERROR2")
                 self.ecode = 1
         else:
             try:
                 shutil.copy2(s, d)
             except:  # noqa
-                print("ERROR3")
+                debug_print("ERROR3")
                 self.ecode = 1
 
 
@@ -555,7 +558,7 @@ def list_users(filename):  # noqa
             data.sort()
             return data
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def check_group(group):
@@ -572,7 +575,7 @@ def check_group(group):
             else:
                 return False
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def check_systemd_boot():
@@ -610,7 +613,7 @@ def permissions(dst):
 
         subprocess.call(["chown", "-R", sudo_username + ":" + group, dst], shell=False)
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 def findgroup():
     try:
@@ -634,10 +637,10 @@ def findgroup():
         # Ensure the group is retrieved
         if not group:
             raise ValueError(f"Could not determine group for user {sudo_username}.")
-        print("[INFO] : Group = " + group)
+        debug_print("[INFO] : Group = " + group)
 
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 # =====================================================
@@ -822,40 +825,40 @@ def load_nemesis_packages():
         if path.exists(nemesis_file):
             with open(nemesis_file, 'r') as f:
                 _nemesis_packages_cache = set(line.strip() for line in f if line.strip())
-            print(f"[INFO] Loaded {len(_nemesis_packages_cache)} nemesis packages from {nemesis_file}")
+            debug_print(f"[INFO] Loaded {len(_nemesis_packages_cache)} nemesis packages from {nemesis_file}")
         else:
-            print(f"[INFO] nemesis_packages.txt not found at {nemesis_file}")
+            debug_print(f"[INFO] nemesis_packages.txt not found at {nemesis_file}")
     except Exception as e:
-        print(f"[ERROR] Failed to load nemesis packages: {e}")
+        debug_print(f"[ERROR] Failed to load nemesis packages: {e}")
 
     return _nemesis_packages_cache
 
 
 def find_package_repo(package_name):
     """Determine which repo a package belongs to (nemesis_repo or chaotic-aur)"""
-    print(f"[INFO] find_package_repo() called for: {package_name}")
+    debug_print(f"[INFO] find_package_repo() called for: {package_name}")
 
     nemesis_packages = load_nemesis_packages()
     if package_name in nemesis_packages:
-        print(f"[INFO] Found {package_name} in nemesis_repo")
+        debug_print(f"[INFO] Found {package_name} in nemesis_repo")
         return "nemesis_repo"
 
-    print(f"[INFO] Package {package_name} not in nemesis_repo, assuming chaotic-aur")
+    debug_print(f"[INFO] Package {package_name} not in nemesis_repo, assuming chaotic-aur")
     return "chaotic-aur"
 
 
 def check_missing_repo_error(self, error_msg, package):
     """Check if installation error is due to missing repo and show appropriate error"""
-    print(f"\n[INFO] check_missing_repo_error() called")
-    print(f"[INFO] Package: {package}")
-    print(f"[INFO] Error message length: {len(error_msg)}")
-    print(f"[INFO] Error message (first 200 chars): {error_msg[:200]}")
+    debug_print(f"\n[INFO] check_missing_repo_error() called")
+    debug_print(f"[INFO] Package: {package}")
+    debug_print(f"[INFO] Error message length: {len(error_msg)}")
+    debug_print(f"[INFO] Error message (first 200 chars): {error_msg[:200]}")
 
     if "target not found" not in error_msg.lower():
-        print(f"[INFO] 'target not found' not in error message, returning False")
+        debug_print(f"[INFO] 'target not found' not in error message, returning False")
         return False
 
-    print(f"[INFO] 'target not found' detected, querying repo for {package}")
+    debug_print(f"[INFO] 'target not found' detected, querying repo for {package}")
     repo = find_package_repo(package)
 
     if repo:
@@ -863,7 +866,7 @@ def check_missing_repo_error(self, error_msg, package):
     else:
         notification = "Package not found. Please enable nemesis_repo or chaotic-aur in pacman.conf"
 
-    print(f"[INFO] Showing notification: {notification}")
+    debug_print(f"[INFO] Showing notification: {notification}")
     GLib.idle_add(show_in_app_notification, self, notification)
     return True
 
@@ -911,22 +914,22 @@ def install_local_package(self, package):
             text=True
         )
         if result.returncode == 0:
-            print(f"[INFO] {package} is now installed")
+            debug_print(f"[INFO] {package} is now installed")
             GLib.idle_add(show_in_app_notification, self, package + " is now installed")
         else:
             error_output = result.stderr if result.stderr else result.stdout
-            print(f"[ERROR] Installation failed with exit code: {result.returncode}")
-            print(f"[ERROR] Pacman output: {error_output}")
+            debug_print(f"[ERROR] Installation failed with exit code: {result.returncode}")
+            debug_print(f"[ERROR] Pacman output: {error_output}")
             GLib.idle_add(show_in_app_notification, self, f"Installation failed: {error_output[:100]}")
     except Exception as error:
-        print(f"[ERROR] Installation error: {error}")
+        debug_print(f"[ERROR] Installation error: {error}")
         GLib.idle_add(show_in_app_notification, self, f"Installation error: {error}")
 
 
 def clear_skel_directory(path="/etc/skel"):
     # Ensure the provided path is indeed /etc/skel or a user-defined path
     if not os.path.exists(path):
-        print(f"The directory {path} does not exist.")
+        debug_print(f"The directory {path} does not exist.")
         return
 
     # Iterate over all the items in the directory
@@ -937,12 +940,12 @@ def clear_skel_directory(path="/etc/skel"):
         try:
             if os.path.isfile(item_path) or os.path.islink(item_path):
                 os.unlink(item_path)  # Remove the file or symlink
-                print(f"Removed file: {item_path}")
+                debug_print(f"Removed file: {item_path}")
             elif os.path.isdir(item_path):
                 shutil.rmtree(item_path)  # Remove the directory and its content
-                print(f"Removed directory: {item_path}")
+                debug_print(f"Removed directory: {item_path}")
         except Exception as e:
-            print(f"Failed to remove {item_path}. Reason: {e}")
+            debug_print(f"Failed to remove {item_path}. Reason: {e}")
 
 
 def remove_file(file_path):
@@ -1056,36 +1059,6 @@ def remove_package_dd(self, package):
         GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
-def install_arcolinux(self):
-    """Add the ArcoLinux repos to /etc/pacman.conf if none are present."""
-    if not check_content("arcolinux", pacman):
-
-        print("[INFO] : Adding ArcoLinux repos")
-        try:
-            with open(pacman, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-        except Exception as error:
-            print(error)
-            return  # Exit early if read fails
-
-        # Repos to be added at the end
-        text = (
-            "\n\n"
-            + arepo
-            + "\n\n"
-            + a3drepo
-            + "\n"
-        )
-
-        lines.append(text)
-
-        try:
-            with open(pacman, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-        except Exception as error:
-            print(error)
-
-
 def update_repos(self):
     try:
         command = "pacman -Sy"
@@ -1096,7 +1069,7 @@ def update_repos(self):
             stderr=subprocess.PIPE,
         )
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 # =====================================================
@@ -1123,22 +1096,22 @@ def ensure_nodejs_installed():
         if path.exists(npm_path):
             return True
 
-    print("[INFO] Node.js not found, installing...")
+    debug_print("[INFO] Node.js not found, installing...")
     install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs", "npm"],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
-    print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
-    print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
+    debug_print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
+    debug_print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
+    debug_print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
 
     time.sleep(2)
 
     for npm_path in npm_paths:
         if path.exists(npm_path):
-            print("[INFO] Node.js installed successfully")
+            debug_print("[INFO] Node.js installed successfully")
             return True
 
-    print("[ERROR] Node.js/npm installation failed - npm not found in common paths")
+    debug_print("[ERROR] Node.js/npm installation failed - npm not found in common paths")
     return False
 
 
@@ -1149,81 +1122,81 @@ def ensure_git_installed():
     if shutil.which("git"):
         return True
 
-    print("[INFO] Git not found, installing...")
+    debug_print("[INFO] Git not found, installing...")
     install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "git"],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
-    print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
-    print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
+    debug_print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
+    debug_print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
+    debug_print(f"[DEBUG] pacman returncode: {install_proc.returncode}")
 
     if install_proc.returncode != 0:
-        print(f"[ERROR] Failed to install Git: {install_proc.stderr}")
+        debug_print(f"[ERROR] Failed to install Git: {install_proc.stderr}")
         return False
 
     time.sleep(1)
 
     if shutil.which("git"):
-        print("[INFO] Git installed successfully")
+        debug_print("[INFO] Git installed successfully")
         return True
     else:
-        print("[ERROR] Git installed but not found in PATH")
+        debug_print("[ERROR] Git installed but not found in PATH")
         return False
 
 
 def remove_debug_from_makepkg_conf():
     makepkg_conf = "/etc/makepkg.conf"
     try:
-        print(f"[INFO] Starting removal of debug from {makepkg_conf}")
+        debug_print(f"[INFO] Starting removal of debug from {makepkg_conf}")
 
         if not path.exists(makepkg_conf):
-            print(f"[ERROR] {makepkg_conf} not found")
+            debug_print(f"[ERROR] {makepkg_conf} not found")
             return False
 
-        print(f"[DEBUG] Reading {makepkg_conf}...")
+        debug_print(f"[DEBUG] Reading {makepkg_conf}...")
         with open(makepkg_conf, 'r') as f:
             lines = f.readlines()
 
-        print(f"[DEBUG] Total lines read: {len(lines)}")
+        debug_print(f"[DEBUG] Total lines read: {len(lines)}")
 
         modified = False
         already_fixed = False
         for i, line in enumerate(lines):
             if line.startswith("OPTIONS="):
-                print(f"[DEBUG] Found OPTIONS line at line {i+1}")
-                print(f"[DEBUG] Original line: {line.strip()}")
+                debug_print(f"[DEBUG] Found OPTIONS line at line {i+1}")
+                debug_print(f"[DEBUG] Original line: {line.strip()}")
 
                 if " debug " in line or line.endswith("debug)\n"):
                     lines[i] = line.replace(" debug ", " !debug ")
                     lines[i] = lines[i].replace("debug)", "!debug)")
                     modified = True
-                    print(f"[DEBUG] Modified line: {lines[i].strip()}")
-                    print(f"[INFO] Successfully replaced debug with !debug")
+                    debug_print(f"[DEBUG] Modified line: {lines[i].strip()}")
+                    debug_print(f"[INFO] Successfully replaced debug with !debug")
                 elif " !debug " in line or line.endswith("!debug)\n"):
-                    print(f"[DEBUG] debug is already disabled (!debug)")
+                    debug_print(f"[DEBUG] debug is already disabled (!debug)")
                     already_fixed = True
                 else:
-                    print(f"[DEBUG] debug not found in OPTIONS line")
+                    debug_print(f"[DEBUG] debug not found in OPTIONS line")
                 break
 
         if modified:
-            print(f"[DEBUG] Writing changes back to {makepkg_conf}...")
+            debug_print(f"[DEBUG] Writing changes back to {makepkg_conf}...")
             with open(makepkg_conf, 'w') as f:
                 f.writelines(lines)
-            print(f"[INFO] Successfully removed debug from /etc/makepkg.conf")
+            debug_print(f"[INFO] Successfully removed debug from /etc/makepkg.conf")
             return True
         elif already_fixed:
-            print(f"[INFO] Debug is already disabled (!debug) in {makepkg_conf}")
+            debug_print(f"[INFO] Debug is already disabled (!debug) in {makepkg_conf}")
             return 2
         else:
-            print(f"[WARNING] debug not found in OPTIONS line, no changes made")
+            debug_print(f"[WARNING] debug not found in OPTIONS line, no changes made")
             return False
 
     except PermissionError:
-        print(f"[ERROR] Permission denied: need root access to edit {makepkg_conf}")
+        debug_print(f"[ERROR] Permission denied: need root access to edit {makepkg_conf}")
         return False
     except Exception as e:
-        print(f"[ERROR] Failed to modify {makepkg_conf}: {e}")
+        debug_print(f"[ERROR] Failed to modify {makepkg_conf}: {e}")
         return False
 
 
@@ -1348,11 +1321,11 @@ read -p 'Press Enter to close...'
 def launch_aur_install_in_terminal(aur_helper, package, username=None):
     import shutil
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
     if username is None:
         username = sudo_username
@@ -1363,11 +1336,11 @@ def launch_aur_install_in_terminal(aur_helper, package, username=None):
 def launch_aur_remove_in_terminal(aur_helper, package, username=None):
     import shutil
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
     if username is None:
         username = sudo_username
@@ -1378,14 +1351,14 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
 def launch_npm_install_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
     if not ensure_nodejs_installed():
-        print("[ERROR] Node.js installation failed")
+        debug_print("[ERROR] Node.js installation failed")
         return None
     script = f"/usr/bin/npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1394,14 +1367,14 @@ def launch_npm_install_in_terminal(npm_package):
 def launch_npm_remove_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
-        print("[INFO] alacritty not found, installing...")
+        debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
                                      capture_output=True, text=True)
         if install_proc.returncode != 0:
-            print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
+            debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
     if not ensure_nodejs_installed():
-        print("[ERROR] Node.js installation failed")
+        debug_print("[ERROR] Node.js installation failed")
         return None
     script = f"/usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
     return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1448,9 +1421,9 @@ def enable_service(service):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We enabled the following service : " + service)
+        debug_print("We enabled the following service : " + service)
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def restart_service(service):
@@ -1462,9 +1435,9 @@ def restart_service(service):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We restarted the following service (if avalable) : " + service)
+        debug_print("We restarted the following service (if avalable) : " + service)
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def disable_service(service):
@@ -1484,32 +1457,32 @@ def disable_service(service):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We stopped and disabled the following service " + service)
+        debug_print("We stopped and disabled the following service " + service)
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def enable_login_manager(self, loginmanager):
     if check_package_installed(loginmanager):
         try:
             command = "systemctl enable " + loginmanager + ".service -f"
-            print(command)
+            debug_print(command)
             subprocess.call(
                 command.split(" "),
                 shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print(loginmanager + " has been enabled - reboot")
+            debug_print(loginmanager + " has been enabled - reboot")
             GLib.idle_add(
                 show_in_app_notification,
                 self,
                 loginmanager + " has been enabled - reboot",
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
     else:
-        print(loginmanager + " is not installed")
+        debug_print(loginmanager + " is not installed")
         GLib.idle_add(
             show_in_app_notification, self, loginmanager + " is not installed"
         )
@@ -1533,19 +1506,19 @@ def add_autologin_group(self):
                 stderr=subprocess.PIPE,
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
         try:
             subprocess.run(
                 ["gpasswd", "-a", sudo_username, "autologin"], check=True, shell=False
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
 
 
 def install_discovery(self):
     try:
         packages = "avahi nss-mdns gvfs-smb"
-        print(f"[INFO] Opening terminal to install: {packages}")
+        debug_print(f"[INFO] Opening terminal to install: {packages}")
         launch_pacman_install_in_terminal(packages)
 
         command = "systemctl enable avahi-daemon.service -f --now"
@@ -1555,9 +1528,9 @@ def install_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("[INFO] Avahi daemon enabled")
+        debug_print("[INFO] Avahi daemon enabled")
     except Exception as error:
-        print(f"[INFO] Error installing discovery: {error}")
+        debug_print(f"[INFO] Error installing discovery: {error}")
 
 
 def remove_discovery(self):
@@ -1577,7 +1550,7 @@ def remove_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("[INFO] Avahi daemon disabled")
+        debug_print("[INFO] Avahi daemon disabled")
 
         command = "systemctl stop avahi-daemon.socket -f"
         subprocess.call(
@@ -1594,13 +1567,13 @@ def remove_discovery(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("[INFO] Avahi socket disabled")
+        debug_print("[INFO] Avahi socket disabled")
 
         packages = "avahi nss-mdns gvfs-smb"
-        print(f"[INFO] Opening terminal to remove: {packages}")
+        debug_print(f"[INFO] Opening terminal to remove: {packages}")
         launch_pacman_remove_in_terminal(packages)
     except Exception as error:
-        print(f"[INFO] Error removing discovery: {error}")
+        debug_print(f"[INFO] Error removing discovery: {error}")
 
 
 def install_samba(self):
@@ -1619,7 +1592,7 @@ def install_samba(self):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print("Samba and gvfs-smb are now installed")
+            debug_print("Samba and gvfs-smb are now installed")
 
         command = "systemctl enable smb.service -f --now"
         subprocess.call(
@@ -1628,7 +1601,7 @@ def install_samba(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We enabled smb.service")
+        debug_print("We enabled smb.service")
 
         command = "systemctl enable nmb.service -f --now"
         subprocess.call(
@@ -1637,9 +1610,9 @@ def install_samba(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We enabled nmb.service")
+        debug_print("We enabled nmb.service")
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def uninstall_samba(self):
@@ -1651,7 +1624,7 @@ def uninstall_samba(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We disabled smb.service")
+        debug_print("We disabled smb.service")
 
         command = "systemctl disable nmb.service -f --now"
         subprocess.call(
@@ -1660,7 +1633,7 @@ def uninstall_samba(self):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("We disabled nmb.service")
+        debug_print("We disabled nmb.service")
 
         command = "pacman -Rs samba --noconfirm"
         if check_package_installed("samba"):
@@ -1670,7 +1643,7 @@ def uninstall_samba(self):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print("Samba was removed if there were no dependencies")
+            debug_print("Samba was removed if there were no dependencies")
 
         command = "pacman -Rs gvfs-smb --noconfirm"
         if check_package_installed("nss-mdns"):
@@ -1680,9 +1653,9 @@ def uninstall_samba(self):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            print("gvfs-smb was removed")
+            debug_print("gvfs-smb was removed")
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def copy_samba(choice):
@@ -1709,18 +1682,18 @@ def copy_samba(choice):
             val = get_position(lists, "[SAMBASHARE]")
             lists[val + 1] = "path = " + "/home/" + sudo_username + "/Shared\n"
 
-            print("You have choosen to install Samba with an example share")
-            print("We have added a folder called 'Shared' to your home directory")
-            print("You can access this folder from any computer in your network")
-            print("You can write and remove items from the shared folder")
-            print("Reboot or restart smb first")
-            print(lists[val + 1])
+            debug_print("You have choosen to install Samba with an example share")
+            debug_print("We have added a folder called 'Shared' to your home directory")
+            debug_print("You can access this folder from any computer in your network")
+            debug_print("You can write and remove items from the shared folder")
+            debug_print("Reboot or restart smb first")
+            debug_print(lists[val + 1])
 
             with open(samba_config, "w", encoding="utf-8") as f:
                 f.writelines(lists)
                 f.close()
         except Exception as error:
-            print(error)
+            debug_print(error)
 
     if choice == "usershares":
         # make folder
@@ -1741,10 +1714,10 @@ def copy_samba(choice):
                         stderr=subprocess.PIPE,
                     )
                 except Exception as error:
-                    print(error)
+                    debug_print(error)
 
         except Exception as error:
-            print(error)
+            debug_print(error)
 
         # add user to group
         try:
@@ -1756,7 +1729,7 @@ def copy_samba(choice):
                 stderr=subprocess.PIPE,
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
 
         try:
             command = "chown root:sambashare /var/lib/samba/usershares"
@@ -1767,7 +1740,7 @@ def copy_samba(choice):
                 stderr=subprocess.PIPE,
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
 
         try:
             command = "chmod 1770 /var/lib/samba/usershares"
@@ -1778,7 +1751,7 @@ def copy_samba(choice):
                 stderr=subprocess.PIPE,
             )
         except Exception as error:
-            print(error)
+            debug_print(error)
 
 
 def save_samba_config(self):
@@ -1822,25 +1795,25 @@ def save_samba_config(self):
             lists[val + 4] = "public = " + public + "\n"
             lists[val + 5] = "writable = " + writable + "\n"
 
-            print("These lines have been saved at the end of /etc/samba/smb.conf")
-            print("Edit this file to add more shares")
-            print(lists[val])
-            print(lists[val + 1])
-            print(lists[val + 2])
-            print(lists[val + 3])
-            print(lists[val + 4])
-            print(lists[val + 5])
+            debug_print("These lines have been saved at the end of /etc/samba/smb.conf")
+            debug_print("Edit this file to add more shares")
+            debug_print(lists[val])
+            debug_print(lists[val + 1])
+            debug_print(lists[val + 2])
+            debug_print(lists[val + 3])
+            debug_print(lists[val + 4])
+            debug_print(lists[val + 5])
 
             with open(samba_config, "w", encoding="utf-8") as f:
                 f.writelines(lists)
                 f.close()
 
-            print("Smb.conf has been saved")
+            debug_print("Smb.conf has been saved")
             show_in_app_notification(self, "Smb.conf has been saved")
         except:
             pass
     else:
-        print(
+        debug_print(
             "Choose or create your own smb.conf in /etc/samba/smb.conf then change settings"
         )
         show_in_app_notification(self, "Choose or create your own smb.conf")
@@ -1851,7 +1824,7 @@ def create_sddm_k_dir():
         try:
             mkdir(sddm_default_d2_dir)
         except Exception as error:
-            print(error)
+            debug_print(error)
 
 
 # =====================================================
@@ -1887,10 +1860,10 @@ def copy_nsswitch(new_hosts_line):
 
         # Show what changed
         if old_hosts_line:
-            print(f"[INFO] Previous code: {old_hosts_line}")
-            print(f"[INFO] New code:      {new_hosts_line}")
+            debug_print(f"[INFO] Previous code: {old_hosts_line}")
+            debug_print(f"[INFO] New code:      {new_hosts_line}")
     except Exception as e:
-        print(f"[INFO] Error updating nsswitch.conf: {e}")
+        debug_print(f"[INFO] Error updating nsswitch.conf: {e}")
 
 
 # =====================================================
@@ -1907,7 +1880,7 @@ def change_shell(self, shell):
     subprocess.call(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    print("Shell changed to " + shell + " for the user - logout")
+    debug_print("Shell changed to " + shell + " for the user - logout")
     GLib.idle_add(
         show_in_app_notification,
         self,
@@ -1970,7 +1943,7 @@ def get_shell():
         elif output in ("/bin/fish", "/usr/bin/fish"):
             return "fish"
     except Exception as error:
-        print(error)
+        debug_print(error)
 
 
 def get_shell_config():
@@ -2084,7 +2057,7 @@ def set_hblock(self, toggle, state):
 
     except Exception as error:
         messagebox(self, "ERROR!!", str(error))
-        print(error)
+        debug_print(error)
 
 
 def ublock_get_state(self):
@@ -2139,7 +2112,7 @@ def set_firefox_ublock(self, toggle, state):
 
     except Exception as error:
         messagebox(self, "ERROR!!", str(error))
-        print(error)
+        debug_print(error)
 
 
 # =====================================================
@@ -2179,7 +2152,7 @@ def fastfetch_set_backend_value(lists, pos, text, value):
 
 
 def create_log(self):
-    print("Making log in /var/log/archlinux")
+    debug_print("Making log in /var/log/archlinux")
     now = datetime.datetime.now()
     time = now.strftime("%Y-%m-%d-%H-%M-%S")
     destination = att_log_dir + "att-log-" + time
@@ -2396,11 +2369,11 @@ def update_image(self, widget, image, theme_type, att_base, image_width, image_h
         sample_path = att_base + "/images/awesome-sample.jpg"
         preview_path = att_base + "/themer_data/awesomewm/" + name + ".jpg"
     else:
-        print(
+        debug_print(
             "Function update_image passed an incorrect value for theme_type. Value passed was: "
             + theme_type
         )
-        print(
+        debug_print(
             "Remember that the order for using this function is: self, widget, image, theme_type, att_base_path, image_width, image_height."
         )
     if path.isfile(preview_path) and not random_option:

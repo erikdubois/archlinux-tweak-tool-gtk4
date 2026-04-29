@@ -298,11 +298,9 @@ themes</i> you can customize <b>fastfetch</b>"
     def on_quit(widget):
         fn.unlink("/tmp/att.lock")
         self.get_application().quit()
-        print("Thanks for using ArchLinux Tweak Tool")
-        print("Report issues to make it even better")
-        print(
-            "---------------------------------------------------------------------------"
-        )
+        fn.debug_print("Thanks for using ArchLinux Tweak Tool")
+        fn.debug_print("Report issues to make it even better")
+        fn.debug_print("---------------------------------------------------------------------------")
 
     lbl_distro = Gtk.Label(xalign=0)
     lbl_distro.set_markup("Working on\n" + fn.change_distro_label(fn.distr))

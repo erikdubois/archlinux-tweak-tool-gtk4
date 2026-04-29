@@ -32,17 +32,22 @@ def on_remove_bash_completion_clicked(self, widget):
 
 def on_arcolinux_bash_clicked(self, widget):
     fn.log_subsection("Apply ATT Bash Configuration")
+    fn.debug_print(f"  Source : {fn.bashrc_kiro}")
+    fn.debug_print(f"  Target : {fn.bash_config}")
+    fn.debug_print(f"  Exists : {fn.path.isfile(fn.bashrc_kiro)}")
     try:
-        if fn.path.isfile(fn.bashrc_arco):
-            fn.debug_print(f"Copying ATT bashrc from {fn.bashrc_arco}")
-            fn.shutil.copy(fn.bashrc_arco, fn.bash_config)
-            fn.debug_print(f"Setting permissions on {fn.home}/.bashrc")
+        if fn.path.isfile(fn.bashrc_kiro):
+            fn.shutil.copy(fn.bashrc_kiro, fn.bash_config)
+            fn.debug_print(f"  Result : copied successfully")
             fn.permissions(fn.home + "/.bashrc")
-        fn.debug_print("Sourcing shell configuration")
-        fn.source_shell(self)
-        fn.log_success("ATT bash configuration applied")
-        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.bashrc is applied")
+            fn.debug_print(f"  Perms  : permissions set on {fn.bash_config}")
+            fn.log_success("ATT bash configuration applied - open a new terminal to activate")
+            GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.bashrc applied - open new terminal")
+        else:
+            fn.debug_print(f"  Result : source file not found - nothing copied")
+            fn.log_warn("ATT bashrc not found - add .bashrc to data/kiro/")
     except Exception as error:
+        fn.debug_print(f"  Result : FAILED - {error}")
         fn.log_error(f"Failed to apply ATT bash configuration: {error}")
         fn.messagebox(self, "Error", f"Failed to apply bash configuration: {error}")
 
@@ -141,17 +146,21 @@ def on_remove_zsh_syntax_highlighting_clicked(self, widget):
 
 def on_arcolinux_zshrc_clicked(self, widget):
     fn.log_subsection("Apply ATT Zsh Configuration")
+    fn.debug_print(f"  Source : {fn.zshrc_kiro}")
+    fn.debug_print(f"  Target : {fn.zsh_config}")
+    fn.debug_print(f"  Exists : {fn.path.isfile(fn.zshrc_kiro)}")
     try:
-        if fn.path.isfile(fn.zshrc_arco):
-            fn.debug_print(f"Copying ATT zshrc from {fn.zshrc_arco}")
-            fn.shutil.copy(fn.zshrc_arco, fn.zsh_config)
-            fn.debug_print(f"Setting permissions on {fn.home}/.zshrc")
+        if fn.path.isfile(fn.zshrc_kiro):
+            fn.shutil.copy(fn.zshrc_kiro, fn.zsh_config)
+            fn.debug_print(f"  Result : copied successfully")
             fn.permissions(fn.home + "/.zshrc")
-        fn.debug_print("Sourcing shell configuration")
-        fn.source_shell(self)
-        fn.log_success("ATT zsh configuration applied")
-        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.zshrc is applied")
+            fn.debug_print(f"  Perms  : permissions set on {fn.zsh_config}")
+            fn.log_success("ATT zsh configuration applied - open a new terminal to activate")
+            GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.zshrc applied - open new terminal")
+        else:
+            fn.debug_print(f"  Result : source file not found - nothing copied")
     except Exception as error:
+        fn.debug_print(f"  Result : FAILED - {error}")
         fn.log_error(f"Failed to apply ATT zsh configuration: {error}")
         fn.messagebox(self, "Error", f"Failed to apply zsh configuration: {error}")
 
@@ -340,9 +349,9 @@ def on_remove_zsh_syntax_highlighting_clicked(self, widget):
 def on_arcolinux_zshrc_clicked_dup(self, widget):
     fn.log_subsection("Apply ATT Zsh Configuration")
     try:
-        if fn.path.isfile(fn.zshrc_arco):
-            fn.debug_print(f"Copying ATT zshrc from {fn.zshrc_arco}")
-            fn.shutil.copy(fn.zshrc_arco, fn.zsh_config)
+        if fn.path.isfile(fn.zshrc_kiro):
+            fn.debug_print(f"Copying ATT zshrc from {fn.zshrc_kiro}")
+            fn.shutil.copy(fn.zshrc_kiro, fn.zsh_config)
             fn.debug_print(f"Setting permissions on {fn.home}/.zshrc")
             fn.permissions(fn.home + "/.zshrc")
         fn.debug_print("Sourcing shell configuration")
@@ -388,7 +397,7 @@ def on_zsh_reset_full(self, widget):
         else:
             fn.debug_print("Applying default ATT zshrc")
             fn.shutil.copy(
-                "/usr/share/archlinux-tweak-tool/data/arco/.zshrc", fn.home + "/.zshrc"
+                "/usr/share/archlinux-tweak-tool/data/kiro/.zshrc", fn.home + "/.zshrc"
             )
             fn.permissions(fn.home + "/.zshrc")
             fn.log_success("Default zshrc applied")

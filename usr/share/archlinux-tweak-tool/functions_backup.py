@@ -28,7 +28,7 @@ def backup_gtk_config():
                 fn.debug_print("/root/.config/gtk-3.0 is a symlink, skipping")
         except Exception as error:
             fn.debug_print(f"Error backing up gtk-3.0: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"GTK-3.0 config not found at {fn.home}/.config/gtk-3.0")
 
@@ -47,7 +47,7 @@ def backup_gtk_config():
                 fn.debug_print("/root/.config/gtk-4.0 is a symlink, skipping")
         except Exception as error:
             fn.debug_print(f"Error backing up gtk-4.0: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print(f"GTK-4.0 config not found at {fn.home}/.config/gtk-4.0/")
 
@@ -68,7 +68,7 @@ def backup_gtk_config():
                 fn.debug_print("/root/.config/xsettingsd/ is a symlink, skipping")
         except Exception as error:
             fn.debug_print(f"Error backing up xsettingsd: {error}")
-            print(error)
+            fn.log_error(str(error))
     else:
         fn.debug_print("xsettingsd config not found")
 
@@ -93,7 +93,7 @@ def backup_system_configs():
                 fn.debug_print(f"✓ {fn.sddm_default_d1_bak} created")
             except Exception as error:
                 fn.debug_print(f"Error backing up {fn.sddm_default_d1}: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print(f"{fn.sddm_default_d1_bak} already exists, skipping")
     else:
@@ -124,7 +124,7 @@ def backup_system_configs():
                 fn.debug_print("✓ index.theme.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up index.theme: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("index.theme.bak already exists, skipping")
     else:
@@ -138,7 +138,7 @@ def backup_system_configs():
                 fn.debug_print("✓ smb.conf.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up smb.conf: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("smb.conf.bak already exists, skipping")
     else:
@@ -152,7 +152,7 @@ def backup_system_configs():
                 fn.debug_print("✓ nsswitch.conf.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up nsswitch.conf: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("nsswitch.conf.bak already exists, skipping")
     else:
@@ -181,7 +181,7 @@ def backup_user_configs():
             fn.debug_print("✓ fish config.fish.bak created")
         except Exception as error:
             fn.debug_print(f"Error backing up fish config: {error}")
-            print(error)
+            fn.log_error(str(error))
     elif fn.path.isfile(fish_config + ".bak"):
         fn.debug_print("fish config.fish.bak already exists, skipping")
     else:
@@ -196,7 +196,7 @@ def backup_user_configs():
                 fn.debug_print("✓ mirrorlist.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up mirrorlist: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("mirrorlist.bak already exists, skipping")
     else:
@@ -211,7 +211,7 @@ def backup_user_configs():
                 fn.debug_print("✓ hosts.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up hosts: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("hosts.bak already exists, skipping")
     else:
@@ -227,7 +227,7 @@ def backup_user_configs():
                 fn.debug_print("✓ fastfetch.json.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up fastfetch config: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("fastfetch.json.bak already exists, skipping")
     else:
@@ -243,7 +243,7 @@ def backup_user_configs():
                 fn.debug_print("✓ .bashrc.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up bashrc: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print(".bashrc.bak already exists, skipping")
     else:
@@ -259,7 +259,7 @@ def backup_user_configs():
                 fn.debug_print("✓ .zshrc.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up zshrc: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print(".zshrc.bak already exists, skipping")
     else:
@@ -268,13 +268,13 @@ def backup_user_configs():
     # Create default zshrc if missing
     if not fn.path.isfile(fn.zsh_config):
         try:
-            fn.debug_print(f"zshrc missing, copying default from {fn.zshrc_arco}")
-            fn.shutil.copy(fn.zshrc_arco, fn.home)
+            fn.debug_print(f"zshrc missing, copying default from {fn.zshrc_kiro}")
+            fn.shutil.copy(fn.zshrc_kiro, fn.home)
             fn.permissions(fn.home + "/.zshrc")
             fn.debug_print("✓ Default .zshrc installed")
         except Exception as error:
             fn.debug_print(f"Error installing default zshrc: {error}")
-            print(error)
+            fn.log_error(str(error))
 
     # Pacman config
     if fn.path.isfile(fn.pacman):
@@ -285,7 +285,7 @@ def backup_user_configs():
                 fn.debug_print("✓ pacman.conf.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up pacman config: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("pacman.conf.bak already exists, skipping")
     else:
@@ -301,7 +301,7 @@ def backup_user_configs():
                 fn.debug_print("✓ terminalrc.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up xfce4 terminal config: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("terminalrc.bak already exists, skipping")
     else:
@@ -317,7 +317,7 @@ def backup_user_configs():
                 fn.debug_print("✓ alacritty.yml.bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up alacritty config: {error}")
-                print(error)
+                fn.log_error(str(error))
         else:
             fn.debug_print("alacritty.yml.bak already exists, skipping")
     else:

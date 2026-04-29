@@ -437,21 +437,34 @@ def on_apply_fast(self, widget):
     apply_config(self, backend, small_ascii)
 
 
+
 def on_reset_fast_att(self, widget):
-    if fn.path.isfile(fn.fastfetch_arco):
-        fn.shutil.copy(fn.fastfetch_arco, fn.fastfetch_config)
+    fn.debug_print(f"Reset fastfetch to ATT defaults")
+    fn.debug_print(f"  Source : {fn.fastfetch_kiro}")
+    fn.debug_print(f"  Target : {fn.fastfetch_config}")
+    if fn.path.isfile(fn.fastfetch_kiro):
+        fn.shutil.copy(fn.fastfetch_kiro, fn.fastfetch_config)
         fn.permissions(fn.fastfetch_config)
-        fn.log_success("Fastfetch default ATT settings applied")
-        fn.show_in_app_notification(self, "Default settings applied")
+        fn.debug_print(f"  Result : copied and permissions set")
+        fn.log_success("Fastfetch ATT defaults applied")
+        fn.show_in_app_notification(self, "ATT defaults applied")
         get_checkboxes(self)
+    else:
+        fn.debug_print(f"  Result : source file not found - nothing copied")
 
 
 def on_reset_fast(self, widget):
+    fn.debug_print(f"Reset fastfetch from backup")
+    fn.debug_print(f"  Source : {fn.fastfetch_config}.bak")
+    fn.debug_print(f"  Target : {fn.fastfetch_config}")
     if fn.path.isfile(fn.fastfetch_config + ".bak"):
         fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
+        fn.debug_print(f"  Result : restored from backup")
         get_checkboxes(self)
         fn.log_success("fastfetch default settings applied")
         fn.show_in_app_notification(self, "Default settings applied")
+    else:
+        fn.debug_print(f"  Result : backup file not found - nothing restored")
 
 
 def lolcat_toggle(self, widget, active, utility):

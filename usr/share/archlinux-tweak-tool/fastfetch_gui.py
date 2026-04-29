@@ -79,10 +79,12 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     self.fast_lolcat.connect("notify::active", functools.partial(fastfetch.on_fast_lolcat_toggled, self))
 
     applyfastfetch = Gtk.Button(label="Apply Fastfetch configuration")
-    resetnormalfastfetch = Gtk.Button(label="Reset Fastfetch")
+    resetnormalfastfetch = Gtk.Button(label="Reset Fastfetch (backup)")
+    resetattfastfetch = Gtk.Button(label="Reset Fastfetch (ATT defaults)")
 
     applyfastfetch.connect("clicked", functools.partial(fastfetch.on_apply_fast, self))
     resetnormalfastfetch.connect("clicked", functools.partial(fastfetch.on_reset_fast, self))
+    resetattfastfetch.connect("clicked", functools.partial(fastfetch.on_reset_fast_att, self))
 
     hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox22.set_margin_top(10)
@@ -253,9 +255,13 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     hbox27.append(self.fast_lolcat)
 
     hbox24.append(resetnormalfastfetch)
-    spacer = Gtk.Box()
-    spacer.set_hexpand(True)
-    hbox24.append(spacer)
+    spacer1 = Gtk.Box()
+    spacer1.set_hexpand(True)
+    hbox24.append(spacer1)
+    hbox24.append(resetattfastfetch)
+    spacer2 = Gtk.Box()
+    spacer2.set_hexpand(True)
+    hbox24.append(spacer2)
     hbox24.append(applyfastfetch)
 
     vboxstack8.append(hbox3)

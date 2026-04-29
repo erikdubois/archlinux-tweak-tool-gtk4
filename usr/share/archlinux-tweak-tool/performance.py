@@ -50,7 +50,7 @@ def get_service_status(service):
         if status:
             return status
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
 
     return "disabled"
 
@@ -165,7 +165,7 @@ def remove_power_profiles_daemon_if_present(self):
     """power-profiles-daemon conflicts with tuned-ppd and must be removed first."""
     if not fn.check_package_installed("power-profiles-daemon"):
         return
-    print("power-profiles-daemon is installed - removing before installing tuned-ppd")
+    fn.debug_print("power-profiles-daemon is installed - removing before installing tuned-ppd")
     fn.disable_service("power-profiles-daemon")
     fn.remove_package(self, "power-profiles-daemon")
     GLib.idle_add(
@@ -180,7 +180,7 @@ def disable_tlp_if_present(self):
     if not fn.check_package_installed(TLP_PACKAGE):
         return
 
-    print("TLP is installed - disabling tlp service before using tuned")
+    fn.debug_print("TLP is installed - disabling tlp service before using tuned")
     fn.disable_service("tlp")
     refresh_performance_status_label(self)
     GLib.idle_add(
@@ -278,7 +278,7 @@ def get_available_tuned_profiles():
                             profiles.append(profile_name)
             return profiles
     except Exception as error:
-        print(f"Error getting tuned profiles: {error}")
+        fn.debug_print(f"Error getting tuned profiles: {error}")
     return []
 
 
@@ -302,7 +302,7 @@ def get_active_tuned_profile():
                 profile = output.split("Current active profile:")[-1].strip()
                 return profile
     except Exception as error:
-        print(f"Error getting active tuned profile: {error}")
+        fn.debug_print(f"Error getting active tuned profile: {error}")
     return None
 
 
@@ -360,7 +360,7 @@ def refresh_tuned_profile_choices(self):
 
             GLib.idle_add(update_dropdown)
     except Exception as e:
-        print(f"Error refreshing tuned profile choices: {e}")
+        fn.debug_print(f"Error refreshing tuned profile choices: {e}")
 
 
 def apply_tuned_profile(widget, self):
@@ -368,7 +368,7 @@ def apply_tuned_profile(widget, self):
     choice = fn.get_combo_text(self.tuned_profile_choices)
 
     if not choice:
-        print("No profile selected")
+        fn.debug_print("No profile selected")
         GLib.idle_add(fn.show_in_app_notification, self, "No profile selected")
         return
 
@@ -437,7 +437,7 @@ def get_service_status(service):
         if status:
             return status
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
 
     return "disabled"
 
@@ -465,7 +465,7 @@ def get_zram_size_label():
                     if line.strip().startswith("zram-size"):
                         return line.split("=", 1)[1].strip()
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
 
     return ""
 
@@ -504,7 +504,7 @@ def get_unit_state(unit, command):
         if status:
             return status
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
 
     return "unknown"
 
@@ -580,7 +580,7 @@ def disable_tlp_if_present(self):
     if not fn.check_package_installed(TLP_PACKAGE):
         return
 
-    print("TLP is installed - disabling tlp service before using tuned")
+    fn.debug_print("TLP is installed - disabling tlp service before using tuned")
     fn.disable_service("tlp")
     refresh_performance_status_label(self)
     GLib.idle_add(
@@ -646,7 +646,7 @@ def get_root_filesystem_type():
                 if len(parts) >= 3 and parts[1] == "/":
                     return parts[2]
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
     return ""
 
 
@@ -657,7 +657,7 @@ def get_swapfile_size_label():
             size_bytes = fn.path.getsize("/swapfile")
             return format(size_bytes / 1024 / 1024 / 1024, ".0f") + " GB"
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
     return None
 
 
@@ -991,7 +991,7 @@ def get_gamemoded_user_status():
         if status == "enabled":
             return "<b>enabled</b>"
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
     return "disabled"
 
 
@@ -1069,7 +1069,7 @@ def run_gamemoded_user_command(action):
     """Run systemctl --user enable/disable for gamemoded via --machine flag."""
     real_user = get_real_user()
     if not real_user:
-        print("Could not determine real user for gamemoded service")
+        fn.debug_print("Could not determine real user for gamemoded service")
         return
     try:
         fn.subprocess.run(
@@ -1080,7 +1080,7 @@ def run_gamemoded_user_command(action):
             stderr=fn.subprocess.STDOUT,
         )
     except Exception as error:
-        print(error)
+        fn.debug_print(error)
 
 
 def enable_gamemode_service(widget, self):

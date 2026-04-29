@@ -27,13 +27,10 @@ def get_themes(combo):
                 combo.get_model().append(lists_sorted[x].split(".")[0].strip())
             combo.set_selected(active)
         except OSError:
-            print(
-                "ATT was unable to locate your ~/.zshrc file. We have placed a working\
-                ~/.zshrc in your base home directory (~/.zshrc)"
-            )
-            print("You may need to reload ATT to set the options in the zsh tab")
+            fn.debug_print("ATT was unable to locate your ~/.zshrc file. We have placed a working ~/.zshrc in your base home directory (~/.zshrc)")
+            fn.debug_print("You may need to reload ATT to set the options in the zsh tab")
         except Exception as error:
-            print(error)
+            fn.log_error(str(error))
 
 
 def set_config(self, theme):
@@ -54,5 +51,5 @@ def set_config(self, theme):
         fn.show_in_app_notification(self, "Settings Saved Successfully")
 
     except Exception as error:
-        print(error)
+        fn.log_error(str(error))
         fn.messagebox(self, "Error!!", "Something went wrong setting this theme.")
