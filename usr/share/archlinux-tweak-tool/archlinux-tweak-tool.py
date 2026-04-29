@@ -236,6 +236,7 @@ class Main(Gtk.ApplicationWindow):
 
         total_time = time.time()
         fn.debug_print(f"[INFO] Total startup time (incl. background init): {total_time - startup_start:.3f}s")
+        self.initializing = False
 
         return False
 

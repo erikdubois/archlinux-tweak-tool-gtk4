@@ -15,8 +15,7 @@ def on_nemesis_toggle(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "nemesis")
+        toggle_test_repos(self, widget.get_active(), "nemesis")
     fn.update_repos(self)
     desktopr_gui.update_button_state(self, fn)
     fn.GLib.timeout_add(100, self.refresh_aur_buttons)
@@ -32,8 +31,7 @@ def on_chaotic_toggle(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Chaotic-AUR repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "chaotics")
+        toggle_test_repos(self, widget.get_active(), "chaotics")
     fn.update_repos(self)
     desktopr_gui.update_button_state(self, fn)
     fn.GLib.timeout_add(100, self.refresh_aur_buttons)
@@ -48,8 +46,7 @@ def on_pacman_toggle1(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "testing")
+        toggle_test_repos(self, widget.get_active(), "testing")
 
 
 def on_pacman_toggle2(self, widget, active):
@@ -61,8 +58,7 @@ def on_pacman_toggle2(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "core")
+        toggle_test_repos(self, widget.get_active(), "core")
 
 
 def on_pacman_toggle3(self, widget, active):
@@ -74,8 +70,7 @@ def on_pacman_toggle3(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "extra")
+        toggle_test_repos(self, widget.get_active(), "extra")
 
 
 def on_pacman_toggle4(self, widget, active):
@@ -87,8 +82,7 @@ def on_pacman_toggle4(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "extra-testing")
+        toggle_test_repos(self, widget.get_active(), "extra-testing")
 
 
 def on_pacman_toggle5(self, widget, active):
@@ -100,8 +94,7 @@ def on_pacman_toggle5(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "community")
+        toggle_test_repos(self, widget.get_active(), "community")
 
 
 def on_pacman_toggle6(self, widget, active):
@@ -113,8 +106,7 @@ def on_pacman_toggle6(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "multilib-testing")
+        toggle_test_repos(self, widget.get_active(), "multilib-testing")
 
 
 def on_pacman_toggle7(self, widget, active):
@@ -126,8 +118,7 @@ def on_pacman_toggle7(self, widget, active):
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        if self.opened is False:
-            toggle_test_repos(self, widget.get_active(), "multilib")
+        toggle_test_repos(self, widget.get_active(), "multilib")
 
 
 def custom_repo_clicked(self, widget):
@@ -169,7 +160,7 @@ def reset_pacman_local(self, widget):
         fn.show_in_app_notification(
             self, "Default Settings Applied - check in a terminal"
         )
-    fn.GLib.timeout_add(500, self.update_repos_switches)
+    fn.GLib.timeout_add(500, lambda: update_repos_switches(self))
 
 
 def reset_pacman_online(self, widget):
@@ -179,7 +170,7 @@ def reset_pacman_online(self, widget):
     fn.show_in_app_notification(
         self, "Default Settings Applied - check in a terminal"
     )
-    fn.GLib.timeout_add(500, self.update_repos_switches)
+    fn.GLib.timeout_add(500, lambda: update_repos_switches(self))
 
 
 def edit_pacman_conf_clicked(self, widget):
@@ -193,7 +184,18 @@ def edit_pacman_conf_clicked(self, widget):
 
 def update_repos_switches(self):
     from pacman_functions import check_repo
-    self.nemesis_switch.set_active(check_repo("[nemesis_repo]"))
+    self.initializing = True
+    try:
+        self.checkbutton2.set_active(check_repo("[core-testing]"))
+        self.checkbutton6.set_active(check_repo("[core]"))
+        self.checkbutton7.set_active(check_repo("[extra]"))
+        self.checkbutton5.set_active(check_repo("[extra-testing]"))
+        self.checkbutton3.set_active(check_repo("[multilib-testing]"))
+        self.checkbutton8.set_active(check_repo("[multilib]"))
+        self.nemesis_switch.set_active(check_repo("[nemesis_repo]"))
+        self.chaotic_switch.set_active(check_repo("[chaotic-aur]"))
+    finally:
+        self.initializing = False
 
 
 def check_parallel_downloads(lists, value):

@@ -39,6 +39,7 @@ These are the core principles guiding all development on this project:
 22. **Project-Driven Development** - Maintain a milestone/deliverable mindset: group related changes into logical milestones, identify what constitutes a shippable/packageable state between milestones, and flag when in-progress work is blocking a release
 23. **Lint, Spacing & Comments** - All Python code must pass `flake8` (PEP 8): 4-space indentation, max line length 120, one blank line between methods, two blank lines between top-level definitions; remove inline comments that only restate the code; keep only comments that explain WHY (a constraint, a workaround, a non-obvious invariant)
 24. **Maintain CHANGELOG.md Automatically** - After every session that changes code or project structure, update `CHANGELOG.md` without being asked; group entries by date (`YYYY.MM.DD`), use the existing structured layout (What Changed / Technical Details / Files Modified), one entry per day consolidating all changes made that day
+25. **Never Change Code Without Explicit Confirmation** - Before any Edit, Write, or file deletion, state exactly what you intend to change and why, then wait for the user to approve. Never add constants, remove functions, or restructure files based on your own judgment alone — always ask first.
 
 ## Architecture
 
