@@ -10,6 +10,8 @@
 #
 ##################################################################################################################
 
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
 ZRAM_CONF=/etc/systemd/zram-generator.conf
 
 tput setaf 6

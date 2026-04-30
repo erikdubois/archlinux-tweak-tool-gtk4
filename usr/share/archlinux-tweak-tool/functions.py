@@ -961,23 +961,18 @@ def remove_file(file_path):
 
 
 def remove_package(self, package):
-    command = "pacman -R " + package + " --noconfirm"
-    if check_package_installed(package):
-        log_subsection(f"Removing {package}...")
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            log_success(f"{package} is now removed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now removed")
-        except Exception as error:
-            log_error(f"Error removing {package}: {error}")
-    else:
+    if not check_package_installed(package):
         log_warn(f"{package} is already removed")
-        GLib.idle_add(show_in_app_notification, self, package + " is already removed")
+        GLib.idle_add(show_in_app_notification, self, f"{package} is already removed")
+        return
+    log_subsection(f"Removing {package}...")
+    try:
+        process = launch_pacman_remove_in_terminal(package)
+        GLib.idle_add(show_in_app_notification, self, f"{package} removal started")
+        wait_and_notify(process, self, f"{package} removed")
+    except Exception as error:
+        log_error(f"Error removing {package}: {error}")
+        GLib.idle_add(show_in_app_notification, self, f"Error removing {package}: {error}")
 
 
 def remove_package_s(self, package):

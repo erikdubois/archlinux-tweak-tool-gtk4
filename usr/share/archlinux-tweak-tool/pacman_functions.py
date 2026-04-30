@@ -24,20 +24,6 @@ def append_repo(self, text):
         fn.show_in_app_notification(self, "Failed to save settings")
 
 
-def append_mirror(self, text):
-    """Append a new mirror"""
-    fn.debug_print(f"Appending mirror to {fn.arcolinux_mirrorlist}")
-    try:
-        with open(fn.arcolinux_mirrorlist, "a", encoding="utf-8") as myfile:
-            myfile.write("\n\n")
-            myfile.write(text)
-        fn.log_success("Mirror appended successfully")
-        fn.show_in_app_notification(self, "Settings Saved Successfully")
-    except Exception as error:
-        fn.log_error(f"Failed to append mirror: {error}")
-        fn.show_in_app_notification(self, "Failed to save settings")
-
-
 def insert_repo(self, text):
     """insert a repo"""
     fn.debug_print(f"Inserting repository into {fn.pacman}")
@@ -73,36 +59,9 @@ def check_repo(value):
     return False
 
 
-def check_mirror(value):
-    """check if mirror is there and active"""
-    with open(fn.arcolinux_mirrorlist, "r", encoding="utf-8") as myfile:
-        lines = myfile.readlines()
-        myfile.close()
-
-    for line in lines:
-        if value in line:
-            if "#" + value in line:
-                return False
-            else:
-                return True
-    return False
-
-
 def repo_exist(value):
     """check repo_exists"""
     with open(fn.pacman, "r", encoding="utf-8") as myfile:
-        lines = myfile.readlines()
-        myfile.close()
-
-    for line in lines:
-        if value in line:
-            return True
-    return False
-
-
-def mirror_exist(value):
-    """check mirror exists"""
-    with open(fn.arcolinux_mirrorlist, "r", encoding="utf-8") as myfile:
         lines = myfile.readlines()
         myfile.close()
 

@@ -19,10 +19,6 @@ tuned_ppd_config = "/etc/tuned/ppd.conf"
 # ============================================================
 zram_config = "/etc/systemd/zram-generator.conf"
 zram_disk_size = "/sys/block/zram0/disksize"
-zram_enable_script = "/usr/share/archlinux-tweak-tool/data/bin/enable-zram"
-zram_disable_script = "/usr/share/archlinux-tweak-tool/data/bin/disable-zram"
-swapfile_create_script = "/usr/share/archlinux-tweak-tool/data/bin/create-swapfile"
-swapfile_remove_script = "/usr/share/archlinux-tweak-tool/data/bin/remove-swapfile"
 fstrim_timer = "fstrim.timer"
 fstrim_service = "fstrim.service"
 
@@ -102,46 +98,132 @@ def refresh_performance_status_label(self):
 
 def install_tuned_tools(widget, self):
     """Install tuned for dynamic power management."""
+    if fn.check_package_installed("tuned"):
+        fn.log_info("Tuned is already installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "Tuned is already installed")
+        return
     fn.log_subsection("Install Tuned")
-    try:
-        conflicting_files = [
-            "/etc/modprobe.d/tuned.conf",
-        ]
-        for file_path in conflicting_files:
-            if fn.path.exists(file_path):
-                try:
-                    fn.debug_print(f"Removing conflicting file: {file_path}")
-                    fn.unlink(file_path)
-                except Exception as e:
-                    fn.log_warn(f"Could not remove {file_path}: {e}")
 
-        remove_power_profiles_daemon_if_present(self)
-        fn.debug_print("Installing tuned and tuned-ppd packages")
-        fn.install_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
-        disable_tlp_if_present(self)
-        fn.log_success("Tuned installed successfully")
-        GLib.timeout_add(500, refresh_tuned_buttons, self)
-        GLib.timeout_add(500, refresh_tuned_profile_choices, self)
-        GLib.timeout_add(500, refresh_tuned_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install tuned: {error}")
+    def _do_install():
+        try:
+            for file_path in ["/etc/modprobe.d/tuned.conf"]:
+                if fn.path.exists(file_path):
+                    try:
+                        fn.debug_print(f"Removing conflicting file: {file_path}")
+                        fn.unlink(file_path)
+                    except Exception as e:
+                        fn.log_warn(f"Could not remove {file_path}: {e}")
+
+            if fn.check_package_installed("power-profiles-daemon"):
+                fn.debug_print("Removing power-profiles-daemon (conflicts with tuned-ppd)")
+                fn.disable_service("power-profiles-daemon")
+                proc = fn.launch_pacman_remove_in_terminal("power-profiles-daemon")
+                if proc:
+                    proc.wait()
+                GLib.idle_add(
+                    fn.show_in_app_notification, self, "power-profiles-daemon removed"
+                )
+
+            fn.debug_print("Installing and enabling tuned and tuned-ppd")
+            install_script = f"""
+set -o pipefail
+pacman -S --noconfirm --needed {TUNED_PACKAGE} {TUNED_PPD_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Installation successful'
+    echo ''
+    systemctl disable --now tlp 2>/dev/null && echo 'TLP disabled (conflicts with Tuned)' || true
+    echo 'Enabling tuned...'
+    systemctl enable --now tuned && echo '✓ tuned enabled' || echo '✗ Failed'
+    echo 'Enabling tuned-ppd...'
+    systemctl enable --now tuned-ppd && echo '✓ tuned-ppd enabled' || echo '✗ Failed'
+else
+    echo '✗ Installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+echo 'You can close this window'
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", install_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                proc.wait()
+            fn.log_success("Tuned installed and enabled successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been installed")
+            GLib.idle_add(refresh_tuned_package_label, self)
+            GLib.idle_add(refresh_tuned_buttons, self)
+            GLib.idle_add(refresh_tuned_profile_choices, self)
+            GLib.idle_add(refresh_tuned_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to install tuned: {error}")
+
+    fn.threading.Thread(target=_do_install, daemon=True).start()
 
 
 def remove_tuned_tools(widget, self):
     """Remove tuned and tuned-ppd."""
     fn.log_subsection("Remove Tuned")
-    try:
-        fn.debug_print("Disabling tuned services before removal")
-        fn.disable_service("tuned")
-        fn.disable_service("tuned-ppd")
-        fn.remove_package(self, TUNED_PACKAGE + " " + TUNED_PPD_PACKAGE)
-        fn.log_success("Tuned removed successfully")
-        GLib.idle_add(refresh_tuned_buttons, self)
-        GLib.idle_add(refresh_tuned_profile_status, self)
-        GLib.idle_add(refresh_tuned_status_label, self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove tuned: {error}")
+
+    def _do_remove():
+        try:
+            fn.debug_print("Disabling and removing tuned and tuned-ppd")
+            remove_script = f"""
+echo 'Disabling tuned...'
+systemctl disable --now tuned && echo '✓ tuned disabled' || echo '✗ Failed'
+echo 'Disabling tuned-ppd...'
+systemctl disable --now tuned-ppd && echo '✓ tuned-ppd disabled' || echo '✗ Failed'
+
+echo ''
+echo 'Removing packages...'
+pacman -R --noconfirm {TUNED_PACKAGE} {TUNED_PPD_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Removal successful'
+else
+    echo '✗ Removal failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+echo 'You can close this window'
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", remove_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                proc.wait()
+
+            fn.log_success("Tuned removed successfully")
+            GLib.idle_add(refresh_tuned_package_label, self)
+            GLib.idle_add(refresh_tuned_buttons, self)
+            GLib.idle_add(refresh_tuned_profile_status, self)
+            GLib.idle_add(refresh_tuned_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to remove tuned: {error}")
+
+    fn.threading.Thread(target=_do_remove, daemon=True).start()
+
+
+def refresh_tuned_package_label(self):
+    """Refresh the tuned install/remove label after package state changes."""
+    if not hasattr(self, "tuned_package_label"):
+        return
+    if fn.check_package_installed("tuned"):
+        GLib.idle_add(self.tuned_package_label.set_markup, "tuned is <b>installed</b>")
+    else:
+        GLib.idle_add(self.tuned_package_label.set_text, "Install tuned for dynamic system tuning")
 
 
 def refresh_tuned_buttons(self):
@@ -159,20 +241,6 @@ def refresh_tuned_buttons(self):
     for button_name in tuned_buttons:
         if hasattr(self, button_name):
             GLib.idle_add(getattr(self, button_name).set_sensitive, installed)
-
-
-def remove_power_profiles_daemon_if_present(self):
-    """power-profiles-daemon conflicts with tuned-ppd and must be removed first."""
-    if not fn.check_package_installed("power-profiles-daemon"):
-        return
-    fn.debug_print("power-profiles-daemon is installed - removing before installing tuned-ppd")
-    fn.disable_service("power-profiles-daemon")
-    fn.remove_package(self, "power-profiles-daemon")
-    GLib.idle_add(
-        fn.show_in_app_notification,
-        self,
-        "power-profiles-daemon removed (conflicts with tuned-ppd)",
-    )
 
 
 def disable_tlp_if_present(self):
@@ -193,13 +261,28 @@ def disable_tlp_if_present(self):
 def enable_tuned_services(widget, self):
     fn.log_subsection("Enable Tuned Services")
     try:
-        disable_tlp_if_present(self)
-        fn.debug_print("Enabling tuned and tuned-ppd services")
-        fn.enable_service("tuned")
-        fn.enable_service("tuned-ppd")
-        fn.log_success("Tuned and Tuned-PPD enabled successfully")
-        GLib.timeout_add(500, refresh_tuned_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been enabled and started")
+        script = (
+            "systemctl disable --now tlp 2>/dev/null && echo 'TLP disabled (conflicts with Tuned)' || true\n"
+            "echo 'Enabling tuned...'\n"
+            "systemctl enable --now tuned && echo '✓ tuned enabled' || echo '✗ Failed'\n"
+            "echo 'Enabling tuned-ppd...'\n"
+            "systemctl enable --now tuned-ppd && echo '✓ tuned-ppd enabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling Tuned and Tuned-PPD...")
+
+        def _wait_enable_tuned():
+            process.wait()
+            fn.log_success("Tuned and Tuned-PPD enabled successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been enabled and started")
+            GLib.idle_add(refresh_tuned_status_label, self)
+
+        fn.threading.Thread(target=_wait_enable_tuned, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable tuned services: {error}")
 
@@ -207,12 +290,27 @@ def enable_tuned_services(widget, self):
 def disable_tuned_services(widget, self):
     fn.log_subsection("Disable Tuned Services")
     try:
-        fn.debug_print("Disabling tuned and tuned-ppd services")
-        fn.disable_service("tuned")
-        fn.disable_service("tuned-ppd")
-        fn.log_success("Tuned and Tuned-PPD disabled successfully")
-        GLib.timeout_add(500, refresh_tuned_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been disabled and stopped")
+        script = (
+            "echo 'Disabling tuned...'\n"
+            "systemctl disable --now tuned && echo '✓ tuned disabled' || echo '✗ Failed'\n"
+            "echo 'Disabling tuned-ppd...'\n"
+            "systemctl disable --now tuned-ppd && echo '✓ tuned-ppd disabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling Tuned and Tuned-PPD...")
+
+        def _wait_disable_tuned():
+            process.wait()
+            fn.log_success("Tuned and Tuned-PPD disabled successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Tuned and Tuned-PPD have been disabled and stopped")
+            GLib.idle_add(refresh_tuned_status_label, self)
+
+        fn.threading.Thread(target=_wait_disable_tuned, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable tuned services: {error}")
 
@@ -220,10 +318,25 @@ def disable_tuned_services(widget, self):
 def restart_tuned_service(widget, self):
     fn.log_subsection("Restart Tuned Service")
     try:
-        fn.restart_service("tuned")
-        fn.log_success("Tuned service restarted")
-        GLib.timeout_add(500, refresh_performance_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+        script = (
+            "echo 'Restarting tuned...'\n"
+            "systemctl restart tuned && echo '✓ tuned restarted' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Restarting Tuned...")
+
+        def _wait_restart_tuned():
+            process.wait()
+            fn.log_success("Tuned service restarted")
+            GLib.idle_add(fn.show_in_app_notification, self, "Tuned has been restarted")
+            GLib.idle_add(refresh_performance_status_label, self)
+
+        fn.threading.Thread(target=_wait_restart_tuned, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to restart tuned: {error}")
 
@@ -231,10 +344,25 @@ def restart_tuned_service(widget, self):
 def restart_tuned_ppd_service(widget, self):
     fn.log_subsection("Restart Tuned-PPD Service")
     try:
-        fn.restart_service("tuned-ppd")
-        fn.log_success("Tuned-PPD service restarted")
-        GLib.timeout_add(500, refresh_performance_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+        script = (
+            "echo 'Restarting tuned-ppd...'\n"
+            "systemctl restart tuned-ppd && echo '✓ tuned-ppd restarted' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Restarting Tuned-PPD...")
+
+        def _wait_restart_tuned_ppd():
+            process.wait()
+            fn.log_success("Tuned-PPD service restarted")
+            GLib.idle_add(fn.show_in_app_notification, self, "Tuned-PPD has been restarted")
+            GLib.idle_add(refresh_performance_status_label, self)
+
+        fn.threading.Thread(target=_wait_restart_tuned_ppd, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to restart tuned-ppd: {error}")
 
@@ -418,39 +546,6 @@ def set_tuned_profile(self, profile_name):
         GLib.idle_add(fn.show_in_app_notification, self, "Could not set tuned profile")
 
 
-def get_service_status(service):
-    """Return a status label that includes enabled oneshot services."""
-    if fn.check_service(service):
-        return "<b>enabled</b>"
-
-    try:
-        output = fn.subprocess.run(
-            ["systemctl", "is-enabled", service + ".service"],
-            check=False,
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        status = output.stdout.decode().strip()
-        if status == "enabled":
-            return "<b>enabled</b>"
-        if status:
-            return status
-    except Exception as error:
-        fn.debug_print(error)
-
-    return "disabled"
-
-
-def refresh_performance_status_label(self):
-    """Refresh the visible performance service status label."""
-    if hasattr(self, "performance_status_label"):
-        GLib.idle_add(
-            self.performance_status_label.set_markup,
-            get_performance_status_markup(),
-        )
-
-
 def get_zram_size_label():
     """Return the current zram size in GB, or its configured expression."""
     try:
@@ -575,41 +670,61 @@ def refresh_irqbalance_service_buttons(self):
             GLib.idle_add(getattr(self, button_name).set_sensitive, installed)
 
 
-def disable_tlp_if_present(self):
-    """Tuned and TLP should not manage power settings at the same time."""
-    if not fn.check_package_installed(TLP_PACKAGE):
-        return
-
-    fn.debug_print("TLP is installed - disabling tlp service before using tuned")
-    fn.disable_service("tlp")
-    refresh_performance_status_label(self)
-    GLib.idle_add(
-        fn.show_in_app_notification,
-        self,
-        "TLP service disabled because it conflicts with Tuned",
-    )
-
-
 def enable_zram(widget, self):
     """Enable zram with the selected compressed swap size."""
     fn.log_subsection("Enable zram")
     try:
-        fn.install_package(self, "alacritty")
         size = fn.get_combo_text(self.zram_size)
         fn.debug_print(f"Enabling zram with size: {size}")
-        fn.subprocess.call(
-            ["alacritty", "--hold", "-e", zram_enable_script, size],
-            shell=False,
+        script = f"""
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
+ZRAM_CONF=/etc/systemd/zram-generator.conf
+SIZE="{size}"
+
+echo "Enabling zram with size: $SIZE"
+echo
+
+if ! pacman -Qi zram-generator &>/dev/null; then
+    echo "Installing zram-generator..."
+    pacman -S zram-generator --noconfirm --needed
+fi
+
+echo "Writing $ZRAM_CONF..."
+cat > "$ZRAM_CONF" << EOF
+[zram0]
+zram-size = $SIZE
+compression-algorithm = zstd
+EOF
+
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
+
+echo "Starting zram device..."
+systemctl start systemd-zram-setup@zram0.service
+
+echo
+echo "=== zram enabled successfully ==="
+swapon --show
+echo
+cat "$ZRAM_CONF"
+echo
+echo "=== Operation Finished ==="
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
             stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+            stderr=fn.subprocess.PIPE,
         )
-        fn.log_success(f"zram enabled ({size})")
-        refresh_zram_status_label(self)
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "zram enabled (" + size + ")",
-        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling zram...")
+
+        def _wait_zram_enable():
+            process.wait()
+            fn.log_success(f"zram enabled ({size})")
+            GLib.idle_add(fn.show_in_app_notification, self, f"zram enabled ({size})")
+            GLib.idle_add(refresh_zram_status_label, self)
+
+        fn.threading.Thread(target=_wait_zram_enable, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable zram: {error}")
 
@@ -618,21 +733,53 @@ def disable_zram(widget, self):
     """Disable zram."""
     fn.log_subsection("Disable zram")
     try:
-        fn.install_package(self, "alacritty")
         fn.debug_print("Disabling zram")
-        fn.subprocess.call(
-            ["alacritty", "--hold", "-e", zram_disable_script],
-            shell=False,
+        script = """
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
+ZRAM_CONF=/etc/systemd/zram-generator.conf
+
+echo "Disabling zram..."
+echo
+
+echo "Stopping zram device..."
+systemctl stop systemd-zram-setup@zram0.service 2>/dev/null || true
+
+if [ -b /dev/zram0 ]; then
+    echo "Swapping off /dev/zram0..."
+    swapoff /dev/zram0 2>/dev/null || true
+fi
+
+if [ -f "$ZRAM_CONF" ]; then
+    echo "Removing $ZRAM_CONF..."
+    rm -f "$ZRAM_CONF"
+else
+    echo "No zram configuration found at $ZRAM_CONF - nothing to remove"
+fi
+
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
+
+echo
+echo "=== zram disabled successfully ==="
+swapon --show
+echo
+echo "=== Operation Finished ==="
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
             stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+            stderr=fn.subprocess.PIPE,
         )
-        fn.log_success("zram disabled")
-        refresh_zram_status_label(self)
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "zram disabled",
-        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling zram...")
+
+        def _wait_zram_disable():
+            process.wait()
+            fn.log_success("zram disabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "zram disabled")
+            GLib.idle_add(refresh_zram_status_label, self)
+
+        fn.threading.Thread(target=_wait_zram_disable, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable zram: {error}")
 
@@ -682,22 +829,92 @@ def create_swapfile(widget, self):
     """Create a swapfile with the selected size."""
     fn.log_subsection("Create Swapfile")
     try:
-        fn.install_package(self, "alacritty")
         size = fn.get_combo_text(self.swapfile_size)
         fn.debug_print(f"Creating swapfile with size: {size}")
-        fn.subprocess.call(
-            ["alacritty", "--hold", "-e", swapfile_create_script, size],
-            shell=False,
+        script = f"""
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
+SWAPFILE=/swapfile
+SIZE="{size}"
+
+FSTYPE=$(findmnt -n -o FSTYPE /)
+
+echo "Creating swapfile at $SWAPFILE with size $SIZE"
+echo "Detected filesystem: $FSTYPE"
+echo
+
+if [ "$FSTYPE" != "ext4" ] && [ "$FSTYPE" != "btrfs" ]; then
+    echo "ERROR: Unsupported filesystem: $FSTYPE"
+    echo "Only ext4 and btrfs are supported."
+    exit 1
+fi
+
+SIZE_UPPER=$(echo "$SIZE" | tr '[:lower:]' '[:upper:]')
+NUM=$(echo "$SIZE_UPPER" | tr -cd '0-9')
+UNIT=$(echo "$SIZE_UPPER" | tr -cd 'A-Z')
+case "$UNIT" in
+    G) MB=$(( NUM * 1024 )) ;;
+    M) MB=$NUM ;;
+    K) MB=$(( NUM / 1024 )) ;;
+    *) MB=$(( NUM / 1024 / 1024 )) ;;
+esac
+
+if swapon --show | grep -q "$SWAPFILE"; then
+    echo "Disabling existing swapfile..."
+    swapoff "$SWAPFILE"
+fi
+
+if [ -f "$SWAPFILE" ]; then
+    echo "Removing existing swapfile..."
+    rm -f "$SWAPFILE"
+fi
+
+if [ "$FSTYPE" = "btrfs" ]; then
+    echo "btrfs: disabling Copy-on-Write before writing..."
+    touch "$SWAPFILE"
+    chattr +C "$SWAPFILE"
+fi
+
+echo "Writing $SIZE swapfile (dd with progress)..."
+dd if=/dev/zero of="$SWAPFILE" bs=1M count="$MB" status=progress
+echo
+
+echo "Setting permissions (chmod 600)..."
+chmod 600 "$SWAPFILE"
+
+echo "Formatting as swap..."
+mkswap "$SWAPFILE"
+
+echo "Activating swapfile..."
+swapon "$SWAPFILE"
+
+if ! grep -q "$SWAPFILE" /etc/fstab; then
+    echo "Adding $SWAPFILE to /etc/fstab..."
+    echo "$SWAPFILE none swap defaults 0 0" >> /etc/fstab
+else
+    echo "$SWAPFILE already in /etc/fstab - skipping"
+fi
+
+echo
+echo "=== Swapfile created successfully ==="
+swapon --show
+echo
+echo "=== Operation Finished ==="
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
             stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+            stderr=fn.subprocess.PIPE,
         )
-        fn.log_success(f"Swapfile ({size}) created at /swapfile")
-        GLib.idle_add(refresh_swapfile_label, self)
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Swapfile (" + size + ") created at /swapfile",
-        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Creating swapfile...")
+
+        def _wait_create_swapfile():
+            process.wait()
+            fn.log_success(f"Swapfile ({size}) created at /swapfile")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Swapfile ({size}) created at /swapfile")
+            GLib.idle_add(refresh_swapfile_label, self)
+
+        fn.threading.Thread(target=_wait_create_swapfile, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to create swapfile: {error}")
 
@@ -706,21 +923,50 @@ def remove_swapfile(widget, self):
     """Remove the swapfile."""
     fn.log_subsection("Remove Swapfile")
     try:
-        fn.install_package(self, "alacritty")
         fn.debug_print("Removing swapfile at /swapfile")
-        fn.subprocess.call(
-            ["alacritty", "--hold", "-e", swapfile_remove_script],
-            shell=False,
+        script = """
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
+SWAPFILE=/swapfile
+
+echo "Removing swapfile at $SWAPFILE"
+echo
+
+if [ ! -f "$SWAPFILE" ]; then
+    echo "No swapfile found at $SWAPFILE - nothing to do"
+else
+    if swapon --show | grep -q "$SWAPFILE"; then
+        echo "Disabling swapfile..."
+        swapoff "$SWAPFILE"
+    fi
+
+    echo "Removing $SWAPFILE from /etc/fstab..."
+    sed -i "\\|$SWAPFILE|d" /etc/fstab
+
+    echo "Deleting swapfile..."
+    rm -f "$SWAPFILE"
+
+    echo "=== Swapfile removed successfully ==="
+fi
+
+swapon --show
+echo
+echo "=== Operation Finished ==="
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
             stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+            stderr=fn.subprocess.PIPE,
         )
-        fn.log_success("Swapfile removed")
-        GLib.idle_add(refresh_swapfile_label, self)
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Swapfile removed",
-        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Removing swapfile...")
+
+        def _wait_remove_swapfile():
+            process.wait()
+            fn.log_success("Swapfile removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "Swapfile removed")
+            GLib.idle_add(refresh_swapfile_label, self)
+
+        fn.threading.Thread(target=_wait_remove_swapfile, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to remove swapfile: {error}")
 
@@ -729,15 +975,26 @@ def enable_fstrim_timer(widget, self):
     """Enable the weekly fstrim timer."""
     fn.log_subsection("Enable fstrim Timer")
     try:
-        fn.subprocess.call(
-            ["systemctl", "enable", "--now", fstrim_timer],
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        script = (
+            f"systemctl enable --now {fstrim_timer} "
+            "&& echo 'fstrim.timer enabled for weekly TRIM' "
+            "|| echo 'Failed to enable fstrim.timer'\n"
+            "echo\nread -p 'Press Enter to close...'"
         )
-        fn.log_success("fstrim.timer enabled for weekly TRIM")
-        refresh_fstrim_status_label(self)
-        GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer enabled")
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling fstrim.timer...")
+
+        def _wait_fstrim_enable():
+            process.wait()
+            fn.log_success("fstrim.timer enabled for weekly TRIM")
+            GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer enabled")
+            GLib.idle_add(refresh_fstrim_status_label, self)
+
+        fn.threading.Thread(target=_wait_fstrim_enable, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable fstrim.timer: {error}")
 
@@ -746,15 +1003,26 @@ def disable_fstrim_timer(widget, self):
     """Disable the weekly fstrim timer."""
     fn.log_subsection("Disable fstrim Timer")
     try:
-        fn.subprocess.call(
-            ["systemctl", "disable", "--now", fstrim_timer],
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        script = (
+            f"systemctl disable --now {fstrim_timer} "
+            "&& echo 'fstrim.timer disabled' "
+            "|| echo 'Failed to disable fstrim.timer'\n"
+            "echo\nread -p 'Press Enter to close...'"
         )
-        fn.log_success("fstrim.timer disabled")
-        refresh_fstrim_status_label(self)
-        GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer disabled")
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling fstrim.timer...")
+
+        def _wait_fstrim_disable():
+            process.wait()
+            fn.log_success("fstrim.timer disabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "fstrim.timer disabled")
+            GLib.idle_add(refresh_fstrim_status_label, self)
+
+        fn.threading.Thread(target=_wait_fstrim_disable, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable fstrim.timer: {error}")
 
@@ -764,21 +1032,26 @@ def run_fstrim_now(widget, self):
     fn.log_subsection("Run fstrim Now")
     try:
         fn.debug_print("Starting fstrim.service for immediate TRIM")
-        result = fn.subprocess.run(
-            ["systemctl", "start", fstrim_service],
-            check=False,
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        script = (
+            f"systemctl start {fstrim_service} "
+            "&& echo 'TRIM operation complete' "
+            "|| echo 'Failed to run TRIM'\n"
+            "echo\nread -p 'Press Enter to close...'"
         )
-        if result.returncode == 0:
-            fn.log_success("TRIM operation started")
-            GLib.idle_add(fn.show_in_app_notification, self, "TRIM run started")
-        else:
-            fn.log_error(f"Failed to run TRIM: {result.stdout.decode().strip()}")
-            GLib.idle_add(fn.show_in_app_notification, self, "Could not run TRIM")
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Running TRIM...")
 
-        refresh_fstrim_status_label(self)
+        def _wait_fstrim_now():
+            process.wait()
+            fn.log_success("TRIM operation complete")
+            GLib.idle_add(fn.show_in_app_notification, self, "TRIM complete")
+            GLib.idle_add(refresh_fstrim_status_label, self)
+
+        fn.threading.Thread(target=_wait_fstrim_now, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to run fstrim: {error}")
         GLib.idle_add(fn.show_in_app_notification, self, "Could not run TRIM")
@@ -786,38 +1059,126 @@ def run_fstrim_now(widget, self):
 
 def install_irqbalance(widget, self):
     """Install irqbalance."""
+    if fn.check_package_installed("irqbalance"):
+        fn.log_info("irqbalance is already installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance is already installed")
+        return
     fn.log_subsection("Install irqbalance")
-    try:
-        fn.install_package(self, "irqbalance")
-        fn.log_success("irqbalance installed")
-        GLib.timeout_add(500, refresh_irqbalance_package_label, self)
-        GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
-        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-    except Exception as error:
-        fn.log_error(f"Failed to install irqbalance: {error}")
+
+    def _do_install():
+        try:
+            fn.debug_print("Terminal: pacman -S --noconfirm --needed irqbalance")
+            fn.debug_print("Terminal: systemctl enable --now irqbalance")
+            install_script = """
+set -o pipefail
+pacman -S --noconfirm --needed irqbalance
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Installation successful'
+    echo ''
+    echo 'Enabling irqbalance...'
+    systemctl enable --now irqbalance && echo '✓ irqbalance enabled' || echo '✗ Failed'
+else
+    echo '✗ Installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", install_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for irqbalance install terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing irqbalance labels")
+            fn.log_success("irqbalance installed")
+            GLib.idle_add(refresh_irqbalance_package_label, self)
+            GLib.idle_add(refresh_irqbalance_service_buttons, self)
+            GLib.idle_add(refresh_irqbalance_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to install irqbalance: {error}")
+
+    fn.threading.Thread(target=_do_install, daemon=True).start()
 
 
 def remove_irqbalance(widget, self):
     """Remove irqbalance."""
+    if not fn.check_package_installed("irqbalance"):
+        fn.log_info("irqbalance is not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance is not installed")
+        return
     fn.log_subsection("Remove irqbalance")
-    try:
-        fn.disable_service("irqbalance")
-        fn.remove_package(self, "irqbalance")
-        fn.log_success("irqbalance removed")
-        GLib.timeout_add(500, refresh_irqbalance_package_label, self)
-        GLib.timeout_add(500, refresh_irqbalance_service_buttons, self)
-        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove irqbalance: {error}")
+
+    def _do_remove():
+        try:
+            fn.debug_print("Terminal: systemctl disable --now irqbalance")
+            fn.debug_print("Terminal: pacman -R --noconfirm irqbalance")
+            remove_script = """
+echo 'Disabling irqbalance...'
+systemctl disable --now irqbalance && echo '✓ irqbalance disabled' || echo '✗ Failed'
+
+echo ''
+echo 'Removing packages...'
+pacman -R --noconfirm irqbalance
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then echo '✓ Removal successful'; else echo '✗ Removal failed'; fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", remove_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for irqbalance remove terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing irqbalance labels")
+            fn.log_success("irqbalance removed")
+            GLib.idle_add(refresh_irqbalance_package_label, self)
+            GLib.idle_add(refresh_irqbalance_service_buttons, self)
+            GLib.idle_add(refresh_irqbalance_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to remove irqbalance: {error}")
+
+    fn.threading.Thread(target=_do_remove, daemon=True).start()
 
 
 def enable_irqbalance_service(widget, self):
     fn.log_subsection("Enable irqbalance Service")
     try:
-        fn.enable_service("irqbalance")
-        fn.log_success("irqbalance service enabled")
-        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled and started")
+        fn.debug_print("Terminal: systemctl enable --now irqbalance")
+        script = (
+            "echo 'Enabling irqbalance...'\n"
+            "systemctl enable --now irqbalance && echo '✓ irqbalance enabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling irqbalance...")
+
+        def _wait_enable_irqbalance():
+            fn.debug_print("Waiting for irqbalance enable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing irqbalance status label")
+            fn.log_success("irqbalance service enabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been enabled and started")
+            GLib.idle_add(refresh_irqbalance_status_label, self)
+
+        fn.threading.Thread(target=_wait_enable_irqbalance, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable irqbalance: {error}")
 
@@ -825,10 +1186,28 @@ def enable_irqbalance_service(widget, self):
 def disable_irqbalance_service(widget, self):
     fn.log_subsection("Disable irqbalance Service")
     try:
-        fn.disable_service("irqbalance")
-        fn.log_success("irqbalance service disabled")
-        GLib.timeout_add(500, refresh_irqbalance_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled and stopped")
+        fn.debug_print("Terminal: systemctl disable --now irqbalance")
+        script = (
+            "echo 'Disabling irqbalance...'\n"
+            "systemctl disable --now irqbalance && echo '✓ irqbalance disabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling irqbalance...")
+
+        def _wait_disable_irqbalance():
+            fn.debug_print("Waiting for irqbalance disable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing irqbalance status label")
+            fn.log_success("irqbalance service disabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "irqbalance has been disabled and stopped")
+            GLib.idle_add(refresh_irqbalance_status_label, self)
+
+        fn.threading.Thread(target=_wait_disable_irqbalance, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable irqbalance: {error}")
 
@@ -894,38 +1273,128 @@ def refresh_ananicy_service_buttons(self):
 
 def install_ananicy(widget, self):
     """Install ananicy-cpp and cachyos-ananicy-rules-git."""
+    if fn.check_package_installed(ANANICY_PACKAGE):
+        fn.log_info("ananicy-cpp is already installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp is already installed")
+        return
     fn.log_subsection("Install ananicy")
-    try:
-        fn.install_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
-        fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git installed")
-        refresh_ananicy_package_label(self)
-        refresh_ananicy_service_buttons(self)
-        refresh_ananicy_status_label(self)
-    except Exception as error:
-        fn.log_error(f"Failed to install ananicy: {error}")
+
+    def _do_install():
+        try:
+            fn.debug_print(f"Terminal: pacman -S --noconfirm --needed {ANANICY_PACKAGE} {ANANICY_RULES_PACKAGE}")
+            fn.debug_print(f"Terminal: systemctl enable --now {ANANICY_PACKAGE}")
+            install_script = f"""
+set -o pipefail
+pacman -S --noconfirm --needed {ANANICY_PACKAGE} {ANANICY_RULES_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Installation successful'
+    echo ''
+    echo 'Enabling ananicy-cpp...'
+    systemctl enable --now {ANANICY_PACKAGE} && echo '✓ ananicy-cpp enabled' || echo '✗ Failed'
+else
+    echo '✗ Installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", install_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for ananicy install terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing ananicy labels")
+            fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been installed")
+            GLib.idle_add(refresh_ananicy_package_label, self)
+            GLib.idle_add(refresh_ananicy_service_buttons, self)
+            GLib.idle_add(refresh_ananicy_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to install ananicy: {error}")
+
+    fn.threading.Thread(target=_do_install, daemon=True).start()
 
 
 def remove_ananicy(widget, self):
     """Remove ananicy-cpp and cachyos-ananicy-rules-git."""
+    if not fn.check_package_installed(ANANICY_PACKAGE):
+        fn.log_info("ananicy-cpp is not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp is not installed")
+        return
     fn.log_subsection("Remove ananicy")
-    try:
-        fn.disable_service(ANANICY_PACKAGE)
-        fn.remove_package(self, ANANICY_PACKAGE + " " + ANANICY_RULES_PACKAGE)
-        fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git removed")
-        refresh_ananicy_package_label(self)
-        refresh_ananicy_service_buttons(self)
-        refresh_ananicy_status_label(self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove ananicy: {error}")
+
+    def _do_remove():
+        try:
+            fn.debug_print(f"Terminal: systemctl disable --now {ANANICY_PACKAGE}")
+            fn.debug_print(f"Terminal: pacman -R --noconfirm {ANANICY_PACKAGE} {ANANICY_RULES_PACKAGE}")
+            remove_script = f"""
+echo 'Disabling ananicy-cpp...'
+systemctl disable --now {ANANICY_PACKAGE} && echo '✓ ananicy-cpp disabled' || echo '✗ Failed'
+
+echo ''
+echo 'Removing packages...'
+pacman -R --noconfirm {ANANICY_PACKAGE} {ANANICY_RULES_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then echo '✓ Removal successful'; else echo '✗ Removal failed'; fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", remove_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for ananicy remove terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing ananicy labels")
+            fn.log_success("ananicy-cpp and cachyos-ananicy-rules-git removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been removed")
+            GLib.idle_add(refresh_ananicy_package_label, self)
+            GLib.idle_add(refresh_ananicy_service_buttons, self)
+            GLib.idle_add(refresh_ananicy_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to remove ananicy: {error}")
+
+    fn.threading.Thread(target=_do_remove, daemon=True).start()
 
 
 def enable_ananicy_service(widget, self):
     fn.log_subsection("Enable ananicy Service")
     try:
-        fn.enable_service(ANANICY_PACKAGE)
-        fn.log_success("ananicy-cpp service enabled")
-        GLib.timeout_add(500, refresh_ananicy_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been enabled and started")
+        fn.debug_print(f"Terminal: systemctl enable --now {ANANICY_PACKAGE}")
+        script = (
+            f"echo 'Enabling ananicy-cpp...'\n"
+            f"systemctl enable --now {ANANICY_PACKAGE} && echo '✓ ananicy-cpp enabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling ananicy-cpp...")
+
+        def _wait_enable_ananicy():
+            fn.debug_print("Waiting for ananicy enable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing ananicy status label")
+            fn.log_success("ananicy-cpp service enabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been enabled and started")
+            GLib.idle_add(refresh_ananicy_status_label, self)
+
+        fn.threading.Thread(target=_wait_enable_ananicy, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable ananicy: {error}")
 
@@ -933,10 +1402,28 @@ def enable_ananicy_service(widget, self):
 def disable_ananicy_service(widget, self):
     fn.log_subsection("Disable ananicy Service")
     try:
-        fn.disable_service(ANANICY_PACKAGE)
-        fn.log_success("ananicy-cpp service disabled")
-        GLib.timeout_add(500, refresh_ananicy_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been disabled and stopped")
+        fn.debug_print(f"Terminal: systemctl disable --now {ANANICY_PACKAGE}")
+        script = (
+            f"echo 'Disabling ananicy-cpp...'\n"
+            f"systemctl disable --now {ANANICY_PACKAGE} && echo '✓ ananicy-cpp disabled' || echo '✗ Failed'\n"
+            "echo\nread -p 'Press Enter to close...'"
+        )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling ananicy-cpp...")
+
+        def _wait_disable_ananicy():
+            fn.debug_print("Waiting for ananicy disable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing ananicy status label")
+            fn.log_success("ananicy-cpp service disabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "ananicy-cpp has been disabled and stopped")
+            GLib.idle_add(refresh_ananicy_status_label, self)
+
+        fn.threading.Thread(target=_wait_disable_ananicy, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable ananicy: {error}")
 
@@ -1040,56 +1527,153 @@ def refresh_gamemode_service_buttons(self):
 
 def install_gamemode(widget, self):
     """Install gamemode."""
+    if fn.check_package_installed(GAMEMODE_PACKAGE):
+        fn.log_info("gamemode is already installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "gamemode is already installed")
+        return
     fn.log_subsection("Install gamemode")
-    try:
-        fn.install_package(self, GAMEMODE_PACKAGE)
-        fn.log_success("gamemode installed")
-        refresh_gamemode_package_label(self)
-        refresh_gamemode_service_buttons(self)
-        refresh_gamemode_status_label(self)
-    except Exception as error:
-        fn.log_error(f"Failed to install gamemode: {error}")
+
+    def _do_install():
+        try:
+            fn.debug_print(f"Terminal: pacman -S --noconfirm --needed {GAMEMODE_PACKAGE}")
+            fn.debug_print("Terminal: systemctl --user --machine=<real_user>@.host enable --now gamemoded.service")
+            fn.debug_print(f"Real user (Python side): {get_real_user()}")
+            install_script = f"""
+REAL_USER="${{PKEXEC_UID:+$(getent passwd "$PKEXEC_UID" | cut -d: -f1)}}"
+[ -z "$REAL_USER" ] && REAL_USER="${{SUDO_USER:-$(logname 2>/dev/null)}}"
+
+set -o pipefail
+pacman -S --noconfirm --needed {GAMEMODE_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Installation successful'
+    if [ -n "$REAL_USER" ]; then
+        echo ''
+        echo "Enabling gamemoded for user $REAL_USER..."
+        systemctl --user --machine="${{REAL_USER}}@.host" enable --now gamemoded.service \\
+            && echo '✓ gamemoded enabled' || echo '✗ Failed to enable'
+    else
+        echo '⚠ Could not determine real user - enable gamemoded manually'
+    fi
+else
+    echo '✗ Installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", install_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for gamemode install terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing gamemode labels")
+            fn.log_success("gamemode installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been installed")
+            GLib.idle_add(refresh_gamemode_package_label, self)
+            GLib.idle_add(refresh_gamemode_service_buttons, self)
+            GLib.idle_add(refresh_gamemode_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to install gamemode: {error}")
+
+    fn.threading.Thread(target=_do_install, daemon=True).start()
 
 
 def remove_gamemode(widget, self):
     """Remove gamemode."""
-    fn.log_subsection("Remove gamemode")
-    try:
-        fn.disable_service(GAMEMODE_PACKAGE)
-        fn.remove_package(self, GAMEMODE_PACKAGE)
-        fn.log_success("gamemode removed")
-        refresh_gamemode_package_label(self)
-        refresh_gamemode_service_buttons(self)
-        refresh_gamemode_status_label(self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove gamemode: {error}")
-
-
-def run_gamemoded_user_command(action):
-    """Run systemctl --user enable/disable for gamemoded via --machine flag."""
-    real_user = get_real_user()
-    if not real_user:
-        fn.debug_print("Could not determine real user for gamemoded service")
+    if not fn.check_package_installed(GAMEMODE_PACKAGE):
+        fn.log_info("gamemode is not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "gamemode is not installed")
         return
-    try:
-        fn.subprocess.run(
-            ["systemctl", "--user", f"--machine={real_user}@.host", action, "gamemoded.service"],
-            check=False,
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-    except Exception as error:
-        fn.debug_print(error)
+    fn.log_subsection("Remove gamemode")
+
+    def _do_remove():
+        try:
+            fn.debug_print("Terminal: systemctl --user --machine=<real_user>@.host disable --now gamemoded.service")
+            fn.debug_print(f"Terminal: pacman -R --noconfirm {GAMEMODE_PACKAGE}")
+            fn.debug_print(f"Real user (Python side): {get_real_user()}")
+            remove_script = f"""
+REAL_USER="${{PKEXEC_UID:+$(getent passwd "$PKEXEC_UID" | cut -d: -f1)}}"
+[ -z "$REAL_USER" ] && REAL_USER="${{SUDO_USER:-$(logname 2>/dev/null)}}"
+
+echo 'Disabling gamemoded...'
+if [ -n "$REAL_USER" ]; then
+    systemctl --user --machine="${{REAL_USER}}@.host" disable --now gamemoded.service \\
+        && echo '✓ gamemoded disabled' || echo '✗ Failed (may already be disabled)'
+else
+    echo '⚠ Could not determine real user - skipping service disable'
+fi
+
+echo ''
+echo 'Removing packages...'
+pacman -R --noconfirm {GAMEMODE_PACKAGE}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then echo '✓ Removal successful'; else echo '✗ Removal failed'; fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+            proc = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", remove_script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            if proc:
+                fn.debug_print("Waiting for gamemode remove terminal to close...")
+                proc.wait()
+            fn.debug_print("Terminal closed — refreshing gamemode labels")
+            fn.log_success("gamemode removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been removed")
+            GLib.idle_add(refresh_gamemode_package_label, self)
+            GLib.idle_add(refresh_gamemode_service_buttons, self)
+            GLib.idle_add(refresh_gamemode_status_label, self)
+        except Exception as error:
+            fn.log_error(f"Failed to remove gamemode: {error}")
+
+    fn.threading.Thread(target=_do_remove, daemon=True).start()
 
 
 def enable_gamemode_service(widget, self):
     fn.log_subsection("Enable gamemode Service")
     try:
-        run_gamemoded_user_command("enable")
-        fn.log_success("gamemode service enabled")
-        GLib.timeout_add(500, refresh_gamemode_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been enabled and started")
+        fn.debug_print(f"Real user (Python side): {get_real_user()}")
+        fn.debug_print("Terminal: systemctl --user --machine=<real_user>@.host enable --now gamemoded.service")
+        script = """
+REAL_USER="${PKEXEC_UID:+$(getent passwd "$PKEXEC_UID" | cut -d: -f1)}"
+[ -z "$REAL_USER" ] && REAL_USER="${SUDO_USER:-$(logname 2>/dev/null)}"
+
+echo "Enabling gamemoded for user $REAL_USER..."
+systemctl --user --machine="${REAL_USER}@.host" enable --now gamemoded.service \\
+    && echo '✓ gamemoded enabled' || echo '✗ Failed'
+
+echo
+read -p 'Press Enter to close...'
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Enabling gamemoded...")
+
+        def _wait_enable_gamemode():
+            fn.debug_print("Waiting for gamemode enable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing gamemode status label")
+            fn.log_success("gamemode service enabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been enabled and started")
+            GLib.idle_add(refresh_gamemode_status_label, self)
+
+        fn.threading.Thread(target=_wait_enable_gamemode, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to enable gamemode: {error}")
 
@@ -1097,9 +1681,34 @@ def enable_gamemode_service(widget, self):
 def disable_gamemode_service(widget, self):
     fn.log_subsection("Disable gamemode Service")
     try:
-        run_gamemoded_user_command("disable")
-        fn.log_success("gamemode service disabled")
-        GLib.timeout_add(500, refresh_gamemode_status_label, self)
-        GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been disabled and stopped")
+        fn.debug_print(f"Real user (Python side): {get_real_user()}")
+        fn.debug_print("Terminal: systemctl --user --machine=<real_user>@.host disable --now gamemoded.service")
+        script = """
+REAL_USER="${PKEXEC_UID:+$(getent passwd "$PKEXEC_UID" | cut -d: -f1)}"
+[ -z "$REAL_USER" ] && REAL_USER="${SUDO_USER:-$(logname 2>/dev/null)}"
+
+echo "Disabling gamemoded for user $REAL_USER..."
+systemctl --user --machine="${REAL_USER}@.host" disable --now gamemoded.service \\
+    && echo '✓ gamemoded disabled' || echo '✗ Failed'
+
+echo
+read -p 'Press Enter to close...'
+"""
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", script],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Disabling gamemoded...")
+
+        def _wait_disable_gamemode():
+            fn.debug_print("Waiting for gamemode disable terminal to close...")
+            process.wait()
+            fn.debug_print("Terminal closed — refreshing gamemode status label")
+            fn.log_success("gamemode service disabled")
+            GLib.idle_add(fn.show_in_app_notification, self, "gamemode has been disabled and stopped")
+            GLib.idle_add(refresh_gamemode_status_label, self)
+
+        fn.threading.Thread(target=_wait_disable_gamemode, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Failed to disable gamemode: {error}")

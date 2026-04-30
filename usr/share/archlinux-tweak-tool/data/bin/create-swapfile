@@ -13,6 +13,8 @@
 # Supported filesystems: ext4, btrfs
 ##################################################################################################################
 
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
 SIZE=${1:-2G}
 SWAPFILE=/swapfile
 

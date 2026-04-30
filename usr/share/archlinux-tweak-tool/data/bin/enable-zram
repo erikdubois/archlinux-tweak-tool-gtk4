@@ -13,6 +13,8 @@
 # Size is passed as a zram-generator expression: ram/2, ram*3/4, 4096, etc.
 ##################################################################################################################
 
+trap 'echo; read -p "Press Enter to close..."' EXIT
+
 SIZE=${1:-"ram / 2"}
 ZRAM_CONF=/etc/systemd/zram-generator.conf
 
