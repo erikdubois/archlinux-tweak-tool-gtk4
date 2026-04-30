@@ -783,7 +783,7 @@ def on_click_fix_sddm_conf(self, widget):
 def on_click_fix_pacman_conf(self, widget):
     fn.log_subsection("Fixing pacman.conf...")
     try:
-        command = "alacritty --hold -e /usr/local/bin/arcolinux-fix-pacman-conf"
+        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf"
         fn.subprocess.call(
             command,
             shell=True,

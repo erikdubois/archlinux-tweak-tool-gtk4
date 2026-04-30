@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Exit on error, undefined variables, and pipe failures
+set -Euo pipefail
+
+# Source common library
+if [[ -f /usr/local/lib/kiro-common.sh ]]; then
+    source /usr/local/lib/kiro-common.sh
+else
+    echo "ERROR: kiro-common.sh not found" >&2
+    exit 1
+fi
+
+log_section "Getting /etc/pacman.conf"
+
+local_pacman="/usr/local/share/kiro/pacman.conf"
+github_url="https://raw.githubusercontent.com/erikdubois/arcolinux-nemesis/refs/heads/master/pacman.conf"
+
+# Priority 1: Check for local pacman.conf first (no internet needed)
+if [[ -f "${local_pacman}" ]]; then
+	log_subsection "Using local pacman.conf"
+	if sudo cp "${local_pacman}" /etc/pacman.conf; then
+		log_success "pacman.conf copied from local system"
+		exit 0
+	else
+		log_warn "Failed to copy local pacman.conf"
+		exit 1
+	fi
+fi
+
+
+# Priority 2: Local not found, try to download
+log_info "Local pacman.conf not found at: ${local_pacman}"
+log_subsection "Checking internet connectivity"
+
+if check_connectivity 3 8.8.8.8; then
+	log_subsection "Downloading latest pacman.conf from github"
+	if sudo wget "${github_url}" -O /etc/pacman.conf; then
+		log_success "pacman.conf downloaded successfully"
+		exit 0
+	else
+		log_warn "Failed to download pacman.conf from github"
+		exit 1
+	fi
+else
+	log_error "$LINENO" "No internet connectivity"
+	log_warn "Cannot proceed: no local file and no internet"
+	exit 1
+fi
+

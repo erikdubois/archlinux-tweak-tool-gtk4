@@ -22,7 +22,6 @@ import gi
 zsh_theme = None
 user = None
 themer = None
-support = None
 settings = None
 services = None
 sddm = None
@@ -130,7 +129,7 @@ class Main(Gtk.ApplicationWindow):
 
         Runs after the window has had a chance to present itself.
         """
-        global zsh_theme, user, themer, support, settings, services, sddm
+        global zsh_theme, user, themer, settings, services, sddm
         global pacman_functions, fastfetch, maintenance, gui, icons, themes, att
         global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
         global functions_makedir, functions_backup, functions_startup, functions_sddm
@@ -144,7 +143,6 @@ class Main(Gtk.ApplicationWindow):
         import zsh_theme as _zsh_theme
         import user as _user
         import themer as _themer
-        import support as _support
         import settings as _settings
         import services as _services
         import sddm as _sddm
@@ -166,7 +164,6 @@ class Main(Gtk.ApplicationWindow):
         zsh_theme = _zsh_theme
         user = _user
         themer = _themer
-        support = _support
         settings = _settings
         services = _services
         sddm = _sddm

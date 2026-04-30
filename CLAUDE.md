@@ -25,7 +25,7 @@ These are the core principles guiding all development on this project:
 8. **Reliability** - Never crash; handle all errors gracefully with user feedback
 9. **Non-Invasive** - Respect user system state; avoid unwanted modifications
 10. **User Communication** - Clearly communicate drastic changes through labels and confirmation dialogs before execution
-11. **Kiro Focus Only** - Remove all references to Garuda, Endeavouros, and ArcoLinux; maintain Kiro as the primary target
+11. **Multi-Distro Scope** - ATT targets all Arch-based systems (Kiro, Artix, Manjaro, etc.); remove Garuda and EndeavourOS *repo and package* references since ATT no longer ships those; keep `fn.distr` detection guards that conditionally show/hide UI to avoid conflicts on specific systems
 12. **Data Folder Consolidation** - Transition to Kiro-only data folder; update all paths before removing other distro-specific directories
 13. **Remove Dead Code** - Eliminate unused functions, imports, and legacy code left-overs; keep codebase clean and maintainable
 14. **Transparency** - Always show the user what is happening to their system; in `--debug` mode show source, target, result for every file operation so nothing happens silently

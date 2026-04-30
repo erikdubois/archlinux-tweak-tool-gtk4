@@ -55,7 +55,7 @@ the nemesis and/or chaotic-aur repo"
     # removed in GTK4: set_wrap_width
 
     dropbox.append(label_warning)
-    # dropbox.pack_start(button_arco_repo, False, False, 0)
+
     dropbox.append(label)
 
     combo_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
