@@ -2,6 +2,7 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import sys
 import functions as fn
 import os
 from gi.repository import Gtk, Gio, Gdk, GdkPixbuf, Pango
@@ -479,8 +480,11 @@ def on_sddm_thumb_clicked(self, _widget, path):
     self.sddm_wallpaper_preview.get_parent().set_visible(True)
 
 
-def on_click_sddm_apply(self):
+def on_click_sddm_apply(self, _widget=None):
     """Apply SDDM settings from UI widgets"""
+    import functions_sddm as _fs
+    fn.debug_print("Running setup_sddm_config() from functions_sddm.py")
+    _fs.setup_sddm_config(self, sys.modules["sddm"])
     try:
         autologin_state = self.autologin_sddm.get_active()
         session = fn.get_combo_text(self.sessions_sddm)

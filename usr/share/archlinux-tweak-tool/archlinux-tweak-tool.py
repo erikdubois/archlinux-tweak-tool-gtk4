@@ -132,7 +132,7 @@ class Main(Gtk.ApplicationWindow):
         global zsh_theme, user, themer, settings, services, sddm
         global pacman_functions, fastfetch, maintenance, gui, icons, themes, att
         global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
-        global functions_makedir, functions_backup, functions_startup, functions_sddm
+        global functions_makedir, functions_backup, functions_startup
 
         startup_start = time.time()
         fn.debug_print("Startup sequence initiated")
@@ -158,7 +158,6 @@ class Main(Gtk.ApplicationWindow):
         import functions_makedir as _functions_makedir
         import functions_backup as _functions_backup
         import functions_startup as _functions_startup
-        import functions_sddm as _functions_sddm
         from packages_prompt_gui import PackagesPromptGui as _PackagesPromptGui
 
         zsh_theme = _zsh_theme
@@ -179,7 +178,6 @@ class Main(Gtk.ApplicationWindow):
         functions_makedir = _functions_makedir
         functions_backup = _functions_backup
         functions_startup = _functions_startup
-        functions_sddm = _functions_sddm
         PackagesPromptGui = _PackagesPromptGui
         call = _call
         pmf = pacman_functions
@@ -244,7 +242,7 @@ class Main(Gtk.ApplicationWindow):
     # PRIVACY → privacy.py | SDDM → sddm.py | SERVICES → services.py
     # SHELLS → shell.py | SYSTEM → system.py | THEMER → themer.py
     # THEMES → themes.py | USER → user.py | ZSH THEMES → zsh_theme.py
-    # Startup initialization → functions_startup.py, functions_makedir.py, functions_backup.py, functions_sddm.py
+    # Startup initialization → functions_startup.py, functions_makedir.py, functions_backup.py
     # Image utilities → functions.py
 
     # Bottom buttons

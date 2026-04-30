@@ -12,6 +12,28 @@ These files are tested and working. Any change requires user confirmation first.
 
 ---
 
+## 2026.04.30 - Dead Code Removal & Objective Correction
+
+### What Changed
+
+- Removed `support.py` entirely — the `Support` dialog class was never instantiated anywhere
+- Removed all references to `support` from `archlinux-tweak-tool.py` (global declaration, lazy import, assignment)
+- Updated `maintenance.py` script path: `arcolinux-fix-pacman-conf` → `att-fix-pacman-conf` at new ATT data path
+- Deleted dead commented-out line in `desktopr_gui.py` (arco repo button reference)
+- Corrected CLAUDE.md objective 11: ATT targets all Arch-based systems, not Kiro-only; `fn.distr` guards are intentional
+
+### Technical Details
+
+- `support.py` contained a `Support(Gtk.Dialog)` class with ArcoLinux donation/Patreon links; it was imported but never called
+- `maintenance.py` fix-pacman-conf command now points to `/usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf`
+- `fn.distr` conditional guards (e.g. hiding Audio tab on Garuda/Manjaro) are intentional multi-distro compatibility code — do not remove
+
+### Files Modified
+
+`support.py` (deleted) • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `CLAUDE.md`
+
+---
+
 ## 2026.04.29 - Pacman Page — Full Fix & Freeze
 
 ### What Changed
