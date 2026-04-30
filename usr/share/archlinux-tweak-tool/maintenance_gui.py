@@ -266,7 +266,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
 
     hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox6_label = Gtk.Label(xalign=0)
-    hbox6_label.set_text("Get the original ArcoLinux /etc/pacman.conf")
+    hbox6_label.set_text("Get the original ATT /etc/pacman.conf")
     btn_reset_pacman = Gtk.Button(label="Reset pacman.conf")
     btn_reset_pacman.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_conf, self))
     hbox6_label.set_margin_start(10)
