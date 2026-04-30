@@ -77,7 +77,11 @@ success "Keyserver added to gpg.conf"
 
 # ── Refresh databases ─────────────────────────────────────────────────────────
 header "Refreshing Package Databases"
-sudo pacman -Sy
+if [[ $Online -eq 1 ]]; then
+    sudo pacman -Sy
+else
+    warn "No internet connection — skipping database refresh"
+fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""

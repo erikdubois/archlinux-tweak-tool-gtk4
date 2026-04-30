@@ -25,6 +25,49 @@ These files are tested and working. Any change requires user confirmation first.
 | `logging_gui.py` | Logging page UI — nine log viewer button rows |
 | `maintenance.py` | Maintenance callbacks — cache clean, orphan remove, pacman lock, mirrors, hw-probe, cursors |
 | `maintenance_gui.py` | Maintenance page UI — all button rows and section layout |
+| `autostart.py` | Autostart callbacks — enable/disable autostart entries |
+| `autostart_gui.py` | Autostart page UI |
+
+---
+
+## 2026.04.30 - Maintenance Tab Freeze, SDDM Fix Keys Script, Keyring & GPG Fixes
+
+### What Changed
+
+#### Maintenance tab (maintenance.py)
+
+- **`_run_terminal` helper added** — all 9 alacritty `subprocess.call` launches converted to `Popen` + daemon thread; ATT no longer freezes while terminal is open
+- **`widget` → `_widget`** — all callback parameters renamed project-wide convention
+- **`fn.install_package` removed** from callbacks for tools assumed present (alacritty, hw-probe, reflector)
+- **Pacman cache cleanup** — `on_click_clean_cache` now removes leftover `download-*` temp directories before `pacman -Sc`; uses `compgen -G` to check existence first so the "Temp download files removed" line only prints when files actually existed; console `log_info` likewise only fires when temp files are present
+- **Keyring local install fixed** — `str(files).strip("[]'")` replaced with proper list filter (`f.endswith(".pkg.tar.zst")`) + `os.path.join`; same fix applied to online download path
+- **GPG conf reset cleaned up** — removed noisy content dump and stacked `"=" * 70` separators from both `on_click_fix_pacman_gpg_conf` and `on_click_fix_pacman_gpg_conf_local`; output is now three lines: subsection header, optional backup line, success
+
+#### `functions.py` — `install_local_package`
+
+- `debug_print` on success/failure replaced with `log_success` / `log_error` so result is always visible without `--debug`
+
+#### Fix keys script (`data/bin/fix-pacman-databases-and-keys`)
+
+- Full rewrite with colour helpers (`separator`, `header`, `success`, `warn`, `info`) matching `fix-sddm-config` style
+- `pacman -Sy` and keyring download now guarded by `$Online` flag — both steps skipped with a `warn` when offline
+
+#### SDDM page — Fix SDDM config button
+
+- **`on_click_fix_sddm_conf`** added to `sddm.py` with `confirm_dialog` before running the script
+- **"Fix SDDM config" button** added to `sddm_gui.py` right-aligned in `hbox_wp_btns` via expanding spacer
+- **`data/bin/fix-sddm-config`** rewritten with colour/structure, online/offline fallback, live-user setting patch
+
+### Technical Details
+
+- `_run_terminal(self, cmd, done_msg, start_msg=None)`: `Popen(cmd, shell=True).wait()` in daemon thread; `GLib.idle_add` fires notification on GTK thread when done
+- `compgen -G "/var/cache/pacman/pkg/download-*"` used in bash to test glob match without triggering errors on no-match
+- `rm -rf` (not `-f`) required because `download-*` entries are directories, not files
+- Keyring filter: `[f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]` — rejects `.pkg.tar.zst.1` partial download fragments
+
+### Files Modified
+
+`maintenance.py` • `maintenance_gui.py` • `sddm.py` • `sddm_gui.py` • `functions.py` • `data/bin/fix-pacman-databases-and-keys` • `data/bin/fix-sddm-config` • `CHANGELOG.md`
 
 ---
 

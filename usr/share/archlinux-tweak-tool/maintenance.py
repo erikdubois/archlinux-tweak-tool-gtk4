@@ -683,21 +683,14 @@ def on_click_fix_pacman_gpg_conf(self, _widget):
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_path = base_dir + "/data/gpg.conf"
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
-        fn.debug_print(f"Creating backup to {fn.gpg_conf}.bak")
         fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
-    fn.debug_print(f"Restoring from {gpg_conf_path}")
+        fn.log_info(f"Backup created: {fn.gpg_conf}.bak")
+    fn.debug_print(f"Restoring from: {gpg_conf_path}")
     try:
-        with open(gpg_conf_path, 'r') as f:
-            content = f.read()
+        fn.shutil.copy(gpg_conf_path, fn.gpg_conf)
     except Exception as e:
-        fn.log_error(f"Error reading gpg.conf: {e}")
+        fn.log_error(f"Error restoring gpg.conf: {e}")
         return
-    fn.log_info("=" * 70)
-    fn.log_info("Content of restored gpg.conf:")
-    fn.log_info("=" * 70)
-    fn.log_info(content)
-    fn.log_info("=" * 70)
-    fn.shutil.copy(gpg_conf_path, fn.gpg_conf)
     fn.log_success("/etc/pacman.d/gnupg/gpg.conf saved")
     GLib.idle_add(
         fn.show_in_app_notification,
@@ -718,28 +711,21 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
     if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
         try:
-            fn.debug_print(f"Creating backup to {fn.gpg_conf_local}.bak")
             fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
             fn.permissions(fn.gpg_conf_local + ".bak")
+            fn.log_info(f"Backup created: {fn.gpg_conf_local}.bak")
         except Exception as error:
             fn.log_error(f"Error creating backup: {error}")
 
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_local_path = base_dir + "/data/gpg.conf"
-    fn.debug_print(f"Restoring from {gpg_conf_local_path}")
+    fn.debug_print(f"Restoring from: {gpg_conf_local_path}")
     try:
-        with open(gpg_conf_local_path, 'r') as f:
-            content = f.read()
+        fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)
+        fn.permissions(fn.gpg_conf_local)
     except Exception as e:
-        fn.log_error(f"Error reading local gpg.conf: {e}")
+        fn.log_error(f"Error restoring local gpg.conf: {e}")
         return
-    fn.log_info("=" * 70)
-    fn.log_info("Content of restored local gpg.conf:")
-    fn.log_info("=" * 70)
-    fn.log_info(content)
-    fn.log_info("=" * 70)
-    fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)
-    fn.permissions(fn.gpg_conf_local)
     fn.log_success("~/.gnupg/gpg.conf saved")
     GLib.idle_add(
         fn.show_in_app_notification,

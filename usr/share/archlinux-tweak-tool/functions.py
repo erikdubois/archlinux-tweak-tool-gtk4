@@ -1517,146 +1517,184 @@ def add_autologin_group(self):
 
 
 def install_discovery(self):
-    try:
-        packages = "avahi nss-mdns gvfs-smb"
-        debug_print(f"[INFO] Opening terminal to install: {packages}")
-        launch_pacman_install_in_terminal(packages)
-
-        command = "systemctl enable avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    import shutil
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True
         )
-        debug_print("[INFO] Avahi daemon enabled")
-    except Exception as error:
-        debug_print(f"[INFO] Error installing discovery: {error}")
+        if proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {proc.stderr}")
+            return
+
+    log_subsection("Install Network Discovery")
+    script = """
+pacman -S --noconfirm --needed avahi nss-mdns gvfs-smb
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Packages installed'
+    echo ''
+    echo 'Enabling avahi-daemon...'
+    systemctl enable avahi-daemon.service --now
+    systemctl enable avahi-daemon.socket
+    echo '✓ Network discovery enabled'
+else
+    echo '✗ Package installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+
+    def _launch():
+        try:
+            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+            GLib.idle_add(show_in_app_notification, self, "Installing network discovery...")
+        except Exception as error:
+            GLib.idle_add(log_error, f"Failed to install network discovery: {error}")
+
+    threading.Thread(target=_launch, daemon=True).start()
 
 
 def remove_discovery(self):
-    try:
-        command = "systemctl stop avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+    import shutil
 
-        command = "systemctl disable avahi-daemon.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True
         )
-        debug_print("[INFO] Avahi daemon disabled")
+        if proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {proc.stderr}")
+            return
 
-        command = "systemctl stop avahi-daemon.socket -f"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+    log_subsection("Disable Network Discovery")
+    script = """
+echo 'Stopping avahi-daemon...'
+systemctl stop avahi-daemon.service
+systemctl disable avahi-daemon.service
+systemctl stop avahi-daemon.socket
+systemctl disable avahi-daemon.socket
+echo '✓ Network discovery stopped and disabled'
 
-        command = "systemctl disable avahi-daemon.socket -f"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        debug_print("[INFO] Avahi socket disabled")
+echo ''
+echo 'Note: packages avahi, nss-mdns and gvfs-smb are NOT removed.'
+echo 'They may be required by other packages on your system.'
+echo 'To remove them manually: pacman -R avahi nss-mdns gvfs-smb'
 
-        packages = "avahi nss-mdns gvfs-smb"
-        debug_print(f"[INFO] Opening terminal to remove: {packages}")
-        launch_pacman_remove_in_terminal(packages)
-    except Exception as error:
-        debug_print(f"[INFO] Error removing discovery: {error}")
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+
+    def _launch():
+        try:
+            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+            GLib.idle_add(show_in_app_notification, self, "Network discovery disabled")
+            GLib.idle_add(log_success, "Avahi daemon stopped and disabled")
+        except Exception as error:
+            GLib.idle_add(log_error, f"Failed to disable network discovery: {error}")
+
+    threading.Thread(target=_launch, daemon=True).start()
 
 
 def install_samba(self):
-    try:
-        install = "pacman -S samba gvfs-smb --needed --noconfirm"
-
-        if not path.isdir("/var/cache/samba"):
-            makedirs("/var/cache/samba", 0o755)
-
-        if check_package_installed("samba") and check_package_installed("gvfs-smb"):
-            pass
-        else:
-            subprocess.call(
-                install.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            debug_print("Samba and gvfs-smb are now installed")
-
-        command = "systemctl enable smb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    import shutil
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True
         )
-        debug_print("We enabled smb.service")
+        if proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {proc.stderr}")
+            return
 
-        command = "systemctl enable nmb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        debug_print("We enabled nmb.service")
-    except Exception as error:
-        debug_print(error)
+    log_subsection("Install Samba")
+    script = """
+mkdir -p /var/cache/samba
+pacman -S --noconfirm --needed samba gvfs-smb
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Packages installed'
+    echo ''
+    echo 'Enabling smb and nmb services...'
+    systemctl enable smb.service --now
+    systemctl enable nmb.service --now
+    echo '✓ Samba services enabled'
+else
+    echo '✗ Package installation failed'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+
+    def _launch():
+        try:
+            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+            GLib.idle_add(show_in_app_notification, self, "Installing samba...")
+        except Exception as error:
+            GLib.idle_add(log_error, f"Failed to install samba: {error}")
+
+    threading.Thread(target=_launch, daemon=True).start()
 
 
 def uninstall_samba(self):
-    try:
-        command = "systemctl disable smb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    import shutil
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True
         )
-        debug_print("We disabled smb.service")
+        if proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {proc.stderr}")
+            return
 
-        command = "systemctl disable nmb.service -f --now"
-        subprocess.call(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        debug_print("We disabled nmb.service")
+    log_subsection("Uninstall Samba")
+    script = """
+echo 'Stopping samba services...'
+systemctl stop smb.service
+systemctl disable smb.service
+systemctl stop nmb.service
+systemctl disable nmb.service
+echo '✓ Samba services stopped and disabled'
 
-        command = "pacman -Rs samba --noconfirm"
-        if check_package_installed("samba"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            debug_print("Samba was removed if there were no dependencies")
+echo ''
+echo 'Removing samba packages...'
+pacman -Rs --noconfirm samba gvfs-smb
+RESULT=$?
 
-        command = "pacman -Rs gvfs-smb --noconfirm"
-        if check_package_installed("nss-mdns"):
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            debug_print("gvfs-smb was removed")
-    except Exception as error:
-        debug_print(error)
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Samba packages removed'
+else
+    echo 'Note: packages could not be fully removed (may have dependencies)'
+    echo 'To remove manually: pacman -Rs samba gvfs-smb'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+
+    def _launch():
+        try:
+            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+            GLib.idle_add(show_in_app_notification, self, "Uninstalling samba...")
+        except Exception as error:
+            GLib.idle_add(log_error, f"Failed to uninstall samba: {error}")
+
+    threading.Thread(target=_launch, daemon=True).start()
 
 
 def copy_samba(choice):
@@ -1672,9 +1710,6 @@ def copy_samba(choice):
         stderr=subprocess.PIPE,
     )
     if choice == "example":
-        if not path.isdir("/home/" + sudo_username + "/Shared"):
-            makedirs("/home/" + sudo_username + "/Shared", 0o755)
-        permissions("/home/" + sudo_username + "/Shared")
         try:
             with open(samba_config, "r", encoding="utf-8") as f:
                 lists = f.readlines()
@@ -1845,24 +1880,21 @@ def copy_nsswitch(new_hosts_line):
         with open(dest_file, 'r') as f:
             dest_lines = f.readlines()
 
-        # Find and replace only the hosts: line
         old_hosts_line = None
         updated_lines = []
         for line in dest_lines:
             if line.startswith('hosts:'):
                 old_hosts_line = line.rstrip('\n')
-                updated_lines.append(new_hosts_line + '\n')
+                updated_lines.append('hosts: ' + new_hosts_line + '\n')
             else:
                 updated_lines.append(line)
 
-        # Write back to nsswitch.conf
         with open(dest_file, 'w') as f:
             f.writelines(updated_lines)
 
-        # Show what changed
         if old_hosts_line:
-            debug_print(f"[INFO] Previous code: {old_hosts_line}")
-            debug_print(f"[INFO] New code:      {new_hosts_line}")
+            debug_print(f"[INFO] Previous: {old_hosts_line}")
+            debug_print(f"[INFO] New:      hosts: {new_hosts_line}")
     except Exception as e:
         debug_print(f"[INFO] Error updating nsswitch.conf: {e}")
 

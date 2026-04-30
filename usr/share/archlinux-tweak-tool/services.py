@@ -4,61 +4,128 @@
 
 import functions as fn
 from functions import GLib
+from gi.repository import Gtk
 
 
 def choose_nsswitch(self):
     """choose a nsswitch based on hosts: line"""
-    choice = fn.get_combo_text(self.nsswitch_choices)
+    fn.log_subsection("Apply Nsswitch Configuration")
+    label = fn.get_combo_text(self.nsswitch_choices)
 
-    # Map hosts: lines to config directories
-    hosts_to_config = {
-        "mymachines resolve [!UNAVAIL=return] files myhostname dns": ("arch", "Standard (no mdns)"),
-        "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname": ("arco", "With mdns + wins"),
-        "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns": ("biglinux", "With mdns_minimal"),
-        "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns": ("manjaro", "With mdns4_minimal"),
-        "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins": ("garuda", "Custom order (no systemd)"),
+    nsswitch_options = {
+        "Standard (no mdns)":
+            "mymachines resolve [!UNAVAIL=return] files myhostname dns",
+        "With mdns + wins":
+            "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname",
+        "With mdns_minimal":
+            "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+        "With mdns4_minimal":
+            "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+        "Custom order (no systemd)":
+            "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins",
     }
 
-    if choice in hosts_to_config:
-        label = hosts_to_config[choice][1]
-        fn.debug_print(f"Applying nsswitch configuration: {label}")
-        fn.copy_nsswitch(choice)
-        fn.log_success(f"Nsswitch configuration applied: {label}")
+    if label in nsswitch_options:
+        hosts_line = nsswitch_options[label]
+        fn.debug_print(f"Selected preset : {label}")
+        fn.debug_print(f"Writing hosts:  : hosts: {hosts_line}")
+        fn.copy_nsswitch(hosts_line)
+        fn.log_success(f"Nsswitch applied: {label}")
         GLib.idle_add(fn.show_in_app_notification, self, f"Nsswitch: {label}")
+    else:
+        fn.log_warn(f"Unknown nsswitch preset: {label}")
 
 
 def choose_smb_conf(self):
     """Apply the Easy samba configuration"""
-    fn.debug_print("Applying Easy samba configuration")
-    fn.copy_samba("example")
-    fn.log_success("Easy samba configuration applied")
-    GLib.idle_add(
-        fn.show_in_app_notification, self, "Smb.conf easy configuration applied"
+    fn.log_subsection("Apply Samba Configuration")
+    shared_path = f"/home/{fn.sudo_username}/Shared"
+
+    def _apply():
+        fn.debug_print("  Config : example smb.conf")
+        fn.copy_samba("example")
+        fn.log_success("Samba configuration applied")
+        GLib.idle_add(fn.show_in_app_notification, self, "Smb.conf easy configuration applied")
+
+    if fn.path.isdir(shared_path):
+        fn.debug_print(f"  Folder : {shared_path} already exists")
+        _apply()
+        return
+
+    dialog = Gtk.MessageDialog(
+        transient_for=self,
+        modal=True,
+        message_type=Gtk.MessageType.QUESTION,
+        buttons=Gtk.ButtonsType.YES_NO,
+        text=(
+            f"Create Shared folder?\n\n"
+            f"ATT will create {shared_path} as your samba share folder.\n"
+            "If you choose No, create the folder yourself before connecting."
+        ),
     )
+
+    def on_response(_dialog, response):
+        _dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            fn.makedirs(shared_path, 0o755)
+            fn.permissions(shared_path)
+            fn.debug_print(f"  Created : {shared_path}")
+        else:
+            fn.debug_print("  Skipped : folder creation — user declined")
+        _apply()
+
+    dialog.connect("response", on_response)
+    dialog.present()
 
 
 def create_samba_user(self):
     """create a new user for samba"""
-
     username = fn.sudo_username
 
-    if username:
-        fn.log_subsection("Create Samba User")
-        fn.install_package(self, "alacritty")
-        fn.debug_print(f"Username: {username}")
-        fn.debug_print("Samba uses a separate password from Linux user accounts")
+    if not username:
+        fn.log_warn("Could not determine current user for samba password")
+        return
+
+    fn.log_subsection("Create Samba User")
+    fn.debug_print(f"  Username : {username}")
+    fn.debug_print("  Note     : Samba uses a separate password from Linux user accounts")
+
+    script = f"""
+echo 'Creating samba password for user: {username}'
+echo 'Samba uses a separate password from your Linux login.'
+echo ''
+
+if ! command -v smbpasswd &>/dev/null; then
+    echo '✗ smbpasswd not found — please install samba first'
+    echo ''
+    echo '=== Operation Finished ==='
+    read -p 'Press Enter to close...'
+    exit 1
+fi
+
+smbpasswd -a {username}
+RESULT=$?
+
+echo ''
+if [ $RESULT -eq 0 ]; then
+    echo '✓ Samba password set successfully'
+else
+    echo '✗ Failed to set samba password'
+fi
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+
+    def _launch():
         try:
-            fn.subprocess.call(
-                "alacritty -e /usr/bin/smbpasswd -a " + username,
-                shell=True,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.STDOUT,
-            )
-            fn.log_success("Samba user created successfully")
-            fn.show_in_app_notification(self, "Created a password for the current user")
+            fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+            fn.GLib.idle_add(fn.show_in_app_notification, self, f"Setting samba password for {username}...")
         except Exception as error:
-            fn.log_error(f"Failed to create samba user: {error}")
-            fn.show_in_app_notification(self, f"Error creating samba user: {error}")
+            fn.GLib.idle_add(fn.log_error, f"Failed to open terminal: {error}")
+
+    fn.threading.Thread(target=_launch, daemon=True).start()
 
 
 def add_autoconnect_pulseaudio(self):
@@ -485,15 +552,12 @@ def on_install_discovery_clicked(self, widget):
 
 
 def on_remove_discovery_clicked(self, widget):
-    fn.log_subsection("Remove Network Discovery")
+    fn.log_subsection("Disable Network Discovery")
     try:
         fn.remove_discovery(self)
-        fn.debug_print("Network discovery packages removed")
         update_network_status(self)
-        fn.log_success("Network discovery removed successfully")
-        GLib.idle_add(fn.show_in_app_notification, self, "Network discovery is removed")
     except Exception as error:
-        fn.log_error(f"Failed to remove network discovery: {error}")
+        fn.log_error(f"Failed to disable network discovery: {error}")
 
 
 def on_click_reset_nsswitch(self, widget):
@@ -548,10 +612,6 @@ def on_click_save_samba_share(self, widget):
         fn.log_error(f"Failed to save samba configuration: {error}")
 
 
-def on_click_install_arco_thunar_plugin(self, widget):
-    fn.install_arco_thunar_plugin(self, widget)
-
-
 def on_click_apply_samba(self, widget):
     fn.log_subsection("Apply Samba Configuration")
     try:
@@ -595,31 +655,17 @@ def on_click_edit_samba_nano(self, widget):
 
 
 def on_click_install_samba(self, widget):
-    fn.log_subsection("Install Samba")
     try:
-        fn.debug_print("Installing samba package")
         fn.install_samba(self)
-        fn.debug_print("Samba package installed successfully")
-        fn.debug_print("Applying Easy configuration with automatic Shared folder setup")
         choose_smb_conf(self)
-        fn.debug_print("Easy configuration applied")
         update_network_status(self)
-        fn.log_success("Samba installed with Easy configuration")
-        fn.show_in_app_notification(
-            self, "Samba installed with Easy configuration. Restart smb to apply."
-        )
     except Exception as error:
         fn.log_error(f"Failed to install samba: {error}")
 
 
 def on_click_uninstall_samba(self, widget):
-    fn.log_subsection("Uninstall Samba")
     try:
-        fn.debug_print("Uninstalling samba package")
         fn.uninstall_samba(self)
-        fn.debug_print("Samba package uninstalled successfully")
         update_network_status(self)
-        fn.log_success("Samba uninstalled")
-        fn.show_in_app_notification(self, "Samba has been uninstalled")
     except Exception as error:
         fn.log_error(f"Failed to uninstall samba: {error}")

@@ -66,11 +66,11 @@ def gui(self, Gtk, vboxstack_network, fn):
 
     hbox30 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.nsswitch_choices = Gtk.DropDown.new_from_strings([
-        "mymachines resolve [!UNAVAIL=return] files myhostname dns",
-        "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname",
-        "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
-        "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
-        "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins",
+        "Standard (no mdns)",
+        "With mdns + wins",
+        "With mdns_minimal",
+        "With mdns4_minimal",
+        "Custom order (no systemd)",
     ])
     self.nsswitch_choices.set_selected(0)
     self.nsswitch_choices.set_margin_start(10)
@@ -205,7 +205,7 @@ if it is not already there\n ")
     hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox16_label = Gtk.Label(xalign=0)
     hbox16_label.set_markup(
-        "You can now reboot and enjoy the <b>'Shared'</b> folder if you choose '<b>easy</b>' "
+        "You can now reboot and enjoy the <b>'Shared'</b> folder"
     )
     hbox16_label.set_margin_start(10)
     hbox16_label.set_margin_end(10)
@@ -230,15 +230,6 @@ All computers in your network must have a unique name /etc/hostname"
     hbox95_label.set_margin_end(10)
     hbox95_label.set_hexpand(True)
     hbox95.append(hbox95_label)
-
-    hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    install_arco_thunar_plugin = Gtk.Button(label="Install Thunar share plugin")
-    install_arco_thunar_plugin.connect(
-        "clicked", functools.partial(services.on_click_install_arco_thunar_plugin, self)
-    )
-    install_arco_thunar_plugin.set_margin_start(10)
-    install_arco_thunar_plugin.set_margin_end(10)
-    hbox19.append(install_arco_thunar_plugin)
 
     # ======================================================================
     #                       SHARED STATUS BAR
