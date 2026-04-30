@@ -55,26 +55,43 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox5_lbl.set_name("title")
         hbox5.append(hbox5_lbl)
 
-        hbox6 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_bash_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         hseparator.set_hexpand(True)
         hseparator.set_vexpand(False)
-        hbox6.append(hseparator)
+        hbox_bash_top_sep.append(hseparator)
 
-        hbox7 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox7_lbl = Gtk.Label(xalign=0)
+        # ── Installation ──────────────────────────────────────────────
+
+        hbox_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_installation_title_lbl = Gtk.Label(xalign=0)
+        hbox_installation_title_lbl.set_markup("<b>Installation</b>")
+        hbox_installation_title_lbl.set_margin_start(10)
+        hbox_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_installation_sep.set_hexpand(True)
+        hbox_installation_sep.set_valign(Gtk.Align.CENTER)
+        hbox_installation_title.append(hbox_installation_title_lbl)
+        hbox_installation_title.append(hbox_installation_sep)
+
+        hbox_bash_completion_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.bash_completion_lbl = Gtk.Label(xalign=0)
         if fn.check_package_installed("bash"):
-            hbox7_lbl.set_markup("Bash is already <b>installed</b>")
+            self.bash_completion_lbl.set_markup("Bash is already <b>installed</b>")
         else:
-            hbox7_lbl.set_markup("Bash is not installed")
+            self.bash_completion_lbl.set_markup("Bash is not installed")
         if fn.check_package_installed("bash-completion"):
-            hbox7_lbl.set_markup(
+            self.bash_completion_lbl.set_markup(
                 "Bash and bash-completion are already <b>installed</b>"
             )
         else:
-            hbox7_lbl.set_markup(
-                "Bash is already installed and  bash-completion is not installed"
+            self.bash_completion_lbl.set_markup(
+                "Bash is already installed and bash-completion is not installed"
             )
+        self.bash_completion_lbl.set_margin_start(10)
+        self.bash_completion_lbl.set_margin_end(10)
+        hbox_bash_completion_lbl.append(self.bash_completion_lbl)
+
+        hbox_bash_completion_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         install_bash_completion = Gtk.Button(label="Install bash-completion")
         install_bash_completion.connect(
             "clicked", functools.partial(shell.on_install_bash_completion_clicked, self)
@@ -83,73 +100,85 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         remove_bash_completion.connect(
             "clicked", functools.partial(shell.on_remove_bash_completion_clicked, self)
         )
-        hbox7_lbl.set_margin_start(10)
-        hbox7_lbl.set_margin_end(10)
-        hbox7_lbl.set_hexpand(True)
-        hbox7.append(hbox7_lbl)
-        install_bash_completion.set_margin_start(10)
-        install_bash_completion.set_margin_end(10)
-        hbox7.append(install_bash_completion)  # pack_end
-        remove_bash_completion.set_margin_start(10)
-        remove_bash_completion.set_margin_end(10)
-        hbox7.append(remove_bash_completion)  # pack_end
+        hbox_bash_completion_btns.set_margin_start(10)
+        hbox_bash_completion_btns.append(install_bash_completion)
+        hbox_bash_completion_btns.append(remove_bash_completion)
 
-        hbox8 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox8_lbl = Gtk.Label(xalign=0)
-        hbox8_lbl.set_markup("Overwrite your ~/.bashrc with the ATT bashrc")
+        # ── ATT config ────────────────────────────────────────────────
+
+        hbox_att_config_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_att_config_title_lbl = Gtk.Label(xalign=0)
+        hbox_att_config_title_lbl.set_markup("<b>ATT config</b>")
+        hbox_att_config_title_lbl.set_margin_start(10)
+        hbox_att_config_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_att_config_sep.set_hexpand(True)
+        hbox_att_config_sep.set_valign(Gtk.Align.CENTER)
+        hbox_att_config_title.append(hbox_att_config_title_lbl)
+        hbox_att_config_title.append(hbox_att_config_sep)
+
+        hbox_bash_config_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        hbox_bash_config_lbl_txt = Gtk.Label(xalign=0)
+        hbox_bash_config_lbl_txt.set_markup("Overwrite your ~/.bashrc with the ATT bashrc")
+        hbox_bash_config_lbl_txt.set_margin_start(10)
+        hbox_bash_config_lbl_txt.set_margin_end(10)
+        hbox_bash_config_lbl.append(hbox_bash_config_lbl_txt)
+
+        hbox_bash_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.arcolinux_bash = Gtk.Button(label="Install the ATT bashrc configuration")
         self.arcolinux_bash.connect("clicked", functools.partial(shell.on_arcolinux_bash_clicked, self))
         self.bash_reset = Gtk.Button(label="Reset back to the original ~/.bashrc")
         self.bash_reset.connect("clicked", functools.partial(shell.on_bash_reset_clicked, self))
-        hbox8_lbl.set_margin_start(10)
-        hbox8_lbl.set_margin_end(10)
-        hbox8_lbl.set_hexpand(True)
-        hbox8.append(hbox8_lbl)
-        self.arcolinux_bash.set_margin_start(10)
-        self.arcolinux_bash.set_margin_end(10)
-        hbox8.append(self.arcolinux_bash)  # pack_end
-        self.bash_reset.set_margin_start(10)
-        self.bash_reset.set_margin_end(10)
-        hbox8.append(self.bash_reset)  # pack_end
+        hbox_bash_config_btns.set_margin_start(10)
+        hbox_bash_config_btns.append(self.arcolinux_bash)
+        hbox_bash_config_btns.append(self.bash_reset)
 
-        hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox9_lbl = Gtk.Label()
-        hbox9_lbl.set_markup("\n<b>If you just switched shell, log-out first</b>")
-        # hbox9_lbl.set_margin_top(30)
-        hbox9_lbl.set_margin_start(10)
-        hbox9_lbl.set_margin_end(10)
-        hbox9.append(hbox9_lbl)
+        # ── Change shell ──────────────────────────────────────────────
 
-        # ==========================================================
-        #                     BUTTONS
-        # ==========================================================
+        hbox_change_shell_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_change_shell_title_lbl = Gtk.Label(xalign=0)
+        hbox_change_shell_title_lbl.set_markup("<b>Change shell</b>")
+        hbox_change_shell_title_lbl.set_margin_start(10)
+        hbox_change_shell_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_change_shell_sep.set_hexpand(True)
+        hbox_change_shell_sep.set_valign(Gtk.Align.CENTER)
+        hbox_change_shell_title.append(hbox_change_shell_title_lbl)
+        hbox_change_shell_title.append(hbox_change_shell_sep)
 
-        hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_logout_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_logout_warning_lbl = Gtk.Label()
+        hbox_logout_warning_lbl.set_markup("<b>If you just switched shell, log-out first</b>")
+        hbox_logout_warning_lbl.set_margin_start(10)
+        hbox_logout_warning_lbl.set_margin_end(10)
+        hbox_logout_warning.append(hbox_logout_warning_lbl)
+
+        hbox_shell_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         tobash = Gtk.Button(label="Apply bash")
         tobash.connect("clicked", functools.partial(shell.tobash_apply, self))
         tofish = Gtk.Button(label="Apply fish")
         tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
         tozsh = Gtk.Button(label="Apply zsh")
         tozsh.connect("clicked", functools.partial(shell.tozsh_apply, self))
-        # bashreset = Gtk.Button(label="Reset bash")
-        # bashreset.connect("clicked", functools.partial(shell.on_bash_reset_clicked, self))
-
-        hbox10.append(tobash)
+        hbox_shell_buttons.set_margin_start(10)
+        hbox_shell_buttons.append(tobash)
         if not fn.distr == "archcraft":
-            hbox10.append(tofish)
-        hbox10.append(tozsh)
-        # hbox10.pack_end(bashreset, False, False, 0)
+            hbox_shell_buttons.append(tofish)
+        hbox_shell_buttons.append(tozsh)
 
         # ==========================================================
         #                     VBOXSTACK
         # ==========================================================
 
-        vboxstack1.append(hbox5)  # Combobox
-        vboxstack1.append(hbox6)  # Combobox
-        vboxstack1.append(hbox7)  # fish
-        vboxstack1.append(hbox8)  # oh-my-fish
-        vboxstack1.append(hbox9)  # image
-        vboxstack1.append(hbox10)  # pack_end  # Buttons
+        vboxstack1.append(hbox5)
+        vboxstack1.append(hbox_bash_top_sep)
+        vboxstack1.append(hbox_installation_title)
+        vboxstack1.append(hbox_bash_completion_lbl)
+        vboxstack1.append(hbox_bash_completion_btns)
+        vboxstack1.append(hbox_att_config_title)
+        vboxstack1.append(hbox_bash_config_lbl)
+        vboxstack1.append(hbox_bash_config_btns)
+        vboxstack1.append(hbox_change_shell_title)
+        vboxstack1.append(hbox_logout_warning)
+        vboxstack1.append(hbox_shell_buttons)
 
     else:
         # no bash installed
@@ -187,23 +216,40 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox19_lbl.set_name("title")
         hbox19.append(hbox19_lbl)
 
-        hbox20 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         hseparator.set_hexpand(True)
         hseparator.set_vexpand(False)
-        hbox20.append(hseparator)
+        hbox_zsh_top_sep.append(hseparator)
 
-        # ==========================================================
+        # ── Installation ──────────────────────────────────────────────
 
-        hbox26 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox26_lbl = Gtk.Label()
-        if fn.check_package_installed("zsh"):
-            hbox26_lbl.set_markup("Zsh is already <b>installed</b>")
-        else:
-            hbox26_lbl.set_markup("Zsh is not installed")
+        hbox_zsh_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_installation_title_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_installation_title_lbl.set_markup("<b>Installation</b>")
+        hbox_zsh_installation_title_lbl.set_margin_start(10)
+        hbox_zsh_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_zsh_installation_sep.set_hexpand(True)
+        hbox_zsh_installation_sep.set_valign(Gtk.Align.CENTER)
+        hbox_zsh_installation_title.append(hbox_zsh_installation_title_lbl)
+        hbox_zsh_installation_title.append(hbox_zsh_installation_sep)
+
+        hbox_zsh_status_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        zsh_status_lbl = Gtk.Label(xalign=0)
+        zsh_status_lbl.set_markup("Zsh is <b>installed</b>")
+        zsh_status_lbl.set_margin_start(10)
+        zsh_status_lbl.set_margin_end(10)
+        self.zsh_completions_lbl = Gtk.Label(xalign=0)
         if fn.check_package_installed("zsh-completions"):
-            hbox26_lbl.set_markup("Zsh and Zsh-completion are already <b>installed</b>")
+            self.zsh_completions_lbl.set_markup("Zsh-completion is already <b>installed</b>")
+        else:
+            self.zsh_completions_lbl.set_markup("Zsh-completion is <b>not</b> installed")
+        self.zsh_completions_lbl.set_margin_start(10)
+        self.zsh_completions_lbl.set_margin_end(10)
+        hbox_zsh_status_lbl.append(zsh_status_lbl)
+        hbox_zsh_status_lbl.append(self.zsh_completions_lbl)
 
+        hbox_zsh_completions_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.install_zsh_completions = Gtk.Button(label="Install zsh-completion")
         self.install_zsh_completions.connect(
             "clicked", functools.partial(shell.on_install_zsh_completions_clicked, self)
@@ -212,23 +258,21 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         self.remove_zsh_completions.connect(
             "clicked", functools.partial(shell.on_remove_zsh_completions_clicked, self)
         )
-        hbox26_lbl.set_margin_start(10)
-        hbox26_lbl.set_margin_end(10)
-        hbox26_lbl.set_hexpand(False)
-        hbox26.append(hbox26_lbl)
-        self.install_zsh_completions.set_margin_start(10)
-        self.install_zsh_completions.set_margin_end(10)
-        hbox26.append(self.install_zsh_completions)  # pack_end
-        self.remove_zsh_completions.set_margin_start(10)
-        self.remove_zsh_completions.set_margin_end(10)
-        hbox26.append(self.remove_zsh_completions)  # pack_end
+        hbox_zsh_completions_btns.set_margin_start(10)
+        hbox_zsh_completions_btns.append(self.install_zsh_completions)
+        hbox_zsh_completions_btns.append(self.remove_zsh_completions)
 
-        hbox27 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox27_lbl = Gtk.Label()
+        hbox_zsh_syntax_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.zsh_syntax_lbl = Gtk.Label(xalign=0)
         if fn.check_package_installed("zsh-syntax-highlighting"):
-            hbox27_lbl.set_markup("Zsh-syntax-highlighting is already <b>installed</b>")
+            self.zsh_syntax_lbl.set_markup("Zsh-syntax-highlighting is already <b>installed</b>")
         else:
-            hbox27_lbl.set_markup("Zsh-syntax-highlighting is not installed")
+            self.zsh_syntax_lbl.set_markup("Zsh-syntax-highlighting is not installed")
+        self.zsh_syntax_lbl.set_margin_start(10)
+        self.zsh_syntax_lbl.set_margin_end(10)
+        hbox_zsh_syntax_lbl.append(self.zsh_syntax_lbl)
+
+        hbox_zsh_syntax_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.install_zsh_syntax_highlighting = Gtk.Button(label="Install Zsh-syntax-highlighting")
         self.install_zsh_syntax_highlighting.connect(
             "clicked", functools.partial(shell.on_install_zsh_syntax_highlighting_clicked, self)
@@ -237,83 +281,94 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         self.remove_zsh_syntax_highlighting.connect(
             "clicked", functools.partial(shell.on_remove_zsh_syntax_highlighting_clicked, self)
         )
-        hbox27_lbl.set_margin_start(10)
-        hbox27_lbl.set_margin_end(10)
-        hbox27_lbl.set_hexpand(False)
-        hbox27.append(hbox27_lbl)
-        self.install_zsh_syntax_highlighting.set_margin_start(10)
-        self.install_zsh_syntax_highlighting.set_margin_end(10)
-        hbox27.append(self.install_zsh_syntax_highlighting)  # pack_end
-        self.remove_zsh_syntax_highlighting.set_margin_start(10)
-        self.remove_zsh_syntax_highlighting.set_margin_end(10)
-        hbox27.append(self.remove_zsh_syntax_highlighting)  # pack_end
+        hbox_zsh_syntax_btns.set_margin_start(10)
+        hbox_zsh_syntax_btns.append(self.install_zsh_syntax_highlighting)
+        hbox_zsh_syntax_btns.append(self.remove_zsh_syntax_highlighting)
 
-        hbox28 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox28_lbl = Gtk.Label()
+        hbox_zsh_omz_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.zsh_omz_lbl = Gtk.Label(xalign=0)
         if fn.check_package_installed("oh-my-zsh-git"):
-            hbox28_lbl.set_markup("Oh-my-zsh-git is already <b>installed</b>")
+            self.zsh_omz_lbl.set_markup("Oh-my-zsh-git is already <b>installed</b>")
         else:
-            hbox28_lbl.set_markup("Oh-my-zsh-git is not installed")
+            self.zsh_omz_lbl.set_markup("Oh-my-zsh-git is not installed")
+        self.zsh_omz_lbl.set_margin_start(10)
+        self.zsh_omz_lbl.set_margin_end(10)
+        hbox_zsh_omz_lbl.append(self.zsh_omz_lbl)
+
+        hbox_zsh_omz_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.install_zsh_omz = Gtk.Button(label="Install Oh-my-zsh")
         self.install_zsh_omz.connect("clicked", functools.partial(shell.install_oh_my_zsh, self))
         self.remove_zsh_omz = Gtk.Button(label="Remove Oh-my-zsh")
         self.remove_zsh_omz.connect("clicked", functools.partial(shell.remove_oh_my_zsh, self))
-        hbox28_lbl.set_margin_start(10)
-        hbox28_lbl.set_margin_end(10)
-        hbox28_lbl.set_hexpand(False)
-        hbox28.append(hbox28_lbl)
-        self.install_zsh_omz.set_margin_start(10)
-        self.install_zsh_omz.set_margin_end(10)
-        hbox28.append(self.install_zsh_omz)  # pack_end
-        self.remove_zsh_omz.set_margin_start(10)
-        self.remove_zsh_omz.set_margin_end(10)
-        hbox28.append(self.remove_zsh_omz)  # pack_end
+        hbox_zsh_omz_btns.set_margin_start(10)
+        hbox_zsh_omz_btns.append(self.install_zsh_omz)
+        hbox_zsh_omz_btns.append(self.remove_zsh_omz)
 
-        hbox25 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox25_lbl = Gtk.Label()
-        hbox25_lbl.set_markup("Overwrite your ~/.zshrc with the ATT zshrc")
+        # ── ATT config ────────────────────────────────────────────────
+
+        hbox_zsh_att_config_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_att_config_title_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_att_config_title_lbl.set_markup("<b>ATT config</b>")
+        hbox_zsh_att_config_title_lbl.set_margin_start(10)
+        hbox_zsh_att_config_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_zsh_att_config_sep.set_hexpand(True)
+        hbox_zsh_att_config_sep.set_valign(Gtk.Align.CENTER)
+        hbox_zsh_att_config_title.append(hbox_zsh_att_config_title_lbl)
+        hbox_zsh_att_config_title.append(hbox_zsh_att_config_sep)
+
+        hbox_zsh_config_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        hbox_zsh_config_lbl_txt = Gtk.Label(xalign=0)
+        hbox_zsh_config_lbl_txt.set_markup("Overwrite your ~/.zshrc with the ATT zshrc")
+        hbox_zsh_config_lbl_txt.set_margin_start(10)
+        hbox_zsh_config_lbl_txt.set_margin_end(10)
+        hbox_zsh_config_lbl.append(hbox_zsh_config_lbl_txt)
+
+        hbox_zsh_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.arcolinux_zsh = Gtk.Button(label="Install the ATT zshrc configuration")
         self.arcolinux_zsh.connect("clicked", functools.partial(shell.on_arcolinux_zshrc_clicked, self))
         self.zsh_reset = Gtk.Button(label="Reset back to the original ~/.zshrc")
         self.zsh_reset.connect("clicked", functools.partial(shell.on_zshrc_reset_clicked, self))
-        hbox25_lbl.set_margin_start(10)
-        hbox25_lbl.set_margin_end(10)
-        hbox25_lbl.set_hexpand(False)
-        hbox25.append(hbox25_lbl)
-        self.arcolinux_zsh.set_margin_start(10)
-        self.arcolinux_zsh.set_margin_end(10)
-        hbox25.append(self.arcolinux_zsh)  # pack_end
-        self.zsh_reset.set_margin_start(10)
-        self.zsh_reset.set_margin_end(10)
-        hbox25.append(self.zsh_reset)  # pack_end
+        hbox_zsh_config_btns.set_margin_start(10)
+        hbox_zsh_config_btns.append(self.arcolinux_zsh)
+        hbox_zsh_config_btns.append(self.zsh_reset)
 
-        hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox21_lbl = Gtk.Label()
-        hbox21_lbl.set_markup("Zsh themes")
+        # ── Themes ────────────────────────────────────────────────────
+
+        hbox_zsh_themes_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_themes_title_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_themes_title_lbl.set_markup("<b>Themes</b>")
+        hbox_zsh_themes_title_lbl.set_margin_start(10)
+        hbox_zsh_themes_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_zsh_themes_sep.set_hexpand(True)
+        hbox_zsh_themes_sep.set_valign(Gtk.Align.CENTER)
+        hbox_zsh_themes_title.append(hbox_zsh_themes_title_lbl)
+        hbox_zsh_themes_title.append(hbox_zsh_themes_sep)
+
+        hbox_zsh_themes_dropdown = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_themes_dropdown_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_themes_dropdown_lbl.set_markup("Zsh themes")
+        hbox_zsh_themes_dropdown_lbl.set_margin_start(10)
+        hbox_zsh_themes_dropdown_lbl.set_margin_end(10)
         self.zsh_themes = Gtk.DropDown.new_from_strings([])
         self.zsh_themes.set_size_request(300, 20)
         zsh_theme.get_themes(self.zsh_themes)
-        hbox21_lbl.set_margin_start(10)
-        hbox21_lbl.set_margin_end(10)
-        hbox21_lbl.set_hexpand(False)
-        hbox21.append(hbox21_lbl)
         self.zsh_themes.set_margin_start(10)
         self.zsh_themes.set_margin_end(10)
-        hbox21.append(self.zsh_themes)  # pack_end
+        hbox_zsh_themes_dropdown.append(hbox_zsh_themes_dropdown_lbl)
+        hbox_zsh_themes_dropdown.append(self.zsh_themes)
 
-        hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        hbox_zsh_apply_theme_btn = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.termset = Gtk.Button(label="Apply Zsh theme")
         self.termset.connect("clicked", functools.partial(shell.on_zsh_apply_theme, self))
-        if not fn.check_package_installed("zsh"):
-            self.termset.set_sensitive(False)
+        omz_installed = fn.check_package_installed("oh-my-zsh-git")
+        self.termset.set_sensitive(omz_installed)
+        self.zsh_themes.set_sensitive(omz_installed)
         self.termset.set_margin_start(10)
         self.termset.set_margin_end(10)
-        hbox29.append(self.termset)  # pack_end
+        hbox_zsh_apply_theme_btn.append(self.termset)
 
-        # image dimensions - this will (in time) allow the image changing function
-        # to be re-usable by other parts of the app
-        image_width = 500
-        image_height = 380
+        image_width = 250
+        image_height = 190
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/images/zsh-sample.jpg", image_width, image_height
         )
@@ -337,8 +392,8 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         image = Gtk.Picture.new_for_paintable(texture)
         image.set_content_fit(Gtk.ContentFit.CONTAIN)
         image.set_margin_top(0)
-        image.set_hexpand(True)
-        image.set_vexpand(True)
+        image.set_hexpand(False)
+        image.set_vexpand(False)
 
         self.zsh_themes.connect(
             "notify::selected",
@@ -350,53 +405,66 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
             image_height,
         )
 
-        hbox23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox23_lbl = Gtk.Label()
-        hbox23_lbl.set_markup(
-            "Restart your terminal to apply the new Zsh theme\n\n<b>\
-If you just switched shell, log-out first</b>\n"
-        )
-        hbox23_lbl.set_margin_top(30)
-        hbox23_lbl.set_margin_start(10)
-        hbox23_lbl.set_margin_end(10)
-        hbox23.append(hbox23_lbl)
+        # ── Change shell ──────────────────────────────────────────────
 
-        hbox24 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_change_shell_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_change_shell_title_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_change_shell_title_lbl.set_markup("<b>Change shell</b>")
+        hbox_zsh_change_shell_title_lbl.set_margin_start(10)
+        hbox_zsh_change_shell_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_zsh_change_shell_sep.set_hexpand(True)
+        hbox_zsh_change_shell_sep.set_valign(Gtk.Align.CENTER)
+        hbox_zsh_change_shell_title.append(hbox_zsh_change_shell_title_lbl)
+        hbox_zsh_change_shell_title.append(hbox_zsh_change_shell_sep)
+
+        hbox_zsh_logout_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_logout_warning_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_logout_warning_lbl.set_markup(
+            "Restart your terminal to apply the new Zsh theme\n"
+            "<b>If you just switched shell, log-out first</b>"
+        )
+        hbox_zsh_logout_warning_lbl.set_margin_start(10)
+        hbox_zsh_logout_warning_lbl.set_margin_end(10)
+        hbox_zsh_logout_warning.append(hbox_zsh_logout_warning_lbl)
+
+        hbox_zsh_shell_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         tozsh = Gtk.Button(label="Apply zsh")
         tobash = Gtk.Button(label="Apply bash")
         tofish = Gtk.Button(label="Apply fish")
         termreset = Gtk.Button(label="Reset or create ~/.zshrc")
-
         tozsh.connect("clicked", functools.partial(shell.tozsh_apply, self))
         tobash.connect("clicked", functools.partial(shell.tobash_apply, self))
         tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
         termreset.connect("clicked", functools.partial(shell.on_zsh_reset, self))
-
-        hbox24.append(tozsh)
-        hbox24.append(tobash)
+        hbox_zsh_shell_buttons.set_margin_start(10)
+        hbox_zsh_shell_buttons.append(tozsh)
+        hbox_zsh_shell_buttons.append(tobash)
         if not fn.distr == "archcraft":
-            hbox24.append(tofish)
-        hbox24.append(termreset)  # pack_end
+            hbox_zsh_shell_buttons.append(tofish)
+        hbox_zsh_shell_buttons.append(termreset)
 
         vboxstack2.append(hbox19)
-        vboxstack2.append(hbox20)
-        vboxstack2.append(hbox26)
-        vboxstack2.append(hbox27)
-        vboxstack2.append(hbox28)
-        vboxstack2.append(hbox25)
-        vboxstack2.append(hbox21)
-        vboxstack2.append(hbox29)
+        vboxstack2.append(hbox_zsh_top_sep)
+        vboxstack2.append(hbox_zsh_installation_title)
+        vboxstack2.append(hbox_zsh_status_lbl)
+        vboxstack2.append(hbox_zsh_completions_btns)
+        vboxstack2.append(hbox_zsh_syntax_lbl)
+        vboxstack2.append(hbox_zsh_syntax_btns)
+        vboxstack2.append(hbox_zsh_omz_lbl)
+        vboxstack2.append(hbox_zsh_omz_btns)
+        vboxstack2.append(hbox_zsh_att_config_title)
+        vboxstack2.append(hbox_zsh_config_lbl)
+        vboxstack2.append(hbox_zsh_config_btns)
+        vboxstack2.append(hbox_zsh_themes_title)
+        vboxstack2.append(hbox_zsh_themes_dropdown)
+        vboxstack2.append(hbox_zsh_apply_theme_btn)
         vboxstack2.append(image)
-        vboxstack2.append(hbox23)
-        vboxstack2.append(hbox24)  # pack_end
+        vboxstack2.append(hbox_zsh_change_shell_title)
+        vboxstack2.append(hbox_zsh_logout_warning)
+        vboxstack2.append(hbox_zsh_shell_buttons)
 
-        if not fn.check_package_installed("oh-my-zsh-git") or not fn.path.isfile(
-            fn.zsh_config
-        ):
-            self.termset.set_sensitive(False)
-            termreset.set_sensitive(False)
         if not fn.path.isfile(fn.zsh_config):
-            termreset.set_sensitive(True)
+            termreset.set_sensitive(False)
 
     else:
         # no zsh installed

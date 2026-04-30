@@ -9,6 +9,12 @@ These files are tested and working. Any change requires user confirmation first.
 | `pacman_gui.py` | Pacman page UI — switches, AUR buttons, custom repo, blank pacman, reset/edit row |
 | `pacman.py` | Pacman toggle callbacks, update_repos_switches, parallel downloads |
 | `pacman_functions.py` | Repo read/write helpers, AUR helper install/remove, toggle_test_repos |
+| `ai.py` | AI tools callbacks — install/remove ollama, LLM runners |
+| `ai_gui.py` | AI Tools page UI — Local LLM Runners section |
+| `packages.py` | Package export/import/install logic |
+| `packages_gui.py` | Packages page UI — export, import, install from list |
+| `sddm.py` | SDDM callbacks — apply settings, wallpaper, install/remove Simplicity theme |
+| `sddm_gui.py` | SDDM page UI — theme, session, cursor, autologin, wallpaper section |
 
 ---
 
@@ -37,9 +43,16 @@ These files are tested and working. Any change requires user confirmation first.
 - Flowbox clear race condition fixed: `_sddm_load_gen` incremented before removing children so in-flight `load_next` idle callbacks abort immediately
 - `on_click_sddm_apply` signature fixed: added `_widget=None` parameter (GTK4 callback requirement)
 
+- **`sddm.py` / `sddm_gui.py`** — autologin switch now reads current state from config on startup (`get_autologin_state()`); switch + 3 dropdowns notify console + in-app on change ("click Apply to save"); `_refresh_cursor_theme_dropdown` fixed (wrong module + wrong attribute); Bibata install/remove buttons guard against already-installed/removed state; `on_click_sddm_enable` missing `_widget` fixed
+- **`user.py`** — `on_click_delete_user` and `on_click_delete_all_user` missing `_widget` parameter fixed
+- **`maintenance_gui.py`** — label "Get the original ArcoLinux /etc/pacman.conf" renamed to "Get the original ATT /etc/pacman.conf" (naming convention: use ATT not distro names in UI labels)
+- **Naming convention established:** replace all distro-specific names in UI labels with "ATT"
+- **flake8 installed** and `.flake8` confirmed configured (max-line-length = 120)
+- **AI tab** confirmed frozen — no errors on Kiro
+
 ### Files Modified
 
-`sddm.py` • `sddm_gui.py` • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `CLAUDE.md` • `support.py` (deleted)
+`sddm.py` • `sddm_gui.py` • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `maintenance_gui.py` • `CLAUDE.md` • `support.py` (deleted)
 
 ---
 

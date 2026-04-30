@@ -63,6 +63,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         hbox_auto_lbl.set_margin_start(10)
         hbox_auto_lbl.set_hexpand(True)
         self.autologin_sddm = Gtk.Switch()
+        self.autologin_sddm.set_active(sddm.get_autologin_state())
         self.autologin_sddm.connect("notify::active", functools.partial(sddm.on_autologin_sddm_activated, self))
         self.autologin_sddm.set_margin_end(10)
         hbox_auto.append(hbox_auto_lbl)
@@ -76,6 +77,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.sessions_sddm = Gtk.DropDown.new_from_strings([])
         sddm.pop_box(self, self.sessions_sddm)
         self.sessions_sddm.set_margin_end(10)
+        self.sessions_sddm.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Session changed"))
         hbox18.append(hbox18_lbl)
         hbox18.append(self.sessions_sddm)
 
@@ -87,6 +89,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.theme_sddm = Gtk.DropDown.new_from_strings([])
         sddm.pop_theme_box(self, self.theme_sddm)
         self.theme_sddm.set_margin_end(10)
+        self.theme_sddm.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Theme changed"))
         hbox9.append(hbox9_lbl)
         hbox9.append(self.theme_sddm)
 
@@ -116,7 +119,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         hbox_wp_lbl.append(self.btn_remove_simplicity)
 
         hbox_wp_folder = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        self.btn_simplicity_browse = Gtk.Button(label="Browse folder")
+        self.btn_simplicity_browse = Gtk.Button(label="Select folder")
         self.btn_simplicity_browse.connect("clicked", functools.partial(sddm.on_browse_sddm_folder, self))
         self.btn_simplicity_browse.set_margin_start(10)
         self.btn_simplicity_browse.set_margin_end(10)
@@ -228,12 +231,13 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
 
         hbox15 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         hbox15_lbl = Gtk.Label(xalign=0)
-        hbox15_lbl.set_text("Cursor theme")
+        hbox15_lbl.set_text("Cursor theme SDDM (in tab maintenance you can set the cursor for your whole system)")
         hbox15_lbl.set_margin_start(10)
         hbox15_lbl.set_hexpand(True)
         self.sddm_cursor_themes = Gtk.DropDown.new_from_strings([])
         sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
         self.sddm_cursor_themes.set_margin_end(10)
+        self.sddm_cursor_themes.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Cursor theme changed"))
         hbox15.append(hbox15_lbl)
         hbox15.append(self.sddm_cursor_themes)
 

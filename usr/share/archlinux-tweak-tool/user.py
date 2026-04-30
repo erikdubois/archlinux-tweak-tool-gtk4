@@ -78,7 +78,7 @@ def create_user(self):
         fn.messagebox(self, "Message", "First fill in all the fields")
 
 
-def on_click_delete_user(self):
+def on_click_delete_user(self, _widget=None):
     """delete user"""
     fn.log_subsection("Delete User Account")
     username = fn.get_combo_text(self.cbt_users)
@@ -94,7 +94,7 @@ def on_click_delete_user(self):
             fn.messagebox(self, "Error", f"Failed to delete user: {error}")
 
 
-def on_click_delete_all_user(self):
+def on_click_delete_all_user(self, _widget=None):
     """delete also home dir"""
     fn.log_subsection("Delete User Account and Home Folder")
     username = fn.get_combo_text(self.cbt_users)

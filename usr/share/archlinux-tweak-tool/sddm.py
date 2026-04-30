@@ -9,11 +9,10 @@ from gi.repository import Gtk, Gio, Gdk, GdkPixbuf, Pango
 
 
 def _refresh_cursor_theme_dropdown(self):
-    """Refresh the cursor theme dropdown in maintenance tab"""
+    """Refresh the cursor theme dropdown after install/remove"""
     try:
-        if hasattr(self, 'cursor_themes'):
-            import maintenance
-            maintenance.pop_gtk_cursor_names(self, self.cursor_themes)
+        if hasattr(self, 'sddm_cursor_themes'):
+            pop_gtk_cursor_names(self, self.sddm_cursor_themes)
     except Exception as error:
         fn.debug_print(f"Failed to refresh cursor themes dropdown: {error}")
 
@@ -138,6 +137,26 @@ def check_sddmk_user(value):
     return False
 
 
+def get_autologin_state():
+    """Return True if SDDM autologin has a non-empty User= in [Autologin] section"""
+    try:
+        if not fn.path.isfile(fn.sddm_default_d2):
+            return False
+        with open(fn.sddm_default_d2, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        in_autologin = False
+        for line in lines:
+            if line.strip() == "[Autologin]":
+                in_autologin = True
+            elif line.startswith("["):
+                in_autologin = False
+            elif in_autologin and line.startswith("User="):
+                return bool(line.split("=", 1)[1].strip())
+        return False
+    except Exception:
+        return False
+
+
 def insert_user(text):
     """insert user"""
     with open(fn.sddm_default_d2, "r", encoding="utf-8") as f:
@@ -244,7 +263,8 @@ def get_sddm_lines(files):
 def pop_box(self, combo):
     """populate sddm box"""
     coms = []
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
 
     """
     On Sway:
@@ -287,7 +307,8 @@ def pop_box(self, combo):
 def pop_theme_box(self, combo):
     """populate theme box"""
     coms = []
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
 
     if (
         fn.path.exists("/usr/share/sddm")
@@ -313,7 +334,8 @@ def pop_theme_box(self, combo):
 def pop_gtk_cursor_names(self, combo):
     """populate cursor names"""
     coms = []
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
 
     if fn.path.isfile(fn.sddm_default_d2):
         for item in fn.listdir("/usr/share/icons/"):
@@ -368,13 +390,17 @@ def on_click_sddm_reset_original(self, _widget=None):
         fn.messagebox(self, "Error", f"Failed to apply configuration: {error}")
 
 
+def on_sddm_setting_changed(self, message, *_):
+    fn.log_info(f"{message} — click Apply to save")
+    fn.show_in_app_notification(self, f"{message} — click Apply to save")
+
+
 def on_autologin_sddm_activated(self, widget, param_spec=None):
     """Handle autologin switch state change"""
     try:
         is_active = widget.get_active()
-        fn.log_subsection("Configure SDDM Autologin")
-        fn.debug_print(f"Autologin: {'enabled' if is_active else 'disabled'}")
-        fn.log_success(f"Autologin {'enabled' if is_active else 'disabled'}")
+        state_str = "enabled" if is_active else "disabled"
+        on_sddm_setting_changed(self, f"Autologin {state_str}")
     except Exception as error:
         fn.log_error(f"Failed to configure autologin: {error}")
 
@@ -503,7 +529,7 @@ def on_click_sddm_apply(self, _widget=None):
         fn.messagebox(self, "Error", f"Failed to apply SDDM settings: {error}")
 
 
-def on_click_sddm_enable(self):
+def on_click_sddm_enable(self, _widget=None):
     """Install and enable sddm-git"""
     try:
         fn.log_subsection("Install and Enable SDDM")
@@ -523,7 +549,7 @@ def on_click_sddm_enable(self):
         )
         fn.log_success("Set graphical.target as default")
 
-        fn.messagebox(self, "Success", "SDDM-git installed and enabled.\n\nPlease reboot to apply changes.")
+        fn.messagebox(self, "Success", "SDDM-git installed and enabled.\n\nPlease reboot and login.")
     except Exception as error:
         fn.log_error(f"Failed to install/enable SDDM: {error}")
         fn.messagebox(self, "Error", f"Failed to install/enable SDDM: {error}")
@@ -589,8 +615,10 @@ def on_click_install_bibata_cursor(self, widget=None):
     """Install Bibata cursor theme"""
     try:
         fn.log_subsection("Install Bibata Cursors")
-        fn.debug_print("Installing Bibata cursors...")
-
+        if fn.check_package_installed("bibata-cursor-theme"):
+            fn.log_info("Bibata cursors already installed")
+            fn.show_in_app_notification(self, "Bibata cursors already installed")
+            return
         fn.subprocess.run(
             ["pacman", "-S", "bibata-cursor-theme", "--noconfirm"],
             check=True,
@@ -608,8 +636,10 @@ def on_click_remove_bibata_cursor(self, widget=None):
     """Remove Bibata cursor theme"""
     try:
         fn.log_subsection("Remove Bibata Cursors")
-        fn.debug_print("Removing Bibata cursors...")
-
+        if not fn.check_package_installed("bibata-cursor-theme"):
+            fn.log_info("Bibata cursors already removed")
+            fn.show_in_app_notification(self, "Bibata cursors already removed")
+            return
         fn.subprocess.run(
             ["pacman", "-R", "bibata-cursor-theme", "--noconfirm"],
             check=True,
@@ -627,8 +657,10 @@ def on_click_install_bibatar_cursor(self, widget=None):
     """Install Bibata extra cursors"""
     try:
         fn.log_subsection("Install Bibata Extra Cursors")
-        fn.debug_print("Installing Bibata extra cursors...")
-
+        if fn.check_package_installed("bibata-extra-cursor-theme"):
+            fn.log_info("Bibata extra cursors already installed")
+            fn.show_in_app_notification(self, "Bibata extra cursors already installed")
+            return
         fn.subprocess.run(
             ["pacman", "-S", "bibata-extra-cursor-theme", "--noconfirm"],
             check=True,
@@ -646,8 +678,10 @@ def on_click_remove_bibatar_cursor(self, widget=None):
     """Remove Bibata extra cursors"""
     try:
         fn.log_subsection("Remove Bibata Extra Cursors")
-        fn.debug_print("Removing Bibata extra cursors...")
-
+        if not fn.check_package_installed("bibata-extra-cursor-theme"):
+            fn.log_info("Bibata extra cursors already removed")
+            fn.show_in_app_notification(self, "Bibata extra cursors already removed")
+            return
         fn.subprocess.run(
             ["pacman", "-R", "bibata-extra-cursor-theme", "--noconfirm"],
             check=True,

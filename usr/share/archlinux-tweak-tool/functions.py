@@ -1275,7 +1275,7 @@ def launch_pacman_remove_in_terminal(packages):
 
     script = f"""
 set -o pipefail
-pacman -Rs --noconfirm {packages} 2>&1 | tee {temp_path}
+pacman -R --noconfirm {packages} 2>&1 | tee {temp_path}
 RESULT=$?
 
 echo ''
@@ -1875,10 +1875,14 @@ def copy_nsswitch(new_hosts_line):
 
 def change_shell(self, shell):
     command = "sudo chsh " + sudo_username + " -s /bin/" + shell
+    debug_print(f"  Command : {command}")
+    debug_print(f"  User    : {sudo_username}")
+    debug_print(f"  Shell   : /bin/{shell}")
     subprocess.call(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    debug_print("Shell changed to " + shell + " for the user - logout")
+    debug_print("  Result  : chsh completed")
+    log_success("Shell changed to " + shell + " for the user - logout")
     GLib.idle_add(
         show_in_app_notification,
         self,
