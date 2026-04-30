@@ -92,8 +92,10 @@ class Main(Gtk.ApplicationWindow):
             base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
             dark_str = " (dark mode)" if is_dark else ""
             print(f"[System] Distro={fn.distr} | Theme={base_theme}{dark_str} | User={fn.sudo_username}", flush=True)
+            print("-" * 75)
         else:
             print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
+            print("-" * 75)
         fn.findgroup()
         if DEBUG:
             fn.debug_print("[DEBUG] Debug mode enabled")
