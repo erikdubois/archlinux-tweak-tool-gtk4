@@ -27,8 +27,26 @@ These files are tested and working. Any change requires user confirmation first.
 | `maintenance_gui.py` | Maintenance page UI — all button rows and section layout |
 | `autostart.py` | Autostart callbacks — enable/disable autostart entries |
 | `autostart_gui.py` | Autostart page UI |
+| `network_gui.py` | Network page UI — nsswitch, network discovery, samba, samba user |
+| `services.py` | Network callbacks — nsswitch, discovery install/disable, samba install/remove/user |
+| `fastfetch.py` | Fastfetch callbacks — install/remove, config apply |
+| `fastfetch_gui.py` | Fastfetch page UI |
 | `performance.py` | Performance callbacks — tuned, irqbalance, ananicy, gamemode, zram, swapfile, fstrim |
 | `performance_gui.py` | Performance page UI — all sections and button rows |
+
+---
+
+## 2026.04.30 - Frozen: Network, Fastfetch, Services GUI
+
+### What Changed
+
+- `network_gui.py` and `services.py` (network callbacks) frozen — network tab tested and working
+- `fastfetch.py` and `fastfetch_gui.py` frozen — fastfetch tab tested and working
+- `services_gui.py` inspected — single `fn.distr` guard (`garuda`, `manjaro`) confirmed correct and intentional; no changes made; tab not yet frozen pending audit of `services.py` (cups/audio/bluetooth callbacks)
+
+### Files Modified
+
+`CHANGELOG.md`
 
 ---
 
