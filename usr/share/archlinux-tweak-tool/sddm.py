@@ -661,6 +661,72 @@ def on_click_remove_bibatar_cursor(self, widget=None):
         fn.messagebox(self, "Error", f"Failed to remove Bibata extra cursors: {error}")
 
 
+def on_click_install_simplicity(self, _widget=None):
+    fn.log_subsection("Install edu-sddm-simplicity-git")
+    fn.debug_print("Launching terminal to install edu-sddm-simplicity-git...")
+    fn.show_in_app_notification(self, "Opening terminal to install Simplicity theme...")
+    process = fn.launch_pacman_install_in_terminal("edu-sddm-simplicity-git")
+
+    def refresh():
+        if fn.check_package_installed("edu-sddm-simplicity-git"):
+            fn.debug_print("Simplicity theme installed — enabling wallpaper widgets")
+            for btn in (self.btn_simplicity_browse, self.btn_simplicity_load,
+                        self.btn_simplicity_stop, self.btn_simplicity_apply,
+                        self.btn_simplicity_restore):
+                btn.set_sensitive(True)
+            self.sddm_folder_entry.set_sensitive(True)
+            self.btn_install_simplicity.set_visible(False)
+            self.btn_remove_simplicity.set_visible(True)
+
+    def wait_and_refresh():
+        fn.debug_print("Waiting for Simplicity install terminal to close...")
+        if process:
+            process.wait()
+        fn.debug_print("Terminal closed — checking install result")
+        fn.GLib.idle_add(refresh)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
+
+
+def on_click_remove_simplicity(self, _widget=None):
+    fn.log_subsection("Remove edu-sddm-simplicity-git")
+    fn.debug_print("Launching terminal to remove edu-sddm-simplicity-git...")
+    fn.show_in_app_notification(self, "Opening terminal to remove Simplicity theme...")
+    process = fn.launch_pacman_remove_in_terminal("edu-sddm-simplicity-git")
+
+    def refresh():
+        if not fn.check_package_installed("edu-sddm-simplicity-git"):
+            fn.debug_print("Simplicity theme removed — disabling wallpaper widgets")
+            for btn in (self.btn_simplicity_browse, self.btn_simplicity_load,
+                        self.btn_simplicity_stop, self.btn_simplicity_apply,
+                        self.btn_simplicity_restore):
+                btn.set_sensitive(False)
+            self.sddm_folder_entry.set_sensitive(False)
+            self.btn_remove_simplicity.set_visible(False)
+            self.btn_install_simplicity.set_visible(True)
+            self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
+            child = self.sddm_thumb_flow.get_first_child()
+            while child is not None:
+                next_child = child.get_next_sibling()
+                self.sddm_thumb_flow.remove(child)
+                child = next_child
+            self.login_wallpaper_path = ""
+            fallback = fn.path.join(fn.path.dirname(fn.path.abspath(__file__)), "data", "wallpaper", "wallpaper.jpg")
+            self.sddm_wallpaper_preview.set_paintable(None)
+            if fn.path.isfile(fallback):
+                self.sddm_wallpaper_preview.set_filename(fallback)
+            self.sddm_wallpaper_lbl.set_text("No wallpaper selected")
+
+    def wait_and_refresh():
+        fn.debug_print("Waiting for Simplicity remove terminal to close...")
+        if process:
+            process.wait()
+        fn.debug_print("Terminal closed — checking removal result")
+        fn.GLib.idle_add(refresh)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
+
+
 def on_click_att_sddm_clicked(self, widget=None):
     """Install SDDM package"""
     try:

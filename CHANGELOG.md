@@ -12,25 +12,34 @@ These files are tested and working. Any change requires user confirmation first.
 
 ---
 
-## 2026.04.30 - Dead Code Removal & Objective Correction
+## 2026.04.30 - SDDM Wallpaper Section & Dead Code Removal
 
 ### What Changed
 
-- Removed `support.py` entirely — the `Support` dialog class was never instantiated anywhere
-- Removed all references to `support` from `archlinux-tweak-tool.py` (global declaration, lazy import, assignment)
-- Updated `maintenance.py` script path: `arcolinux-fix-pacman-conf` → `att-fix-pacman-conf` at new ATT data path
-- Deleted dead commented-out line in `desktopr_gui.py` (arco repo button reference)
-- Corrected CLAUDE.md objective 11: ATT targets all Arch-based systems, not Kiro-only; `fn.distr` guards are intentional
+- **SDDM page — Simplicity theme wallpaper section fully wired:**
+  - Browse folder, Load, Stop, folder entry, Apply wallpaper, Restore default — all greyed out when `edu-sddm-simplicity-git` is not installed
+  - "Install Simplicity theme" button shown right-aligned when not installed; hidden after install
+  - "Remove Simplicity theme" button shown after install; hidden after removal
+  - Both buttons use `wait_and_refresh` daemon thread — re-enables or disables all widgets after terminal closes, no reboot required (objective 2: In-App Updating)
+  - On remove: flowbox thumbnails cleared, loader cancelled via `_sddm_load_gen` increment, preview reset to `data/wallpaper/wallpaper.jpg` fallback, `login_wallpaper_path` cleared
+  - Fallback wallpaper path derived from `__file__` so it resolves correctly in both dev and installed environments
+  - `set_paintable(None)` called before `set_filename()` to force GTK4 to clear the cached image
+- **`functions_sddm.py` wired correctly:** `setup_sddm_config()` now called only when user clicks "Apply the above mentioned settings" — not at startup (non-invasive, objective 9)
+- **`support.py` deleted** — `Support` dialog was never instantiated; all dead references removed from `archlinux-tweak-tool.py`
+- **`maintenance.py`** — fixed script path: `arcolinux-fix-pacman-conf` → `att-fix-pacman-conf` at ATT data path
+- **`desktopr_gui.py`** — removed dead commented-out arco repo button line
+- **`CLAUDE.md` objective 11** — corrected from "Kiro-only" to multi-distro scope: ATT targets all Arch-based systems; `fn.distr` guards are intentional and must not be removed
 
 ### Technical Details
 
-- `support.py` contained a `Support(Gtk.Dialog)` class with ArcoLinux donation/Patreon links; it was imported but never called
-- `maintenance.py` fix-pacman-conf command now points to `/usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf`
-- `fn.distr` conditional guards (e.g. hiding Audio tab on Garuda/Manjaro) are intentional multi-distro compatibility code — do not remove
+- `setup_sddm_config(self, sys.modules["sddm"])` called at top of `on_click_sddm_apply`; passes already-loaded sddm module to avoid circular import
+- Install/remove buttons stored as `self.btn_install_simplicity` / `self.btn_remove_simplicity`; all 5 wallpaper widgets stored as `self.btn_simplicity_*` so post-terminal callbacks can update them from `sddm.py`
+- Flowbox clear race condition fixed: `_sddm_load_gen` incremented before removing children so in-flight `load_next` idle callbacks abort immediately
+- `on_click_sddm_apply` signature fixed: added `_widget=None` parameter (GTK4 callback requirement)
 
 ### Files Modified
 
-`support.py` (deleted) • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `CLAUDE.md`
+`sddm.py` • `sddm_gui.py` • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `CLAUDE.md` • `support.py` (deleted)
 
 ---
 
