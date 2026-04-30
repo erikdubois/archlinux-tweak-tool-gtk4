@@ -15,12 +15,49 @@ These files are tested and working. Any change requires user confirmation first.
 | `packages_gui.py` | Packages page UI — export, import, install from list |
 | `sddm.py` | SDDM callbacks — apply settings, wallpaper, install/remove Simplicity theme |
 | `sddm_gui.py` | SDDM page UI — theme, session, cursor, autologin, wallpaper section |
+| `icons.py` | Icon theme callbacks — Sardi, Surfn, Neo Candy install/remove/find |
+| `icons_gui.py` | Icons page UI — three sub-tabs with FlowBox checkboxes, preview lightbox, centred action buttons |
+| `shell.py` | Shell switching callbacks — bash, fish, zsh, oh-my-zsh, oh-my-fish install/remove |
+| `shell_gui.py` | Shells page UI — shell switcher, ZSH theme selector, preview images |
+| `kernel.py` | Kernel list, CPU compatibility checks, install/remove via Alacritty, boot entry management |
+| `kernel_gui.py` | Kernels page UI — per-kernel rows with status/install/remove, systemd-boot default selector |
+| `log_callbacks.py` | Logging callbacks — journalctl, dmesg, pacman log, Xorg log, systemd-analyze viewers |
+| `logging_gui.py` | Logging page UI — nine log viewer button rows |
 
 ---
 
-## 2026.04.30 - SDDM Wallpaper Section & Dead Code Removal
+## 2026.04.30 - Icons Tab, Fastfetch Startup Fix, Codebase Flake8, SDDM Wallpaper
 
 ### What Changed
+
+#### Icons tab (icons.py / icons_gui.py)
+
+- **Layout restructured** — all three sub-tabs (Sardi, Surfn, Neo Candy) now share the same consistent layout pattern:
+  - Info label row
+  - FlowBox of checkboxes (`set_column_spacing(4)`, `set_row_spacing(4)` for tighter grid)
+  - Preview image (with lightbox — click to open full-size modal)
+  - "Choose icon theme(s)" label + buttons on their own centred row
+  - "Choose family / type" label + buttons on their own centred row (where applicable)
+  - Centred action buttons row (install)
+  - Centred uninstall button on its own separate row
+- **Lightbox added** — clicking the preview image in any sub-tab opens a `Gtk.Window` (modal, 960×720) showing the full-size image; Escape key or click on image closes it
+- **Dead code removed** — two never-called Surfn callbacks (`on_click_att_surfn_theming_normal_selection`, `on_click_att_surfn_theming_minimal_selection`) deleted; commented-out Normal/Minimal button blocks removed
+- **`_widget` convention applied** — all 18 callback `widget` parameters renamed to `_widget` across `icons.py`
+- **`log_info` added** — all 6 early-return paths in `icons.py` (empty package list) now log before returning so the user knows why nothing happened
+- **All 26 generic widget names renamed** to descriptive names throughout `icons_gui.py` (e.g. `hbox20` → `hbox_sardi_title`, `hbox29` → `hbox_surfn_actions`, `vboxstack4` → `vbox_neocandy_tab`)
+
+#### Fastfetch startup fix (fastfetch.py / fastfetch_gui.py)
+
+- **Initializing flag pattern applied** — `self.ff_initializing = True` set before programmatic `set_active()` calls in the lazy-load function; `on_fast_util_toggled` and `on_fast_lolcat_toggled` return immediately if flag is set
+- Startup no longer prints "Fastfetch enabled/disabled" when the page is first loaded; user-triggered toggles still log normally
+
+#### Codebase-wide flake8 fixes (19 files)
+
+- **autopep8** fixed 104 E302 (missing 2 blank lines between functions) and 9 E303 (too many blank lines) violations across 19 Python source files
+- **36 F541 bare f-strings** fixed — f-strings with no `{}` placeholders had the `f` prefix stripped
+- **`functions.py` `wait_and_notify`** — changed `debug_print(notification)` → `log_success(notification)` so install/remove completion messages are always visible (two-street logging pattern)
+
+#### SDDM Wallpaper Section & Dead Code Removal (earlier in same day)
 
 - **SDDM page — Simplicity theme wallpaper section fully wired:**
   - Browse folder, Load, Stop, folder entry, Apply wallpaper, Restore default — all greyed out when `edu-sddm-simplicity-git` is not installed
@@ -38,21 +75,20 @@ These files are tested and working. Any change requires user confirmation first.
 
 ### Technical Details
 
+- Lightbox uses `Gtk.GestureClick` on the preview frame; opens a `Gtk.Window` with `set_transient_for`, `set_modal(True)`, `Gtk.EventControllerKey` for Escape close
+- `frame.set_cursor(Gdk.Cursor.new_from_name("pointer"))` signals the frame is clickable without any extra label
+- `ff_initializing` guard: `if getattr(self, 'ff_initializing', False): return` at top of both toggle handlers — safe even if attribute doesn't exist yet
+- F541 multi-line string fix: adjacent string literals where `f""` prefix was on a leading empty string were rewritten as plain `set_markup()` calls
 - `setup_sddm_config(self, sys.modules["sddm"])` called at top of `on_click_sddm_apply`; passes already-loaded sddm module to avoid circular import
-- Install/remove buttons stored as `self.btn_install_simplicity` / `self.btn_remove_simplicity`; all 5 wallpaper widgets stored as `self.btn_simplicity_*` so post-terminal callbacks can update them from `sddm.py`
-- Flowbox clear race condition fixed: `_sddm_load_gen` incremented before removing children so in-flight `load_next` idle callbacks abort immediately
-- `on_click_sddm_apply` signature fixed: added `_widget=None` parameter (GTK4 callback requirement)
-
-- **`sddm.py` / `sddm_gui.py`** — autologin switch now reads current state from config on startup (`get_autologin_state()`); switch + 3 dropdowns notify console + in-app on change ("click Apply to save"); `_refresh_cursor_theme_dropdown` fixed (wrong module + wrong attribute); Bibata install/remove buttons guard against already-installed/removed state; `on_click_sddm_enable` missing `_widget` fixed
-- **`user.py`** — `on_click_delete_user` and `on_click_delete_all_user` missing `_widget` parameter fixed
-- **`maintenance_gui.py`** — label "Get the original ArcoLinux /etc/pacman.conf" renamed to "Get the original ATT /etc/pacman.conf" (naming convention: use ATT not distro names in UI labels)
-- **Naming convention established:** replace all distro-specific names in UI labels with "ATT"
+- `sddm.py` / `sddm_gui.py` — autologin switch reads current state from config on startup; Bibata install/remove buttons guard against already-installed/removed state
+- `user.py` — `on_click_delete_user` and `on_click_delete_all_user` missing `_widget` parameter fixed
+- `maintenance_gui.py` — label renamed to "Get the original ATT /etc/pacman.conf" (naming convention: use ATT not distro names in UI labels)
 - **flake8 installed** and `.flake8` confirmed configured (max-line-length = 120)
 - **AI tab** confirmed frozen — no errors on Kiro
 
 ### Files Modified
 
-`sddm.py` • `sddm_gui.py` • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `maintenance_gui.py` • `CLAUDE.md` • `support.py` (deleted)
+`icons.py` • `icons_gui.py` • `fastfetch.py` • `fastfetch_gui.py` • `functions.py` • `sddm.py` • `sddm_gui.py` • `archlinux-tweak-tool.py` • `maintenance.py` • `desktopr_gui.py` • `maintenance_gui.py` • `user.py` • `CLAUDE.md` • `support.py` (deleted) • 14 additional files (autopep8/F541 fixes)
 
 ---
 

@@ -610,6 +610,7 @@ def set_att_checkboxes_theming_none(self):
 # THEMES CALLBACKS
 # ====================================================================
 
+
 def on_install_att_themes_clicked(self, widget):
     fn.log_subsection("Install Arc Themes")
     fn.debug_print("Installing selected Arc themes")

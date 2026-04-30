@@ -295,6 +295,7 @@ if fn.distr:
         "ttf-hack",
     ]
 
+
 def check_desktop(desktop):
     """check if desktop is installed"""
     # /usr/share/xsessions/xfce.desktop
@@ -628,6 +629,7 @@ def install_desktop(self, desktop, state):
 # ====================================================================
 # DESKTOPR CALLBACKS
 # ====================================================================
+
 
 def on_d_combo_changed(self, widget, pspec=None):
     from gi.repository import Gdk, GdkPixbuf

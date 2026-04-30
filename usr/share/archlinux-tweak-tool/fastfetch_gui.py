@@ -23,15 +23,17 @@ def init_fastfetch_lazy_load(self, fn):
                 with open(config, "r", encoding="utf-8") as f:
                     content = f.read()
                 lolcat_enabled = "fastfetch | lolcat" in content
+        self.ff_initializing = True
         if hasattr(self, 'fast_util'):
             self.fast_util.set_active(fastfetch_enabled)
         if hasattr(self, 'fast_lolcat'):
             self.fast_lolcat.set_active(lolcat_enabled)
             self.fast_lolcat.set_sensitive(fastfetch_enabled)
+        self.ff_initializing = False
         elapsed = time.time() - start
         fn.debug_print(f"[LAZY] Fastfetch page switches loaded in {elapsed:.3f}s")
-    except Exception:
-        pass
+    except Exception as e:
+        fn.debug_print(f"[LAZY] Fastfetch lazy load failed: {e}")
 
 
 def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
@@ -79,7 +81,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     self.fast_lolcat.connect("notify::active", functools.partial(fastfetch.on_fast_lolcat_toggled, self))
 
     applyfastfetch = Gtk.Button(label="Apply Fastfetch configuration")
-    resetnormalfastfetch = Gtk.Button(label="Reset Fastfetch (backup)")
+    resetnormalfastfetch = Gtk.Button(label="Reset your Fastfetch backup")
     resetattfastfetch = Gtk.Button(label="Reset Fastfetch (ATT defaults)")
 
     applyfastfetch.connect("clicked", functools.partial(fastfetch.on_apply_fast, self))
@@ -113,7 +115,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     self.mem = Gtk.CheckButton(label="Show memory")
     self.swap = Gtk.CheckButton(label="Show swap")
     self.cursor = Gtk.CheckButton(label="Show cursor")
-    self.disks = Gtk.CheckButton(label="Show disk")
     self.font = Gtk.CheckButton(label="Show font")
     self.disks = Gtk.CheckButton(label="Show disks")
     self.lIP = Gtk.CheckButton(label="Show local ip")
@@ -210,6 +211,7 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     flowbox.append(self.swap)
     flowbox.append(self.disks)
     flowbox.append(self.lIP)
+    flowbox.append(self.PIP)
     flowbox.append(self.batt)
     flowbox.append(self.pwr)
     flowbox.append(self.local)
@@ -230,8 +232,8 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
         )
         texture = Gdk.Texture.new_for_pixbuf(pixbuf)
         fastfetch_image.set_paintable(texture)
-    except Exception:
-        pass
+    except Exception as e:
+        fn.debug_print(f"Failed to load fastfetch image: {e}")
     fastfetch_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
     fastfetch_image.set_size_request(img_min, img_min)
     fastfetch_image.set_hexpand(True)
@@ -286,32 +288,3 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     fn.GLib.idle_add(init_fastfetch_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)
 
 
-def on_fast_util_toggled(self, switch, gparam):
-    """Handler for fastfetch toggle switch."""
-    fastfetch_enabled = switch.get_active()
-    
-    # Enable or disable lolcat based on fastfetch state
-    if not fastfetch_enabled:
-        # If fastfetch is turned off, lolcat must also be turned off
-        self.fast_lolcat.set_active(False)
-        self.fast_lolcat.set_sensitive(False)  # Disable lolcat toggle
-    else:
-        # If fastfetch is enabled, lolcat can be toggled independently
-        self.fast_lolcat.set_sensitive(True)
-
-    # Write to shellrc only when fastfetch is toggled
-    fastfetch.write_configs(fastfetch_enabled, self.fast_lolcat.get_active())
-
-
-def on_fast_lolcat_toggled(self, switch, gparam):
-    """Handler for lolcat toggle switch."""
-    lolcat_enabled = switch.get_active()
-    
-    # Write to shellrc only when lolcat is toggled
-    # Note: This is only relevant if fastfetch is enabled, hence no further checks needed
-    fastfetch.write_configs(self.fast_util.get_active(), lolcat_enabled)
-
-
-def update_gui(self):
-    # Your code to update the GUI goes here
-    pass

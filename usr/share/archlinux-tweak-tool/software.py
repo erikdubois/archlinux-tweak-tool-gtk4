@@ -5,6 +5,7 @@
 import functions as fn
 from gi.repository import GLib
 
+
 def on_click_software_pamac(self, widget):
     try:
         if fn.path.exists("/usr/bin/pamac-manager"):
@@ -98,6 +99,7 @@ def on_click_software_octopi(self, widget):
     except Exception as error:
         fn.log_error(f"Error with octopi: {error}")
 
+
 def on_click_software_gnome(self, widget):
     try:
         if fn.path.exists("/usr/bin/gnome-software"):
@@ -156,6 +158,7 @@ def on_click_software_gnome(self, widget):
     except Exception as error:
         fn.log_error(f"Error with gnome-software: {error}")
 
+
 def on_click_software_discover(self, widget):
     try:
         if not fn.path.exists("/usr/bin/plasma-discover"):
@@ -211,6 +214,7 @@ def on_click_software_discover(self, widget):
     except Exception as error:
         fn.log_error(f"Error with discover: {error}")
 
+
 def on_click_software_bauh(self, widget):
     try:
         if fn.path.exists("/usr/bin/bauh"):
@@ -230,6 +234,7 @@ def on_click_software_bauh(self, widget):
     except Exception as error:
         fn.log_error(f"Error with bauh: {error}")
 
+
 def on_click_software_yay(self, widget):
     try:
         if fn.path.exists("/usr/bin/yay"):
@@ -242,6 +247,7 @@ def on_click_software_yay(self, widget):
         fn.wait_install_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based) <b>installed</b>", self, "yay-git installed", "yay-git")
     except Exception as error:
         fn.log_error(f"Error with yay-git: {error}")
+
 
 def on_click_software_paru(self, widget):
     try:
@@ -256,6 +262,7 @@ def on_click_software_paru(self, widget):
     except Exception as error:
         fn.log_error(f"Error with paru-git: {error}")
 
+
 def on_click_software_trizen(self, widget):
     try:
         if fn.path.exists("/usr/bin/trizen"):
@@ -268,6 +275,7 @@ def on_click_software_trizen(self, widget):
         fn.wait_install_and_update(process, "/usr/bin/trizen", self.lbl_software_trizen, "Trizen - AUR helper (Perl-based) <b>installed</b>", self, "trizen installed", "trizen")
     except Exception as error:
         fn.log_error(f"Error with trizen: {error}")
+
 
 def on_click_software_pikaur(self, widget):
     try:
@@ -282,6 +290,7 @@ def on_click_software_pikaur(self, widget):
     except Exception as error:
         fn.log_error(f"Error with pikaur-git: {error}")
 
+
 def on_click_software_yay_remove(self, widget):
     try:
         fn.log_subsection("Removing yay-git...")
@@ -290,6 +299,7 @@ def on_click_software_yay_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/yay", self.lbl_software_yay, "Yay-git - AUR helper (Go-based)", self, "yay-git removal complete")
     except Exception as error:
         fn.log_error(f"Error with yay-git removal: {error}")
+
 
 def on_click_software_paru_remove(self, widget):
     try:
@@ -300,6 +310,7 @@ def on_click_software_paru_remove(self, widget):
     except Exception as error:
         fn.log_error(f"Error with paru-git removal: {error}")
 
+
 def on_click_software_trizen_remove(self, widget):
     try:
         fn.log_subsection("Removing trizen...")
@@ -309,6 +320,7 @@ def on_click_software_trizen_remove(self, widget):
     except Exception as error:
         fn.log_error(f"Error with trizen removal: {error}")
 
+
 def on_click_software_pikaur_remove(self, widget):
     try:
         fn.log_subsection("Removing pikaur-git...")
@@ -317,6 +329,7 @@ def on_click_software_pikaur_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/pikaur", self.lbl_software_pikaur, "Pikaur-git - AUR helper (Python-based)", self, "pikaur-git removal complete")
     except Exception as error:
         fn.log_error(f"Error with pikaur-git removal: {error}")
+
 
 def on_click_software_pacui_open(self, widget):
     try:
@@ -362,6 +375,7 @@ def on_click_software_pacui_open(self, widget):
     except Exception as error:
         fn.log_error(f"Error with pacui: {error}")
 
+
 def on_click_software_pacui_remove(self, widget):
     try:
         fn.log_subsection("Removing pacui...")
@@ -370,6 +384,7 @@ def on_click_software_pacui_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/pacui", self.lbl_software_pacui, "Pacui - TUI pacman wrapper", self, "pacui removal complete")
     except Exception as error:
         fn.log_error(f"Error with pacui removal: {error}")
+
 
 def on_click_software_flatpak(self, widget):
     try:
@@ -427,6 +442,7 @@ def on_click_software_flatpak(self, widget):
     except Exception as error:
         fn.log_error(f"Error with flatpak: {error}")
 
+
 def on_click_software_flatpak_remove(self, widget):
     try:
         fn.log_subsection("Removing flatpak...")
@@ -435,6 +451,7 @@ def on_click_software_flatpak_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/flatpak", self.lbl_software_flatpak, "Flatpak - Manage Flatpak apps", self, "flatpak removal complete")
     except Exception as error:
         fn.log_error(f"Error with flatpak removal: {error}")
+
 
 def on_click_software_snapd(self, widget):
     try:
@@ -481,6 +498,7 @@ def on_click_software_snapd(self, widget):
     except Exception as error:
         fn.log_error(f"Error with snapd: {error}")
 
+
 def on_click_software_snapd_remove(self, widget):
     try:
         fn.log_subsection("Removing snapd...")
@@ -489,6 +507,7 @@ def on_click_software_snapd_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/snap", self.lbl_software_snapd, "Snapd - Manage Snap apps", self, "snapd removal complete")
     except Exception as error:
         fn.log_error(f"Error with snapd removal: {error}")
+
 
 def on_click_software_appimagelauncher(self, widget):
     try:
@@ -551,6 +570,7 @@ def on_click_software_appimagelauncher(self, widget):
     except Exception as error:
         fn.log_error(f"Error with app-manager: {error}")
 
+
 def on_click_software_appimagelauncher_remove(self, widget):
     try:
         fn.log_subsection("Removing appmanager...")
@@ -559,6 +579,7 @@ def on_click_software_appimagelauncher_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/app-manager", self.lbl_software_appimagelauncher, "App-manager - Manage AppImages", self, "appmanager removal complete")
     except Exception as error:
         fn.log_error(f"Error with appmanager removal: {error}")
+
 
 def on_click_software_pacseek(self, widget):
     try:
@@ -604,6 +625,7 @@ def on_click_software_pacseek(self, widget):
     except Exception as error:
         fn.log_error(f"Error with pacseek: {error}")
 
+
 def on_click_software_pacseek_remove(self, widget):
     try:
         fn.log_subsection("Removing pacseek...")
@@ -612,6 +634,7 @@ def on_click_software_pacseek_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/pacseek", self.lbl_software_pacseek, "Pacseek - TUI package searcher", self, "pacseek removal complete")
     except Exception as error:
         fn.log_error(f"Error with pacseek removal: {error}")
+
 
 def on_click_software_pamac_remove(self, widget):
     try:
@@ -623,6 +646,7 @@ def on_click_software_pamac_remove(self, widget):
     except Exception as error:
         fn.log_error(f"Error with pamac removal: {error}")
 
+
 def on_click_software_octopi_remove(self, widget):
     try:
         fn.log_subsection("Removing octopi...")
@@ -632,6 +656,7 @@ def on_click_software_octopi_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/octopi", self.lbl_software_octopi, "Octopi - GUI package manager", self, "octopi removal complete")
     except Exception as error:
         fn.log_error(f"Error with octopi removal: {error}")
+
 
 def on_click_software_gnome_remove(self, widget):
     try:
@@ -643,6 +668,7 @@ def on_click_software_gnome_remove(self, widget):
     except Exception as error:
         fn.log_error(f"Error with gnome-software removal: {error}")
 
+
 def on_click_software_discover_remove(self, widget):
     try:
         fn.log_subsection("Removing discover...")
@@ -653,6 +679,7 @@ def on_click_software_discover_remove(self, widget):
     except Exception as error:
         fn.log_error(f"Error with discover removal: {error}")
 
+
 def on_click_software_bauh_remove(self, widget):
     try:
         fn.log_subsection("Removing bauh...")
@@ -662,6 +689,7 @@ def on_click_software_bauh_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/bauh", self.lbl_software_bauh, "Bauh - GUI package manager", self, "bauh removal complete")
     except Exception as error:
         fn.log_error(f"Error with bauh removal: {error}")
+
 
 def on_click_software_archlinux_logout(self, widget):
     try:
@@ -709,6 +737,7 @@ def on_click_software_archlinux_logout(self, widget):
     except Exception as error:
         fn.log_error(f"Error with archlinux-logout: {error}")
 
+
 def on_click_software_archlinux_logout_remove(self, widget):
     try:
         fn.log_subsection("Removing archlinux-logout-gtk4-git...")
@@ -718,6 +747,7 @@ def on_click_software_archlinux_logout_remove(self, widget):
         fn.wait_remove_and_update(process, "/usr/bin/archlinux-logout", self.lbl_software_archlinux_logout, "ArchLinux Logout - Session logout tool", self, "archlinux-logout-gtk4-git removal complete")
     except Exception as error:
         fn.log_error(f"Error with archlinux-logout removal: {error}")
+
 
 def on_click_software_powermenu(self, widget):
     try:
@@ -764,6 +794,7 @@ def on_click_software_powermenu(self, widget):
             fn.threading.Thread(target=wait_install, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Error with edu-powermenu: {error}")
+
 
 def on_click_software_powermenu_remove(self, widget):
     try:

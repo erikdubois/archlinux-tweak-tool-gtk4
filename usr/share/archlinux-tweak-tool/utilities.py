@@ -43,9 +43,10 @@ def install_util(self, util):
         
 def get_config_file():
     """get config file"""
-    if fn.get_shell() == "bash":
+    shell = fn.get_shell()
+    if shell == "bash":
         return fn.bash_config
-    elif fn.get_shell() == "zsh":
+    elif shell == "zsh":
         return fn.zsh_config
     else:
         return fn.fish_config

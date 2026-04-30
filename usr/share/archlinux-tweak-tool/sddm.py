@@ -777,3 +777,23 @@ def on_click_att_sddm_clicked(self, widget=None):
     except Exception as error:
         fn.log_error(f"Failed to install SDDM: {error}")
         fn.messagebox(self, "Error", f"Failed to install SDDM: {error}")
+
+
+def on_click_fix_sddm_conf(self, _widget):
+    message = (
+        "This will reset your SDDM configuration to the ATT defaults.\n\n"
+        "• Backs up your current /etc/sddm.conf.d/ settings\n"
+        "• Applies the default SDDM configuration from Plasma\n\n"
+        "Your current settings will be saved as a backup before any changes are made."
+    )
+    if not fn.confirm_dialog(self, "Fix SDDM Configuration", message):
+        return
+
+    fn.log_subsection("Fixing SDDM configuration...")
+    try:
+        cmd = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+        fn.log_success("SDDM configuration saved (default setup from plasma)")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Saved the original SDDM configuration")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")

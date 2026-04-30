@@ -3,10 +3,14 @@
 # ============================================================
 
 import functions as fn
+import zsh_theme
 from gi.repository import GLib
 
 
 def tobash_apply(self, _widget):
+    fn.log_subsection("Apply Bash")
+    fn.debug_print(f"  Current shell : {fn.get_shell()}")
+    fn.debug_print("  Target shell  : bash")
     fn.change_shell(self, "bash")
 
 
@@ -53,7 +57,7 @@ def on_remove_bash_completion_clicked(self, _widget):
     fn.threading.Thread(target=wait_remove, daemon=True).start()
 
 
-def on_arcolinux_bash_clicked(self, _widget):
+def on_install_att_bashrc_clicked(self, _widget):
     fn.log_subsection("Apply ATT Bash Configuration")
     fn.debug_print(f"  Source : {fn.bashrc_kiro}")
     fn.debug_print(f"  Target : {fn.bash_config}")
@@ -97,81 +101,125 @@ def on_bash_reset_clicked(self, _widget):
         fn.messagebox(self, "Error", f"Failed to restore bash configuration: {error}")
 
 
-def on_arcolinux_fish_package_clicked(self, _widget):
-    """Install fish shell from ArcoLinux package"""
-    fn.install_package(self, "fish")
-    fn.show_in_app_notification(self, "Fish shell installed")
-
-
-def on_arcolinux_only_fish_clicked(self, _widget):
-    """Set fish as default shell"""
-    import subprocess
-    subprocess.run(['chsh', '-s', '/usr/bin/fish'], check=False)
-    fn.show_in_app_notification(self, "Fish set as default shell")
+def on_install_att_fish_config_clicked(self, _widget):
+    fn.log_subsection("Apply ATT Fish Configuration")
+    fn.debug_print(f"  Source : {fn.fish_config_kiro}")
+    fn.debug_print(f"  Target : {fn.fish_config}")
+    fn.debug_print(f"  Exists : {fn.path.isfile(fn.fish_config_kiro)}")
+    try:
+        if fn.path.isfile(fn.fish_config_kiro):
+            fn.os.makedirs(fn.os.path.dirname(fn.fish_config), exist_ok=True)
+            fn.shutil.copy(fn.fish_config, fn.fish_config + ".bak") if fn.path.isfile(fn.fish_config) else None
+            fn.shutil.copy(fn.fish_config_kiro, fn.fish_config)
+            fn.debug_print("  Result : copied successfully")
+            fn.permissions(fn.fish_config)
+            fn.debug_print(f"  Perms  : permissions set on {fn.fish_config}")
+            fn.log_success("ATT fish configuration applied - open a new terminal to activate")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "ATT config.fish applied - open new terminal")
+        else:
+            fn.debug_print("  Result : source file not found - nothing copied")
+            fn.log_warn("ATT config.fish source not found")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "ATT config.fish source not found")
+    except Exception as error:
+        fn.debug_print(f"  Result : FAILED - {error}")
+        fn.log_error(f"Failed to apply ATT fish configuration: {error}")
+        fn.messagebox(self, "Error", f"Failed to apply fish configuration: {error}")
 
 
 def on_fish_reset_clicked(self, _widget):
-    """Reset fish configuration"""
-    fish_config_dir = fn.os.path.expanduser("~/.config/fish")
-    if fn.path.exists(fish_config_dir):
-        fn.shutil.rmtree(fish_config_dir)
-    fn.show_in_app_notification(self, "Fish configuration reset")
+    fn.log_subsection("Restore Original Fish Configuration")
+    backup = fn.fish_config + ".bak"
+    fn.debug_print(f"  Source : {backup}")
+    fn.debug_print(f"  Target : {fn.fish_config}")
+    fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
+    try:
+        if fn.path.isfile(backup):
+            fn.shutil.copy(backup, fn.fish_config)
+            fn.debug_print("  Result : copied successfully")
+            fn.permissions(fn.fish_config)
+            fn.debug_print(f"  Perms  : permissions set on {fn.fish_config}")
+        else:
+            fn.debug_print("  Result : no backup found - nothing restored")
+        fn.log_success("Original fish configuration restored - please logout")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Your personal config.fish is applied again - logout")
+    except Exception as error:
+        fn.debug_print(f"  Result : FAILED - {error}")
+        fn.log_error(f"Failed to restore fish configuration: {error}")
+        fn.messagebox(self, "Error", f"Failed to restore fish configuration: {error}")
 
 
 def on_install_only_fish_clicked(self, _widget):
-    """Install fish shell only"""
+    fn.log_subsection("Install Fish")
+    fn.debug_print("  Package  : fish")
+    fn.debug_print(f"  Installed: {fn.check_package_installed('fish')}")
+    if fn.check_package_installed("fish"):
+        fn.log_info("Fish is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is already installed")
+        return
     fn.install_package(self, "fish")
 
 
 def on_install_only_fish_clicked_reboot(self, _widget):
-    """Install fish shell and reboot"""
+    fn.log_subsection("Install Fish")
+    fn.debug_print("  Package  : fish")
+    fn.debug_print(f"  Installed: {fn.check_package_installed('fish')}")
+    fn.debug_print("  Reboot   : ATT will restart after install")
+    if fn.check_package_installed("fish"):
+        fn.log_info("Fish is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is already installed")
+        return
     fn.install_package(self, "fish")
     fn.restart_program()
 
 
 def on_remove_fish_all(self, _widget):
-    """Remove fish shell completely"""
+    fn.log_subsection("Remove All Fish Packages")
+    fn.debug_print("  Package  : fish")
+    fn.debug_print(f"  Installed: {fn.check_package_installed('fish')}")
     if not fn.check_package_installed("fish"):
         fn.log_info("fish is not installed")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "fish is not installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is not installed")
         return
-    fn.log_subsection("Removing fish...")
     process = fn.launch_pacman_remove_in_terminal("fish")
-    fn.GLib.idle_add(fn.show_in_app_notification, self, "Removal started")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Removing fish - terminal opened")
 
     def wait_remove():
         try:
             process.wait()
-            fn.log_success("fish removed")
-            fn.GLib.idle_add(fn.show_in_app_notification, self, "fish removed")
-        except Exception as e:
-            fn.log_error(f"Error: {e}")
+            fn.log_success("Fish removed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish removed")
+        except Exception as error:
+            fn.log_error(f"Failed to remove fish: {error}")
 
     fn.threading.Thread(target=wait_remove, daemon=True).start()
 
 
 def on_remove_only_fish_clicked(self, _widget):
-    """Remove fish shell"""
+    fn.log_subsection("Remove Fish")
+    fn.debug_print("  Package  : fish")
+    fn.debug_print(f"  Installed: {fn.check_package_installed('fish')}")
     if not fn.check_package_installed("fish"):
         fn.log_info("fish is not installed")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "fish is not installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is not installed")
         return
-    fn.log_subsection("Removing fish...")
     process = fn.launch_pacman_remove_in_terminal("fish")
-    fn.GLib.idle_add(fn.show_in_app_notification, self, "Removal started")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Removing fish - terminal opened")
 
     def wait_remove():
         try:
             process.wait()
-            fn.log_success("fish removed")
-            fn.GLib.idle_add(fn.show_in_app_notification, self, "fish removed")
-        except Exception as e:
-            fn.log_error(f"Error: {e}")
+            fn.log_success("Fish removed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish removed")
+        except Exception as error:
+            fn.log_error(f"Failed to remove fish: {error}")
 
     fn.threading.Thread(target=wait_remove, daemon=True).start()
 
 
 def tofish_apply(self, _widget):
+    fn.log_subsection("Apply Fish")
+    fn.debug_print(f"  Current shell : {fn.get_shell()}")
+    fn.debug_print("  Target shell  : fish")
     fn.change_shell(self, "fish")
 
 
@@ -180,7 +228,7 @@ def tooltip_callback(self, _widget, x, y, keyboard_mode, tooltip, text):
     return True
 
 
-def on_arcolinux_zshrc_clicked(self, _widget):
+def on_install_att_zshrc_clicked(self, _widget):
     fn.log_subsection("Apply ATT Zsh Configuration")
     fn.debug_print(f"  Source : {fn.zshrc_kiro}")
     fn.debug_print(f"  Target : {fn.zsh_config}")
@@ -228,30 +276,19 @@ def on_zshrc_reset_clicked(self, _widget):
 
 
 def on_zsh_apply_theme(self, _widget):
-    fn.log_subsection("Apply ATT Zsh Theme")
-    try:
-        # zsh_theme.set_att_checkboxes_zsh_all(self)
-        fn.debug_print("Applying ATT zsh theme")
-        fn.log_success("ATT zsh theme applied")
-        fn.show_in_app_notification(self, "ATT zsh theme is applied")
-    except Exception as error:
-        fn.log_error(f"Failed to apply zsh theme: {error}")
-        fn.messagebox(self, "Error", f"Failed to apply zsh theme: {error}")
-
-
-def on_zsh_reset(self, _widget):
-    fn.log_subsection("Reset Zsh Theme")
-    try:
-        fn.debug_print("Resetting zsh theme")
-        # zsh_theme.set_att_checkboxes_zsh_none(self)
-        fn.log_success("Zsh theme reset")
-        fn.show_in_app_notification(self, "zsh theme is reset")
-    except Exception as error:
-        fn.log_error(f"Failed to reset zsh theme: {error}")
-        fn.messagebox(self, "Error", f"Failed to reset zsh theme: {error}")
+    fn.log_subsection("Apply Zsh Theme")
+    theme = fn.get_combo_text(self.zsh_themes)
+    fn.debug_print(f"  Theme  : {theme}")
+    fn.debug_print(f"  Target : {fn.zsh_config}")
+    zsh_theme.set_config(self, theme)
+    fn.log_success(f"Zsh theme set to {theme} - open a new terminal to activate")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, f"Zsh theme set to {theme}")
 
 
 def tozsh_apply(self, _widget):
+    fn.log_subsection("Apply Zsh")
+    fn.debug_print(f"  Current shell : {fn.get_shell()}")
+    fn.debug_print("  Target shell  : zsh")
     fn.change_shell(self, "zsh")
 
 
@@ -285,68 +322,29 @@ def install_oh_my_zsh(self, _widget):
 
 def on_extra_shell_applications_clicked(self, _widget):
     fn.log_subsection("Install Extra Shell Applications")
+    packages = [
+        ("expac",        self.expac),
+        ("ripgrep",      self.ripgrep),
+        ("yay-git",      self.yay),
+        ("paru-git",     self.paru),
+        ("bat",          self.bat),
+        ("downgrade",    self.downgrade),
+        ("hw-probe",     self.hw_probe),
+        ("rate-mirrors", self.rate_mirrors),
+        ("most",         self.most),
+    ]
     try:
-        selected = []
-        if self.expac.get_active():
-            fn.debug_print("Installing expac")
-            fn.install_package(self, "expac")
-            selected.append("expac")
-        if self.ripgrep.get_active():
-            fn.debug_print("Installing ripgrep")
-            fn.install_package(self, "ripgrep")
-            selected.append("ripgrep")
-        if self.yay.get_active():
-            fn.debug_print("Installing yay-git")
-            fn.install_package(self, "yay-git")
-            selected.append("yay-git")
-        if self.paru.get_active():
-            fn.debug_print("Installing paru-git")
-            fn.install_package(self, "paru-git")
-            selected.append("paru-git")
-        if self.bat.get_active():
-            fn.debug_print("Installing bat")
-            fn.install_package(self, "bat")
-            selected.append("bat")
-        if self.downgrade.get_active():
-            fn.debug_print("Installing downgrade")
-            fn.install_package(self, "downgrade")
-            selected.append("downgrade")
-        if self.hw_probe.get_active():
-            fn.debug_print("Installing hw-probe")
-            fn.install_package(self, "hw-probe")
-            selected.append("hw-probe")
-        if self.rate_mirrors.get_active():
-            fn.debug_print("Installing rate-mirrors")
-            fn.install_package(self, "rate-mirrors")
-            selected.append("rate-mirrors")
-        if self.most.get_active():
-            fn.debug_print("Installing most")
-            fn.install_package(self, "most")
-            selected.append("most")
+        for pkg, checkbox in packages:
+            if checkbox.get_active():
+                fn.install_package(self, pkg)
 
-        fn.log_success("Software installed (availability depends on enabled repositories)")
-        fn.show_in_app_notification(
-            self, "Software has been installed depending on the repos"
-        )
+        for pkg, checkbox in packages:
+            installed = fn.check_package_installed(pkg)
+            fn.log_item(f"  {pkg:<20} {'OK' if installed else 'NOT INSTALLED'}")
+            checkbox.set_active(installed)
 
-        if fn.check_package_installed("expac") is False:
-            self.expac.set_active(False)
-        if fn.check_package_installed("ripgrep") is False:
-            self.ripgrep.set_active(False)
-        if fn.check_package_installed("yay-git") is False:
-            self.yay.set_active(False)
-        if fn.check_package_installed("paru-git") is False:
-            self.paru.set_active(False)
-        if fn.check_package_installed("bat") is False:
-            self.bat.set_active(False)
-        if fn.check_package_installed("downgrade") is False:
-            self.downgrade.set_active(False)
-        if fn.check_package_installed("hw-probe") is False:
-            self.hw_probe.set_active(False)
-        if fn.check_package_installed("rate-mirrors") is False:
-            self.rate_mirrors.set_active(False)
-        if fn.check_package_installed("most") is False:
-            self.most.set_active(False)
+        fn.log_success("Extra shell applications done")
+        fn.show_in_app_notification(self, "Extra shell applications installed")
     except Exception as error:
         fn.log_error(f"Failed to install shell applications: {error}")
         fn.messagebox(self, "Error", f"Failed to install applications: {error}")
@@ -363,10 +361,6 @@ def on_select_all_toggle(self, _widget, active):
         self.hw_probe.set_active(True)
         self.rate_mirrors.set_active(True)
         self.most.set_active(True)
-
-# ====================================================================
-# ADDITIONAL ZSH CALLBACKS
-# ====================================================================
 
 
 def on_clicked_install_only_zsh(self, _widget):
@@ -483,67 +477,6 @@ def on_remove_zsh_syntax_highlighting_clicked(self, _widget):
             fn.log_error(f"Error: {e}")
 
     fn.threading.Thread(target=wait_remove, daemon=True).start()
-
-
-def on_arcolinux_zshrc_clicked_dup(self, _widget):
-    fn.log_subsection("Apply ATT Zsh Configuration")
-    try:
-        if fn.path.isfile(fn.zshrc_kiro):
-            fn.debug_print(f"Copying ATT zshrc from {fn.zshrc_kiro}")
-            fn.shutil.copy(fn.zshrc_kiro, fn.zsh_config)
-            fn.debug_print(f"Setting permissions on {fn.home}/.zshrc")
-            fn.permissions(fn.home + "/.zshrc")
-        fn.debug_print("Sourcing shell configuration")
-        fn.source_shell(self)
-        fn.log_success("ATT zsh configuration applied")
-        from gi.repository import GLib
-        GLib.idle_add(fn.show_in_app_notification, self, "ATT ~/.zshrc is applied")
-    except Exception as error:
-        fn.log_error(f"Failed to apply ATT zsh configuration: {error}")
-        fn.messagebox(self, "Error", f"Failed to apply zsh configuration: {error}")
-
-
-def on_zshrc_reset_clicked_dup(self, _widget):
-    fn.log_subsection("Restore Original Zsh Configuration")
-    try:
-        if fn.path.isfile(fn.zsh_config + ".bak"):
-            fn.debug_print("Restoring zshrc from backup")
-            fn.shutil.copy(fn.zsh_config + ".bak", fn.zsh_config)
-            fn.debug_print(f"Setting permissions on {fn.home}/.zshrc")
-            fn.permissions(fn.home + "/.zshrc")
-        fn.log_success("Original zsh configuration restored - please logout")
-        from gi.repository import GLib
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Your personal ~/.zshrc is applied again - logout",
-        )
-    except Exception as error:
-        fn.log_error(f"Failed to restore zsh configuration: {error}")
-        fn.messagebox(self, "Error", f"Failed to restore zsh configuration: {error}")
-
-
-def on_zsh_reset_full(self, _widget):
-    fn.log_subsection("Reset Zsh Configuration")
-    try:
-        if fn.path.isfile(fn.zsh_config + ".bak"):
-            fn.debug_print("Restoring zshrc from backup")
-            fn.shutil.copy(fn.zsh_config + ".bak", fn.zsh_config)
-            fn.permissions(fn.home + "/.zshrc")
-            fn.permissions(fn.home + "/.zshrc.bak")
-            fn.log_success("Backup configuration applied")
-            fn.show_in_app_notification(self, "Default settings applied")
-        else:
-            fn.debug_print("Applying default ATT zshrc")
-            fn.shutil.copy(
-                "/usr/share/archlinux-tweak-tool/data/.zshrc", fn.home + "/.zshrc"
-            )
-            fn.permissions(fn.home + "/.zshrc")
-            fn.log_success("Default zshrc applied")
-            fn.show_in_app_notification(self, "Valid ~/.zshrc applied")
-    except Exception as error:
-        fn.log_error(f"Failed to reset zsh configuration: {error}")
-        fn.messagebox(self, "Error", f"Failed to reset zsh configuration: {error}")
 
 
 def remove_oh_my_zsh(self, _widget):

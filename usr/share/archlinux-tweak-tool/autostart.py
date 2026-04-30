@@ -66,7 +66,7 @@ Hidden=false\n"
         ) as f:
             f.write(content)
             f.close()
-        self.add_row(name)
+        add_row(self, name)
         # self.startups.append([True, name, comnt])
 
 
@@ -80,44 +80,47 @@ def on_comment_changed(self, widget):
 
 
 def on_auto_toggle(self, widget, data, lbl):
-    failed = False
+    desktop_file = fn.autostart + lbl + ".desktop"
+    active = widget.get_active()
+    hidden_value = str(not active).lower()
+    fn.log_subsection(f"Toggle Autostart: {lbl}")
+    fn.debug_print(f"  File   : {desktop_file}")
+    fn.debug_print(f"  Active : {active}")
+    fn.debug_print(f"  Hidden : {hidden_value}")
     try:
-        with open(fn.autostart + lbl + ".desktop", "r", encoding="utf-8") as f:
+        with open(desktop_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            f.close()
-        try:
+        if fn.check_content("Hidden=", desktop_file):
             pos = fn.get_position(lines, "Hidden=")
-        except:
-            failed = True
-            with open(fn.autostart + lbl + ".desktop", "a", encoding="utf-8") as f:
-                f.write("Hidden=" + str(not widget.get_active()).lower())
-                f.close()
-    except:
-        pass
-    if not failed:
-        try:
             val = lines[pos].split("=")[1].strip()
-            lines[pos] = lines[pos].replace(
-                val, str(not widget.get_active()).lower()
-            )
-            with open(fn.autostart + lbl + ".desktop", "w", encoding="utf-8") as f:
-                f.writelines(lines)
-                f.close()
-        except:
-            pass
+            lines[pos] = lines[pos].replace(val, hidden_value)
+            fn.debug_print(f"  Action : updated Hidden= at line {pos}")
+        else:
+            lines.append(f"Hidden={hidden_value}\n")
+            fn.debug_print(f"  Action : appended Hidden={hidden_value}")
+        with open(desktop_file, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+        fn.debug_print("  Result : written successfully")
+        fn.log_success(f"{lbl} autostart {'enabled' if active else 'disabled'}")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{lbl} {'enabled' if active else 'disabled'}")
+    except Exception as error:
+        fn.debug_print(f"  Result : FAILED - {error}")
+        fn.log_error(f"Failed to toggle autostart for {lbl}: {error}")
 
 
 def on_auto_remove_clicked(self, gesture_or_widget, listbox, lbl):
+    desktop_file = fn.autostart + lbl + ".desktop"
+    fn.log_subsection(f"Remove Autostart: {lbl}")
+    fn.debug_print(f"  File   : {desktop_file}")
     try:
-        fn.unlink(fn.autostart + lbl + ".desktop")
-        fn.debug_print("Removed item from ~/.config/autostart/")
+        fn.unlink(desktop_file)
+        fn.debug_print("  Result : removed successfully")
+        fn.log_success(f"{lbl} removed from autostart")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{lbl} removed from autostart")
         self.vvbox.remove(listbox)
     except Exception as error:
-        fn.log_error(str(error))
-        fn.debug_print("We were unable to remove it")
-        fn.debug_print("Evaluate if it can/should be removed")
-        fn.debug_print("Then remove it manually")
-        fn.debug_print("We only remove .desktop files")
+        fn.debug_print(f"  Result : FAILED - {error}")
+        fn.log_error(f"Failed to remove {lbl} from autostart: {error}")
 
 
 def clear_autostart(self):
@@ -143,8 +146,8 @@ def add_row(self, x, base_dir=None):
     lbl.set_text(x)
 
     swtch = Gtk.Switch()
-    swtch.connect("notify::active", functools.partial(on_auto_toggle, self, lbl=x))
     swtch.set_active(get_startups(x))
+    swtch.connect("notify::active", functools.partial(on_auto_toggle, self, lbl=x))
 
     listbox = Gtk.ListBox()
 
@@ -187,29 +190,19 @@ def add_row(self, x, base_dir=None):
     self.vvbox.append(listbox)
 
 
-def on_remove_auto(self, widget):
-    selection = self.treeView4.get_selection()
-    model, paths = selection.get_selected_rows()
-
-    for path in paths:
-        iter = model.get_iter(path)
-        value = model.get_value(iter, 1)
-        model.remove(iter)
-        fn.unlink(fn.home + "/.config/autostart/" + value + ".desktop")
-        fn.debug_print("Item has been removed from autostart")
-        fn.show_in_app_notification(self, "Item has been removed from autostart")
-
-
 def on_add_autostart(self, widget):
-    if len(self.txtbox1.get_text()) > 1 and len(self.txtbox2.get_text()) > 1:
-        add_autostart(
-            self,
-            self.txtbox1.get_text(),
-            self.txtbox2.get_text(),
-            self.txtbox3.get_text(),
-        )
-    fn.debug_print("Item has been added to autostart")
-    fn.show_in_app_notification(self, "Item has been added to autostart")
+    name = self.txtbox1.get_text()
+    command = self.txtbox2.get_text()
+    fn.log_subsection("Add Autostart")
+    fn.debug_print(f"  Name   : {name}")
+    fn.debug_print(f"  Command: {command}")
+    if len(name) > 1 and len(command) > 1:
+        add_autostart(self, name, command, self.txtbox3.get_text())
+        fn.log_success(f"{name} added to autostart")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{name} added to autostart")
+    else:
+        fn.log_info("Name and Command must be at least 2 characters")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Name and Command must be at least 2 characters")
 
 
 def on_exec_browse(self, widget):
@@ -218,98 +211,24 @@ def on_exec_browse(self, widget):
         transient_for=self,
         action=Gtk.FileChooserAction.OPEN,
     )
-
     dialog.set_select_multiple(False)
     dialog.set_current_folder(Gio.File.new_for_path(fn.home))
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("_Open", Gtk.ResponseType.OK)
-    dialog.connect("response", open_response_auto)
-
+    dialog.connect("response", lambda d, r: open_response_auto(self, d, r))
     dialog.present()
 
 
-def open_response_auto(dialog, response):
+def open_response_auto(self, dialog, response):
     if response == Gtk.ResponseType.OK:
         files = dialog.get_files()
         if files:
-            foldername = files[0].get_path()
-            fn.debug_print(foldername)
-            dialog.destroy()
+            filepath = files[0].get_path()
+            fn.debug_print(f"  File   : {filepath}")
+            self.txtbox2.set_text(filepath)
+        dialog.destroy()
     elif response == Gtk.ResponseType.CANCEL:
         dialog.destroy()
-
-
-def create_autostart_columns(self, treeView):
-    rendererText = Gtk.CellRendererText()
-    renderer_checkbox = Gtk.CellRendererToggle()
-    column_checkbox = Gtk.TreeViewColumn("", renderer_checkbox, active=0)
-    renderer_checkbox.connect("toggled", renderer_checkbox_callback, self.startups)
-    renderer_checkbox.set_activatable(True)
-    column_checkbox.set_sort_column_id(0)
-
-    column = Gtk.TreeViewColumn("Name", rendererText, text=1)
-    column.set_sort_column_id(1)
-
-    column2 = Gtk.TreeViewColumn("Comment", rendererText, text=2)
-    column2.set_sort_column_id(2)
-
-    treeView.append_column(column_checkbox)
-    treeView.append_column(column)
-    treeView.append_column(column2)
-
-
-def create_columns(self, treeView):
-    rendererText = Gtk.CellRendererText()
-    column = Gtk.TreeViewColumn("Name", rendererText, text=0)
-    column.set_sort_column_id(0)
-    treeView.append_column(column)
-
-
-def renderer_checkbox_callback(renderer, path, model):
-    if path is not None:
-        it = model.get_iter(path)
-        model[it][0] = not model[it][0]
-
-
-def on_activated(self, treeview, path, column):
-    failed = False
-    treestore, selected_treepaths = treeview.get_selection().get_selected_rows()
-    selected_treepath = selected_treepaths[0]
-    selected_row = treestore[selected_treepath]
-    bool = selected_row[0]
-    text = selected_row[1]
-
-    if bool:
-        bools = False
-    else:
-        bools = True
-
-    with open(
-        fn.home + "/.config/autostart/" + text + ".desktop", "r", encoding="utf-8"
-    ) as f:
-        lines = f.readlines()
-        f.close()
-    try:
-        pos = fn.get_position(lines, "Hidden=")
-    except:
-        failed = True
-        with open(
-            fn.home + "/.config/autostart/" + text + ".desktop",
-            "a",
-            encoding="utf-8",
-        ) as f:
-            f.write("Hidden=" + str(bools))
-            f.close()
-    if not failed:
-        val = lines[pos].split("=")[1].strip()
-        lines[pos] = lines[pos].replace(val, str(bools).lower())
-        with open(
-            fn.home + "/.config/autostart/" + text + ".desktop",
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.writelines(lines)
-            f.close()
 
 
 # ====================================================================

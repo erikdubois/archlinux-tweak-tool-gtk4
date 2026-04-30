@@ -20,14 +20,13 @@ def get_themes(combo):
             name = theme_list[pos].split("=")[1].strip().strip('"')
             active = 0
             combo.get_model().append("random")
-            # TODO:enumerate
             for x in range(len(lists_sorted)):
                 if name in lists_sorted[x].replace(".zsh-theme", ""):
                     active = x + 1  # remember; arrays start at ZERO
                 combo.get_model().append(lists_sorted[x].split(".")[0].strip())
             combo.set_selected(active)
         except OSError:
-            fn.debug_print("ATT was unable to locate your ~/.zshrc file. We have placed a working ~/.zshrc in your base home directory (~/.zshrc)")
+            fn.debug_print("ATT was unable to locate ~/.zshrc - a working ~/.zshrc has been placed in your home directory")
             fn.debug_print("You may need to reload ATT to set the options in the zsh tab")
         except Exception as error:
             fn.log_error(str(error))

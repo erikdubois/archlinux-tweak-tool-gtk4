@@ -17,6 +17,7 @@ def on_click_system_cpu(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_memory_disk(self, widget):
     try:
         fn.log_subsection("Launching memory and disk usage viewer...")
@@ -29,6 +30,7 @@ def on_click_system_memory_disk(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_lsblk(self, widget):
     try:
@@ -44,6 +46,7 @@ def on_click_system_lsblk(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_lspci(self, widget):
     try:
         fn.log_subsection("Launching PCI devices viewer...")
@@ -58,6 +61,7 @@ def on_click_system_lspci(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_lsusb(self, widget):
     try:
         fn.log_subsection("Launching USB devices viewer...")
@@ -71,6 +75,7 @@ def on_click_system_lsusb(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_lsmod(self, widget):
     try:
@@ -87,6 +92,7 @@ def on_click_system_lsmod(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_inxi(self, widget):
     try:
         fn.log_subsection("Launching system information viewer...")
@@ -101,6 +107,7 @@ def on_click_system_inxi(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_hwinfo(self, widget):
     try:
@@ -118,6 +125,7 @@ def on_click_system_hwinfo(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_fdisk(self, widget):
     try:
         fn.log_subsection("Launching disk partitioning viewer...")
@@ -132,6 +140,7 @@ def on_click_system_fdisk(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_fstab(self, widget):
     try:
@@ -148,6 +157,7 @@ def on_click_system_fstab(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_hostnamectl(self, widget):
     try:
         fn.log_subsection("Launching hostname settings viewer...")
@@ -161,6 +171,7 @@ def on_click_system_hostnamectl(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_localectl(self, widget):
     try:
         fn.log_subsection("Launching locale settings viewer...")
@@ -173,6 +184,7 @@ def on_click_system_localectl(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_services(self, widget):
     try:
@@ -188,6 +200,7 @@ def on_click_system_services(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_services_enabled(self, widget):
     try:
         fn.log_subsection("Launching enabled services viewer...")
@@ -202,6 +215,7 @@ def on_click_system_services_enabled(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_services_failed(self, widget):
     try:
         fn.log_subsection("Launching failed services viewer...")
@@ -215,6 +229,7 @@ def on_click_system_services_failed(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_timers_enabled(self, widget):
     try:
@@ -241,6 +256,7 @@ def on_click_system_timers_enabled(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_system_dmesg(self, widget):
     try:
         fn.log_subsection("Launching kernel messages viewer...")
@@ -254,6 +270,7 @@ def on_click_system_dmesg(self, widget):
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_system_gparted(self, widget):
     try:

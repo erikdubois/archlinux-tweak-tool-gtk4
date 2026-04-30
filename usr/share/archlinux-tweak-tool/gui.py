@@ -41,6 +41,7 @@ import system_gui
 import software_gui
 import packages_gui
 
+
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     """creation of the gui"""
 
@@ -239,7 +240,6 @@ themes</i> you can customize <b>fastfetch</b>"
     stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
 
     stack.add_titled(vboxstack13, "stack13", "Autostart")  # Autostart
-
 
     stack.add_titled(vboxstack12, "stack12", "Desktop")  # Desktop installer
 

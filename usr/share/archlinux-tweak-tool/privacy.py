@@ -8,6 +8,7 @@ import functions as fn
 # PRIVACY CALLBACKS
 # ====================================================================
 
+
 def set_hblock(self, widget, param_spec=None):
     # Skip entire operation during initialization/lazy-loading
     if getattr(self, 'initializing', False):

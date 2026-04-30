@@ -13,88 +13,21 @@ import utilities
 #                       Fastfetch
 # ====================================================================
 
+
 def get_fastfetch():
-    """Get data from fastfetch_config JSONC file."""
-    data = {}
-    if fn.path.isfile(fn.fastfetch_config):
+    """Get data from fastfetch config JSONC file."""
+    if not fn.path.isfile(fn.fastfetch_config):
+        return {}
+    try:
         with open(fn.fastfetch_config, "r", encoding="utf-8") as f:
-            jsonc_content = f.read()
-    
-    return data
+            content = f.read()
+        content = re.sub(r'^\s*//.*$', '', content, flags=re.MULTILINE)
+        content = re.sub(r',(\s*[}\]])', r'\1', content)
+        return json.loads(content)
+    except Exception as e:
+        fn.debug_print(f"Failed to parse fastfetch config: {e}")
+        return {}
 
-
-def toggle_fastfetch(enable):
-    """Toggle fastfetch in shell config file"""
-    shell_config = fn.get_shell_config()
-    if not shell_config:
-        return False
-
-    try:
-        with open(shell_config, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        
-        # Find the reporting tools section
-        reporting_section_start = -1
-        for i, line in enumerate(lines):
-            if "# reporting tools" in line.lower():
-                reporting_section_start = i
-                break
-
-        if reporting_section_start == -1:
-            return False  # Exit if the reporting tools section is not found
-
-        # Find the fastfetch line within the reporting tools section
-        fastfetch_line = -1
-        for i in range(reporting_section_start, len(lines)):
-            if lines[i].strip().startswith(("fastfetch", "#fastfetch")):
-                fastfetch_line = i
-                break
-
-        if fastfetch_line == -1:
-            return False  # Exit if fastfetch line is not found
-
-        # Check if the line is commented out
-        if lines[fastfetch_line].strip().startswith("#"):
-            if enable:
-                return False  # Do not enable if it's commented out
-            # If disabling, we can proceed to comment it out
-
-        # Toggle only the fastfetch line
-        if enable:
-            lines[fastfetch_line] = lines[fastfetch_line].lstrip('#')  # Uncomment
-        else:
-            if not lines[fastfetch_line].strip().startswith('#'):
-                lines[fastfetch_line] = '#' + lines[fastfetch_line]  # Comment out
-
-        with open(shell_config, "w", encoding="utf-8") as f:
-            f.writelines(lines)
-        return True
-    except Exception:
-        return False
-
-def toggle_lolcat(enable):
-    """Toggle lolcat for fastfetch in shell config file"""
-    shell_config = fn.get_shell_config()
-    if not shell_config:
-        return False
-
-    try:
-        with open(shell_config, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-
-        lolcat_lines = [i for i, line in enumerate(lines)
-                        if "| lolcat" in line.lower()]
-
-        for line in lolcat_lines:
-            # Skip updating the alias line and the line above it
-            if "| lolcat" in lines[line] or line > 0 and "| lolcat" in lines[line - 1]:
-                continue
-
-        with open(shell_config, "w", encoding="utf-8") as f:
-            f.writelines(lines)
-        return True
-    except Exception:
-        return False
 
 def get_position(lists, value):
     """Get position of fastfetch command in list, accounting for lolcat and comments"""
@@ -112,6 +45,7 @@ def get_position(lists, value):
         return position
     else:
         return -1
+
 
 def write_configs(util_enabled, lolcat_enabled):
     """Write fastfetch config to shell rc file"""
@@ -152,13 +86,14 @@ def write_configs(util_enabled, lolcat_enabled):
         with open(config, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
+
 def get_term_rc():
     """Check if fastfetch is enabled in shell config"""
     config_file = ""
     pos = -1
     try:
         config_file = utilities.get_config_file()
-    except:
+    except Exception:
         config_file = ""
     if config_file != "":
         with open(config_file, "r", encoding="utf-8") as myfile:
@@ -173,6 +108,7 @@ def get_term_rc():
     else:
         return False
 
+
 def check_backend():
     """See if image backend is active."""
     if fn.path.isfile(fn.fastfetch_config):
@@ -182,6 +118,7 @@ def check_backend():
             if image_backend and not image_backend.startswith("#"):
                 return image_backend.strip('"')
     return "ascii"
+
 
 def apply_config(self, backend, ascii_size):
     """Apply fastfetch configuration"""
@@ -213,6 +150,7 @@ def apply_config(self, backend, ascii_size):
             '"swap"': self.swap,
             '"disk"': self.disks,
             '"localIP"': self.lIP,
+            '"publicip"': self.PIP,
             '"battery"': self.batt,
             '"poweradapter"': self.pwr,
             '"locale"': self.local,
@@ -225,10 +163,10 @@ def apply_config(self, backend, ascii_size):
         for i in range(len(lines)):
             for key, checkbox in key_to_checkbox.items():
                 if key.lower() in lines[i].lower():
-                    if checkbox.get_active() and lines[i].startswith("//"):
-                        lines[i] = lines[i][2:]  # Uncomment the line
-                    elif not checkbox.get_active() and not lines[i].startswith("//"):
-                        lines[i] = "//" + lines[i]  # Comment the line
+                    if checkbox.get_active() and lines[i].strip().startswith("//"):
+                        lines[i] = lines[i].replace('//', '', 1)
+                    elif not checkbox.get_active() and not lines[i].strip().startswith("//"):
+                        lines[i] = "//" + lines[i]
 
         # Write the updated lines back to the file
         with open(fn.fastfetch_config, "w", encoding="utf-8") as f:
@@ -236,38 +174,41 @@ def apply_config(self, backend, ascii_size):
 
         fn.show_in_app_notification(self, "fastfetch settings saved successfully")
 
-def get_checkboxes(self):
-    """Read the state of the checkboxes from the JSONC configuration."""
-    config = get_fastfetch()
 
-    # Setting the active state of checkboxes based on configuration
-    self.title.set_active(config.get("info", {}).get("title", False))
-    self.os.set_active(config.get("info", {}).get("OS", False))
-    self.host.set_active(config.get("info", {}).get("Host", False))
-    self.kernel.set_active(config.get("info", {}).get("Kernel", False))
-    self.uptime.set_active(config.get("info", {}).get("Uptime", False))
-    self.packages.set_active(config.get("info", {}).get("Packages", False))
-    self.shell.set_active(config.get("info", {}).get("Shell", False))
-    self.display.set_active(config.get("info", {}).get("Display", False))
-    self.de.set_active(config.get("info", {}).get("DE", False))
-    self.wm.set_active(config.get("info", {}).get("WM", False))
-    self.wmtheme.set_active(config.get("info", {}).get("WM Theme", False))
-    self.themes.set_active(config.get("info", {}).get("Theme", False))
-    self.icons.set_active(config.get("info", {}).get("Icons", False))
-    self.font.set_active(config.get("info", {}).get("Font", False))
-    self.cursor.set_active(config.get("info", {}).get("Cursor", False))
-    self.term.set_active(config.get("info", {}).get("Terminal", False))
-    self.termfont.set_active(config.get("info", {}).get("Terminal Font", False))
-    self.cpu.set_active(config.get("info", {}).get("CPU", False))
-    self.gpu.set_active(config.get("info", {}).get("GPU", False))
-    self.mem.set_active(config.get("info", {}).get("Memory", False))
-    self.swap.set_active(config.get("info", {}).get("Swap", False))
-    self.disks.set_active(config.get("info", {}).get("Disk", False))
-    self.lIP.set_active(config.get("info", {}).get("Local IP", False))
-    self.batt.set_active(config.get("info", {}).get("Battery", False))
-    self.pwr.set_active(config.get("info", {}).get("Power Adapter", False))
-    self.local.set_active(config.get("info", {}).get("Locale", False))
-    self.cblocks.set_active(config.get("info", {}).get("Color Blocks", False))
+def get_checkboxes(self):
+    """Read checkbox states from the JSONC config modules list."""
+    config = get_fastfetch()
+    modules = [m.lower() for m in config.get("modules", []) if isinstance(m, str)]
+
+    self.title.set_active("title" in modules)
+    self.os.set_active("os" in modules)
+    self.host.set_active("host" in modules)
+    self.kernel.set_active("kernel" in modules)
+    self.uptime.set_active("uptime" in modules)
+    self.packages.set_active("packages" in modules)
+    self.shell.set_active("shell" in modules)
+    self.display.set_active("display" in modules)
+    self.de.set_active("de" in modules)
+    self.wm.set_active("wm" in modules)
+    self.wmtheme.set_active("wmtheme" in modules)
+    self.themes.set_active("theme" in modules)
+    self.icons.set_active("icons" in modules)
+    self.font.set_active("font" in modules)
+    self.cursor.set_active("cursor" in modules)
+    self.term.set_active("terminal" in modules)
+    self.termfont.set_active("terminalfont" in modules)
+    self.cpu.set_active("cpu" in modules)
+    self.gpu.set_active("gpu" in modules)
+    self.mem.set_active("memory" in modules)
+    self.swap.set_active("swap" in modules)
+    self.disks.set_active("disk" in modules)
+    self.lIP.set_active("localip" in modules)
+    self.PIP.set_active("publicip" in modules)
+    self.batt.set_active("battery" in modules)
+    self.pwr.set_active("poweradapter" in modules)
+    self.local.set_active("locale" in modules)
+    self.cblocks.set_active("colors" in modules)
+
 
 def set_checkboxes_normal(self):
     """set the state of the checkboxes and ensure separator is uncommented"""
@@ -294,12 +235,14 @@ def set_checkboxes_normal(self):
     self.swap.set_active(True)
     self.disks.set_active(True)
     self.lIP.set_active(False)
+    self.PIP.set_active(False)
     self.batt.set_active(True)
     self.pwr.set_active(True)
     self.local.set_active(False)
     self.cblocks.set_active(False)
-    
+
     _ensure_separator_uncommented()
+
 
 def set_checkboxes_small(self):
     """set the state of the checkboxes and ensure separator is uncommented"""
@@ -326,12 +269,14 @@ def set_checkboxes_small(self):
     self.swap.set_active(True)
     self.disks.set_active(False)
     self.lIP.set_active(False)
+    self.PIP.set_active(False)
     self.batt.set_active(True)
     self.pwr.set_active(True)
     self.local.set_active(False)
     self.cblocks.set_active(False)
-    
+
     _ensure_separator_uncommented()
+
 
 def set_checkboxes_all(self):
     """set the state of the checkboxes and ensure separator is uncommented"""
@@ -358,13 +303,15 @@ def set_checkboxes_all(self):
     self.swap.set_active(True)
     self.disks.set_active(True)
     self.lIP.set_active(True)
+    self.PIP.set_active(False)
     self.batt.set_active(True)
     self.pwr.set_active(True)
     self.local.set_active(True)
     self.cblocks.set_active(True)
-    
+
     _ensure_separator_uncommented()
     
+
 def set_checkboxes_none(self):
     """set the state of the checkboxes and comment out separator in config.jsonc"""
     self.title.set_active(False)
@@ -390,12 +337,14 @@ def set_checkboxes_none(self):
     self.swap.set_active(False)
     self.disks.set_active(False)
     self.lIP.set_active(False)
+    self.PIP.set_active(False)
     self.batt.set_active(False)
     self.pwr.set_active(False)
     self.local.set_active(False)
     self.cblocks.set_active(False)
-    
+
     _ensure_separator_commented()
+
 
 def _ensure_separator_uncommented():
     """Ensure the separator in config.jsonc is uncommented"""
@@ -409,6 +358,7 @@ def _ensure_separator_uncommented():
 
         with open(fn.fastfetch_config, "w", encoding="utf-8") as f:
             f.writelines(lines)
+
 
 def _ensure_separator_commented():
     """Ensure the separator in config.jsonc is commented out"""
@@ -427,44 +377,49 @@ def _ensure_separator_commented():
 # FASTFETCH CALLBACKS
 # ====================================================================
 
+
 def on_install_fast(self, widget):
     fn.install_package(self, "fastfetch-git")
 
 
-def on_apply_fast(self, widget):
+def on_apply_fast(self, _widget):
+    fn.log_subsection("Apply Fastfetch configuration")
+    if not self.fast_util.get_active():
+        fn.log_info("Fastfetch was not enabled — enabling now")
+        self.fast_util.set_active(True)
     small_ascii = "auto"
     backend = "off"
     apply_config(self, backend, small_ascii)
-
+    fn.log_success("Fastfetch configuration applied")
 
 
 def on_reset_fast_att(self, widget):
-    fn.debug_print(f"Reset fastfetch to ATT defaults")
+    fn.debug_print("Reset fastfetch to ATT defaults")
     fn.debug_print(f"  Source : {fn.fastfetch_kiro}")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
     if fn.path.isfile(fn.fastfetch_kiro):
         fn.shutil.copy(fn.fastfetch_kiro, fn.fastfetch_config)
         fn.permissions(fn.fastfetch_config)
-        fn.debug_print(f"  Result : copied and permissions set")
+        fn.debug_print("  Result : copied and permissions set")
         fn.log_success("Fastfetch ATT defaults applied")
         fn.show_in_app_notification(self, "ATT defaults applied")
         get_checkboxes(self)
     else:
-        fn.debug_print(f"  Result : source file not found - nothing copied")
+        fn.debug_print("  Result : source file not found - nothing copied")
 
 
 def on_reset_fast(self, widget):
-    fn.debug_print(f"Reset fastfetch from backup")
+    fn.debug_print("Reset fastfetch from backup")
     fn.debug_print(f"  Source : {fn.fastfetch_config}.bak")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
     if fn.path.isfile(fn.fastfetch_config + ".bak"):
         fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
-        fn.debug_print(f"  Result : restored from backup")
+        fn.debug_print("  Result : restored from backup")
         get_checkboxes(self)
         fn.log_success("fastfetch default settings applied")
         fn.show_in_app_notification(self, "Default settings applied")
     else:
-        fn.debug_print(f"  Result : backup file not found - nothing restored")
+        fn.debug_print("  Result : backup file not found - nothing restored")
 
 
 def lolcat_toggle(self, widget, active, utility):
@@ -481,15 +436,18 @@ def lolcat_toggle(self, widget, active, utility):
 
 
 def on_fast_util_toggled(self, switch, gparam):
+    if getattr(self, 'ff_initializing', False):
+        return
     util_state = switch.get_active()
     lolcat_state = self.fast_lolcat.get_active()
+    label = "enabled" if util_state else "disabled"
+    fn.log_subsection(f"Fastfetch {label}")
+    fn.debug_print(f"  Config : {utilities.get_config_file()}")
 
     if util_state and not fn.path.exists("/usr/bin/fastfetch"):
         fn.log_subsection("Installing fastfetch-git...")
         fn.install_package(self, "fastfetch-git")
         return
-
-    toggle_fastfetch(util_state)
 
     if not util_state:
         self.fast_lolcat.set_active(False)
@@ -497,15 +455,23 @@ def on_fast_util_toggled(self, switch, gparam):
 
     write_configs(util_state, lolcat_state)
     self.fast_lolcat.set_sensitive(util_state)
+    fn.log_success(f"Fastfetch {label} in shell config")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, f"Fastfetch {label}")
 
 
 def on_fast_lolcat_toggled(self, switch, gparam):
+    if getattr(self, 'ff_initializing', False):
+        return
     lolcat_state = switch.get_active()
     util_state = self.fast_util.get_active()
+    label = "enabled" if lolcat_state else "disabled"
+    fn.log_subsection(f"Lolcat {label}")
+    fn.debug_print(f"  Config : {utilities.get_config_file()}")
 
     if util_state:
-        toggle_lolcat(lolcat_state)
         write_configs(util_state, lolcat_state)
+        fn.log_success(f"Lolcat {label} in shell config")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"Lolcat {label}")
 
 
 def util_toggle(self, widget, active, utility):

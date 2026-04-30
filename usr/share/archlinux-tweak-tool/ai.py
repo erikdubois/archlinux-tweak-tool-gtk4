@@ -41,6 +41,7 @@ def on_click_ai_ollama(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_ai_webui(self, widget):
     try:
         if fn.path.exists("/usr/bin/open-webui"):
@@ -81,6 +82,7 @@ def on_click_ai_webui(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_ai_claude(self, widget):
     try:
         if fn.path.exists("/usr/bin/claude"):
@@ -113,6 +115,7 @@ def on_click_ai_claude(self, widget):
             GLib.idle_add(fn.show_in_app_notification, self, "claude-code installation started")
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_ai_aider(self, widget):
     try:
@@ -158,6 +161,7 @@ def on_click_ai_aider(self, widget):
             GLib.idle_add(fn.show_in_app_notification, self, "aider installation started")
     except Exception as error:
         fn.log_error(f"Error: {error}")
+
 
 def on_click_ai_codex(self, widget):
     try:
@@ -207,6 +211,7 @@ def on_click_ai_codex(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_ai_gemini(self, widget):
     try:
         gemini_paths = ["/usr/bin/gemini", "/usr/local/bin/gemini", f"/home/{fn.sudo_username}/.local/bin/gemini", f"/home/{fn.sudo_username}/.npm-global/bin/gemini"]
@@ -255,74 +260,97 @@ def on_click_ai_gemini(self, widget):
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def open_url_in_browser(self, url):
     try:
         fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open '{url}'", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
+
 def on_click_ai_ollama_link(self, widget):
     open_url_in_browser(self, "https://ollama.com/")
+
 
 def on_click_ai_webui_link(self, widget):
     open_url_in_browser(self, "https://openwebui.com/")
 
+
 def on_click_ai_claude_link(self, widget):
     open_url_in_browser(self, "https://code.claude.com/docs/en/cli-reference")
+
 
 def on_click_ai_aider_link(self, widget):
     open_url_in_browser(self, "https://aider.chat/")
 
+
 def on_click_ai_gemini_link(self, widget):
     open_url_in_browser(self, "https://geminicli.com/")
+
 
 def on_click_ai_codex_link(self, widget):
     open_url_in_browser(self, "https://developers.openai.com/codex/cli")
 
+
 def on_click_ai_chatgpt(self, widget):
     open_url_in_browser(self, "https://chatgpt.com")
+
 
 def on_click_ai_chatgpt_link(self, widget):
     open_url_in_browser(self, "https://academy.openai.com/")
 
+
 def on_click_ai_claude_web_link(self, widget):
     open_url_in_browser(self, "https://claude.com/resources/tutorials?open_in_browser=1")
+
 
 def on_click_ai_gemini_web_link(self, widget):
     open_url_in_browser(self, "https://gemini.google.com/")
 
+
 def on_click_ai_perplexity_link(self, widget):
     open_url_in_browser(self, "https://www.perplexity.ai/hub/getting-started")
+
 
 def on_click_ai_claude_web(self, widget):
     open_url_in_browser(self, "https://claude.ai")
 
+
 def on_click_ai_gemini_web(self, widget):
     open_url_in_browser(self, "https://gemini.google.com")
+
 
 def on_click_ai_perplexity(self, widget):
     open_url_in_browser(self, "https://perplexity.ai")
 
+
 def on_click_ai_dalle_link(self, widget):
     open_url_in_browser(self, "https://openai.com/index/dall-e-3/")
+
 
 def on_click_ai_dalle(self, widget):
     open_url_in_browser(self, "https://openai.com/dall-e-3")
 
+
 def on_click_ai_midjourney_link(self, widget):
     open_url_in_browser(self, "https://docs.midjourney.com/hc/en-us/articles/33329261836941-Getting-Started-Guide")
+
 
 def on_click_ai_midjourney(self, widget):
     open_url_in_browser(self, "https://www.midjourney.com")
 
+
 def on_click_ai_leonardo_link(self, widget):
     open_url_in_browser(self, "https://leonardo.ai/learn/")
+
 
 def on_click_ai_leonardo(self, widget):
     open_url_in_browser(self, "https://leonardo.ai")
 
+
 def on_click_ai_firefly_link(self, widget):
     open_url_in_browser(self, "https://www.adobe.com/learn/firefly")
+
 
 def on_click_ai_firefly(self, widget):
     open_url_in_browser(self, "https://www.adobe.com/products/firefly")

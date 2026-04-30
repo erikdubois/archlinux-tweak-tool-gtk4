@@ -25,13 +25,11 @@ def gui(self, Gtk, vbox_stack, fn):
 
         label_export_desc = Gtk.Label(xalign=0)
         label_export_desc.set_markup(
-            f""
-            f" <b>No AUR packages are exported</b>\n"
-            f" - Option: <b>Explicitly Installed Packages</b> (recommended) packages only found in sync db (less packages)\n"
-            f" - Option: <b>All Installed Packages</b> will export all packages currently installed on your system \n"
-            f" - Tip: To see packages installed from AUR in the terminal type: pacman -Qqem\n\n"
-            f""
-            f" A list of installed packages will be exported to <b>.config/att-exports</b>"
+            " <b>No AUR packages are exported</b>\n"
+            " - Option: <b>Explicitly Installed Packages</b> (recommended) packages only found in sync db (less packages)\n"
+            " - Option: <b>All Installed Packages</b> will export all packages currently installed on your system \n"
+            " - Tip: To see packages installed from AUR in the terminal type: pacman -Qqem\n\n"
+            " A list of installed packages will be exported to <b>.config/att-exports</b>"
         )
 
         label_export_desc.set_selectable(True)
@@ -105,13 +103,12 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_install = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         label_install_desc = Gtk.Label(xalign=0, yalign=0)
         label_install_desc.set_markup(
-            f""
-            f" <b>WARNING: Proceed with caution this will install packages onto your system!</b>\n"
-            f" <b>Packages from the AUR are not supported </b>\n"
-            f" <b>This also performs a full system upgrade</b>\n\n"
-            f" - A list of packages are sourced from <b>.config/att-exports</b>\n"
-            f" - To ignore a package, add a # in front of the package name\n"
-            f" - <b>A reboot is recommended when core Linux packages are installed</b>"
+            " <b>WARNING: Proceed with caution this will install packages onto your system!</b>\n"
+            " <b>Packages from the AUR are not supported </b>\n"
+            " <b>This also performs a full system upgrade</b>\n\n"
+            " - A list of packages are sourced from <b>.config/att-exports</b>\n"
+            " - To ignore a package, add a # in front of the package name\n"
+            " - <b>A reboot is recommended when core Linux packages are installed</b>"
         )
 
         label_install_desc.set_selectable(True)
@@ -235,11 +232,10 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_build = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         label_build_desc = Gtk.Label(xalign=0, yalign=0)
         label_build_desc.set_markup(
-            f""
-            f" <b>Build packages from source using makepkg</b>\n"
-            f" - Build packages from PKGBUILD files\n"
-            f" - Requires base-devel package group to be installed\n"
-            f" - Arch Linux creates a -debug package by default; this behavior can be changed"
+            " <b>Build packages from source using makepkg</b>\n"
+            " - Build packages from PKGBUILD files\n"
+            " - Requires base-devel package group to be installed\n"
+            " - Arch Linux creates a -debug package by default; this behavior can be changed"
         )
 
         label_build_desc.set_selectable(True)

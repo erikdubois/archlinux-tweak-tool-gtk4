@@ -194,7 +194,7 @@ def _set_gsettings_cursor(cursor):
         else:
             command = ["env"] + env + command
 
-        fn.debug_print(f"[INFO] Executing gsettings command for org.gnome.desktop.interface")
+        fn.debug_print("[INFO] Executing gsettings command for org.gnome.desktop.interface")
         result = fn.subprocess.run(
             command,
             check=False,
@@ -399,7 +399,7 @@ def set_global_cursor(self, cursor):
 
     fn.debug_print("=" * 70)
     fn.debug_print(f"[INFO] Cursor theme successfully saved: {cursor}")
-    fn.debug_print(f"[INFO] Modified locations:")
+    fn.debug_print("[INFO] Modified locations:")
     for target in changed:
         fn.debug_print(f"[INFO]  - {target}")
     if failed:
@@ -423,7 +423,8 @@ def set_global_cursor(self, cursor):
 def pop_gtk_cursor_names(combo):
     """populate cursor names"""
     coms = []
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
     for item in fn.listdir("/usr/share/icons/"):
         if fn.path_check("/usr/share/icons/" + item + "/cursors/"):
             coms.append(item)
@@ -441,8 +442,6 @@ def pop_gtk_cursor_names(combo):
             combo.set_selected(i)
 
 
-
-
 # ====================================================================
 # ====================================================================
 # ====================================================================
@@ -452,7 +451,7 @@ def pop_gtk_cursor_names(combo):
 # ====================================================================
 
 # System Maintenance
-def on_click_apply_global_cursor(self, widget):
+def on_click_apply_global_cursor(self, _widget):
     cursor = fn.get_combo_text(self.cursor_themes)
     if not cursor:
         fn.show_in_app_notification(self, "Please select a cursor theme first")
@@ -492,17 +491,15 @@ def on_click_apply_global_cursor(self, widget):
         )
 
 
-def on_click_update_system(self, widget):
+def on_click_update_system(self, _widget):
     fn.log_subsection("Starting system update...")
     try:
-        fn.install_package(self, "alacritty")
         GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
-        fn.subprocess.call(
-            "alacritty -e bash -c 'sudo pacman -Syu; echo \"\"; echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        cmd = (
+            "alacritty -e bash -c 'sudo pacman -Syu; echo \"\";"
+            " echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'"
         )
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("System update completed")
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -518,17 +515,15 @@ def on_click_update_system(self, widget):
         )
 
 
-def on_click_clean_cache(self, widget):
+def on_click_clean_cache(self, _widget):
     fn.log_subsection("Launching pacman cache cleanup...")
     try:
-        fn.install_package(self, "alacritty")
         GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
-        fn.subprocess.call(
-            "alacritty -e bash -c 'sudo pacman -Sc; echo \"\"; echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        cmd = (
+            "alacritty -e bash -c 'sudo pacman -Sc; echo \"\";"
+            " echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'"
         )
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("Pacman cache cleaned")
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -544,18 +539,16 @@ def on_click_clean_cache(self, widget):
         )
 
 
-def on_click_remove_pacman_lock(self, widget):
+def on_click_remove_pacman_lock(self, _widget):
     fn.log_subsection("Removing pacman lock...")
     try:
-        fn.install_package(self, "alacritty")
         fn.debug_print("Checking pacman lock file: /var/lib/pacman/db.lck")
         GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
-        fn.subprocess.call(
-            "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\"; echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        cmd = (
+            "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\";"
+            " echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'"
         )
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("Pacman lock removed")
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -572,12 +565,11 @@ def on_click_remove_pacman_lock(self, widget):
 
 
 # Pacman Keyring Management
-def on_click_install_arch_keyring(self, widget):
+def on_click_install_arch_keyring(self, _widget):
     fn.log_subsection("Installing local archlinux-keyring...")
     GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
     try:
-        import os
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
         pathway = base_dir + "/data/packages/keyring/"
         fn.debug_print(f"Package pathway: {pathway}")
         files = fn.listdir(pathway)
@@ -597,7 +589,7 @@ def on_click_install_arch_keyring(self, widget):
         GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
 
 
-def on_click_install_arch_keyring_online(self, widget):
+def on_click_install_arch_keyring_online(self, _widget):
     fn.log_subsection("Installing archlinux-keyring online...")
     pathway = "/tmp/att-installation/"
     fn.debug_print(f"Creating temporary directory: {pathway}")
@@ -635,16 +627,14 @@ def on_click_install_arch_keyring_online(self, widget):
             fn.log_warn(f"Cleanup failed: {error}")
 
 
-def on_click_fix_pacman_keys(self, widget):
+def on_click_fix_pacman_keys(self, _widget):
     fn.log_subsection("Fixing pacman keys...")
-    fn.install_package(self, "alacritty")
     try:
-        fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        cmd = (
+            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys;"
+            " read -p \"Press Enter to close...\"'"
         )
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("Pacman reset (gpg, libraries, keys)")
         GLib.idle_add(fn.show_in_app_notification, self, "Pacman keys fixed")
     except Exception as error:
@@ -652,18 +642,15 @@ def on_click_fix_pacman_keys(self, widget):
 
 
 # Mirror & System Management
-def on_click_probe(self, widget):
+def on_click_probe(self, _widget):
     fn.log_subsection("Running hardware probe...")
-    fn.install_package(self, "hw-probe")
-    fn.install_package(self, "alacritty")
     try:
         GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
-        fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
+        cmd = (
+            "alacritty -e bash -c "
+            "'/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'"
         )
+        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("Probe link created")
         GLib.idle_add(
             fn.show_in_app_notification, self, "Probe link has been created"
@@ -675,11 +662,13 @@ def on_click_probe(self, widget):
         )
 
 
-def on_click_fix_mainstream(self, widget):
+def on_click_fix_mainstream(self, _widget):
     fn.log_subsection("Setting mainstream servers...")
-    fn.install_package(self, "alacritty")
     try:
-        command = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
+        command = (
+            "alacritty -e bash -c "
+            "'/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
+        )
         fn.subprocess.call(
             command,
             shell=True,
@@ -694,7 +683,7 @@ def on_click_fix_mainstream(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_reset_mirrorlist(self, widget):
+def on_click_reset_mirrorlist(self, _widget):
     fn.log_subsection("Resetting mirrorlist...")
     try:
         if fn.path.isfile(fn.mirrorlist + ".bak"):
@@ -705,7 +694,6 @@ def on_click_reset_mirrorlist(self, widget):
     GLib.idle_add(
         fn.show_in_app_notification, self, "Your original mirrorlist is back"
     )
-    fn.install_package(self, "alacritty")
     try:
         fn.subprocess.call(
             f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'",
@@ -717,13 +705,16 @@ def on_click_reset_mirrorlist(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_get_arch_mirrors(self, widget):
+def on_click_get_arch_mirrors(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with reflector...")
-    fn.install_package(self, "alacritty")
     try:
-        fn.install_package(self, "reflector")
+        cmd = (
+            "alacritty -e bash -c "
+            "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector;"
+            " read -p \"Press Enter to close...\"'"
+        )
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector; read -p \"Press Enter to close...\"'",
+            cmd,
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -738,12 +729,16 @@ def on_click_get_arch_mirrors(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_get_arch_mirrors2(self, widget):
+def on_click_get_arch_mirrors2(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with rate-mirrors...")
-    fn.install_package(self, "alacritty")
     try:
+        cmd = (
+            "alacritty -e bash -c "
+            "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors;"
+            " read -p \"Press Enter to close...\"'"
+        )
         fn.subprocess.call(
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors; read -p \"Press Enter to close...\"'",
+            cmd,
             shell=True,
             stdout=fn.subprocess.PIPE,
             stderr=fn.subprocess.STDOUT,
@@ -759,28 +754,7 @@ def on_click_get_arch_mirrors2(self, widget):
 
 
 # Pacman Configuration
-def on_click_fix_sddm_conf(self, widget):
-    fn.log_subsection("Fixing SDDM configuration...")
-    fn.install_package(self, "alacritty")
-    try:
-        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
-        fn.subprocess.call(
-            command,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.log_success("SDDM configuration saved (default setup from plasma)")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Saved the original SDDM configuration",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-
-
-def on_click_fix_pacman_conf(self, widget):
+def on_click_fix_pacman_conf(self, _widget):
     fn.log_subsection("Fixing pacman.conf...")
     try:
         command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf"
@@ -798,10 +772,9 @@ def on_click_fix_pacman_conf(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_fix_pacman_gpg_conf(self, widget):
+def on_click_fix_pacman_gpg_conf(self, _widget):
     fn.log_subsection("Resetting gpg.conf...")
-    import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_path = base_dir + "/data/gpg.conf"
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
         fn.debug_print(f"Creating backup to {fn.gpg_conf}.bak")
@@ -827,7 +800,7 @@ def on_click_fix_pacman_gpg_conf(self, widget):
     )
 
 
-def on_click_fix_pacman_gpg_conf_local(self, widget):
+def on_click_fix_pacman_gpg_conf_local(self, _widget):
     fn.log_subsection("Resetting local gpg.conf...")
     if not fn.path.isdir(fn.home + "/.gnupg"):
         try:
@@ -845,8 +818,7 @@ def on_click_fix_pacman_gpg_conf_local(self, widget):
         except Exception as error:
             fn.log_error(f"Error creating backup: {error}")
 
-    import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_local_path = base_dir + "/data/gpg.conf"
     fn.debug_print(f"Restoring from {gpg_conf_local_path}")
     try:
@@ -870,17 +842,17 @@ def on_click_fix_pacman_gpg_conf_local(self, widget):
     )
 
 
-def on_click_install_arch_mirrors(self, widget):
+def on_click_install_arch_mirrors(self, _widget):
     fn.install_package(self, "reflector")
     self.btn_run_reflector.set_sensitive(True)
 
 
-def on_click_install_arch_mirrors2(self, widget):
+def on_click_install_arch_mirrors2(self, _widget):
     fn.install_package(self, "rate-mirrors")
     self.btn_run_rate_mirrors.set_sensitive(True)
 
 
-def on_update_pacman_databases_clicked(self, Widget):
+def on_update_pacman_databases_clicked(self, _widget):
     fn.log_subsection("Updating pacman databases...")
     fn.show_in_app_notification(self, "Opening terminal to update pacman databases")
     fn.subprocess.Popen(

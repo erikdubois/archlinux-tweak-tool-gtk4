@@ -1,111 +1,118 @@
 #!/bin/bash
-#set -e
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.alci.online
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-# Website   : https://www.arcolinuxd.com
-# Website   : https://www.arcolinuxb.com
-# Website   : https://www.arcolinuxiso.com
-# Website   : https://www.arcolinuxforum.com
 ##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-#tput setaf 0 = black 
-#tput setaf 1 = red 
-#tput setaf 2 = green
-#tput setaf 3 = yellow 
-#tput setaf 4 = dark blue 
-#tput setaf 5 = purple
-#tput setaf 6 = cyan 
-#tput setaf 7 = gray 
-#tput setaf 8 = light blue
+# tput setaf 0 = black
+# tput setaf 1 = red
+# tput setaf 2 = green
+# tput setaf 3 = yellow
+# tput setaf 4 = dark blue
+# tput setaf 5 = purple
+# tput setaf 6 = cyan
+# tput setaf 7 = gray
+# tput setaf 8 = light blue
 ##################################################################################################################
 
-echo "###############################################################################"
-echo "Getting latest /etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf"
-echo "###############################################################################"
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
 
+DATA_DIR="/usr/share/archlinux-tweak-tool/data/kiro/sddm"
+SDDM_CONF="/etc/sddm.conf"
+SDDM_KDE="/etc/sddm.conf.d/kde_settings.conf"
+GITHUB_BASE="https://raw.githubusercontent.com/kirodubes/kiro-iso/refs/heads/main/archiso/airootfs"
+
+separator() {
+    echo "${CYAN}===============================================================================${RESET}"
+}
+
+header() {
+    echo ""
+    separator
+    echo "${CYAN}  $1${RESET}"
+    separator
+}
+
+success() { echo "${GREEN}  ✓ $1${RESET}"; }
+info()    { echo "    $1"; }
+warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
+error()   { echo "${RED}  ✗ $1${RESET}"; }
+
+# ── Header ────────────────────────────────────────────────────────────────────
+header "Fix SDDM Configuration"
+
+# ── Internet check ─────────────────────────────────────────────────────────────
+header "Checking Internet Connectivity"
 Online=0
-file_etc_sddm=0
-file_etc_sddmk=0
+if ping -c 1 8.8.8.8 > /dev/null 2>&1; then
+    success "Internet connection available"
+    Online=1
+else
+    warn "No internet connection — will use local files"
+fi
 
-function check_connectivity() {
+# ── File check ─────────────────────────────────────────────────────────────────
+header "Checking Existing SDDM Configuration"
+if [[ -f "$SDDM_CONF" ]]; then
+    success "$SDDM_CONF found"
+else
+    warn "$SDDM_CONF not found"
+fi
+if [[ -f "$SDDM_KDE" ]]; then
+    success "$SDDM_KDE found"
+else
+    warn "$SDDM_KDE not found"
+fi
 
-    local test_ip
-    local test_count
+# ── Helper functions ───────────────────────────────────────────────────────────
+patch_live_user_settings() {
+    info "Removing live-user specific settings..."
+    sed -i "s/Session=xfce/#Session=/g" "$SDDM_KDE" 2>/dev/null
+    sed -i "s/User=liveuser/#User=/g"   "$SDDM_KDE" 2>/dev/null
+    success "Live-user settings cleared from $SDDM_KDE"
+}
 
-    test_ip="8.8.8.8"
-    test_count=1
-
-    if ping -c ${test_count} ${test_ip} > /dev/null; then
-       echo "You have internet connectivity"
-       Online=1
+apply_local() {
+    info "Copying from local ATT data ($DATA_DIR)..."
+    if cp "$DATA_DIR/sddm.conf" "$SDDM_CONF" 2>/dev/null &&
+       cp "$DATA_DIR/kde_settings.conf" "$SDDM_KDE" 2>/dev/null; then
+        success "Copied $SDDM_CONF"
+        success "Copied $SDDM_KDE"
+        patch_live_user_settings
     else
-       echo "You do not appear to have internet connectivity"
-       Online=0
+        error "Local files not found in $DATA_DIR"
+        error "Nothing was changed"
     fi
- }
+}
 
-check_connectivity
+apply_online() {
+    info "Downloading from GitHub..."
+    if wget -q "$GITHUB_BASE/etc/sddm.conf" -O "$SDDM_CONF" &&
+       wget -q "$GITHUB_BASE/etc/sddm.conf.d/kde_settings.conf" -O "$SDDM_KDE"; then
+        success "Downloaded $SDDM_CONF"
+        success "Downloaded $SDDM_KDE"
+        patch_live_user_settings
+    else
+        error "Download failed — falling back to local files"
+        apply_local
+    fi
+}
 
-
-file="/etc/sddm.conf.d/kde_settings.conf"
-if [[ -f $file ]];then
-    echo $file " exists"
-    file_etc_sddmk=1
+# ── Apply ──────────────────────────────────────────────────────────────────────
+header "Applying SDDM Configuration"
+if [[ $Online -eq 1 ]]; then
+    apply_online
 else
-    echo $file " doesn't exist"
-    file_etc_sddmk=0
-fi
- 
-file="/etc/sddm.conf"
-if [[ -f $file ]];then
-    echo $file " exists"
-    file_etc_sddm=1
-else
-    echo $file " doesn't exist"
-    file_etc_sddm=0
+    apply_local
 fi
 
-#new sddmk config + online
-if [ $Online -eq 1 ] && [ $file_etc_sddmk -eq 1 ] ; then
-
-    echo "Downloading both files from github and saving them"
-    echo "Edit sddm files with two aliases nsddm or nsddmk and/or with the ArcoLinux Tweak Tool"
-	sudo wget https://raw.githubusercontent.com/kirodubes/kiro-iso/refs/heads/main/archiso/airootfs/etc/sddm.conf -O /etc/sddm.conf
-	sudo wget https://raw.githubusercontent.com/kirodubes/kiro-iso/refs/heads/main/archiso/airootfs/etc/sddm.conf.d/kde_settings.conf -O /etc/sddm.conf.d/kde_settings.conf
-	
-    FIND="Session=xfce"
-	REPLACE="#Session="
-	sudo sed -i "s/$FIND/$REPLACE/g" /etc/sddm.conf.d/kde_settings.conf
-
-	FIND="User=liveuser"
-	REPLACE="#User="
-	sudo sed -i "s/$FIND/$REPLACE/g" /etc/sddm.conf.d/kde_settings.conf
-	echo "/etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf saved from github"
-
-    echo "###############################################################################"
-    echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-    echo "###############################################################################"
-
-fi
-
-#new sddmk config + not online
-if [ $Online -eq 0 ] && [ $file_etc_sddmk -eq 1 ] ; then
-    echo "Copying both files locally"
-    echo "Edit sddm files with two aliases nsddm or nsddmk and/or with the ArcoLinux Tweak Tool"
-	sudo cp /usr/share/archlinux-tweak-tool/data/arco/sddm/sddm.conf /etc/sddm.conf
-	sudo cp /usr/share/archlinux-tweak-tool/data/arco/sddm.conf.d/kde_settings.conf /etc/sddm.conf.d/kde_settings.conf
-	echo "/etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf saved from local system"
-
-    echo "###############################################################################"
-    echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-    echo "###############################################################################"
-
-
-fi
+# ── Done ───────────────────────────────────────────────────────────────────────
+echo ""
+separator
+echo "${GREEN}  DONE — you can close this window${RESET}"
+separator
+echo ""
+read -p "  Press Enter to close..."

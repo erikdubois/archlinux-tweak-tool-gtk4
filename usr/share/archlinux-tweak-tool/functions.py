@@ -47,6 +47,8 @@ DEBUG = False
 # =====================================================
 # Color support detection
 # =====================================================
+
+
 def _has_color_support():
     """Check if terminal supports colors"""
     try:
@@ -122,6 +124,11 @@ def log_subsection(message):
 def log_info(message):
     """Informational message (BLUE with separators)"""
     _print_with_separator(message, BLUE)
+
+
+def log_item(message):
+    """Single item line (BLUE, no separators) — use for list summaries"""
+    print(f"{BLUE}[INFO]{RESET} {message}")
 
 
 def log_success(message):
@@ -218,6 +225,7 @@ fastfetch_config = home + "/.config/fastfetch/config.jsonc"
 fastfetch_kiro = "/usr/share/archlinux-tweak-tool/data/fastfetch/config.jsonc"
 zshrc_kiro = "/usr/share/archlinux-tweak-tool/data/.zshrc"
 bashrc_kiro = "/usr/share/archlinux-tweak-tool/data/.bashrc"
+fish_config_kiro = "/usr/share/archlinux-tweak-tool/data/config.fish"
 nsswitch_config = "/etc/nsswitch.conf"
 bd = ".att_backups"
 config = home + "/.config/archlinux-tweak-tool/settings.ini"
@@ -226,16 +234,9 @@ polybar = home + "/.config/polybar/"
 desktop = ""
 autostart = home + "/.config/autostart/"
 pulse_default = "/etc/pulse/default.pa"
-bash_config = ""
-zsh_config = ""
-fish_config = ""
-
-if path.isfile(home + "/.config/fish/config.fish"):
-    fish_config = home + "/.config/fish/config.fish"
-if path.isfile(home + "/.zshrc"):
-    zsh_config = home + "/.zshrc"
-if path.isfile(home + "/.bashrc"):
-    bash_config = home + "/.bashrc"
+bash_config = home + "/.bashrc"
+zsh_config = home + "/.zshrc"
+fish_config = home + "/.config/fish/config.fish"
 
 account_list = ["Standard", "Administrator"]
 i3wm_config = home + "/.config/i3/config"
@@ -613,6 +614,7 @@ def permissions(dst):
     except Exception as error:
         debug_print(error)
 
+
 def findgroup():
     try:
         groups = subprocess.run(
@@ -810,6 +812,7 @@ def check_nemesis_repo_active():
 
 _nemesis_packages_cache = None
 
+
 def load_nemesis_packages():
     """Load the list of nemesis_repo packages from file"""
     global _nemesis_packages_cache
@@ -847,13 +850,13 @@ def find_package_repo(package_name):
 
 def check_missing_repo_error(self, error_msg, package):
     """Check if installation error is due to missing repo and show appropriate error"""
-    debug_print(f"\n[INFO] check_missing_repo_error() called")
+    debug_print("\n[INFO] check_missing_repo_error() called")
     debug_print(f"[INFO] Package: {package}")
     debug_print(f"[INFO] Error message length: {len(error_msg)}")
     debug_print(f"[INFO] Error message (first 200 chars): {error_msg[:200]}")
 
     if "target not found" not in error_msg.lower():
-        debug_print(f"[INFO] 'target not found' not in error message, returning False")
+        debug_print("[INFO] 'target not found' not in error message, returning False")
         return False
 
     debug_print(f"[INFO] 'target not found' detected, querying repo for {package}")
@@ -876,6 +879,7 @@ def install_package(self, package):
             "fastfetch-git": "fastfetch",
             "yay-git": "yay",
             "paru-git": "paru",
+            "ripgrep": "rg",
         }
         binary_name = binary_map.get(package, package)
         binary_path = f"/usr/bin/{binary_name}"
@@ -903,7 +907,7 @@ def install_local_package(self, package):
         debug_print(f"Verifying package file exists: {package}")
         if not os.path.exists(package):
             raise Exception(f"Package file not found: {package}")
-        debug_print(f"Package file verified")
+        debug_print("Package file verified")
         result = subprocess.run(
             command.split(" "),
             shell=False,
@@ -1169,25 +1173,25 @@ def remove_debug_from_makepkg_conf():
                     lines[i] = lines[i].replace("debug)", "!debug)")
                     modified = True
                     debug_print(f"[DEBUG] Modified line: {lines[i].strip()}")
-                    debug_print(f"[INFO] Successfully replaced debug with !debug")
+                    debug_print("[INFO] Successfully replaced debug with !debug")
                 elif " !debug " in line or line.endswith("!debug)\n"):
-                    debug_print(f"[DEBUG] debug is already disabled (!debug)")
+                    debug_print("[DEBUG] debug is already disabled (!debug)")
                     already_fixed = True
                 else:
-                    debug_print(f"[DEBUG] debug not found in OPTIONS line")
+                    debug_print("[DEBUG] debug not found in OPTIONS line")
                 break
 
         if modified:
             debug_print(f"[DEBUG] Writing changes back to {makepkg_conf}...")
             with open(makepkg_conf, 'w') as f:
                 f.writelines(lines)
-            debug_print(f"[INFO] Successfully removed debug from /etc/makepkg.conf")
+            debug_print("[INFO] Successfully removed debug from /etc/makepkg.conf")
             return True
         elif already_fixed:
             debug_print(f"[INFO] Debug is already disabled (!debug) in {makepkg_conf}")
             return 2
         else:
-            debug_print(f"[WARNING] debug not found in OPTIONS line, no changes made")
+            debug_print("[WARNING] debug not found in OPTIONS line, no changes made")
             return False
 
     except PermissionError:
@@ -1930,19 +1934,12 @@ def source_shell(self):
 
 def get_shell():
     try:
-        process = subprocess.run(
-            ["su", "-", sudo_username, "-c", 'echo "$SHELL"'],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        output = process.stdout.decode().strip().strip("\n")
-        if output in ("/bin/bash", "/usr/bin/bash"):
+        shell = pwd.getpwnam(sudo_username).pw_shell
+        if shell in ("/bin/bash", "/usr/bin/bash"):
             return "bash"
-        elif output in ("/bin/zsh", "/usr/bin/zsh"):
+        elif shell in ("/bin/zsh", "/usr/bin/zsh"):
             return "zsh"
-        elif output in ("/bin/fish", "/usr/bin/fish"):
+        elif shell in ("/bin/fish", "/usr/bin/fish"):
             return "fish"
     except Exception as error:
         debug_print(error)
@@ -2328,11 +2325,12 @@ def wait_and_notify(process, self_ref, notification):
                     os_module.unlink(process.temp_file)
                 except Exception:
                     pass
-            debug_print(notification)
+            log_success(notification)
             GLib.idle_add(show_in_app_notification, self_ref, notification)
         except Exception as e:
             log_error(f"Exception in wait_and_notify: {e}")
     threading.Thread(target=_wait, daemon=True).start()
+
 
 def update_image(self, widget, image, theme_type, att_base, image_width, image_height):
     from gi.repository import Gdk, GdkPixbuf

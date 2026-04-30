@@ -392,6 +392,7 @@ def reset_leftwm_themes(theme):
 # THEMER CALLBACKS
 # ====================================================================
 
+
 def on_polybar_toggle(self, widget, active):
     fn.log_subsection("Toggle Polybar")
     try:
@@ -438,7 +439,7 @@ def awesome_reset_clicked(self, widget):
     fn.log_subsection("Reset Awesome Theme")
     try:
         if fn.path.isfile(fn.awesome_config + ".bak"):
-            fn.debug_print(f"Restoring awesome config from backup")
+            fn.debug_print("Restoring awesome config from backup")
             fn.shutil.copy(fn.awesome_config + ".bak", fn.awesome_config)
             fn.log_success("Awesome configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
@@ -489,7 +490,7 @@ def i3wm_reset_clicked(self, widget):
     fn.log_subsection("Reset I3WM Theme")
     try:
         if fn.path.isfile(fn.i3wm_config + ".bak"):
-            fn.debug_print(f"Restoring i3wm config from backup")
+            fn.debug_print("Restoring i3wm config from backup")
             fn.shutil.copy(fn.i3wm_config + ".bak", fn.i3wm_config)
             fn.log_success("I3WM configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
@@ -526,7 +527,7 @@ def qtile_reset_clicked(self, widget):
     fn.log_subsection("Reset Qtile Theme")
     try:
         if fn.path.isfile(fn.qtile_config + ".bak"):
-            fn.debug_print(f"Restoring qtile config from backup")
+            fn.debug_print("Restoring qtile config from backup")
             fn.shutil.copy(fn.qtile_config + ".bak", fn.qtile_config)
             fn.log_success("Qtile configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
@@ -562,7 +563,7 @@ def leftwm_reset_clicked(self, widget):
     fn.log_subsection("Reset Leftwm Theme")
     try:
         theme_name = fn.get_combo_text(self.leftwm_combo)
-        fn.debug_print(f"Reverting to candy as fallback")
+        fn.debug_print("Reverting to candy as fallback")
         reset_leftwm_themes(theme_name)
         fn.debug_print(f"Resetting theme: {theme_name}")
         fn.log_success(f"Leftwm theme {theme_name} reset successfully")
@@ -579,7 +580,7 @@ def leftwm_remove_clicked(self, widget):
     fn.log_subsection("Remove Leftwm Theme")
     try:
         theme_name = fn.get_combo_text(self.leftwm_combo)
-        fn.debug_print(f"Reverting to candy as fallback")
+        fn.debug_print("Reverting to candy as fallback")
         remove_leftwm_themes(theme_name)
         fn.debug_print(f"Removing theme: {theme_name}")
         fn.log_success(f"Leftwm theme {theme_name} removed successfully")

@@ -46,39 +46,79 @@ def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out
     frame.set_margin_bottom(10)
     if out_pics is not None:
         out_pics.append((pic, scale))
+
+    img_path = base_dir + "/images/" + filename
+
+    def _open_lightbox(_gesture, _n_press, _x, _y):
+        parent = frame.get_root()
+        lb = Gtk.Window()
+        lb.set_transient_for(parent)
+        lb.set_modal(True)
+        lb.set_default_size(960, 720)
+        lb.set_title(filename)
+
+        try:
+            full_pixbuf = GdkPixbuf.Pixbuf.new_from_file(img_path)
+            full_texture = Gdk.Texture.new_for_pixbuf(full_pixbuf)
+            big_pic = Gtk.Picture()
+            big_pic.set_paintable(full_texture)
+            big_pic.set_can_shrink(True)
+            big_pic.set_content_fit(Gtk.ContentFit.CONTAIN)
+            big_pic.set_hexpand(True)
+            big_pic.set_vexpand(True)
+        except Exception:
+            lb.destroy()
+            return
+
+        click = Gtk.GestureClick()
+        click.connect("pressed", lambda *_: lb.close())
+        big_pic.add_controller(click)
+
+        key = Gtk.EventControllerKey()
+        key.connect("key-pressed", lambda _ctrl, keyval, *_: lb.close() if keyval == Gdk.KEY_Escape else None)
+        lb.add_controller(key)
+
+        lb.set_child(big_pic)
+        lb.present()
+
+    frame.set_cursor(Gdk.Cursor.new_from_name("pointer"))
+    gesture = Gtk.GestureClick()
+    gesture.connect("pressed", _open_lightbox)
+    frame.add_controller(gesture)
+
     return frame
 
 
 def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
     """create a gui"""
     from gi.repository import Gdk
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl1 = Gtk.Label(xalign=0)
     lbl1.set_text("Icons")
     lbl1.set_name("title")
-    hbox3.append(lbl1)
+    hbox_title.append(lbl1)
 
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_separator = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator.set_hexpand(True)
     hseparator.set_vexpand(False)
-    hbox4.append(hseparator)
+    hbox_separator.append(hseparator)
 
     # ==========================================================
     #                     DESIGN
     # ==========================================================
 
-    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    vbox_main = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
-    vboxstack2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack2.set_hexpand(True)
-    vboxstack2.set_vexpand(True)
-    vboxstack3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack3.set_hexpand(True)
-    vboxstack3.set_vexpand(True)
-    vboxstack4 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack4.set_hexpand(True)
-    vboxstack4.set_vexpand(True)
+    vbox_sardi_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vbox_sardi_tab.set_hexpand(True)
+    vbox_sardi_tab.set_vexpand(True)
+    vbox_surfn_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vbox_surfn_tab.set_hexpand(True)
+    vbox_surfn_tab.set_vexpand(True)
+    vbox_neocandy_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vbox_neocandy_tab.set_hexpand(True)
+    vbox_neocandy_tab.set_vexpand(True)
 
     stack = Gtk.Stack()
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
@@ -94,7 +134,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
     #                       ICONS TAB - SARDI
     # ==================================================================
 
-    hbox20 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_sardi_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox20_label = Gtk.Label(xalign=0)
     hbox20_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
@@ -102,9 +142,9 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     )
     hbox20_label.set_margin_start(10)
     hbox20_label.set_margin_end(10)
-    hbox20.append(hbox20_label)
+    hbox_sardi_info.append(hbox20_label)
 
-    hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_sardi_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
     self.sardi_icons_att = Gtk.CheckButton(label="sardi-icons")
     self.sardi_colora_variations_icons_git = Gtk.CheckButton(
@@ -203,56 +243,65 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_sardi.append(self.sardi_orb_colora_mixing_icons_git)
     flowbox_sardi.append(self.sardi_orb_colora_variations_icons_git)
 
+    flowbox_sardi.set_column_spacing(4)
+    flowbox_sardi.set_row_spacing(4)
     flowbox_sardi.set_hexpand(True)
     flowbox_sardi.set_vexpand(True)
     flowbox_sardi.set_margin_start(10)
     flowbox_sardi.set_margin_end(10)
-    hbox21.append(flowbox_sardi)
+    hbox_sardi_checks.append(flowbox_sardi)
 
-    hbox23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_sardi_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label23 = Gtk.Label()
-    label23.set_text("Choose what to select with a button")
+    label23.set_text("Choose the icon theme(s)")
+    label23.set_margin_start(10)
+    label23.set_margin_end(10)
+    hbox_sardi_select_label.append(label23)
+
+    hbox_sardi_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_all_sardi = Gtk.Button(label="All")
     btn_all_sardi.connect("clicked", functools.partial(icons.on_click_att_sardi_icon_theming_all_selection, self))
-    btn_mint_sardi = Gtk.Button(label="Mint")
-    btn_mint_sardi.connect(
-        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_mint_selection, self)
+    btn_variation_sardi = Gtk.Button(label="Variations")
+    btn_variation_sardi.connect(
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_variations_selection, self)
     )
     btn_mixing_sardi = Gtk.Button(label="Mixing")
     btn_mixing_sardi.connect(
         "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_mixing_selection, self)
     )
-    btn_variation_sardi = Gtk.Button(label="Variations")
-    btn_variation_sardi.connect(
-        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_variations_selection, self)
+    btn_mint_sardi = Gtk.Button(label="Mint")
+    btn_mint_sardi.connect(
+        "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_mint_selection, self)
     )
     btn_none_sardi = Gtk.Button(label="None")
     btn_none_sardi.connect(
         "clicked", functools.partial(icons.on_click_att_sardi_icon_theming_none_selection, self)
     )
-    label23.set_margin_start(10)
-    label23.set_margin_end(10)
-    hbox23.append(label23)
     btn_all_sardi.set_margin_start(10)
     btn_all_sardi.set_margin_end(10)
-    hbox23.append(btn_all_sardi)
+    hbox_sardi_select_buttons.append(btn_all_sardi)
     btn_variation_sardi.set_margin_start(10)
     btn_variation_sardi.set_margin_end(10)
-    hbox23.append(btn_variation_sardi)
+    hbox_sardi_select_buttons.append(btn_variation_sardi)
     btn_mixing_sardi.set_margin_start(10)
     btn_mixing_sardi.set_margin_end(10)
-    hbox23.append(btn_mixing_sardi)
+    hbox_sardi_select_buttons.append(btn_mixing_sardi)
     btn_mint_sardi.set_margin_start(10)
     btn_mint_sardi.set_margin_end(10)
-    hbox23.append(btn_mint_sardi)
+    hbox_sardi_select_buttons.append(btn_mint_sardi)
     btn_none_sardi.set_margin_start(10)
     btn_none_sardi.set_margin_end(10)
-    hbox23.append(btn_none_sardi)
+    hbox_sardi_select_buttons.append(btn_none_sardi)
 
     # families
-    hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_sardi_family_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label22 = Gtk.Label()
     label22.set_text("Choose the family with a button")
+    label22.set_margin_start(10)
+    label22.set_margin_end(10)
+    hbox_sardi_family_label.append(label22)
+
+    hbox_sardi_family_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_sardi_fam = Gtk.Button(label="Sardi")
     btn_sardi_fam.connect(
         "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_selection, self)
@@ -277,29 +326,27 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     btn_sardi_orb_fam.connect(
         "clicked", functools.partial(icons.on_click_att_fam_sardi_icon_theming_sardi_orb_selection, self)
     )
-    label22.set_margin_start(10)
-    label22.set_margin_end(10)
-    hbox22.append(label22)
     btn_sardi_fam.set_margin_start(10)
     btn_sardi_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_fam)
     btn_sardi_flexible_fam.set_margin_start(10)
     btn_sardi_flexible_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_flexible_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_flexible_fam)
     btn_sardi_mono_fam.set_margin_start(10)
     btn_sardi_mono_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_mono_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_mono_fam)
     btn_sardi_flat_fam.set_margin_start(10)
     btn_sardi_flat_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_flat_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_flat_fam)
     btn_sardi_ghost_fam.set_margin_start(10)
     btn_sardi_ghost_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_ghost_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_ghost_fam)
     btn_sardi_orb_fam.set_margin_start(10)
     btn_sardi_orb_fam.set_margin_end(10)
-    hbox22.append(btn_sardi_orb_fam)
+    hbox_sardi_family_buttons.append(btn_sardi_orb_fam)
 
-    hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_sardi_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_sardi_actions.set_halign(Gtk.Align.CENTER)
     button_install_sardi = Gtk.Button(label="Install the selected icon themes")
     button_install_sardi.connect(
         "clicked", functools.partial(icons.on_install_att_sardi_icon_themes_clicked, self)
@@ -312,22 +359,24 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_remove_sardi_icons.connect(
         "clicked", functools.partial(icons.on_remove_att_sardi_icon_themes_clicked, self)
     )
-    button_remove_sardi_icons.set_margin_start(10)
-    button_remove_sardi_icons.set_margin_end(10)
-    button_remove_sardi_icons.set_hexpand(True)
-    hbox29.append(button_remove_sardi_icons)
     button_find_sardi_icons.set_margin_start(10)
     button_find_sardi_icons.set_margin_end(10)
-    hbox29.append(button_find_sardi_icons)
+    hbox_sardi_actions.append(button_find_sardi_icons)
     button_install_sardi.set_margin_start(10)
     button_install_sardi.set_margin_end(10)
-    hbox29.append(button_install_sardi)  # pack_end
+    hbox_sardi_actions.append(button_install_sardi)
+
+    hbox_sardi_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_sardi_remove.set_halign(Gtk.Align.CENTER)
+    button_remove_sardi_icons.set_margin_start(10)
+    button_remove_sardi_icons.set_margin_end(10)
+    hbox_sardi_remove.append(button_remove_sardi_icons)
 
     # ==================================================================
     #                       ICONS TAB - SURFN
     # ==================================================================
 
-    hbox30 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_surfn_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox30_label = Gtk.Label(xalign=0)
     hbox30_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
@@ -335,9 +384,9 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     )
     hbox30_label.set_margin_start(10)
     hbox30_label.set_margin_end(10)
-    hbox30.append(hbox30_label)
+    hbox_surfn_info.append(hbox30_label)
 
-    hbox31 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_surfn_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
     self.surfn_icons_git_att = Gtk.CheckButton(label="surfn-icons")
     self.surfn_arc_breeze_icons_git = Gtk.CheckButton(
@@ -360,41 +409,35 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_surfn.append(self.surfn_plasma_light)
     flowbox_surfn.append(self.surfn_plasma_flow)
 
+    flowbox_surfn.set_column_spacing(4)
+    flowbox_surfn.set_row_spacing(4)
     flowbox_surfn.set_hexpand(True)
     flowbox_surfn.set_vexpand(True)
     flowbox_surfn.set_margin_start(10)
     flowbox_surfn.set_margin_end(10)
-    hbox31.append(flowbox_surfn)
+    hbox_surfn_checks.append(flowbox_surfn)
 
-    hbox32 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_surfn_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label32 = Gtk.Label()
-    label32.set_text("Choose what to select with a button")
-    btn_all_surfn = Gtk.Button(label="All")
-    btn_all_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_all_selection, self))
-    # btn_normal_selection = Gtk.Button(label="Normal")
-    # btn_normal_selection.connect(
-    #     "clicked", self.on_click_att_surfn_theming_normal_selection
-    # )
-    # btn_small_selection = Gtk.Button(label="Minimal")
-    # btn_small_selection.connect(
-    #     "clicked", self.on_click_att_surfn_theming_minimal_selection
-    # )
-    btn_none_surfn = Gtk.Button(label="None")
-    btn_none_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_none_selection, self))
+    label32.set_text("Choose the icon theme(s)")
     label32.set_margin_start(10)
     label32.set_margin_end(10)
-    label32.set_hexpand(True)
-    hbox32.append(label32)
-    btn_none_surfn.set_margin_start(10)
-    btn_none_surfn.set_margin_end(10)
-    hbox32.append(btn_none_surfn)  # pack_end
-    # hbox32.pack_end(btn_small_selection, False, False, 10)
-    # hbox32.pack_end(btn_normal_selection, False, False, 10)
+    hbox_surfn_select_label.append(label32)
+
+    hbox_surfn_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    btn_all_surfn = Gtk.Button(label="All")
+    btn_all_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_all_selection, self))
+    btn_none_surfn = Gtk.Button(label="None")
+    btn_none_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_none_selection, self))
     btn_all_surfn.set_margin_start(10)
     btn_all_surfn.set_margin_end(10)
-    hbox32.append(btn_all_surfn)  # pack_end
+    hbox_surfn_select_buttons.append(btn_all_surfn)
+    btn_none_surfn.set_margin_start(10)
+    btn_none_surfn.set_margin_end(10)
+    hbox_surfn_select_buttons.append(btn_none_surfn)
 
-    hbox39 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_surfn_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_surfn_actions.set_halign(Gtk.Align.CENTER)
     button_install_surfn_icons = Gtk.Button(label="Install the selected icon themes")
     button_install_surfn_icons.connect(
         "clicked", functools.partial(icons.on_install_att_surfn_icon_themes_clicked, self)
@@ -407,22 +450,24 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_remove_surfn_icons.connect(
         "clicked", functools.partial(icons.on_remove_att_surfn_icon_themes_clicked, self)
     )
-    button_remove_surfn_icons.set_margin_start(10)
-    button_remove_surfn_icons.set_margin_end(10)
-    button_remove_surfn_icons.set_hexpand(True)
-    hbox39.append(button_remove_surfn_icons)
     button_find_surfn_icons.set_margin_start(10)
     button_find_surfn_icons.set_margin_end(10)
-    hbox39.append(button_find_surfn_icons)
+    hbox_surfn_actions.append(button_find_surfn_icons)
     button_install_surfn_icons.set_margin_start(10)
     button_install_surfn_icons.set_margin_end(10)
-    hbox39.append(button_install_surfn_icons)  # pack_end
+    hbox_surfn_actions.append(button_install_surfn_icons)
+
+    hbox_surfn_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_surfn_remove.set_halign(Gtk.Align.CENTER)
+    button_remove_surfn_icons.set_margin_start(10)
+    button_remove_surfn_icons.set_margin_end(10)
+    hbox_surfn_remove.append(button_remove_surfn_icons)
 
     # ==================================================================
     #                       EXTRAS TAB
     # ==================================================================
 
-    hbox40 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_neocandy_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox40_label = Gtk.Label(xalign=0)
     hbox40_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
@@ -430,9 +475,9 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     )
     hbox40_label.set_margin_start(10)
     hbox40_label.set_margin_end(10)
-    hbox40.append(hbox40_label)
+    hbox_neocandy_info.append(hbox40_label)
 
-    hbox41 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_neocandy_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
     self.att_candy_beauty = Gtk.CheckButton(label="Neo Candy Icons")
     self.edu_candy_beauty_arc = Gtk.CheckButton(label="Edu Neo Candy Arc")
@@ -463,47 +508,53 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_extra.append(self.edu_papirus_dark_tela_grey)
     flowbox_extra.append(self.edu_vimix_dark_tela)
 
+    flowbox_extra.set_column_spacing(4)
+    flowbox_extra.set_row_spacing(4)
     flowbox_extra.set_hexpand(True)
     flowbox_extra.set_vexpand(True)
     flowbox_extra.set_margin_start(10)
     flowbox_extra.set_margin_end(10)
-    hbox41.append(flowbox_extra)
+    hbox_neocandy_checks.append(flowbox_extra)
 
-    hbox42 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_neocandy_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label42 = Gtk.Label()
-    label42.set_text("Choose what to select with a button")
+    label42.set_text("Choose the icon theme(s)")
+    label42.set_margin_start(10)
+    label42.set_margin_end(10)
+    hbox_neocandy_select_label.append(label42)
+
+    hbox_neocandy_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_all_extra = Gtk.Button(label="All")
     btn_all_extra.connect("clicked", functools.partial(icons.on_click_extras_theming_all_selection, self))
     btn_none_extra = Gtk.Button(label="None")
     btn_none_extra.connect("clicked", functools.partial(icons.on_click_extras_theming_none_selection, self))
-    label42.set_margin_start(10)
-    label42.set_margin_end(10)
-    label42.set_hexpand(True)
-    hbox42.append(label42)
     btn_all_extra.set_margin_start(10)
     btn_all_extra.set_margin_end(10)
-    hbox42.append(btn_all_extra)  # pack_end
+    hbox_neocandy_select_buttons.append(btn_all_extra)
     btn_none_extra.set_margin_start(10)
     btn_none_extra.set_margin_end(10)
-    hbox42.append(btn_none_extra)  # pack_end
+    hbox_neocandy_select_buttons.append(btn_none_extra)
 
-    hbox49 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_neocandy_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_neocandy_actions.set_halign(Gtk.Align.CENTER)
     button_install_icons = Gtk.Button(label="Install the selected packages")
     button_install_icons.connect("clicked", functools.partial(icons.on_install_extras_clicked, self))
-    button_find_icons = Gtk.Button(label="Show  the installed packages")
+    button_find_icons = Gtk.Button(label="Show the installed packages")
     button_find_icons.connect("clicked", functools.partial(icons.on_find_extras_clicked, self))
     button_remove_icons = Gtk.Button(label="Uninstall the selected packages")
     button_remove_icons.connect("clicked", functools.partial(icons.on_remove_extras_clicked, self))
-    button_remove_icons.set_margin_start(10)
-    button_remove_icons.set_margin_end(10)
-    button_remove_icons.set_hexpand(True)
-    hbox49.append(button_remove_icons)
     button_find_icons.set_margin_start(10)
     button_find_icons.set_margin_end(10)
-    hbox49.append(button_find_icons)
+    hbox_neocandy_actions.append(button_find_icons)
     button_install_icons.set_margin_start(10)
     button_install_icons.set_margin_end(10)
-    hbox49.append(button_install_icons)  # pack_end
+    hbox_neocandy_actions.append(button_install_icons)
+
+    hbox_neocandy_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_neocandy_remove.set_halign(Gtk.Align.CENTER)
+    button_remove_icons.set_margin_start(10)
+    button_remove_icons.set_margin_end(10)
+    hbox_neocandy_remove.append(button_remove_icons)
 
     # ====================================================================
     #                       STACK
@@ -512,67 +563,82 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     _att_pics = []  # collects (pic, scale) for the resize handler below
 
     # icons
-    hbox20.set_margin_start(10)
-    hbox20.set_margin_end(10)
-    vboxstack2.append(hbox20)
-    hbox21.set_margin_start(10)
-    hbox21.set_margin_end(10)
-    vboxstack2.append(hbox21)
-    vboxstack2.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "sardi.jpg", out_pics=_att_pics))
-    hbox23.set_margin_start(10)
-    hbox23.set_margin_end(10)
-    vboxstack2.append(hbox23)
-    hbox22.set_margin_start(10)
-    hbox22.set_margin_end(10)
-    vboxstack2.append(hbox22)
-    vboxstack2.append(hbox29)
+    hbox_sardi_info.set_margin_start(10)
+    hbox_sardi_info.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_info)
+    hbox_sardi_checks.set_margin_start(10)
+    hbox_sardi_checks.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_checks)
+    vbox_sardi_tab.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "sardi.jpg", out_pics=_att_pics))
+    hbox_sardi_select_label.set_margin_start(10)
+    hbox_sardi_select_label.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_select_label)
+    hbox_sardi_select_buttons.set_margin_start(10)
+    hbox_sardi_select_buttons.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_select_buttons)
+    hbox_sardi_family_label.set_margin_start(10)
+    hbox_sardi_family_label.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_family_label)
+    hbox_sardi_family_buttons.set_margin_start(10)
+    hbox_sardi_family_buttons.set_margin_end(10)
+    vbox_sardi_tab.append(hbox_sardi_family_buttons)
+    vbox_sardi_tab.append(hbox_sardi_actions)
+    vbox_sardi_tab.append(hbox_sardi_remove)
 
     # cursors
-    hbox30.set_margin_start(10)
-    hbox30.set_margin_end(10)
-    vboxstack3.append(hbox30)
-    hbox31.set_margin_start(10)
-    hbox31.set_margin_end(10)
-    vboxstack3.append(hbox31)
-    vboxstack3.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "surfn.jpg", scale=0.8, out_pics=_att_pics))
-    hbox32.set_margin_start(10)
-    hbox32.set_margin_end(10)
-    vboxstack3.append(hbox32)
-    vboxstack3.append(hbox39)
+    hbox_surfn_info.set_margin_start(10)
+    hbox_surfn_info.set_margin_end(10)
+    vbox_surfn_tab.append(hbox_surfn_info)
+    hbox_surfn_checks.set_margin_start(10)
+    hbox_surfn_checks.set_margin_end(10)
+    vbox_surfn_tab.append(hbox_surfn_checks)
+    vbox_surfn_tab.append(_att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "surfn.jpg", scale=0.8, out_pics=_att_pics))
+    hbox_surfn_select_label.set_margin_start(10)
+    hbox_surfn_select_label.set_margin_end(10)
+    vbox_surfn_tab.append(hbox_surfn_select_label)
+    hbox_surfn_select_buttons.set_margin_start(10)
+    hbox_surfn_select_buttons.set_margin_end(10)
+    vbox_surfn_tab.append(hbox_surfn_select_buttons)
+    vbox_surfn_tab.append(hbox_surfn_actions)
+    vbox_surfn_tab.append(hbox_surfn_remove)
 
     # fonts
-    hbox40.set_margin_start(10)
-    hbox40.set_margin_end(10)
-    vboxstack4.append(hbox40)
-    hbox41.set_margin_start(10)
-    hbox41.set_margin_end(10)
-    vboxstack4.append(hbox41)
-    vboxstack4.append(
+    hbox_neocandy_info.set_margin_start(10)
+    hbox_neocandy_info.set_margin_end(10)
+    vbox_neocandy_tab.append(hbox_neocandy_info)
+    hbox_neocandy_checks.set_margin_start(10)
+    hbox_neocandy_checks.set_margin_end(10)
+    vbox_neocandy_tab.append(hbox_neocandy_checks)
+    vbox_neocandy_tab.append(
         _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "neocandy.jpg", scale=0.8, out_pics=_att_pics)
     )
-    hbox42.set_margin_start(10)
-    hbox42.set_margin_end(10)
-    vboxstack4.append(hbox42)
-    vboxstack4.append(hbox49)
+    hbox_neocandy_select_label.set_margin_start(10)
+    hbox_neocandy_select_label.set_margin_end(10)
+    vbox_neocandy_tab.append(hbox_neocandy_select_label)
+    hbox_neocandy_select_buttons.set_margin_start(10)
+    hbox_neocandy_select_buttons.set_margin_end(10)
+    vbox_neocandy_tab.append(hbox_neocandy_select_buttons)
+    vbox_neocandy_tab.append(hbox_neocandy_actions)
+    vbox_neocandy_tab.append(hbox_neocandy_remove)
 
     # ==================================================================
     #                       PACK TO STACK
     # ==================================================================
 
-    stack.add_titled(vboxstack4, "stack4", "Neo Candy")
-    stack.add_titled(vboxstack2, "stack2", "Sardi")
-    stack.add_titled(vboxstack3, "stack3", "Surfn")
+    stack.add_titled(vbox_neocandy_tab, "stack4", "Neo Candy")
+    stack.add_titled(vbox_sardi_tab, "stack2", "Sardi")
+    stack.add_titled(vbox_surfn_tab, "stack3", "Surfn")
 
-    vbox.append(stack_switcher)
+    vbox_main.append(stack_switcher)
     stack.set_hexpand(True)
     stack.set_vexpand(True)
-    vbox.append(stack)
+    vbox_main.append(stack)
 
-    vboxstack25.append(hbox3)
-    vboxstack25.append(hbox4)
-    vbox.set_hexpand(True)
-    vbox.set_vexpand(True)
-    vboxstack25.append(vbox)
+    vboxstack25.append(hbox_title)
+    vboxstack25.append(hbox_separator)
+    vbox_main.set_hexpand(True)
+    vbox_main.set_vexpand(True)
+    vboxstack25.append(vbox_main)
 
     # Responsive images: recompute size_request whenever the window is resized.
     # notify::default-width fires as the user drags to resize in GTK4.

@@ -724,7 +724,7 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
             if selected_file:
                 file_path = selected_file.get_path()
                 filename = fn.path.basename(file_path)
-                fn.log_subsection(f"Install Packages from File")
+                fn.log_subsection("Install Packages from File")
                 fn.debug_print(f"Package file: {filename}")
                 fn.debug_print(f"Full path: {file_path}")
                 fn.log_success("Package installation terminal opened")

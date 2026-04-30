@@ -124,6 +124,7 @@ def pop_cbt_users(self, combo):
 # USER CALLBACKS
 # ====================================================================
 
+
 def on_click_user_apply(self, widget):
     create_user(self)
     pop_cbt_users(self, self.cbt_users)

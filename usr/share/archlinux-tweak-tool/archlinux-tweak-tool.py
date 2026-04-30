@@ -41,6 +41,8 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, GdkPixbuf, Gtk, Pango, GLib, Gio
 
 # suppress harmless D-Bus session bus warning when running via pkexec
+
+
 def _log_writer(_level, fields, _n_fields, _user_data):
     try:
         for field in fields:

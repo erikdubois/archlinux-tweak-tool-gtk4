@@ -85,7 +85,7 @@ ZSHEOF
 
     # Wait for the terminal to render, then capture the focused window
     sleep "$DELAY"
-    scrot -u "$out"
+    scrot -q 95 -u "$out"
 
     kill "$PID" 2>/dev/null || true
     wait "$PID" 2>/dev/null || true

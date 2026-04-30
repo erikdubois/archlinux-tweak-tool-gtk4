@@ -47,7 +47,7 @@ def setup_sddm_config(self, sddm):
             fn.debug_print("SDDM configuration is complete, no changes needed")
         else:
             fn.debug_print("SDDM configuration incomplete, applying defaults")
-            fn.debug_print(f"Creating SDDM directory")
+            fn.debug_print("Creating SDDM directory")
             fn.create_sddm_k_dir()
             fn.debug_print(f"Copying {fn.sddm_default_d1_kiro} → {fn.sddm_default_d1}")
             fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
