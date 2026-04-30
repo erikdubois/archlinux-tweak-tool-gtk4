@@ -916,15 +916,14 @@ def install_local_package(self, package):
             text=True
         )
         if result.returncode == 0:
-            debug_print(f"[INFO] {package} is now installed")
+            log_success(f"{package} is now installed")
             GLib.idle_add(show_in_app_notification, self, package + " is now installed")
         else:
             error_output = result.stderr if result.stderr else result.stdout
-            debug_print(f"[ERROR] Installation failed with exit code: {result.returncode}")
-            debug_print(f"[ERROR] Pacman output: {error_output}")
+            log_error(f"Installation failed (exit {result.returncode}): {error_output}")
             GLib.idle_add(show_in_app_notification, self, f"Installation failed: {error_output[:100]}")
     except Exception as error:
-        debug_print(f"[ERROR] Installation error: {error}")
+        log_error(f"Installation error: {error}")
         GLib.idle_add(show_in_app_notification, self, f"Installation error: {error}")
 
 

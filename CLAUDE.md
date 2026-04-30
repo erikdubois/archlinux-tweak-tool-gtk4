@@ -21,7 +21,7 @@ These are the core principles guiding all development on this project:
 4. **Modular Functions** - Separate general utilities in `functions.py` from task-specific functions
 5. **Clear Structure** - Maintain strict feature-based organization (feature.py + feature_gui.py pattern)
 6. **Dual Logging** - Provide both in-app notifications and console output for all operations
-7. **Safe Package Operations** - Use popup terminal (Alacritty) for installations/removals with "press enter to close" workflow
+7. **Safe Package Operations** - Use popup terminal (Alacritty) for installations/removals with "press enter to close" workflow; never combine `alacritty --hold` with `read -p` — use one or the other; ATT preference is `read -p` at the end of the script without `--hold`; never use `subprocess.call()` to launch alacritty from a GUI callback — always use `Popen` in a daemon thread (via `_run_terminal` or equivalent) so ATT stays responsive while the terminal is open
 8. **Reliability** - Never crash; handle all errors gracefully with user feedback
 9. **Non-Invasive** - Respect user system state; avoid unwanted modifications
 10. **User Communication** - Clearly communicate drastic changes through labels and confirmation dialogs before execution

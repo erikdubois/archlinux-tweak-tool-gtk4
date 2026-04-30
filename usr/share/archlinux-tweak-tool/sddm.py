@@ -783,7 +783,7 @@ def on_click_fix_sddm_conf(self, _widget):
     message = (
         "This will reset your SDDM configuration to the ATT defaults.\n\n"
         "• Backs up your current /etc/sddm.conf.d/ settings\n"
-        "• Applies the default SDDM configuration from Plasma\n\n"
+        "• Applies the default SDDM configuration from Kiro\n\n"
         "Your current settings will be saved as a backup before any changes are made."
     )
     if not fn.confirm_dialog(self, "Fix SDDM Configuration", message):
@@ -791,7 +791,7 @@ def on_click_fix_sddm_conf(self, _widget):
 
     fn.log_subsection("Fixing SDDM configuration...")
     try:
-        cmd = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
+        cmd = "alacritty -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
         fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
         fn.log_success("SDDM configuration saved (default setup from plasma)")
         fn.GLib.idle_add(fn.show_in_app_notification, self, "Saved the original SDDM configuration")

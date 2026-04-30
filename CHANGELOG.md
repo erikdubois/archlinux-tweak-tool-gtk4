@@ -23,6 +23,8 @@ These files are tested and working. Any change requires user confirmation first.
 | `kernel_gui.py` | Kernels page UI — per-kernel rows with status/install/remove, systemd-boot default selector |
 | `log_callbacks.py` | Logging callbacks — journalctl, dmesg, pacman log, Xorg log, systemd-analyze viewers |
 | `logging_gui.py` | Logging page UI — nine log viewer button rows |
+| `maintenance.py` | Maintenance callbacks — cache clean, orphan remove, pacman lock, mirrors, hw-probe, cursors |
+| `maintenance_gui.py` | Maintenance page UI — all button rows and section layout |
 
 ---
 

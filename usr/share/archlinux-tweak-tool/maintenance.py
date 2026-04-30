@@ -450,6 +450,23 @@ def pop_gtk_cursor_names(combo):
 # ====================================================================
 # ====================================================================
 
+
+def _run_terminal(self, cmd, done_msg, start_msg=None):
+    """Launch cmd in alacritty in a daemon thread; notify when it closes."""
+    if start_msg:
+        GLib.idle_add(fn.show_in_app_notification, self, start_msg)
+
+    def _wait():
+        try:
+            fn.subprocess.Popen(cmd, shell=True).wait()
+            fn.log_success(done_msg)
+            GLib.idle_add(fn.show_in_app_notification, self, done_msg)
+        except Exception as error:
+            fn.log_error(f"Error: {error}")
+
+    fn.threading.Thread(target=_wait, daemon=True).start()
+
+
 # System Maintenance
 def on_click_apply_global_cursor(self, _widget):
     cursor = fn.get_combo_text(self.cursor_themes)
@@ -493,75 +510,39 @@ def on_click_apply_global_cursor(self, _widget):
 
 def on_click_update_system(self, _widget):
     fn.log_subsection("Starting system update...")
-    try:
-        GLib.idle_add(fn.show_in_app_notification, self, "Starting system update...")
-        cmd = (
-            "alacritty -e bash -c 'sudo pacman -Syu; echo \"\";"
-            " echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("System update completed")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "System update completed",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            f"Update failed: {error}",
-        )
+    cmd = (
+        "alacritty -e bash -c 'sudo pacman -Syu; echo \"\";"
+        " echo \"=== Update complete ===\"; read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "System update completed", "Starting system update...")
 
 
 def on_click_clean_cache(self, _widget):
     fn.log_subsection("Launching pacman cache cleanup...")
-    try:
-        GLib.idle_add(fn.show_in_app_notification, self, "Starting cache cleanup...")
-        cmd = (
-            "alacritty -e bash -c 'sudo pacman -Sc; echo \"\";"
-            " echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("Pacman cache cleaned")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Pacman cache cleaned",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            f"Cleanup failed: {error}",
-        )
+    pkg_dir = "/var/cache/pacman/pkg/"
+    temp_files = [f for f in fn.os.listdir(pkg_dir) if f.startswith("download-")]
+    if temp_files:
+        fn.log_info("Removing leftover temp download files from /var/cache/pacman/pkg/")
+    cmd = (
+        "alacritty -e bash -c '"
+        "if compgen -G \"/var/cache/pacman/pkg/download-*\" > /dev/null 2>&1; then "
+        "sudo rm -rf /var/cache/pacman/pkg/download-*; "
+        "echo \"  Temp download files removed\"; "
+        "fi; "
+        "sudo pacman -Sc; echo \"\"; "
+        "echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Pacman cache cleaned", "Removing temp files and cleaning cache...")
 
 
 def on_click_remove_pacman_lock(self, _widget):
     fn.log_subsection("Removing pacman lock...")
-    try:
-        fn.debug_print("Checking pacman lock file: /var/lib/pacman/db.lck")
-        GLib.idle_add(fn.show_in_app_notification, self, "Removing pacman lock...")
-        cmd = (
-            "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\";"
-            " echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("Pacman lock removed")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Pacman lock removed",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            f"Lock removal failed: {error}",
-        )
+    fn.debug_print("Checking pacman lock file: /var/lib/pacman/db.lck")
+    cmd = (
+        "alacritty -e bash -c 'sudo rm -f /var/lib/pacman/db.lck; echo \"\";"
+        " echo \"=== Lock removed ===\"; read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Pacman lock removed", "Removing pacman lock...")
 
 
 # Pacman Keyring Management
@@ -572,10 +553,10 @@ def on_click_install_arch_keyring(self, _widget):
         base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
         pathway = base_dir + "/data/packages/keyring/"
         fn.debug_print(f"Package pathway: {pathway}")
-        files = fn.listdir(pathway)
+        files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
         if not files:
             raise Exception("No package files found in pathway")
-        package_file = pathway + str(files).strip("[]'")
+        package_file = fn.os.path.join(pathway, files[0])
         fn.debug_print(f"Found package: {package_file}")
         if fn.os.path.exists(package_file):
             size = fn.os.path.getsize(package_file)
@@ -608,10 +589,10 @@ def on_click_install_arch_keyring_online(self, _widget):
         )
         fn.debug_print("Download completed successfully")
         GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
-        files = fn.listdir(pathway)
+        files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
         if not files:
             raise Exception("No files found after download")
-        package_file = pathway + str(files).strip("[]'")
+        package_file = fn.os.path.join(pathway, files[0])
         fn.debug_print(f"Found package: {package_file}")
         if not fn.os.path.exists(package_file):
             raise Exception(f"Package file not found: {package_file}")
@@ -629,58 +610,30 @@ def on_click_install_arch_keyring_online(self, _widget):
 
 def on_click_fix_pacman_keys(self, _widget):
     fn.log_subsection("Fixing pacman keys...")
-    try:
-        cmd = (
-            "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys;"
-            " read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("Pacman reset (gpg, libraries, keys)")
-        GLib.idle_add(fn.show_in_app_notification, self, "Pacman keys fixed")
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = (
+        "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys;"
+        " read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Pacman keys fixed")
 
 
 # Mirror & System Management
 def on_click_probe(self, _widget):
     fn.log_subsection("Running hardware probe...")
-    try:
-        GLib.idle_add(fn.show_in_app_notification, self, "Running hardware probe...")
-        cmd = (
-            "alacritty -e bash -c "
-            "'/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("Probe link created")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Probe link has been created"
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, f"Probe failed: {error}"
-        )
+    cmd = (
+        "alacritty -e bash -c "
+        "'/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Probe link has been created", "Running hardware probe...")
 
 
 def on_click_fix_mainstream(self, _widget):
     fn.log_subsection("Setting mainstream servers...")
-    try:
-        command = (
-            "alacritty -e bash -c "
-            "'/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(
-            command,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.log_success("Mainstream servers set")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Mainstream servers have been saved"
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = (
+        "alacritty -e bash -c "
+        "'/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Mainstream servers have been saved")
 
 
 def on_click_reset_mirrorlist(self, _widget):
@@ -694,82 +647,35 @@ def on_click_reset_mirrorlist(self, _widget):
     GLib.idle_add(
         fn.show_in_app_notification, self, "Your original mirrorlist is back"
     )
-    try:
-        fn.subprocess.call(
-            f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'",
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = f"alacritty -e bash -c 'cat {fn.mirrorlist}; echo \"\"; read -p \"Press Enter to close...\"'"
+    _run_terminal(self, cmd, "Mirrorlist displayed")
 
 
 def on_click_get_arch_mirrors(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with reflector...")
-    try:
-        cmd = (
-            "alacritty -e bash -c "
-            "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector;"
-            " read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(
-            cmd,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.log_success("Fastest Arch Linux servers set with reflector")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Fastest Arch Linux servers saved - reflector",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = (
+        "alacritty -e bash -c "
+        "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector;"
+        " read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Fastest Arch Linux servers saved - reflector")
 
 
 def on_click_get_arch_mirrors2(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with rate-mirrors...")
-    try:
-        cmd = (
-            "alacritty -e bash -c "
-            "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors;"
-            " read -p \"Press Enter to close...\"'"
-        )
-        fn.subprocess.call(
-            cmd,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.log_success("Fastest Arch Linux servers set with rate-mirrors")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Fastest Arch Linux servers saved - rate-mirrors",
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = (
+        "alacritty -e bash -c "
+        "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors;"
+        " read -p \"Press Enter to close...\"'"
+    )
+    _run_terminal(self, cmd, "Fastest Arch Linux servers saved - rate-mirrors")
 
 
 # Pacman Configuration
 def on_click_fix_pacman_conf(self, _widget):
     fn.log_subsection("Fixing pacman.conf...")
-    try:
-        command = "alacritty --hold -e /usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf"
-        fn.subprocess.call(
-            command,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.log_success("Original /etc/pacman.conf saved")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, "Saved the original /etc/pacman.conf"
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    cmd = "alacritty -e /usr/share/archlinux-tweak-tool/data/bin/att-fix-pacman-conf"
+    _run_terminal(self, cmd, "Saved the original /etc/pacman.conf")
 
 
 def on_click_fix_pacman_gpg_conf(self, _widget):
