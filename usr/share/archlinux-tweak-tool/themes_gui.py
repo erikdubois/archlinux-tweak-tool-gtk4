@@ -67,18 +67,19 @@ def gui(self, Gtk, GdkPixbuf, vboxstack_themes, themes_module, fn, base_dir):
     hseparator.set_vexpand(False)
     hbox_separator.append(hseparator)
 
-    hbox10 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox10_label = Gtk.Label(xalign=0)
-    hbox10_label.set_markup(
+    hbox_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_info_label = Gtk.Label(xalign=0)
+    hbox_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
-Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
+Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.\n\
+Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     )
 
-    hbox10_label.set_margin_start(10)
-    hbox10_label.set_margin_end(10)
-    hbox10.append(hbox10_label)
+    hbox_info_label.set_margin_start(10)
+    hbox_info_label.set_margin_end(10)
+    hbox_info.append(hbox_info_label)
 
-    hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_checkboxes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
     self.arcolinux_arc_aqua = Gtk.CheckButton(label="arcolinux-arc-aqua")
     self.arcolinux_arc_archlinux_blue = Gtk.CheckButton(
@@ -144,7 +145,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     self.arcolinux_arc_smoke = Gtk.CheckButton(label="arcolinux-arc-smoke")
     self.arcolinux_arc_soft_blue = Gtk.CheckButton(label="arcolinux-arc-soft-blue")
     self.arcolinux_arc_tacao = Gtk.CheckButton(label="arcolinux-arc-tacao")
-    self.arcolinux_arc_tangerine = Gtk.CheckButton(label="arcolinux-arc-tangerinex")
+    self.arcolinux_arc_tangerine = Gtk.CheckButton(label="arcolinux-arc-tangerine")
     self.arcolinux_arc_tory = Gtk.CheckButton(label="arcolinux-arc-tory")
     self.arcolinux_arc_vampire = Gtk.CheckButton(label="arcolinux-arc-vampire")
     self.arcolinux_arc_warm_pink = Gtk.CheckButton(label="arcolinux-arc-warm-pink")
@@ -209,10 +210,10 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_themes.set_vexpand(True)
     flowbox_themes.set_margin_start(10)
     flowbox_themes.set_margin_end(10)
-    hbox11.append(flowbox_themes)
+    hbox_checkboxes.append(flowbox_themes)
 
-    hbox18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox18.set_hexpand(True)
+    hbox_presets = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_presets.set_hexpand(True)
     label18 = Gtk.Label()
     label18.set_text("Choose what to select with a button")
     btn_all_selection_themes = Gtk.Button(label="All")
@@ -233,21 +234,21 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     label18.set_margin_end(10)
     label18.set_hexpand(True)
     label18.set_xalign(0)
-    hbox18.append(label18)
+    hbox_presets.append(label18)
     btn_all_selection_themes.set_margin_start(10)
     btn_all_selection_themes.set_margin_end(10)
-    hbox18.append(btn_all_selection_themes)
+    hbox_presets.append(btn_all_selection_themes)
     btn_dark_selection_themes.set_margin_start(10)
     btn_dark_selection_themes.set_margin_end(10)
-    hbox18.append(btn_dark_selection_themes)
+    hbox_presets.append(btn_dark_selection_themes)
     btn_blue_selection_themes.set_margin_start(10)
     btn_blue_selection_themes.set_margin_end(10)
-    hbox18.append(btn_blue_selection_themes)
+    hbox_presets.append(btn_blue_selection_themes)
     btn_none_selection_themes.set_margin_start(10)
     btn_none_selection_themes.set_margin_end(10)
-    hbox18.append(btn_none_selection_themes)
+    hbox_presets.append(btn_none_selection_themes)
 
-    hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_install_themes = Gtk.Button(label="Install the selected themes")
     button_install_themes.connect("clicked", functools.partial(themes.on_install_att_themes_clicked, self))
     button_remove_themes = Gtk.Button(label="Uninstall the selected themes")
@@ -258,31 +259,31 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_remove_themes.set_margin_start(10)
     button_remove_themes.set_margin_end(10)
     button_remove_themes.set_hexpand(True)
-    hbox19.append(button_remove_themes)
+    hbox_actions.append(button_remove_themes)
     button_find_themes.set_margin_start(10)
     button_find_themes.set_margin_end(10)
-    hbox19.append(button_find_themes)
+    hbox_actions.append(button_find_themes)
     button_install_themes.set_margin_start(10)
     button_install_themes.set_margin_end(10)
-    hbox19.append(button_install_themes)
+    hbox_actions.append(button_install_themes)
 
     _themes_pics = []
 
     vboxstack_themes.append(hbox_title)
     vboxstack_themes.append(hbox_separator)
 
-    hbox10.set_margin_start(10)
-    hbox10.set_margin_end(10)
-    vboxstack_themes.append(hbox10)
-    hbox11.set_margin_start(10)
-    hbox11.set_margin_end(10)
-    vboxstack_themes.append(hbox11)
+    hbox_info.set_margin_start(10)
+    hbox_info.set_margin_end(10)
+    vboxstack_themes.append(hbox_info)
+    hbox_checkboxes.set_margin_start(10)
+    hbox_checkboxes.set_margin_end(10)
+    vboxstack_themes.append(hbox_checkboxes)
     vboxstack_themes.append(
         _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "arcthemes.jpg", scale=1, out_pics=_themes_pics)
     )
-    hbox18.set_margin_start(10)
-    hbox18.set_margin_end(10)
-    vboxstack_themes.append(hbox18)
-    vboxstack_themes.append(hbox19)
+    hbox_presets.set_margin_start(10)
+    hbox_presets.set_margin_end(10)
+    vboxstack_themes.append(hbox_presets)
+    vboxstack_themes.append(hbox_actions)
 
     return _themes_pics

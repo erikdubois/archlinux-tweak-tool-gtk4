@@ -33,6 +33,27 @@ These files are tested and working. Any change requires user confirmation first.
 | `fastfetch_gui.py` | Fastfetch page UI |
 | `performance.py` | Performance callbacks — tuned, irqbalance, ananicy, gamemode, zram, swapfile, fstrim |
 | `performance_gui.py` | Performance page UI — all sections and button rows |
+| `themes.py` | Arc theme callbacks — install/remove/find, preset selections (all/blue/dark/none) |
+| `themes_gui.py` | Themes page UI — FlowBox checkboxes, preset buttons, action buttons, preview image |
+
+---
+
+## 2026.05.01 - Themes Tab Cleanup
+
+### What Changed
+
+- `themes.py` — all 7 callback signatures fixed: `widget` → `_widget`
+- `themes_gui.py` — typo fixed: `"arcolinux-arc-tangerinex"` → `"arcolinux-arc-tangerine"`
+- `themes_gui.py` — local box variables renamed to descriptive names: `hbox10` → `hbox_info`, `hbox11` → `hbox_checkboxes`, `hbox18` → `hbox_presets`, `hbox19` → `hbox_actions`
+
+### Technical Details
+
+- `self.arcolinux_arc_*` widget attributes are intentionally named after real AUR packages (`arcolinux-arc-*-git`) — not renamed
+- All helper calls (`fn.wait_and_notify`, `fn.launch_pacman_install_in_terminal`, `fn.launch_pacman_remove_in_terminal`) confirmed present and correct
+
+### Files Modified
+
+`themes.py`, `themes_gui.py`, `CHANGELOG.md`
 
 ---
 

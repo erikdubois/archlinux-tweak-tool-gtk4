@@ -6,7 +6,7 @@ import functions as fn
 from gi.repository import GLib
 
 
-def on_click_software_pamac(self, widget):
+def on_click_software_pamac(self, _widget):
     try:
         if fn.path.exists("/usr/bin/pamac-manager"):
             fn.log_subsection("Launching pamac-manager...")
@@ -53,7 +53,7 @@ def on_click_software_pamac(self, widget):
         fn.log_error(f"Error with pamac: {error}")
 
 
-def on_click_software_octopi(self, widget):
+def on_click_software_octopi(self, _widget):
     try:
         if fn.path.exists("/usr/bin/octopi"):
             fn.log_subsection("Launching octopi...")
@@ -100,7 +100,7 @@ def on_click_software_octopi(self, widget):
         fn.log_error(f"Error with octopi: {error}")
 
 
-def on_click_software_gnome(self, widget):
+def on_click_software_gnome(self, _widget):
     try:
         if fn.path.exists("/usr/bin/gnome-software"):
             fn.log_subsection("Launching gnome-software...")
@@ -159,7 +159,7 @@ def on_click_software_gnome(self, widget):
         fn.log_error(f"Error with gnome-software: {error}")
 
 
-def on_click_software_discover(self, widget):
+def on_click_software_discover(self, _widget):
     try:
         if not fn.path.exists("/usr/bin/plasma-discover"):
             fn.log_subsection("Installing discover...")
@@ -215,7 +215,7 @@ def on_click_software_discover(self, widget):
         fn.log_error(f"Error with discover: {error}")
 
 
-def on_click_software_bauh(self, widget):
+def on_click_software_bauh(self, _widget):
     try:
         if fn.path.exists("/usr/bin/bauh"):
             fn.log_subsection("Launching bauh...")
@@ -235,7 +235,7 @@ def on_click_software_bauh(self, widget):
         fn.log_error(f"Error with bauh: {error}")
 
 
-def on_click_software_yay(self, widget):
+def on_click_software_yay(self, _widget):
     try:
         if fn.path.exists("/usr/bin/yay"):
             fn.log_subsection("yay-git already installed")
@@ -249,7 +249,7 @@ def on_click_software_yay(self, widget):
         fn.log_error(f"Error with yay-git: {error}")
 
 
-def on_click_software_paru(self, widget):
+def on_click_software_paru(self, _widget):
     try:
         if fn.path.exists("/usr/bin/paru"):
             fn.log_subsection("paru-git already installed")
@@ -263,7 +263,7 @@ def on_click_software_paru(self, widget):
         fn.log_error(f"Error with paru-git: {error}")
 
 
-def on_click_software_trizen(self, widget):
+def on_click_software_trizen(self, _widget):
     try:
         if fn.path.exists("/usr/bin/trizen"):
             fn.log_subsection("trizen already installed")
@@ -277,7 +277,7 @@ def on_click_software_trizen(self, widget):
         fn.log_error(f"Error with trizen: {error}")
 
 
-def on_click_software_pikaur(self, widget):
+def on_click_software_pikaur(self, _widget):
     try:
         if fn.path.exists("/usr/bin/pikaur"):
             fn.log_subsection("pikaur-git already installed")
@@ -291,7 +291,7 @@ def on_click_software_pikaur(self, widget):
         fn.log_error(f"Error with pikaur-git: {error}")
 
 
-def on_click_software_yay_remove(self, widget):
+def on_click_software_yay_remove(self, _widget):
     try:
         fn.log_subsection("Removing yay-git...")
         process = fn.launch_pacman_remove_in_terminal("yay-git")
@@ -301,7 +301,7 @@ def on_click_software_yay_remove(self, widget):
         fn.log_error(f"Error with yay-git removal: {error}")
 
 
-def on_click_software_paru_remove(self, widget):
+def on_click_software_paru_remove(self, _widget):
     try:
         fn.log_subsection("Removing paru-git...")
         process = fn.launch_pacman_remove_in_terminal("paru-git")
