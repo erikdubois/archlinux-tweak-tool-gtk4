@@ -52,6 +52,29 @@ if [[ -f "./repo.sh" ]]; then
     bash ./repo.sh
 fi
 
+# ── Kernel availability check ────────────────────────────────
+echo "Checking kernel availability in repos..."
+python3 << 'PYEOF'
+import sys, subprocess
+sys.path.insert(0, "usr/share/archlinux-tweak-tool")
+from kernel import KERNELS
+
+missing = []
+for k in KERNELS:
+    pkg = k["pkg"]
+    r = subprocess.run(["pacman", "-Si", pkg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if r.returncode != 0:
+        missing.append((pkg, k.get("requires_chaotic", False)))
+
+if missing:
+    print("\033[1;33mMissing kernels — update kernel.py:\033[0m")
+    for pkg, chaotic in missing:
+        src = "chaotic-aur" if chaotic else "Arch repos"
+        print(f"  \033[1;31m✗  {pkg}  ({src})\033[0m")
+else:
+    print("\033[1;32m✓  All kernels present in repos\033[0m")
+PYEOF
+
 echo "getting latest .bashrc"
 wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc/skel/.bashrc-latest -O $workdir/usr/share/archlinux-tweak-tool/data/.bashrc
 

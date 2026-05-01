@@ -634,7 +634,7 @@ def on_d_combo_changed(self, widget, pspec=None):
         )
         texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
         self.image_DE.set_paintable(texture)
-    except:
+    except Exception:
         self.image_DE.set_paintable(None)
     if check_desktop(fn.get_combo_text(self.d_combo)):
         self.desktop_status.set_markup('<span size="x-large"><b>This desktop is installed</b></span>')
@@ -648,7 +648,7 @@ def on_install_clicked(self, widget, state):
     check_lock(self, fn.get_combo_text(self.d_combo), state)
 
 
-def on_default_clicked(self, widget):
+def on_default_clicked(self, _widget):
     fn.create_log(self)
     if check_desktop(fn.get_combo_text(self.d_combo)) is True:
         import settings

@@ -89,8 +89,7 @@ def _load_xcursor_pixbuf(path, GdkPixbuf, GLib):
         width = max(1, round(pixbuf.get_width() * scale))
         height = max(1, round(pixbuf.get_height() * scale))
         return pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
-    except Exception as error:
-        fn.log_error(str(error))
+    except Exception:
         return None
 
 
@@ -176,9 +175,13 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox5_label = Gtk.Label(xalign=0)
     hbox5_label.set_text("Re-install archlinux-keyring")
     btn_install_arch_keyring = Gtk.Button(label="Install keyring (local)")
-    btn_install_arch_keyring.connect("clicked", functools.partial(maintenance.on_click_install_arch_keyring, self))
+    btn_install_arch_keyring.connect(
+        "clicked", functools.partial(maintenance.on_click_install_arch_keyring, self)
+    )
     btn_install_arch_keyring_online = Gtk.Button(label="Install keyring (online)")
-    btn_install_arch_keyring_online.connect("clicked", functools.partial(maintenance.on_click_install_arch_keyring_online, self))
+    btn_install_arch_keyring_online.connect(
+        "clicked", functools.partial(maintenance.on_click_install_arch_keyring_online, self)
+    )
     hbox5_label.set_margin_start(10)
     hbox5_label.set_margin_end(10)
     hbox5_label.set_hexpand(True)
@@ -294,7 +297,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
     hbox8_label = Gtk.Label(xalign=0)
     hbox8_label.set_text("Get the best keyservers for ~/.gnupg/gpg.conf")
     btn_apply_pacman_gpg_conf_local = Gtk.Button(label="Backup and reset gpg.conf")
-    btn_apply_pacman_gpg_conf_local.connect("clicked", functools.partial(maintenance.on_click_fix_pacman_gpg_conf_local, self))
+    btn_apply_pacman_gpg_conf_local.connect(
+        "clicked", functools.partial(maintenance.on_click_fix_pacman_gpg_conf_local, self)
+    )
     hbox8_label.set_margin_start(10)
     hbox8_label.set_margin_end(10)
     hbox8_label.set_hexpand(True)
@@ -489,7 +494,10 @@ def gui(self, Gtk, Gdk, GdkPixbuf, vboxstack19, fn, maintenance):
 
     hbox_cursor_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     cursor_info_label = Gtk.Label(xalign=0, wrap=True)
-    cursor_info_label.set_text("Applies cursor theme globally to: System & user xcursor, GTK2/3/4, XFCE, GNOME (gsettings), KDE Plasma, and SDDM login screen. Affects all applications and SDDM login screen.")
+    cursor_info_label.set_text(
+        "Applies cursor theme globally to: System & user xcursor, GTK2/3/4, XFCE, GNOME (gsettings),"
+        " KDE Plasma, and SDDM login screen. Affects all applications and SDDM login screen."
+    )
     cursor_info_label.set_margin_start(40)
     cursor_info_label.set_margin_end(10)
     cursor_info_label.set_margin_top(0)

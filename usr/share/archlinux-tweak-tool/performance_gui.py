@@ -161,7 +161,9 @@ def gui(self, Gtk, vboxstack27, performance, fn):
     self.swapfile_label = Gtk.Label(xalign=0)
     _swapfile_size = performance.get_swapfile_size_label()
     if _swapfile_size:
-        self.swapfile_label.set_markup("Create or manage a swapfile at /swapfile - " + _swapfile_size + " <b>present</b>")
+        self.swapfile_label.set_markup(
+            "Create or manage a swapfile at /swapfile - " + _swapfile_size + " <b>present</b>"
+        )
     else:
         self.swapfile_label.set_text("Create or manage a swapfile at /swapfile")
     self.swapfile_label.set_margin_start(10)

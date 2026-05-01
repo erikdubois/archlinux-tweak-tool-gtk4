@@ -97,7 +97,7 @@ the nemesis and/or chaotic-aur repo"
 
     self.ch1 = Gtk.CheckButton(label="Select to clear cache before re-install")
     checkbox.append(self.ch1)
-    
+
     # =======================================
     #               TEXTVIEW
     # =======================================
@@ -141,7 +141,7 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
         )
         texture = Gdk.Texture.new_for_pixbuf(pixbuf3)
         self.image_DE.set_paintable(texture)
-    except:
+    except Exception:
         pass
     self.image_DE.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
     # size_request = minimum allocation; Picture inside ScrolledWindow often got 0×0 and hid the image.
@@ -178,7 +178,7 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
 
     vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vbox1.append(vbox)
- 
+
     # =======================================
     #               PACK TO WINDOW
     # =======================================

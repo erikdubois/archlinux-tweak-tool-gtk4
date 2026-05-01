@@ -300,7 +300,7 @@ Report them if that is the case"
 
     hbox51 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox51_label = Gtk.Label(xalign=0)
-    if fn.check_package_installed("bluez") == True:
+    if fn.check_package_installed("bluez"):
         hbox51_label.set_markup("Bluez packages are already <b>installed</b>")
     else:
         hbox51_label.set_markup("Install bluetooth packages")

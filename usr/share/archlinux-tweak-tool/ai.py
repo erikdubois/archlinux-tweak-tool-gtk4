@@ -2,7 +2,7 @@ import functions as fn
 from gi.repository import GLib
 
 
-def on_click_ai_ollama(self, widget):
+def on_click_ai_ollama(self, _widget):
     try:
         if fn.path.exists("/usr/bin/ollama"):
             fn.log_subsection("Removing ollama...")
@@ -42,7 +42,7 @@ def on_click_ai_ollama(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_webui(self, widget):
+def on_click_ai_webui(self, _widget):
     try:
         if fn.path.exists("/usr/bin/open-webui"):
             fn.log_subsection("Removing open-webui...")
@@ -83,7 +83,7 @@ def on_click_ai_webui(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_claude(self, widget):
+def on_click_ai_claude(self, _widget):
     try:
         if fn.path.exists("/usr/bin/claude"):
             fn.log_subsection("Removing claude-code...")
@@ -117,7 +117,7 @@ def on_click_ai_claude(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_aider(self, widget):
+def on_click_ai_aider(self, _widget):
     try:
         aider_path = f"/home/{fn.sudo_username}/.local/bin/aider"
         if fn.path.exists("/usr/bin/aider") or fn.path.exists(aider_path):
@@ -163,7 +163,7 @@ def on_click_ai_aider(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_codex(self, widget):
+def on_click_ai_codex(self, _widget):
     try:
         codex_paths = ["/usr/bin/codex", "/usr/local/bin/codex", f"/home/{fn.sudo_username}/.local/bin/codex", f"/home/{fn.sudo_username}/.npm-global/bin/codex"]
         codex_installed = any(fn.path.exists(p) for p in codex_paths)
@@ -212,7 +212,7 @@ def on_click_ai_codex(self, widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_gemini(self, widget):
+def on_click_ai_gemini(self, _widget):
     try:
         gemini_paths = ["/usr/bin/gemini", "/usr/local/bin/gemini", f"/home/{fn.sudo_username}/.local/bin/gemini", f"/home/{fn.sudo_username}/.npm-global/bin/gemini"]
         gemini_installed = any(fn.path.exists(p) for p in gemini_paths)
@@ -268,89 +268,89 @@ def open_url_in_browser(self, url):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_ollama_link(self, widget):
+def on_click_ai_ollama_link(self, _widget):
     open_url_in_browser(self, "https://ollama.com/")
 
 
-def on_click_ai_webui_link(self, widget):
+def on_click_ai_webui_link(self, _widget):
     open_url_in_browser(self, "https://openwebui.com/")
 
 
-def on_click_ai_claude_link(self, widget):
+def on_click_ai_claude_link(self, _widget):
     open_url_in_browser(self, "https://code.claude.com/docs/en/cli-reference")
 
 
-def on_click_ai_aider_link(self, widget):
+def on_click_ai_aider_link(self, _widget):
     open_url_in_browser(self, "https://aider.chat/")
 
 
-def on_click_ai_gemini_link(self, widget):
+def on_click_ai_gemini_link(self, _widget):
     open_url_in_browser(self, "https://geminicli.com/")
 
 
-def on_click_ai_codex_link(self, widget):
+def on_click_ai_codex_link(self, _widget):
     open_url_in_browser(self, "https://developers.openai.com/codex/cli")
 
 
-def on_click_ai_chatgpt(self, widget):
+def on_click_ai_chatgpt(self, _widget):
     open_url_in_browser(self, "https://chatgpt.com")
 
 
-def on_click_ai_chatgpt_link(self, widget):
+def on_click_ai_chatgpt_link(self, _widget):
     open_url_in_browser(self, "https://academy.openai.com/")
 
 
-def on_click_ai_claude_web_link(self, widget):
+def on_click_ai_claude_web_link(self, _widget):
     open_url_in_browser(self, "https://claude.com/resources/tutorials?open_in_browser=1")
 
 
-def on_click_ai_gemini_web_link(self, widget):
+def on_click_ai_gemini_web_link(self, _widget):
     open_url_in_browser(self, "https://gemini.google.com/")
 
 
-def on_click_ai_perplexity_link(self, widget):
+def on_click_ai_perplexity_link(self, _widget):
     open_url_in_browser(self, "https://www.perplexity.ai/hub/getting-started")
 
 
-def on_click_ai_claude_web(self, widget):
+def on_click_ai_claude_web(self, _widget):
     open_url_in_browser(self, "https://claude.ai")
 
 
-def on_click_ai_gemini_web(self, widget):
+def on_click_ai_gemini_web(self, _widget):
     open_url_in_browser(self, "https://gemini.google.com")
 
 
-def on_click_ai_perplexity(self, widget):
+def on_click_ai_perplexity(self, _widget):
     open_url_in_browser(self, "https://perplexity.ai")
 
 
-def on_click_ai_dalle_link(self, widget):
+def on_click_ai_dalle_link(self, _widget):
     open_url_in_browser(self, "https://openai.com/index/dall-e-3/")
 
 
-def on_click_ai_dalle(self, widget):
+def on_click_ai_dalle(self, _widget):
     open_url_in_browser(self, "https://openai.com/dall-e-3")
 
 
-def on_click_ai_midjourney_link(self, widget):
+def on_click_ai_midjourney_link(self, _widget):
     open_url_in_browser(self, "https://docs.midjourney.com/hc/en-us/articles/33329261836941-Getting-Started-Guide")
 
 
-def on_click_ai_midjourney(self, widget):
+def on_click_ai_midjourney(self, _widget):
     open_url_in_browser(self, "https://www.midjourney.com")
 
 
-def on_click_ai_leonardo_link(self, widget):
+def on_click_ai_leonardo_link(self, _widget):
     open_url_in_browser(self, "https://leonardo.ai/learn/")
 
 
-def on_click_ai_leonardo(self, widget):
+def on_click_ai_leonardo(self, _widget):
     open_url_in_browser(self, "https://leonardo.ai")
 
 
-def on_click_ai_firefly_link(self, widget):
+def on_click_ai_firefly_link(self, _widget):
     open_url_in_browser(self, "https://www.adobe.com/learn/firefly")
 
 
-def on_click_ai_firefly(self, widget):
+def on_click_ai_firefly(self, _widget):
     open_url_in_browser(self, "https://www.adobe.com/products/firefly")

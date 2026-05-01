@@ -28,13 +28,164 @@ These files are tested and working. Any change requires user confirmation first.
 | `autostart.py` | Autostart callbacks — enable/disable autostart entries |
 | `autostart_gui.py` | Autostart page UI |
 | `network_gui.py` | Network page UI — nsswitch, network discovery, samba, samba user |
-| `services.py` | Network callbacks — nsswitch, discovery install/disable, samba install/remove/user |
+| `services.py` | Services callbacks — nsswitch, discovery install/disable, samba install/remove/user |
 | `fastfetch.py` | Fastfetch callbacks — install/remove, config apply |
 | `fastfetch_gui.py` | Fastfetch page UI |
 | `performance.py` | Performance callbacks — tuned, irqbalance, ananicy, gamemode, zram, swapfile, fstrim |
 | `performance_gui.py` | Performance page UI — all sections and button rows |
 | `themes.py` | Arc theme callbacks — install/remove/find, preset selections (all/blue/dark/none) |
 | `themes_gui.py` | Themes page UI — FlowBox checkboxes, preset buttons, action buttons, preview image |
+| `software.py` | Software callbacks — launch/install/remove for GUI managers, AUR helpers, Flatpak/Snap/AppImage, TUI tools, logout managers |
+| `software_gui.py` | Software page UI — five sections with install/remove rows |
+| `user.py` | User account callbacks — create user, delete user, delete user + home folder, populate dropdown |
+| `user_gui.py` | User page UI — create user form, delete user section, arch visudo note |
+| `system.py` | System info callbacks — CPU, memory, block/PCI/USB/block devices, inxi, hwinfo, fdisk, fstab, hostnamectl, localectl, systemd services/timers, dmesg, gparted, partitionmanager |
+| `system_gui.py` | System page UI — 20 viewer rows; gparted and partitionmanager show installed status |
+
+---
+
+## 2026.05.01 - Services and Desktopr Tab Cleanup
+
+### What Changed
+
+- `services_gui.py` — E712 fixed: `== True` comparison changed to bare truthiness check
+- `desktopr.py` — E722 fixed: bare `except` → `except Exception`
+- `desktopr_gui.py` — E722 fixed: bare `except` → `except Exception`; W293 fixed: whitespace-only blank lines stripped
+- Both tabs pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`services_gui.py`, `desktopr.py`, `desktopr_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - Kernel Tab Cleanup
+
+### What Changed
+
+- `kernel.py` — 1× E501 fixed: `subprocess.Popen(...)` call wrapped
+- `kernel_gui.py` — E306 fixed: missing blank line before nested `install_and_notify` definition
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`kernel.py`, `kernel_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - Icons Tab Cleanup
+
+### What Changed
+
+- `icons_gui.py` — 1× E501 fixed: `_att_preview_picture(...)` call for surfn.jpg wrapped
+- `icons.py` — no changes required; no flake8 errors, all callbacks already use `_widget`
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`icons_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - Performance Tab Cleanup
+
+### What Changed
+
+- `performance_gui.py` — 1× E501 fixed: `swapfile_label.set_markup(...)` line wrapped
+- `performance.py` — no changes required; all callbacks already use `_widget`, no flake8 errors
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`performance_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - Maintenance Tab Cleanup
+
+### What Changed
+
+- `maintenance_gui.py` — F821 fixed: `_load_xcursor_pixbuf` called `fn.log_error()` but `fn` is not in scope in that function; replaced with bare `except Exception: return None`
+- `maintenance_gui.py` — 4× E501 fixed: `btn_install_arch_keyring.connect`, `btn_install_arch_keyring_online.connect`, `btn_apply_pacman_gpg_conf_local.connect`, and `cursor_info_label.set_text` lines wrapped
+- `maintenance.py` — no changes required; all callbacks already use `_widget`, no flake8 errors
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`maintenance_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - System Tab New Features
+
+### What Changed
+
+- `system.py` — added `hbox_partitionmanager` row: Launch/install button (installs via alacritty terminal then auto-launches) + Remove button with install guard
+- `system.py` — added `hbox_gparted` Remove button with install guard
+- `system_gui.py` — `self.lbl_gparted` and `self.lbl_partitionmanager` use `set_markup()` with conditional `<b>installed</b>` suffix — status visible on load
+- `system.py` — `_refresh_gparted_label` and `_refresh_partitionmanager_label` helpers refresh label markup after install and after remove terminal closes (daemon thread + `GLib.idle_add`)
+- `system.py` — `_pm_launch_cmd()` helper builds the partitionmanager launch command as the real user (`sudo -u username` + `XDG_RUNTIME_DIR` + `DBUS_SESSION_BUS_ADDRESS` + `DISPLAY` + `WAYLAND_DISPLAY`) — required because KDE/Qt apps need the user session environment and fail silently when launched as root
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`system.py`, `system_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - System Tab Cleanup
+
+### What Changed
+
+- `system.py` — `widget` → `_widget` in all 18 callbacks
+- `system.py` — all `fn.subprocess.call()` replaced with `_run_cmd()` helper (Popen in daemon thread) — keeps ATT responsive while terminal viewers are open
+- `system.py` — added module-level `_run_cmd(cmd)` helper to avoid repeating the Popen+daemon-thread pattern 18 times
+- `system.py` — `import pwd` and `import time` moved from inside functions to top-level imports
+- `system.py` — `on_click_system_gparted`: removed `&` from gparted launch command (unnecessary with Popen); `import time` removed from nested function
+- `system.py` — E501 fixed: services_enabled and memory_disk command strings split across lines
+- `system_gui.py` — `hbox1`–`hbox18` renamed to descriptive names: `hbox_cpu`, `hbox_memory_disk`, `hbox_lsblk`, `hbox_lspci`, `hbox_lsusb`, `hbox_lsmod`, `hbox_inxi`, `hbox_hwinfo`, `hbox_fdisk`, `hbox_fstab`, `hbox_hostnamectl`, `hbox_localectl`, `hbox_services`, `hbox_services_enabled`, `hbox_services_failed`, `hbox_timers_enabled`, `hbox_dmesg`, `hbox_gparted`
+- `system_gui.py` — label variables renamed from `hbox1_label` pattern to `lbl_*` prefix; button variables renamed from `btn1` to `btn_*` with descriptive suffix
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`system.py`, `system_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - User Tab Cleanup
+
+### What Changed
+
+- `user.py` — critical bug fixed: `on_click_delete_user` and `on_click_delete_all_user` were each defined twice; the outer callback shadowed the inner implementation, causing the inner logic to be unreachable and the callback to call itself recursively. Inner implementations renamed to `_do_delete_user` and `_do_delete_all_user`; callbacks now call those
+- `user.py` — `widget` → `_widget` in all 3 callbacks
+- `user.py` — `pop_cbt_users` line 117: two statements on one line split to two; local variable renamed `_m` → `model` for clarity
+- `user.py` — redundant duplicate `if password == confirm_password` guard removed
+- `user_gui.py` — dead `import user` removed (module is passed as parameter, shadowed the import)
+- `user_gui.py` — parameter `vboxStack10` → `vboxstack_user` (snake_case)
+- `user_gui.py` — all numbered box variables renamed to descriptive names: `hbox_title`, `hbox_separator`, `hbox_admin_info`, `hbox_apply`, `hbox_delete_title`, `hbox_delete_separator`, `hbox_delete_warning`, `hbox_user_select`, `hbox_delete_all`, `hbox_delete_only`, `hbox_visudo`
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`user.py`, `user_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.01 - Software Tab Cleanup
+
+### What Changed
+
+- `software.py` — all 22 callback signatures fixed: `widget` → `_widget`
+- `software.py` — `fn.subprocess.call()` → `fn.subprocess.Popen()` in `on_click_software_appimagelauncher` launch path
+- `software.py` — all 37 E501 line-length violations fixed (long `wait_install_and_update`, `wait_remove_and_update`, and `GLib.idle_add` calls wrapped to multiple lines)
+- `software_gui.py` — `hbox1`–`hbox16` renamed to descriptive names: `hbox_pamac`, `hbox_octopi`, `hbox_gnome`, `hbox_discover`, `hbox_bauh`, `hbox_yay`, `hbox_paru`, `hbox_trizen`, `hbox_pikaur`, `hbox_flatpak`, `hbox_snapd`, `hbox_appimage`, `hbox_pacseek`, `hbox_pacui`, `hbox_archlinux_logout`, `hbox_powermenu`
+- `software_gui.py` — all E501 violations fixed (long markup/connect lines wrapped)
+- Both files pass `flake8 --max-line-length=120` with zero errors
+
+### Files Modified
+
+`software.py`, `software_gui.py`, `CHANGELOG.md`
 
 ---
 

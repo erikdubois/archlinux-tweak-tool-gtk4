@@ -11,7 +11,6 @@ from functions import GLib
 def create_user(self):
     """Create a new user"""
     fn.log_subsection("Create New User Account")
-    # if not empty fields
     username = self.hbox_username.get_text()
     name = self.hbox_name.get_text()
     atype = fn.get_combo_text(self.combo_account_type)
@@ -23,7 +22,6 @@ def create_user(self):
         and len(password) > 0
         and len(confirm_password) > 0
     ):
-        # if passwords check out
         if password == confirm_password:
             fn.debug_print(f"Creating user account: {username} ({name})")
             user_password = "echo " + username + ":" + password
@@ -39,35 +37,32 @@ def create_user(self):
             except Exception as error:
                 fn.log_warn(f"Sambashare group error: {error}")
 
-            if password == confirm_password:
-                try:
-                    if atype == "Administrator":
-                        fn.debug_print(f"Adding {username} to administrative groups")
-                        useradd = (
-                            'useradd -m -G audio,video,network,storage,rfkill,wheel,sambashare -c "'
-                            + name
-                            + '" -s /bin/bash '
-                            + username
-                        )
-                        fn.system(useradd)
-                        fn.system(user_password + " | " + "chpasswd -c SHA512")
-                    else:
-                        fn.debug_print(f"Creating standard user {username}")
-                        useradd = (
-                            'useradd -m -G audio,video,network,storage,rfkill,sambashare -c "'
-                            + name
-                            + '" -s /bin/bash '
-                            + username
-                        )
-                        fn.system(useradd)
-                        fn.system(user_password + " | " + "chpasswd -c SHA512")
-                    fn.log_success(f"User account {username} created successfully")
-                    GLib.idle_add(
-                        fn.show_in_app_notification, self, "User has been created"
+            try:
+                if atype == "Administrator":
+                    fn.debug_print(f"Adding {username} to administrative groups")
+                    useradd = (
+                        'useradd -m -G audio,video,network,storage,rfkill,wheel,sambashare -c "'
+                        + name
+                        + '" -s /bin/bash '
+                        + username
                     )
-                except Exception as error:
-                    fn.log_error(f"Failed to create user account: {error}")
-                    fn.messagebox(self, "Error", f"Failed to create user: {error}")
+                    fn.system(useradd)
+                    fn.system(user_password + " | " + "chpasswd -c SHA512")
+                else:
+                    fn.debug_print(f"Creating standard user {username}")
+                    useradd = (
+                        'useradd -m -G audio,video,network,storage,rfkill,sambashare -c "'
+                        + name
+                        + '" -s /bin/bash '
+                        + username
+                    )
+                    fn.system(useradd)
+                    fn.system(user_password + " | " + "chpasswd -c SHA512")
+                fn.log_success(f"User account {username} created successfully")
+                GLib.idle_add(fn.show_in_app_notification, self, "User has been created")
+            except Exception as error:
+                fn.log_error(f"Failed to create user account: {error}")
+                fn.messagebox(self, "Error", f"Failed to create user: {error}")
         else:
             fn.log_warn("Password mismatch")
             fn.show_in_app_notification(self, "Passwords are not the same")
@@ -78,15 +73,14 @@ def create_user(self):
         fn.messagebox(self, "Message", "First fill in all the fields")
 
 
-def on_click_delete_user(self, _widget=None):
-    """delete user"""
+def _do_delete_user(self):
+    """Delete user, retain home folder"""
     fn.log_subsection("Delete User Account")
     username = fn.get_combo_text(self.cbt_users)
     if username is not None:
         try:
             fn.debug_print(f"Removing user account: {username}")
-            userdel = "userdel " + username
-            fn.system(userdel)
+            fn.system("userdel " + username)
             fn.log_success(f"User {username} deleted - home folder retained")
             GLib.idle_add(fn.show_in_app_notification, self, "User has been deleted")
         except Exception as error:
@@ -94,15 +88,14 @@ def on_click_delete_user(self, _widget=None):
             fn.messagebox(self, "Error", f"Failed to delete user: {error}")
 
 
-def on_click_delete_all_user(self, _widget=None):
-    """delete also home dir"""
+def _do_delete_all_user(self):
+    """Delete user and home folder"""
     fn.log_subsection("Delete User Account and Home Folder")
     username = fn.get_combo_text(self.cbt_users)
     if username is not None:
         try:
             fn.debug_print(f"Removing user account and home folder: {username}")
-            userdel = "userdel -r -f " + username
-            fn.system(userdel)
+            fn.system("userdel -r -f " + username)
             fn.log_success(f"User {username} and home folder deleted")
             GLib.idle_add(
                 fn.show_in_app_notification, self, "User and home folder has been deleted"
@@ -113,28 +106,30 @@ def on_click_delete_all_user(self, _widget=None):
 
 
 def pop_cbt_users(self, combo):
-    """populate with users - 1000 is default user - not included"""
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    """Populate dropdown with system users (uid >= 1000)"""
+    model = combo.get_model()
+    model.splice(0, model.get_n_items(), [])
     users = fn.list_users("/etc/passwd")
     for user in users:
         self.cbt_users.get_model().append(user)
         self.cbt_users.set_selected(0)
+
 
 # ====================================================================
 # USER CALLBACKS
 # ====================================================================
 
 
-def on_click_user_apply(self, widget):
+def on_click_user_apply(self, _widget):
     create_user(self)
     pop_cbt_users(self, self.cbt_users)
 
 
-def on_click_delete_user(self, widget):
-    on_click_delete_user(self)
+def on_click_delete_user(self, _widget):
+    _do_delete_user(self)
     pop_cbt_users(self, self.cbt_users)
 
 
-def on_click_delete_all_user(self, widget):
-    on_click_delete_all_user(self)
+def on_click_delete_all_user(self, _widget):
+    _do_delete_all_user(self)
     pop_cbt_users(self, self.cbt_users)

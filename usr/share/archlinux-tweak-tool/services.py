@@ -199,7 +199,7 @@ def restart_smb(self):
 # SERVICES CALLBACKS
 # ====================================================================
 
-def on_click_switch_to_pulseaudio(self, widget):
+def on_click_switch_to_pulseaudio(self, _widget):
     fn.log_subsection("Switch to PulseAudio")
     try:
         if fn.check_package_installed("pipewire-pulse"):
@@ -229,7 +229,7 @@ def on_click_switch_to_pulseaudio(self, widget):
         fn.log_error(f"Failed to switch to PulseAudio: {error}")
 
 
-def on_click_switch_to_pipewire(self, widget):
+def on_click_switch_to_pipewire(self, _widget):
     fn.log_subsection("Switch to Pipewire")
     blueberry_installed = False
 
@@ -271,7 +271,7 @@ def on_click_switch_to_pipewire(self, widget):
         fn.log_error(f"Failed to switch to Pipewire: {error}")
 
 
-def on_click_install_bluetooth(self, widget):
+def on_click_install_bluetooth(self, _widget):
     fn.log_subsection("Install Bluetooth")
     try:
         fn.install_package(self, "bluez")
@@ -288,7 +288,7 @@ def on_click_install_bluetooth(self, widget):
         fn.log_error(f"Failed to install bluetooth: {error}")
 
 
-def on_click_remove_bluetooth(self, widget):
+def on_click_remove_bluetooth(self, _widget):
     fn.log_subsection("Remove Bluetooth")
     try:
         fn.remove_package_dd(self, "bluez")
@@ -305,7 +305,7 @@ def on_click_remove_bluetooth(self, widget):
         fn.log_error(f"Failed to remove bluetooth: {error}")
 
 
-def on_click_install_blueberry(self, widget):
+def on_click_install_blueberry(self, _widget):
     fn.log_subsection("Install Blueberry")
     try:
         fn.install_package(self, "blueberry")
@@ -314,7 +314,7 @@ def on_click_install_blueberry(self, widget):
         fn.log_error(f"Failed to install blueberry: {error}")
 
 
-def on_click_remove_blueberry(self, widget):
+def on_click_remove_blueberry(self, _widget):
     fn.log_subsection("Remove Blueberry")
     try:
         fn.remove_package(self, "blueberry")
@@ -323,7 +323,7 @@ def on_click_remove_blueberry(self, widget):
         fn.log_error(f"Failed to remove blueberry: {error}")
 
 
-def on_click_install_blueman(self, widget):
+def on_click_install_blueman(self, _widget):
     fn.log_subsection("Install Blueman")
     try:
         fn.install_package(self, "blueman")
@@ -332,7 +332,7 @@ def on_click_install_blueman(self, widget):
         fn.log_error(f"Failed to install blueman: {error}")
 
 
-def on_click_remove_blueman(self, widget):
+def on_click_remove_blueman(self, _widget):
     fn.log_subsection("Remove Blueman")
     try:
         fn.remove_package(self, "blueman")
@@ -341,7 +341,7 @@ def on_click_remove_blueman(self, widget):
         fn.log_error(f"Failed to remove blueman: {error}")
 
 
-def on_click_install_bluedevil(self, widget):
+def on_click_install_bluedevil(self, _widget):
     fn.log_subsection("Install Bluedevil")
     try:
         fn.install_package(self, "bluedevil")
@@ -350,7 +350,7 @@ def on_click_install_bluedevil(self, widget):
         fn.log_error(f"Failed to install bluedevil: {error}")
 
 
-def on_click_remove_bluedevil(self, widget):
+def on_click_remove_bluedevil(self, _widget):
     fn.log_subsection("Remove Bluedevil")
     try:
         fn.remove_package_s(self, "bluedevil")
@@ -359,7 +359,7 @@ def on_click_remove_bluedevil(self, widget):
         fn.log_error(f"Failed to remove bluedevil: {error}")
 
 
-def on_click_enable_bluetooth(self, widget):
+def on_click_enable_bluetooth(self, _widget):
     fn.log_subsection("Enable Bluetooth Service")
     try:
         fn.enable_service("bluetooth")
@@ -369,7 +369,7 @@ def on_click_enable_bluetooth(self, widget):
         fn.log_error(f"Failed to enable bluetooth: {error}")
 
 
-def on_click_disable_bluetooth(self, widget):
+def on_click_disable_bluetooth(self, _widget):
     fn.log_subsection("Disable Bluetooth Service")
     try:
         fn.disable_service("bluetooth")
@@ -379,7 +379,7 @@ def on_click_disable_bluetooth(self, widget):
         fn.log_error(f"Failed to disable bluetooth: {error}")
 
 
-def on_click_restart_bluetooth(self, widget):
+def on_click_restart_bluetooth(self, _widget):
     fn.log_subsection("Restart Bluetooth Service")
     try:
         fn.restart_service("bluetooth")
@@ -389,7 +389,7 @@ def on_click_restart_bluetooth(self, widget):
         fn.log_error(f"Failed to restart bluetooth: {error}")
 
 
-def on_click_install_cups(self, widget):
+def on_click_install_cups(self, _widget):
     fn.log_subsection("Install CUPS")
     try:
         fn.install_package(self, "cups")
@@ -398,7 +398,7 @@ def on_click_install_cups(self, widget):
         fn.log_error(f"Failed to install CUPS: {error}")
 
 
-def on_click_remove_cups(self, widget):
+def on_click_remove_cups(self, _widget):
     fn.log_subsection("Remove CUPS")
     try:
         fn.remove_package(self, "cups")
@@ -407,7 +407,7 @@ def on_click_remove_cups(self, widget):
         fn.log_error(f"Failed to remove CUPS: {error}")
 
 
-def on_click_install_cups_pdf(self, widget):
+def on_click_install_cups_pdf(self, _widget):
     fn.log_subsection("Install CUPS PDF")
     try:
         fn.install_package(self, "cups-pdf")
@@ -416,7 +416,7 @@ def on_click_install_cups_pdf(self, widget):
         fn.log_error(f"Failed to install CUPS PDF: {error}")
 
 
-def on_click_remove_cups_pdf(self, widget):
+def on_click_remove_cups_pdf(self, _widget):
     fn.log_subsection("Remove CUPS PDF")
     try:
         fn.remove_package(self, "cups-pdf")
@@ -425,7 +425,7 @@ def on_click_remove_cups_pdf(self, widget):
         fn.log_error(f"Failed to remove CUPS PDF: {error}")
 
 
-def on_click_enable_cups(self, widget):
+def on_click_enable_cups(self, _widget):
     fn.log_subsection("Enable CUPS Service")
     try:
         fn.enable_service("cups")
@@ -434,7 +434,7 @@ def on_click_enable_cups(self, widget):
         fn.log_error(f"Failed to enable CUPS: {error}")
 
 
-def on_click_disable_cups(self, widget):
+def on_click_disable_cups(self, _widget):
     fn.log_subsection("Disable CUPS Service")
     try:
         fn.disable_service("cups")
@@ -443,7 +443,7 @@ def on_click_disable_cups(self, widget):
         fn.log_error(f"Failed to disable CUPS: {error}")
 
 
-def on_click_restart_cups(self, widget):
+def on_click_restart_cups(self, _widget):
     fn.log_subsection("Restart CUPS Service")
     try:
         fn.restart_service("cups")
@@ -452,7 +452,7 @@ def on_click_restart_cups(self, widget):
         fn.log_error(f"Failed to restart CUPS: {error}")
 
 
-def on_click_install_printer_drivers(self, widget):
+def on_click_install_printer_drivers(self, _widget):
     fn.log_subsection("Install Printer Drivers")
     try:
         packages = [
@@ -469,7 +469,7 @@ def on_click_install_printer_drivers(self, widget):
         fn.log_error(f"Failed to install printer drivers: {error}")
 
 
-def on_click_remove_printer_drivers(self, widget):
+def on_click_remove_printer_drivers(self, _widget):
     fn.log_subsection("Remove Printer Drivers")
     try:
         packages = [
@@ -486,7 +486,7 @@ def on_click_remove_printer_drivers(self, widget):
         fn.log_error(f"Failed to remove printer drivers: {error}")
 
 
-def on_click_install_hplip(self, widget):
+def on_click_install_hplip(self, _widget):
     fn.log_subsection("Install HPLIP")
     try:
         fn.install_package(self, "hplip")
@@ -495,7 +495,7 @@ def on_click_install_hplip(self, widget):
         fn.log_error(f"Failed to install HPLIP: {error}")
 
 
-def on_click_remove_hplip(self, widget):
+def on_click_remove_hplip(self, _widget):
     fn.log_subsection("Remove HPLIP")
     try:
         fn.remove_package(self, "hplip")
@@ -504,7 +504,7 @@ def on_click_remove_hplip(self, widget):
         fn.log_error(f"Failed to remove HPLIP: {error}")
 
 
-def on_click_install_system_config_printer(self, widget):
+def on_click_install_system_config_printer(self, _widget):
     fn.log_subsection("Install System Config Printer")
     try:
         fn.install_package(self, "system-config-printer")
@@ -513,7 +513,7 @@ def on_click_install_system_config_printer(self, widget):
         fn.log_error(f"Failed to install system-config-printer: {error}")
 
 
-def on_click_remove_system_config_printer(self, widget):
+def on_click_remove_system_config_printer(self, _widget):
     fn.log_subsection("Remove System Config Printer")
     try:
         fn.remove_package(self, "system-config-printer")
@@ -535,7 +535,7 @@ def update_network_status(self):
         )
 
 
-def on_install_discovery_clicked(self, widget):
+def on_install_discovery_clicked(self, _widget):
     fn.log_subsection("Install Network Discovery")
     try:
         fn.install_discovery(self)
@@ -551,7 +551,7 @@ def on_install_discovery_clicked(self, widget):
         fn.log_error(f"Failed to install network discovery: {error}")
 
 
-def on_remove_discovery_clicked(self, widget):
+def on_remove_discovery_clicked(self, _widget):
     fn.log_subsection("Disable Network Discovery")
     try:
         fn.remove_discovery(self)
@@ -560,7 +560,7 @@ def on_remove_discovery_clicked(self, widget):
         fn.log_error(f"Failed to disable network discovery: {error}")
 
 
-def on_click_reset_nsswitch(self, widget):
+def on_click_reset_nsswitch(self, _widget):
     fn.log_subsection("Reset Nsswitch Configuration")
     if fn.path.isfile(fn.nsswitch_config + ".bak"):
         try:
@@ -575,7 +575,7 @@ def on_click_reset_nsswitch(self, widget):
         fn.show_in_app_notification(self, "No nsswitch backup available")
 
 
-def on_click_edit_nsswitch(self, widget):
+def on_click_edit_nsswitch(self, _widget):
     fn.log_subsection("Edit Nsswitch Configuration")
     try:
         fn.subprocess.Popen(
@@ -590,20 +590,20 @@ def on_click_edit_nsswitch(self, widget):
         fn.log_error(f"Failed to open nsswitch configuration: {e}")
 
 
-def on_click_apply_nsswitch(self, widget):
+def on_click_apply_nsswitch(self, _widget):
     choose_nsswitch(self)
 
 
-def on_click_create_samba_user(self, widget):
+def on_click_create_samba_user(self, _widget):
     create_samba_user(self)
 
 
-def on_click_restart_smb(self, widget):
+def on_click_restart_smb(self, _widget):
     restart_smb(self)
     update_network_status(self)
 
 
-def on_click_save_samba_share(self, widget):
+def on_click_save_samba_share(self, _widget):
     fn.log_subsection("Save Samba Share Configuration")
     try:
         fn.save_samba_config(self)
@@ -612,7 +612,7 @@ def on_click_save_samba_share(self, widget):
         fn.log_error(f"Failed to save samba configuration: {error}")
 
 
-def on_click_apply_samba(self, widget):
+def on_click_apply_samba(self, _widget):
     fn.log_subsection("Apply Samba Configuration")
     try:
         choose_smb_conf(self)
@@ -623,7 +623,7 @@ def on_click_apply_samba(self, widget):
         fn.log_error(f"Failed to apply samba configuration: {error}")
 
 
-def on_click_reset_samba(self, widget):
+def on_click_reset_samba(self, _widget):
     fn.log_subsection("Reset Samba Configuration")
     if fn.path.isfile(fn.samba_config + ".bak"):
         try:
@@ -639,7 +639,7 @@ def on_click_reset_samba(self, widget):
         fn.show_in_app_notification(self, "No backup configuration present")
 
 
-def on_click_edit_samba_nano(self, widget):
+def on_click_edit_samba_nano(self, _widget):
     fn.log_subsection("Edit Samba Configuration")
     try:
         fn.subprocess.Popen(
@@ -654,7 +654,7 @@ def on_click_edit_samba_nano(self, widget):
         fn.log_error(f"Failed to open samba configuration: {error}")
 
 
-def on_click_install_samba(self, widget):
+def on_click_install_samba(self, _widget):
     try:
         fn.install_samba(self)
         choose_smb_conf(self)
@@ -663,7 +663,7 @@ def on_click_install_samba(self, widget):
         fn.log_error(f"Failed to install samba: {error}")
 
 
-def on_click_uninstall_samba(self, widget):
+def on_click_uninstall_samba(self, _widget):
     try:
         fn.uninstall_samba(self)
         update_network_status(self)

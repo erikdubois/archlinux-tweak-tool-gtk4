@@ -576,6 +576,8 @@ echo "###                DONE - YOU CAN CLOSE THIS WINDOW                       
 echo "###############################################################################"
 read -p 'Press Enter to close...'
 """
-    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     fn.show_in_app_notification(self, f"Removing {pkg}...")
     return process

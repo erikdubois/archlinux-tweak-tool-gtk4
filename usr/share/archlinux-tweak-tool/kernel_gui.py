@@ -217,6 +217,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
     else:
         status_label.set_markup("not installed")
         btn.set_label(f"Install {pkg}")
+
         def install_and_notify():
             kernel.install_kernel(self, pkg, headers).wait()
             fn.log_success(f"Installation completed for {pkg}")
