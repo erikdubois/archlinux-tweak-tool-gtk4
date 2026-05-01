@@ -198,7 +198,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
             # TODO: enumerate
             for x in range(len(awesome_lines)):
                 self.store.append([x, awesome_lines[x]])
-        except:
+        except Exception:
             pass
 
     self.awesome_combo = Gtk.ComboBox.new_with_model(self.store)
@@ -215,7 +215,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
                 .replace("]", "")
             )
             self.awesome_combo.set_active(val - 1)
-        except:
+        except Exception:
             pass
 
     self.awesome_combo.pack_start(renderer_text, False)
@@ -267,7 +267,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
                     img_load,
                     img_load,
                 )
-        except:
+        except Exception:
             pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 base_dir + "/themer_data/awesomewm/multicolor.jpg",
                 img_load,

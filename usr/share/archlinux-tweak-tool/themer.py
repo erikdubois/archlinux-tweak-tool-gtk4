@@ -98,7 +98,8 @@ def check_polybar(lines):
 
 def get_i3_themes(combo, lines):
     """get i3 themes"""
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
     try:
         menu = [x for x in fn.os.listdir(fn.home + "/.config/i3") if ".theme" in x]
 
@@ -200,7 +201,8 @@ def set_awesome_theme(lines, val):
 
 def get_qtile_themes(combo, lines):
     """get qtile themes"""
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-qtile-git"):
         try:
             menu = [
@@ -258,7 +260,8 @@ def set_qtile_themes(lines, theme):
 
 def get_leftwm_themes(combo, lines):
     """get leftwm themes"""
-    _m = combo.get_model(); _m.splice(0, _m.get_n_items(), [])
+    _m = combo.get_model()
+    _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-leftwm-git"):
         try:
             menu = [
@@ -594,7 +597,7 @@ def leftwm_remove_clicked(self, widget):
 
 
 def on_leftwm_combo_changed(self, widget, pspec=None):
-    link_theme = fn.path.basename(readlink(fn.leftwm_config_theme_current))
+    link_theme = fn.path.basename(fn.os.readlink(fn.leftwm_config_theme_current))
     theme = fn.get_combo_text(self.leftwm_combo)
     if fn.path_check(fn.leftwm_config_theme + theme):
         self.status_leftwm.set_markup("<b>Theme is installed</b>")

@@ -16,7 +16,6 @@ import themes
 import themer
 import user
 import zsh_theme
-import packages
 
 # =============GUI=================
 import icons_gui

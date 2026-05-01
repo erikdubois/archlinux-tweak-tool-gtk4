@@ -39,8 +39,8 @@ def install_util(self, util):
         fn.install_package(self, "fastfetch-git")
     elif util == "lolcat":
         fn.install_package(self, "lolcat")
-        
-        
+
+
 def get_config_file():
     """get config file"""
     shell = fn.get_shell()

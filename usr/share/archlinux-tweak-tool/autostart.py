@@ -15,7 +15,7 @@ def get_startups(name):
             lines = f.readlines()
             f.close()
         state = True
-    except:
+    except Exception:
         return True
 
     if fn.check_content("Hidden=", fn.autostart + name + ".desktop"):

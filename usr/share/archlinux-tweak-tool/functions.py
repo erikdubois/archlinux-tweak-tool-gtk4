@@ -485,7 +485,7 @@ def check_content(value, file):
                 else:
                     return False
         return False
-    except:
+    except Exception:
         return False
 
 
@@ -1841,7 +1841,7 @@ def save_samba_config(self):
 
             debug_print("Smb.conf has been saved")
             show_in_app_notification(self, "Smb.conf has been saved")
-        except:
+        except Exception:
             pass
     else:
         debug_print(

@@ -33,6 +33,8 @@ These files are tested and working. Any change requires user confirmation first.
 | `fastfetch_gui.py` | Fastfetch page UI |
 | `performance.py` | Performance callbacks — tuned, irqbalance, ananicy, gamemode, zram, swapfile, fstrim |
 | `performance_gui.py` | Performance page UI — all sections and button rows |
+| `privacy.py` | Privacy callbacks — uBlock Origin install/remove, hblock install/remove/enable/disable |
+| `privacy_gui.py` | Privacy page UI — Content Blocking and Network &amp; Tracking Protection sections |
 | `themes.py` | Arc theme callbacks — install/remove/find, preset selections (all/blue/dark/none) |
 | `themes_gui.py` | Themes page UI — FlowBox checkboxes, preset buttons, action buttons, preview image |
 | `software.py` | Software callbacks — launch/install/remove for GUI managers, AUR helpers, Flatpak/Snap/AppImage, TUI tools, logout managers |
@@ -41,6 +43,19 @@ These files are tested and working. Any change requires user confirmation first.
 | `user_gui.py` | User page UI — create user form, delete user section, arch visudo note |
 | `system.py` | System info callbacks — CPU, memory, block/PCI/USB/block devices, inxi, hwinfo, fdisk, fstab, hostnamectl, localectl, systemd services/timers, dmesg, gparted, partitionmanager |
 | `system_gui.py` | System page UI — 20 viewer rows; gparted and partitionmanager show installed status |
+
+---
+
+## 2026.05.01 - Privacy Tab Rewrite
+
+### What Changed
+
+- `privacy.py` — replaced stub `set_ublock_firefox` and blocking `set_hblock` switch callbacks with six button callbacks: install/remove for uBlock Origin, install/remove for hblock, enable/disable for hblock; enable/disable run in daemon threads with pulsing progress bar
+- `privacy_gui.py` — replaced switches with install/remove button rows for both uBlock and hblock; added enable/disable row for hblock with live enabled/disabled status label; sections separated by horizontal separator; progress bar restored
+
+### Files Modified
+
+`privacy.py`, `privacy_gui.py`, `CHANGELOG.md`
 
 ---
 

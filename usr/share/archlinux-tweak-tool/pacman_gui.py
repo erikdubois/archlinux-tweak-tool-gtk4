@@ -118,9 +118,6 @@ def gui(self, Gtk, vboxstack1, fn):
     hboxstack16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack17 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hboxstack18 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-    hboxstack24 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
     # ========================================================
     #               ARCHLINUX REPOS
@@ -194,7 +191,7 @@ def gui(self, Gtk, vboxstack1, fn):
     self.textview_custom_repo.set_wrap_mode(Gtk.WrapMode.WORD)
     self.textview_custom_repo.set_editable(True)
     self.textview_custom_repo.set_cursor_visible(True)
-                
+
     scrolled_window = Gtk.ScrolledWindow()
     scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scrolled_window.set_child(self.textview_custom_repo)
@@ -366,7 +363,7 @@ def gui(self, Gtk, vboxstack1, fn):
     vboxstack1.append(hbox3)
     vboxstack1.append(hbox4)
     vboxstack1.append(hbox5)
-    #vboxstack1.pack_start(frame3, False, False, 5)
+    # vboxstack1.pack_start(frame3, False, False, 5)
 
     # =================AUR HELPER========================
 

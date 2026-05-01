@@ -7,6 +7,7 @@ def on_click_ai_ollama(self, _widget):
         if fn.path.exists("/usr/bin/ollama"):
             fn.log_subsection("Removing ollama...")
             process = fn.launch_pacman_remove_in_terminal("ollama")
+
             def wait_removal():
                 process.wait()
                 GLib.idle_add(self.lbl_ai_ollama.set_markup, "Ollama - Local LLM runner")
@@ -20,6 +21,7 @@ def on_click_ai_ollama(self, _widget):
             fn.log_subsection(f"Installing {pkgs}...")
             fn.debug_print(f"NVIDIA GPU detected: {has_nvidia}")
             process = fn.launch_pacman_install_in_terminal(pkgs)
+
             def wait_install():
                 try:
                     stdout_data, stderr_data = process.communicate()
@@ -47,6 +49,7 @@ def on_click_ai_webui(self, _widget):
         if fn.path.exists("/usr/bin/open-webui"):
             fn.log_subsection("Removing open-webui...")
             process = fn.launch_pacman_remove_in_terminal("open-webui")
+
             def wait_removal():
                 process.wait()
                 GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama")
@@ -61,6 +64,7 @@ def on_click_ai_webui(self, _widget):
                 return
             fn.log_subsection("Installing open-webui...")
             process = fn.launch_aur_install_in_terminal(aur_helper, "open-webui")
+
             def wait_install():
                 try:
                     stdout_data, stderr_data = process.communicate()
@@ -88,6 +92,7 @@ def on_click_ai_claude(self, _widget):
         if fn.path.exists("/usr/bin/claude"):
             fn.log_subsection("Removing claude-code...")
             process = fn.launch_pacman_remove_in_terminal("claude-code")
+
             def wait_removal():
                 process.wait()
                 GLib.idle_add(self.lbl_ai_claude.set_markup, "Claude Code - Anthropic CLI")
@@ -102,6 +107,7 @@ def on_click_ai_claude(self, _widget):
                 return
             fn.log_subsection("Installing claude-code...")
             process = fn.launch_aur_install_in_terminal(aur_helper, "claude-code")
+
             def wait_install():
                 process.wait()
                 if fn.path.exists("/usr/bin/claude"):
@@ -128,6 +134,7 @@ def on_click_ai_aider(self, _widget):
                 script += f"sudo -u {fn.sudo_username} {aur_helper} -Rs --noconfirm aider-install; "
             script += "echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
             process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+
             def wait_removal():
                 process.wait()
                 GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming")
@@ -142,6 +149,7 @@ def on_click_ai_aider(self, _widget):
                 return
             fn.log_subsection("Installing aider...")
             process = fn.launch_aur_install_in_terminal(aur_helper, "aider-install")
+
             def wait_install():
                 try:
                     import time

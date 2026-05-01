@@ -2,8 +2,6 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
-import os
-import subprocess
 import functions as fn
 import re
 import json
@@ -158,7 +156,7 @@ def apply_config(self, backend, ascii_size):
             '"underline"': self.title,
             '"colors"': self.cblocks,
         }
- 
+
         # Comment or uncomment each key based on the checkbox state
         for i in range(len(lines)):
             for key, checkbox in key_to_checkbox.items():
@@ -310,7 +308,7 @@ def set_checkboxes_all(self):
     self.cblocks.set_active(True)
 
     _ensure_separator_uncommented()
-    
+
 
 def set_checkboxes_none(self):
     """set the state of the checkboxes and comment out separator in config.jsonc"""
@@ -351,7 +349,7 @@ def _ensure_separator_uncommented():
     if fn.path.isfile(fn.fastfetch_config):
         with open(fn.fastfetch_config, "r", encoding="utf-8") as f:
             lines = f.readlines()
-        
+
         for i, line in enumerate(lines):
             if '"separator"' in line and line.strip().startswith('//'):
                 lines[i] = line.lstrip('/')
@@ -365,7 +363,7 @@ def _ensure_separator_commented():
     if fn.path.isfile(fn.fastfetch_config):
         with open(fn.fastfetch_config, "r", encoding="utf-8") as f:
             lines = f.readlines()
-        
+
         for i, line in enumerate(lines):
             if '"separator"' in line and not line.strip().startswith('//'):
                 lines[i] = '//' + line

@@ -3,7 +3,6 @@
 # ============================================================
 
 import functions as fn
-import os
 
 
 def ensure_root_config_dirs():

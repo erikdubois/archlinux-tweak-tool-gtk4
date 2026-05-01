@@ -287,4 +287,3 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
 
     fn.GLib.idle_add(init_fastfetch_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)
 
-

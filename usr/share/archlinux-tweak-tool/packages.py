@@ -1,5 +1,4 @@
 import os.path
-import subprocess
 
 import functions as fn
 from gi.repository import Gtk
@@ -631,10 +630,6 @@ def on_click_export_packages(
             grid_package_status = gui_parts[1]
             grid_package_count = gui_parts[2]
             vbox_pacmanlog = gui_parts[3]
-            textbuffer = gui_parts[4]
-            textview = gui_parts[5]
-            label_package_status = gui_parts[6]
-            label_package_count = gui_parts[7]
 
             if vbox_pacmanlog.is_visible() is False:
                 vbox_stack.append(grid_package_status)
