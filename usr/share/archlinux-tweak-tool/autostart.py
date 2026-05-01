@@ -151,7 +151,11 @@ def add_row(self, x, base_dir=None):
 
     listbox = Gtk.ListBox()
 
-    image_path = fn.path.join(base_dir, "images/remove.png") if base_dir else fn.path.join(fn.path.dirname(__file__), "images/remove.png")
+    image_path = (
+        fn.path.join(base_dir, "images/remove.png")
+        if base_dir
+        else fn.path.join(fn.path.dirname(__file__), "images/remove.png")
+    )
     pbfb = GdkPixbuf.Pixbuf.new_from_file_at_size(
         image_path, 28, 28
     )

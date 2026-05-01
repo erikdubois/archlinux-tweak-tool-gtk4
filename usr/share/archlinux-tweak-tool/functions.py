@@ -1250,7 +1250,11 @@ echo '=== Operation Finished ==='
 echo 'You can close this window'
 read -p 'Press Enter to close...'
 """
-    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     process.temp_file = temp_path
     return process
 
@@ -1309,7 +1313,11 @@ echo '=== Operation Finished ==='
 echo 'You can close this window'
 read -p 'Press Enter to close...'
 """
-    process = subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     process.temp_file = temp_path
     return process
 
@@ -1325,8 +1333,17 @@ def launch_aur_install_in_terminal(aur_helper, package, username=None):
             return None
     if username is None:
         username = sudo_username
-    script = f"sudo -u {username} {aur_helper} -S --noconfirm {package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    script = (
+        f"sudo -u {username} {aur_helper} -S --noconfirm {package};"
+        " echo ''; echo '=== Installation complete ==='"
+        " && echo 'You can close this window'"
+        " && read -p 'Press Enter to close...'"
+    )
+    return subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def launch_aur_remove_in_terminal(aur_helper, package, username=None):
@@ -1340,8 +1357,17 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
             return None
     if username is None:
         username = sudo_username
-    script = f"sudo -u {username} {aur_helper} -Rs --noconfirm {package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    script = (
+        f"sudo -u {username} {aur_helper} -Rs --noconfirm {package};"
+        " echo ''; echo '=== Removal complete ==='"
+        " && echo 'You can close this window'"
+        " && read -p 'Press Enter to close...'"
+    )
+    return subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def launch_npm_install_in_terminal(npm_package):
@@ -1356,8 +1382,17 @@ def launch_npm_install_in_terminal(npm_package):
     if not ensure_nodejs_installed():
         debug_print("[ERROR] Node.js installation failed")
         return None
-    script = f"/usr/bin/npm install -g {npm_package}; echo ''; echo '=== Installation complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    script = (
+        f"/usr/bin/npm install -g {npm_package};"
+        " echo ''; echo '=== Installation complete ==='"
+        " && echo 'You can close this window'"
+        " && read -p 'Press Enter to close...'"
+    )
+    return subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def launch_npm_remove_in_terminal(npm_package):

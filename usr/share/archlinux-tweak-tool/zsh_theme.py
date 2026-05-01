@@ -26,7 +26,9 @@ def get_themes(combo):
                 combo.get_model().append(lists_sorted[x].split(".")[0].strip())
             combo.set_selected(active)
         except OSError:
-            fn.debug_print("ATT was unable to locate ~/.zshrc - a working ~/.zshrc has been placed in your home directory")
+            fn.debug_print(
+                "ATT was unable to locate ~/.zshrc - a working ~/.zshrc has been placed in your home directory"
+            )
             fn.debug_print("You may need to reload ATT to set the options in the zsh tab")
         except Exception as error:
             fn.log_error(str(error))

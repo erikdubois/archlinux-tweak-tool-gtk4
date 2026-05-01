@@ -73,7 +73,10 @@ def on_click_ai_webui(self, _widget):
                     error_output = stderr_str + stdout_str
                     if fn.path.exists("/usr/bin/open-webui"):
                         fn.log_success("open-webui installed successfully")
-                        GLib.idle_add(self.lbl_ai_webui.set_markup, "Open WebUI - Browser UI for Ollama <b>installed</b>")
+                        GLib.idle_add(
+                            self.lbl_ai_webui.set_markup,
+                            "Open WebUI - Browser UI for Ollama <b>installed</b>",
+                        )
                         GLib.idle_add(self.btn_ai_webui.set_label, "Remove")
                         GLib.idle_add(fn.show_in_app_notification, self, "open-webui installation complete")
                     else:
@@ -133,7 +136,11 @@ def on_click_ai_aider(self, _widget):
             if aur_helper:
                 script += f"sudo -u {fn.sudo_username} {aur_helper} -Rs --noconfirm aider-install; "
             script += "echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-            process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+            process = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
 
             def wait_removal():
                 process.wait()
@@ -155,7 +162,12 @@ def on_click_ai_aider(self, _widget):
                     import time
                     process.wait()
                     time.sleep(1)
-                    fn.subprocess.call(f"sudo -u {fn.sudo_username} aider-install", shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
+                    fn.subprocess.call(
+                        f"sudo -u {fn.sudo_username} aider-install",
+                        shell=True,
+                        stdout=fn.subprocess.PIPE,
+                        stderr=fn.subprocess.STDOUT,
+                    )
                     if fn.path.exists("/usr/bin/aider") or fn.path.exists(aider_path):
                         fn.log_success("aider installed successfully")
                         GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming <b>installed</b>")
@@ -173,7 +185,12 @@ def on_click_ai_aider(self, _widget):
 
 def on_click_ai_codex(self, _widget):
     try:
-        codex_paths = ["/usr/bin/codex", "/usr/local/bin/codex", f"/home/{fn.sudo_username}/.local/bin/codex", f"/home/{fn.sudo_username}/.npm-global/bin/codex"]
+        codex_paths = [
+            "/usr/bin/codex",
+            "/usr/local/bin/codex",
+            f"/home/{fn.sudo_username}/.local/bin/codex",
+            f"/home/{fn.sudo_username}/.npm-global/bin/codex",
+        ]
         codex_installed = any(fn.path.exists(p) for p in codex_paths)
 
         if codex_installed:
@@ -222,7 +239,12 @@ def on_click_ai_codex(self, _widget):
 
 def on_click_ai_gemini(self, _widget):
     try:
-        gemini_paths = ["/usr/bin/gemini", "/usr/local/bin/gemini", f"/home/{fn.sudo_username}/.local/bin/gemini", f"/home/{fn.sudo_username}/.npm-global/bin/gemini"]
+        gemini_paths = [
+            "/usr/bin/gemini",
+            "/usr/local/bin/gemini",
+            f"/home/{fn.sudo_username}/.local/bin/gemini",
+            f"/home/{fn.sudo_username}/.npm-global/bin/gemini",
+        ]
         gemini_installed = any(fn.path.exists(p) for p in gemini_paths)
 
         if gemini_installed:
@@ -271,7 +293,12 @@ def on_click_ai_gemini(self, _widget):
 
 def open_url_in_browser(self, url):
     try:
-        fn.subprocess.Popen(f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open '{url}'", shell=True, stdout=fn.subprocess.DEVNULL, stderr=fn.subprocess.DEVNULL)
+        fn.subprocess.Popen(
+            f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open '{url}'",
+            shell=True,
+            stdout=fn.subprocess.DEVNULL,
+            stderr=fn.subprocess.DEVNULL,
+        )
     except Exception as error:
         fn.log_error(f"Error: {error}")
 

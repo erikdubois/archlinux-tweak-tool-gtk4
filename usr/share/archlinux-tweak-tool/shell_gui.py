@@ -597,7 +597,9 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox_fish_no_sep.append(hseparator)
 
         fish_not_installed_msg = Gtk.Label()
-        fish_not_installed_msg.set_markup("<b>Fish does not seem to be installed\nRestart ATT to see the information</b>")
+        fish_not_installed_msg.set_markup(
+            "<b>Fish does not seem to be installed\nRestart ATT to see the information</b>"
+        )
 
         hbox_fish_no_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         install_only_fish = Gtk.Button(label="Install Fish and restart ATT to configure")

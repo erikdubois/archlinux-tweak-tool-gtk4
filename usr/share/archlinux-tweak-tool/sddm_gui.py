@@ -77,7 +77,10 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.sessions_sddm = Gtk.DropDown.new_from_strings([])
         sddm.pop_box(self, self.sessions_sddm)
         self.sessions_sddm.set_margin_end(10)
-        self.sessions_sddm.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Session changed"))
+        self.sessions_sddm.connect(
+            "notify::selected",
+            functools.partial(sddm.on_sddm_setting_changed, self, "Session changed"),
+        )
         hbox18.append(hbox18_lbl)
         hbox18.append(self.sessions_sddm)
 
@@ -89,7 +92,10 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.theme_sddm = Gtk.DropDown.new_from_strings([])
         sddm.pop_theme_box(self, self.theme_sddm)
         self.theme_sddm.set_margin_end(10)
-        self.theme_sddm.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Theme changed"))
+        self.theme_sddm.connect(
+            "notify::selected",
+            functools.partial(sddm.on_sddm_setting_changed, self, "Theme changed"),
+        )
         hbox9.append(hbox9_lbl)
         hbox9.append(self.theme_sddm)
 
@@ -244,7 +250,10 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         self.sddm_cursor_themes = Gtk.DropDown.new_from_strings([])
         sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
         self.sddm_cursor_themes.set_margin_end(10)
-        self.sddm_cursor_themes.connect("notify::selected", functools.partial(sddm.on_sddm_setting_changed, self, "Cursor theme changed"))
+        self.sddm_cursor_themes.connect(
+            "notify::selected",
+            functools.partial(sddm.on_sddm_setting_changed, self, "Cursor theme changed"),
+        )
         hbox15.append(hbox15_lbl)
         hbox15.append(self.sddm_cursor_themes)
 
