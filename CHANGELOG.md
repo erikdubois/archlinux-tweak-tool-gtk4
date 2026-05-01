@@ -46,6 +46,29 @@ These files are tested and working. Any change requires user confirmation first.
 
 ---
 
+## 2026.05.01 - Project-wide Lint Pass
+
+### What Changed
+
+- **E722** bare `except` → `except Exception`: `autostart.py`, `functions.py` (×2), `themer_gui.py` (×3)
+- **E702** semicolons split to separate lines: `themer.py` (×3)
+- **F821** undefined `readlink` → `fn.os.readlink`: `themer.py`
+- **E306** missing blank line before nested `def`: `ai.py` (×7)
+- **E501** lines wrapped to ≤120 chars: `ai.py`, `ai_gui.py`, `autostart.py`, `packages.py`, `packages_gui.py`, `sddm_gui.py`, `shell_gui.py`, `zsh_theme.py`, `functions.py`, `archlinux-tweak-tool.py`
+- **E305** missing blank lines after function: `functions.py`, `archlinux-tweak-tool.py`
+- **E265** malformed block comment: `pacman_gui.py`
+- **W293** whitespace in blank lines: `fastfetch.py`, `utilities.py`, `pacman_gui.py`
+- **W391** trailing blank line: `fastfetch_gui.py`
+- **F841** unused local variables removed: `packages.py` (×4), `pacman_gui.py` (×3)
+- **F401** unused imports removed: `fastfetch.py` (×2), `functions_makedir.py`, `gui.py`, `packages.py`, `packages_gui.py`
+- Skipped: `E402` (intentional import order), `E128` (style preference), `E203` (slice style), F401 in `functions.py` (exports used via `fn.*`), F401 in `archlinux-tweak-tool.py` (startup imports)
+
+### Files Modified
+
+`ai.py`, `ai_gui.py`, `archlinux-tweak-tool.py`, `autostart.py`, `fastfetch.py`, `fastfetch_gui.py`, `functions.py`, `functions_makedir.py`, `gui.py`, `packages.py`, `packages_gui.py`, `pacman_gui.py`, `sddm_gui.py`, `shell_gui.py`, `themer.py`, `themer_gui.py`, `utilities.py`, `zsh_theme.py`, `CHANGELOG.md`
+
+---
+
 ## 2026.05.01 - Privacy Tab Rewrite
 
 ### What Changed

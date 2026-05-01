@@ -55,6 +55,7 @@ def _log_writer(_level, fields, _n_fields, _user_data):
         pass
     return GLib.LogWriterOutput.UNHANDLED
 
+
 GLib.log_set_writer_func(_log_writer, None)
 from os import readlink
 
@@ -336,7 +337,8 @@ class ATTApplication(Gtk.Application):
                 text="Lock File Found",
             )
             md.props.secondary_text = (
-                "The lock file has been found. This indicates there is already an instance of <b>ArchLinux Tweak Tool</b> running.\n"
+                "The lock file has been found. This indicates there is already an instance of"
+                " <b>ArchLinux Tweak Tool</b> running.\n"
                 "Click yes to remove the lock file\n"
                 "and try running ATT again"
             )

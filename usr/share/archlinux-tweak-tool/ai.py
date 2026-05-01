@@ -135,7 +135,11 @@ def on_click_ai_aider(self, _widget):
             script = f"rm -f {aider_path}; "
             if aur_helper:
                 script += f"sudo -u {fn.sudo_username} {aur_helper} -Rs --noconfirm aider-install; "
-            script += "echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
+            script += (
+                "echo ''; echo '=== Removal complete ==='"
+                " && echo 'You can close this window'"
+                " && read -p 'Press Enter to close...'"
+            )
             process = fn.subprocess.Popen(
                 ["alacritty", "-e", "bash", "-c", script],
                 stdout=fn.subprocess.PIPE,

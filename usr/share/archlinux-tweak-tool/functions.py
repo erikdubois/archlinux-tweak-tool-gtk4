@@ -175,6 +175,7 @@ def error(message):
     """Simple error message (no separators)"""
     print(f"{RED}✗ {message}{RESET}")
 
+
 # =====================================================
 # =====================================================
 # =====================================================
@@ -1407,8 +1408,17 @@ def launch_npm_remove_in_terminal(npm_package):
     if not ensure_nodejs_installed():
         debug_print("[ERROR] Node.js installation failed")
         return None
-    script = f"/usr/bin/npm uninstall -g {npm_package}; echo ''; echo '=== Removal complete ===' && echo 'You can close this window' && read -p 'Press Enter to close...'"
-    return subprocess.Popen(["alacritty", "-e", "bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    script = (
+        f"/usr/bin/npm uninstall -g {npm_package};"
+        " echo ''; echo '=== Removal complete ==='"
+        " && echo 'You can close this window'"
+        " && read -p 'Press Enter to close...'"
+    )
+    return subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 # =====================================================
@@ -2301,7 +2311,9 @@ def check_pacman_lockfile():
     return os.path.exists(pacman_lockfile)
 
 
-def wait_install_and_update(process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None):
+def wait_install_and_update(
+    process, binary_path, label_widget, installed_markup, self_ref, notification, package_name=None
+):
     def _wait():
         try:
             debug_print(f"Binary path: {binary_path}")
@@ -2435,7 +2447,8 @@ def update_image(self, widget, image, theme_type, att_base, image_width, image_h
             + theme_type
         )
         debug_print(
-            "Remember that the order for using this function is: self, widget, image, theme_type, att_base_path, image_width, image_height."
+            "Remember that the order for using this function is:"
+            " self, widget, image, theme_type, att_base_path, image_width, image_height."
         )
     if path.isfile(preview_path) and not random_option:
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
