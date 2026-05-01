@@ -381,14 +381,10 @@ def install_desktop(self, desktop, state):
     check_package_and_remove(self, "rofi-lbonn-wayland-only-git")
 
     if desktop == "awesome":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = awesome + default_app
         src.append("/etc/skel/.config/awesome")
         twm = True
     elif desktop == "bspwm":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = bspwm + default_app
         src.append("/etc/skel/.config/bspwm")
         src.append("/etc/skel/.config/polybar")
@@ -397,8 +393,6 @@ def install_desktop(self, desktop, state):
         check_package_and_remove(self, "catfish")
         command = budgie
     elif desktop == "chadwm":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = chadwm + default_app
         src.append("/etc/skel/.config/arco-chadwm")
         twm = True
@@ -407,20 +401,14 @@ def install_desktop(self, desktop, state):
     elif desktop == "gnome":
         command = gnome
     elif desktop == "i3":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = i3 + default_app
         src.append("/etc/skel/.config/i3")
         twm = True
     elif desktop == "leftwm":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = leftwm + default_app
         src.append("/etc/skel/.config/leftwm")
         twm = True
     elif desktop == "ohmychadwm":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = ohmychadwm + default_app
         src.append("/etc/skel/.config/ohmychadwm")
         twm = True
@@ -433,8 +421,6 @@ def install_desktop(self, desktop, state):
         src.append("/etc/skel/.local/share")
         twm = True
     elif desktop == "qtile":
-        check_package_and_remove(self, "edu-xfce-git")
-        check_package_and_remove(self, "edu-rofi-git")
         command = qtile + default_app
         src.append("/etc/skel/.config/qtile")
         twm = True

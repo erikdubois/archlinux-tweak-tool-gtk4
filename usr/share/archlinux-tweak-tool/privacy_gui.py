@@ -29,7 +29,9 @@ def init_privacy_lazy_load(self, fn):
         setactive_time = time.time() - t2
 
         elapsed = time.time() - start
-        fn.debug_print(f"[LAZY] Privacy: state_check={state_check_time:.3f}s set_active={setactive_time:.3f}s total={elapsed:.3f}s")
+        fn.debug_print(
+            f"[LAZY] Privacy: state_check={state_check_time:.3f}s set_active={setactive_time:.3f}s total={elapsed:.3f}s"
+        )
     except Exception:
         pass
 
