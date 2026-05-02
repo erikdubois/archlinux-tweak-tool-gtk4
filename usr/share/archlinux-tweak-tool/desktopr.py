@@ -386,7 +386,7 @@ def install_desktop(self, desktop):
     src = []
     twm = False
     now = datetime.datetime.now()
-    fn.log_info("Backing up ~/.config to ~/.config-att/")
+    fn.log_info("Backing up ~/.config to ~/.config-att/ -- This might take a while")
 
     if not fn.path.exists(fn.home + "/.config-att"):
         fn.makedirs(fn.home + "/.config-att")
