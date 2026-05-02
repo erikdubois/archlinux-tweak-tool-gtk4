@@ -299,17 +299,20 @@ Check git log for implementation details on GTK4 patterns and workarounds.
 **Constraint:** 3–5 hours/day · 30 days · ~90–150 hours total  
 **Goal:** Shippable, Kiro-only ATT package with all tabs functional and codebase clean
 
-### Current State Snapshot (2026-04-29)
+### Current State Snapshot (2026-05-02)
 
 | Area | Status |
 | ---- | ------ |
-| Module structure | Done — all feature.py + feature_gui.py pairs exist |
-| GTK4 API compliance | Done — callbacks, dialogs, async fixed |
-| Logging standardization | Done — print() replaced throughout |
-| Non-Kiro data deletion | Staged but not committed (~100 files) |
-| Kiro code references | **Incomplete — 723 arco/arch/garuda refs remain in .py files** |
-| Kiro data folder | **Sparse — only 3 scripts vs 40+ in arco** |
-| Duplicate/dead code | **Exists — functions_backup.py, possible duplicate helpers** |
+| Module structure | ✓ Done — all feature.py + feature_gui.py pairs exist |
+| GTK4 API compliance | ✓ Done — callbacks, dialogs, async fixed |
+| Logging standardization | ✓ Done — print() replaced throughout |
+| Non-Kiro data deletion | ✓ Done — committed all deletions |
+| Code cleanup (S/M/L tasks) | ✓ Done — all Small, Medium, Large cleanup tasks complete |
+| Kiro code references | ✓ Done — only intentional: multi-distro guards, real AUR packages, system paths |
+| Kiro data folder | ✓ Done — populated per audit |
+| Duplicate/dead code | ✓ Done — removed, consolidated, no duplicates |
+| Flake8 linting | ✓ Done — codebase passes all checks |
+| **M4 Feature Test** | **In Progress** — 18 tabs remain to test on Kiro |
 | PKGBUILD / packaging | Not started |
 
 ---
