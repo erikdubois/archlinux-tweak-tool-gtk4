@@ -704,6 +704,13 @@ def uninstall_desktop(self, desktop):
             "--noconfirm 2>/dev/null; "
             "echo 'KDE cleanup complete' && echo '' && "
         )
+    elif desktop == "xfce":
+        cleanup_step = (
+            "echo '' && echo 'Removing leftover XFCE packages and plugins...' && echo '' && "
+            "pkexec pacman -Rdd $(pacman -Q 2>/dev/null | grep '^xfce' | awk '{print $1}') "
+            "--noconfirm 2>/dev/null; "
+            "echo 'XFCE cleanup complete' && echo '' && "
+        )
 
     package_list_str = "\n".join([f"  • {pkg}" for pkg in packages_to_remove])
     remove_cmd = (
