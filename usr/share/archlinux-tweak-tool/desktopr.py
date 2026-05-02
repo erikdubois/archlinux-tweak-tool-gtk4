@@ -707,7 +707,10 @@ def uninstall_desktop(self, desktop):
     elif desktop == "xfce":
         cleanup_step = (
             "echo '' && echo 'Removing leftover XFCE packages and plugins...' && echo '' && "
-            "pkexec pacman -Rdd $(pacman -Q 2>/dev/null | grep '^xfce' | awk '{print $1}') "
+            "pkexec pacman -Rdd "
+            "$(pacman -Q 2>/dev/null | grep '^xfce' | awk '{print $1}') "
+            "mousepad parole ristretto xfburn "
+            "thunar-archive-plugin thunar-media-tags-plugin "
             "--noconfirm 2>/dev/null; "
             "echo 'XFCE cleanup complete' && echo '' && "
         )
