@@ -1,5 +1,28 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.02 - Audio Scripts Migrated to ATT data/bin
+
+### What Changed
+
+- **Audio install buttons now run standalone scripts** — PulseAudio and PipeWire install buttons launch `data/bin/install-pulseaudio.sh` and `data/bin/install-pipewire.sh` in an alacritty terminal instead of executing Python package logic inline
+- **Scripts made self-contained** — removed dependency on ArcoLinux-Nemesis `common.sh`; all helper functions (`log_section`, `log_info`, `log_success`, `log_warn`, `pkg_installed`, `install_packages`, `remove_if_installed`) are now defined inline in each script
+- **Dead Python logic removed** — `add_autoconnect_pulseaudio()`, `on_click_switch_to_pulseaudio()`, and `on_click_switch_to_pipewire()` inline package logic replaced with a simple `alacritty -e bash -c` launcher following the maintenance.py `_run_terminal` pattern
+- **Terminal stays open** — `read -p "Press Enter to close..."` appended via the `bash -c` wrapper so alacritty always waits for input
+
+### Technical Details
+
+- Scripts use `set -euo pipefail`; `read -p` is placed in the outer `bash -c` string (not inside the script) so it runs even when the script exits early via `set -e`
+- Both callbacks use `subprocess.Popen(cmd, shell=True).wait()` in a daemon thread; ATT console gets `log_success` + in-app notification when terminal closes
+- `systemctl --user` calls in both scripts have `2>/dev/null || true` to fail silently if running in a root context
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/data/bin/install-pulseaudio.sh`
+- `usr/share/archlinux-tweak-tool/data/bin/install-pipewire.sh`
+- `usr/share/archlinux-tweak-tool/services.py`
+
+---
+
 ## 2026.05.02 - M4 Feature Testing: Services Tab Complete, UI Layout Refinement
 
 ### What Changed

@@ -149,30 +149,6 @@ def check_audio_server(expected):
         return None
 
 
-def add_autoconnect_pulseaudio(self):
-    if fn.file_check(fn.pulse_default):
-        if fn.check_content("load-module module-switch-on-connect\n", fn.pulse_default):
-            fn.debug_print("We have already enabled your headset to autoconnect")
-        else:
-            try:
-                with open(fn.pulse_default, "r", encoding="utf-8") as f:
-                    lists = f.readlines()
-                    f.close()
-
-                lists.append("\nload-module module-switch-on-connect\n")
-
-                with open(fn.pulse_default, "w", encoding="utf-8") as f:
-                    f.writelines(lists)
-                    f.close()
-                fn.debug_print("We have added this line to /etc/pulse/default.pa")
-                fn.debug_print("load-module module-switch-on-connect")
-                fn.show_in_app_notification(
-                    self, "Pulseaudio bluetooth autoconnection enabled"
-                )
-            except Exception as error:
-                fn.log_error(str(error))
-
-
 def restart_smb(self):
     """restart samba with detailed status checklist"""
     fn.log_subsection("SAMBA SERVICE RESTART - STATUS CHECKLIST")
@@ -221,76 +197,39 @@ def restart_smb(self):
 # ====================================================================
 
 def on_click_switch_to_pulseaudio(self, _widget):
-    fn.log_subsection("Switch to PulseAudio")
-    if fn.os.path.exists(fn.pacman_lockfile):
+    fn.log_subsection("Switch to PulseAudio — opening terminal")
+    cmd = (
+        "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/install-pulseaudio.sh;"
+        " read -p \"Press Enter to close...\"'"
+    )
+
+    def _wait():
         try:
-            fn.os.remove(fn.pacman_lockfile)
-            fn.log_info_concise("Removed stale pacman lock file")
-        except Exception as e:
-            fn.log_warn(f"Could not remove pacman lock: {e}")
-    try:
-        if fn.check_package_installed("pipewire-pulse"):
-            fn.debug_print("Removing Pipewire packages")
-            fn.remove_package_dd(self, "pipewire-pulse")
-            fn.remove_package_dd(self, "wireplumber")
+            fn.subprocess.Popen(cmd, shell=True).wait()
+            fn.log_success("PulseAudio install completed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "PulseAudio install completed")
+        except Exception as error:
+            fn.log_error(f"Failed to open terminal: {error}")
 
-        fn.debug_print("Installing PulseAudio packages (batch)")
-        packages = (
-            "pulseaudio pulseaudio-bluetooth pulseaudio-alsa pavucontrol "
-            "alsa-utils alsa-plugins alsa-lib alsa-firmware gstreamer "
-            "gst-plugins-good gst-plugins-bad gst-plugins-base gst-plugins-ugly"
-        )
-        fn.launch_pacman_install_in_terminal(packages)
-
-        add_autoconnect_pulseaudio(self)
-
-        fn.log_subsection("Verifying PulseAudio installation")
-        if check_audio_server("pulseaudio"):
-            fn.log_success("PulseAudio verified as active")
-        else:
-            fn.log_info_concise("PulseAudio packages installed, may need restart")
-
-    except Exception as error:
-        fn.log_error(f"Failed to switch to PulseAudio: {error}")
+    fn.threading.Thread(target=_wait, daemon=True).start()
 
 
 def on_click_switch_to_pipewire(self, _widget):
-    fn.log_subsection("Switch to Pipewire")
-    if fn.os.path.exists(fn.pacman_lockfile):
+    fn.log_subsection("Switch to PipeWire — opening terminal")
+    cmd = (
+        "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/install-pipewire.sh;"
+        " read -p \"Press Enter to close...\"'"
+    )
+
+    def _wait():
         try:
-            fn.os.remove(fn.pacman_lockfile)
-            fn.log_info_concise("Removed stale pacman lock file")
-        except Exception as e:
-            fn.log_warn(f"Could not remove pacman lock: {e}")
+            fn.subprocess.Popen(cmd, shell=True).wait()
+            fn.log_success("PipeWire install completed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "PipeWire install completed")
+        except Exception as error:
+            fn.log_error(f"Failed to open terminal: {error}")
 
-    try:
-        if fn.check_package_installed("pulseaudio"):
-            fn.debug_print("Removing PulseAudio packages")
-            fn.remove_package_dd(self, "pulseaudio")
-            fn.remove_package_dd(self, "pulseaudio-bluetooth")
-
-        fn.debug_print("Installing Pipewire packages (batch)")
-        packages = (
-            "pipewire pipewire-pulse pipewire-alsa pavucontrol "
-            "alsa-utils alsa-plugins alsa-lib alsa-firmware gstreamer "
-            "gst-plugins-good gst-plugins-bad gst-plugins-base gst-plugins-ugly"
-        )
-        fn.launch_pacman_install_in_terminal(packages)
-
-        if fn.check_package_installed("pipewire-media-session"):
-            fn.debug_print("Configuring wireplumber")
-            fn.remove_package_dd(self, "pipewire-media-session")
-            fn.install_package(self, "pipewire-pulse")
-            fn.install_package(self, "wireplumber")
-
-        fn.log_subsection("Verifying Pipewire installation")
-        if check_audio_server("pipewire"):
-            fn.log_success("Pipewire verified as active")
-        else:
-            fn.log_info_concise("Pipewire packages installed, may need restart")
-
-    except Exception as error:
-        fn.log_error(f"Failed to switch to Pipewire: {error}")
+    fn.threading.Thread(target=_wait, daemon=True).start()
 
 
 def on_click_install_bluetooth(self, _widget):

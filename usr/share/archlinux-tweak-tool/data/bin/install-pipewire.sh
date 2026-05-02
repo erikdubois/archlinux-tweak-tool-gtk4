@@ -10,14 +10,7 @@
 #
 ##################################################################################################################################
 
-set -Euo pipefail
-shopt -s nullglob
-
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_DIR="$(cd -- "${SCRIPT_DIR}/../common" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-
-source "${COMMON_DIR}/common.sh"
+set -euo pipefail
 
 ##################################################################################################################################
 # Purpose
@@ -26,6 +19,15 @@ source "${COMMON_DIR}/common.sh"
 # - Enable PipeWire's PulseAudio emulation for backward compatibility (pavucontrol, etc.)
 # - Keep Bluetooth audio support enabled
 ##################################################################################################################################
+
+log_section()  { echo ""; echo "==== $* ===="; echo ""; }
+log_info()     { echo "  [INFO] $*"; }
+log_success()  { echo "  [SUCCESS] $*"; }
+log_warn()     { echo "  [WARN] $*"; }
+
+pkg_installed() { pacman -Q "$1" &>/dev/null; }
+
+install_packages() { sudo pacman -S --needed --noconfirm "$@"; }
 
 audio_summary() {
     log_section "Current audio state"
@@ -75,7 +77,7 @@ main() {
     fi
 
     ############################################################################################################
-    # Install PipeWire stack core packages first
+    # Install PipeWire stack
     ############################################################################################################
 
     install_packages \
@@ -92,8 +94,8 @@ main() {
 
     install_packages pipewire-pulse
 
-    systemctl --user enable pipewire-pulse.service
-    systemctl --user start pipewire-pulse.service
+    systemctl --user enable pipewire-pulse.service 2>/dev/null || true
+    systemctl --user start pipewire-pulse.service 2>/dev/null || true
 
     log_info "PulseAudio emulation enabled (allows pavucontrol and PulseAudio apps to work)"
 
@@ -101,7 +103,7 @@ main() {
     # Enable Bluetooth service
     ############################################################################################################
 
-    enable_now_service bluetooth.service
+    sudo systemctl enable --now bluetooth.service
 
     log_success "PipeWire installation completed"
     log_warn "Reboot recommended"

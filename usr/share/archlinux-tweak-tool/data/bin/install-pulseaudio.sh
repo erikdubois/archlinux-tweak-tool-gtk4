@@ -10,14 +10,7 @@
 #
 ##################################################################################################################################
 
-set -Euo pipefail
-shopt -s nullglob
-
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_DIR="$(cd -- "${SCRIPT_DIR}/../common" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-
-source "${COMMON_DIR}/common.sh"
+set -euo pipefail
 
 ##################################################################################################################################
 # Purpose
@@ -26,6 +19,23 @@ source "${COMMON_DIR}/common.sh"
 # - Install PulseAudio audio stack
 # - Keep Bluetooth audio support enabled
 ##################################################################################################################################
+
+log_section()  { echo ""; echo "==== $* ===="; echo ""; }
+log_info()     { echo "  [INFO] $*"; }
+log_success()  { echo "  [SUCCESS] $*"; }
+log_warn()     { echo "  [WARN] $*"; }
+
+pkg_installed() { pacman -Q "$1" &>/dev/null; }
+
+remove_if_installed() {
+    local pkg="$1"
+    if pkg_installed "$pkg"; then
+        log_info "Removing $pkg..."
+        sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
+    fi
+}
+
+install_packages() { sudo pacman -S --needed --noconfirm "$@"; }
 
 audio_summary() {
     log_section "Current audio state"
@@ -71,29 +81,11 @@ main() {
     # Remove conflicting audio packages
     ############################################################################################################
 
-    remove_matching_packages pipewire-media-session
-
-    remove_matching_packages_deps_dd \
-        pipewire \
-        lib32-pipewire \
-        libpipewire \
-        pipewire-alsa \
-        pipewire-audio \
-        pipewire-jack \
-        lib32-pipewire-jack \
-        pipewire-session-manager \
-        pipewire-zeroconf \
-        pipewire-pulse \
-        wireplumber
-
-    ############################################################################################################
-    # Force remove pipewire-pulse if still present (conflicts with pulseaudio)
-    ############################################################################################################
-
-    if pkg_installed pipewire-pulse; then
-        log_info "Force removing pipewire-pulse..."
-        sudo pacman -Rdd --noconfirm pipewire-pulse 2>/dev/null || true
-    fi
+    for pkg in pipewire-media-session pipewire lib32-pipewire libpipewire pipewire-alsa \
+               pipewire-audio pipewire-jack lib32-pipewire-jack pipewire-session-manager \
+               pipewire-zeroconf pipewire-pulse wireplumber; do
+        remove_if_installed "$pkg"
+    done
 
     ############################################################################################################
     # Install PulseAudio stack
@@ -110,7 +102,7 @@ main() {
     # Enable Bluetooth service
     ############################################################################################################
 
-    enable_now_service bluetooth.service
+    sudo systemctl enable --now bluetooth.service
 
     log_success "PulseAudio installation completed"
     log_warn "Reboot recommended"
