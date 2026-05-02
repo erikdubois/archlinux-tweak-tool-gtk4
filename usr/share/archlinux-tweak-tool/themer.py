@@ -98,25 +98,25 @@ def check_polybar(lines):
 
 def get_i3_themes(combo, lines):
     """get i3 themes"""
-    _m = combo.get_model()
-    _m.splice(0, _m.get_n_items(), [])
     try:
         menu = [x for x in fn.os.listdir(fn.home + "/.config/i3") if ".theme" in x]
+        sorted_menu = sorted(menu)
+        theme_names = [x.replace(".theme", "") for x in sorted_menu]
 
         current_theme = fn.get_position(lines, "Theme name :")
         theme_name = (
             lines[current_theme].split(":")[1].strip().lower().replace(" ", "-")
-        )  # noqa
+        )
+
         active = 0
-        sorted_menu = sorted(menu)
-        # TODO: enumerate
-        for i in range(len(sorted_menu)):
-            if theme_name in sorted_menu[i]:
+        for i, name in enumerate(theme_names):
+            if theme_name in name:
                 active = i
-            combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+
+        combo.get_model().splice(0, combo.get_model().get_n_items(), theme_names)
         combo.set_selected(active)
     except Exception as error:
-        fn.log_error(str(error))
+        fn.log_error(f"Failed to load i3 themes: {error}")
 
 
 def set_i3_themes(lines, theme):
@@ -132,7 +132,7 @@ def set_i3_themes(lines, theme):
             f.close()
         pos3 = fn.get_position(theme_lines, "##START THEMING WM")
         pos4 = fn.get_position(theme_lines, "##STOP THEMING WM")
-        lines[pos1 : pos2 + 1] = theme_lines[pos3 : pos4 + 1]
+        lines[pos1:pos2 + 1] = theme_lines[pos3:pos4 + 1]
         with open(fn.i3wm_config, "w", encoding="utf-8") as f:
             f.writelines(lines)
             f.close()
@@ -155,7 +155,7 @@ def set_i3_themes_bar(lines, theme):
         pos3 = fn.get_position(theme_lines, "##START THEMING BAR")
         pos4 = fn.get_position(theme_lines, "##STOP THEMING BAR")
 
-        lines[pos1 : pos2 + 1] = theme_lines[pos3 : pos4 + 1]
+        lines[pos1:pos2 + 1] = theme_lines[pos3:pos4 + 1]
 
         with open(fn.i3wm_config, "w", encoding="utf-8") as f:
             f.writelines(lines)
@@ -201,8 +201,6 @@ def set_awesome_theme(lines, val):
 
 def get_qtile_themes(combo, lines):
     """get qtile themes"""
-    _m = combo.get_model()
-    _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-qtile-git"):
         try:
             menu = [
@@ -210,21 +208,22 @@ def get_qtile_themes(combo, lines):
                 for x in fn.os.listdir(fn.home + "/.config/qtile/themes/")
                 if ".theme" in x
             ]
+            sorted_menu = sorted(menu)
+            theme_names = [x.replace(".theme", "") for x in sorted_menu]
 
             current_theme = fn.get_position(lines, "Theme name :")
             theme_name = (
                 lines[current_theme].split(":")[1].strip().lower().replace(" ", "-")
-            )  # noqa
+            )
             active = 0
-            sorted_menu = sorted(menu)
-            # TODO: enumerate
-            for i in range(len(sorted_menu)):
-                if theme_name in sorted_menu[i]:
+            for i, name in enumerate(theme_names):
+                if theme_name in name:
                     active = i
-                combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+
+            combo.get_model().splice(0, combo.get_model().get_n_items(), theme_names)
             combo.set_selected(active)
         except Exception as error:
-            fn.log_error(str(error))
+            fn.log_error(f"Failed to load qtile themes: {error}")
 
 
 def set_qtile_themes(lines, theme):
@@ -244,7 +243,7 @@ def set_qtile_themes(lines, theme):
             pos3 = fn.get_position(theme_lines, "# COLORS FOR THE BAR")
             pos4 = fn.get_position(theme_lines, "colors = init_colors()")
 
-            lines[pos1 : pos2 + 1] = theme_lines[pos3 : pos4 + 1]
+            lines[pos1:pos2 + 1] = theme_lines[pos3:pos4 + 1]
 
             with open(fn.qtile_config, "w", encoding="utf-8") as f:
                 f.writelines(lines)
@@ -260,8 +259,6 @@ def set_qtile_themes(lines, theme):
 
 def get_leftwm_themes(combo, lines):
     """get leftwm themes"""
-    _m = combo.get_model()
-    _m.splice(0, _m.get_n_items(), [])
     if fn.check_package_installed("edu-leftwm-git"):
         try:
             menu = [
@@ -269,21 +266,22 @@ def get_leftwm_themes(combo, lines):
                 for x in fn.os.listdir(fn.home + "/.config/leftwm/themes/")
                 if ".theme" in x
             ]
+            sorted_menu = sorted(menu)
+            theme_names = [x.replace(".theme", "") for x in sorted_menu]
 
             current_theme = fn.get_position(lines, "Theme name :")
             theme_name = (
                 lines[current_theme].split(":")[1].strip().lower().replace(" ", "-")
-            )  # noqa
+            )
             active = 0
-            sorted_menu = sorted(menu)
-            # TODO: enumerate
-            for i in range(len(sorted_menu)):
-                if theme_name in sorted_menu[i]:
+            for i, name in enumerate(theme_names):
+                if theme_name in name:
                     active = i
-                combo.get_model().append(sorted_menu[i].replace(".theme", ""))
+
+            combo.get_model().splice(0, combo.get_model().get_n_items(), theme_names)
             combo.set_selected(active)
         except Exception as error:
-            fn.log_error(str(error))
+            fn.log_error(f"Failed to load leftwm themes: {error}")
 
 
 def set_leftwm_themes(theme):
@@ -396,10 +394,10 @@ def reset_leftwm_themes(theme):
 # ====================================================================
 
 
-def on_polybar_toggle(self, widget, active):
+def on_polybar_toggle(self, _widget, _pspec=None):
     fn.log_subsection("Toggle Polybar")
     try:
-        if widget.get_active():
+        if self.poly.get_active():
             fn.debug_print("Enabling polybar")
             toggle_polybar(self, get_list(fn.i3wm_config), True)
             fn.log_success("Polybar enabled")

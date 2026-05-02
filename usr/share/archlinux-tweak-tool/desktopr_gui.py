@@ -196,7 +196,6 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
 
 
 def update_button_state(self, fn):
-    """Update install/reinstall button sensitivity based on nemesis repo status."""
+    """Update install button sensitivity based on nemesis repo status."""
     nemesis_active = fn.check_nemesis_repo_active()
     self.button_install.set_sensitive(nemesis_active)
-    self.button_reinstall.set_sensitive(nemesis_active)

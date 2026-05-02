@@ -51,7 +51,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         "edu-awesome-git"
     ):
         awesome_list = themer.get_list(fn.awesome_config)
-    if fn.os.path.isfile(fn.qtile_config_theme) and fn.check_package_installed(
+    if fn.path_check(fn.qtile_config_theme) and fn.check_package_installed(
         "edu-qtile-git"
     ):
         qtile_list = themer.get_list(fn.qtile_config)
@@ -92,7 +92,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     )
 
     label = Gtk.Label(label="Select theme")
-    self.i3_combo = Gtk.DropDown.new_from_strings([])
+    i3_model = Gtk.StringList()
+    self.i3_combo = Gtk.DropDown(model=i3_model)
     self.i3_combo.set_size_request(280, 0)
     if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed(
         "edu-i3-git"
@@ -346,9 +347,10 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     )
 
     labelqt = Gtk.Label(label="Select theme")
-    self.qtile_combo = Gtk.DropDown.new_from_strings([])
+    qtile_model = Gtk.StringList()
+    self.qtile_combo = Gtk.DropDown(model=qtile_model)
     self.qtile_combo.set_size_request(280, 0)
-    if fn.os.path.isfile(fn.qtile_config_theme) and fn.check_package_installed(
+    if fn.path_check(fn.qtile_config_theme) and fn.check_package_installed(
         "edu-qtile-git"
     ):
         themer.get_qtile_themes(self.qtile_combo, qtile_list)
@@ -365,7 +367,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     resetqtile = Gtk.Button(label="Reset")
     resetqtile.connect("clicked", functools.partial(themer.qtile_reset_clicked, self))
 
-    if not fn.os.path.isfile(fn.qtile_config_theme) or not fn.check_package_installed(
+    if not fn.path_check(fn.qtile_config_theme) or not fn.check_package_installed(
         "edu-qtile-git"
     ):
         applyqtile.set_sensitive(False)
@@ -446,7 +448,7 @@ install them in one go"
     self.leftwm_combo.set_size_request(280, 0)
     self.leftwm_combo.connect("notify::selected", functools.partial(themer.on_leftwm_combo_changed, self))
     if fn.path_check(fn.leftwm_config_theme_current):
-        link_theme = fn.os.path.basename(fn.readlink(fn.leftwm_config_theme_current))
+        link_theme = fn.os.path.basename(fn.os.readlink(fn.leftwm_config_theme_current))
         # TODO: enumerate
         for i in range(len(fn.leftwm_themes_list)):
             if link_theme == fn.leftwm_themes_list[i]:
