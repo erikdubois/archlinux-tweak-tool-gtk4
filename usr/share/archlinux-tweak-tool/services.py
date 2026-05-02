@@ -461,11 +461,31 @@ def on_click_remove_cups_pdf(self, _widget):
     fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
+def update_cups_status(self):
+    status1 = fn.check_service("cups")
+    if status1 is True:
+        status1 = "<b>active</b>"
+    else:
+        status1 = "inactive"
+
+    status2 = fn.check_socket("cups")
+    if status2 is True:
+        status2 = "<b>active</b>"
+    else:
+        status2 = "inactive"
+
+    GLib.idle_add(
+        self.cups_status_label.set_markup,
+        "Cups service : " + status1 + "   Cups socket : " + status2
+    )
+
+
 def on_click_enable_cups(self, _widget):
     fn.log_subsection("Enable CUPS Service")
     try:
         fn.enable_service("cups")
         fn.log_success("CUPS service enabled")
+        update_cups_status(self)
     except Exception as error:
         fn.log_error(f"Failed to enable CUPS: {error}")
 
@@ -475,6 +495,7 @@ def on_click_disable_cups(self, _widget):
     try:
         fn.disable_service("cups")
         fn.log_success("CUPS service disabled")
+        update_cups_status(self)
     except Exception as error:
         fn.log_error(f"Failed to disable CUPS: {error}")
 
@@ -484,6 +505,7 @@ def on_click_restart_cups(self, _widget):
     try:
         fn.restart_service("cups")
         fn.log_success("CUPS service restarted")
+        update_cups_status(self)
     except Exception as error:
         fn.log_error(f"Failed to restart CUPS: {error}")
 

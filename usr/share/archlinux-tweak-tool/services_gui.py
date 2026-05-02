@@ -199,6 +199,15 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     hbox_tools_title.append(hbox_tools_title_lbl)
     hbox_tools_title.append(hbox_tools_title_sep)
 
+    hbox_status_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_status_title_lbl = Gtk.Label(xalign=0)
+    hbox_status_title_lbl.set_markup("<b>Status</b>")
+    hbox_status_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_status_title_sep.set_hexpand(True)
+    hbox_status_title_sep.set_valign(Gtk.Align.CENTER)
+    hbox_status_title.append(hbox_status_title_lbl)
+    hbox_status_title.append(hbox_status_title_sep)
+
     # at bottom of page
     hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     enable_cups = Gtk.Button(label="Enable cups")
@@ -218,7 +227,7 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     hbox29.append(disable_cups)
 
     hbox31 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox31_label = Gtk.Label(xalign=0)
+    self.cups_status_label = Gtk.Label(xalign=0)
 
     status1 = fn.check_service("cups")
     if status1 is True:
@@ -232,10 +241,10 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     else:
         status2 = "inactive"
 
-    hbox31_label.set_markup("Cups service : " + status1 + "   Cups socket : " + status2)
-    hbox31_label.set_margin_start(10)
-    hbox31_label.set_margin_end(10)
-    hbox31.append(hbox31_label)
+    self.cups_status_label.set_markup("Cups service : " + status1 + "   Cups socket : " + status2)
+    self.cups_status_label.set_margin_start(10)
+    self.cups_status_label.set_margin_end(10)
+    hbox31.append(self.cups_status_label)
 
     # ==================================================================
     #                       AUDIO CONTROL
@@ -476,6 +485,10 @@ Report them if that is the case"
     hbox29.set_margin_start(10)
     hbox29.set_margin_end(10)
     vboxstack3.append(hbox29)  # pack_end
+    hbox_status_title.set_margin_start(10)
+    hbox_status_title.set_margin_end(10)
+    hbox_status_title.set_margin_top(20)
+    vboxstack3.append(hbox_status_title)
     hbox31.set_margin_start(10)
     hbox31.set_margin_end(10)
     vboxstack3.append(hbox31)  # pack_end

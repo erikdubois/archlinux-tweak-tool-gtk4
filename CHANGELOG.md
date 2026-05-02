@@ -18,12 +18,15 @@
 
 #### UI Layout Reorganization (services_gui.py)
 
-- **Section-Based Headers** — Divided printing section into three logical sections:
-  - **CUPS Service** — contains CUPS install/remove/enable/disable/restart controls
+- **Section-Based Headers** — Divided printing section into four logical sections:
+  - **CUPS Service** — contains CUPS install/remove controls
   - **Printer Drivers** — contains foomatic/gutenprint/ghostscript batch installation
   - **Tools** — contains system-config-printer and HP drivers (HPLIP)
+  - **Status** — shows current CUPS service and socket status (active/inactive)
 - **Consistent Label Styling** — All labels use 3-space indentation prefix and hexpand=True for alignment
 - **Dynamic Status Labels** — Cups-pdf and printer drivers labels update after install/remove operations showing "Installed" status
+- **Dynamic Service Status** — CUPS service status label refreshes after enable/disable/restart operations via `update_cups_status()` callback
+- **Section Spacing** — Added 20px top margin before Status header to separate service controls from status display
 
 #### Logging Pattern Addition (functions.py)
 
@@ -37,9 +40,10 @@
 ### Technical Details
 
 - **Batch Pacman Operations** — All package installations use `fn.launch_pacman_install_in_terminal()` and removals use `fn.launch_pacman_remove_in_terminal()` to prevent multiple alacritty windows and database lock contention
-- **Label Updates Pattern** — Store UI labels as `self.cups_pdf_label`, `self.printer_drivers_label` in GUI init, then call `.set_markup()` in callback functions after terminal operations complete
+- **Label Updates Pattern** — Store UI labels as `self.cups_pdf_label`, `self.printer_drivers_label`, `self.cups_status_label` in GUI init, then call `.set_markup()` in callback functions after terminal operations complete
+- **Dynamic Status Refresh** — `update_cups_status()` function in services.py checks current `fn.check_service("cups")` and `fn.check_socket("cups")` status, called from on_click_enable_cups, on_click_disable_cups, on_click_restart_cups to refresh label via `GLib.idle_add()`
 - **Lock File Handling** — Check for and remove `/var/lib/pacman/db.lck` before launching audio server switches; prevents cascading errors during rapid pacman calls
-- **Section Headers** — Three section titles (CUPS Service, Printer Drivers, Tools) marked with horizontal dividers (`──`) in comments; each section groups related controls
+- **Section Headers** — Four section titles (CUPS Service, Printer Drivers, Tools, Status) with bold markup and horizontal separators; each section groups related controls
 - **Logging Layers**:
   - `fn.log_section()` — major headers (green with separators)
   - `fn.log_subsection()` — feature headers (cyan)
