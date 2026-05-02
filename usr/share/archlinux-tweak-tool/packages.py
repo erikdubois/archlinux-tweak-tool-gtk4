@@ -692,12 +692,11 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
 
     file_chooser = Gtk.FileChooserDialog(
         title="Select Packages File to Install",
-        parent=self,
+        transient_for=self,
         action=Gtk.FileChooserAction.OPEN,
-        modal=True,
     )
-    file_chooser.add_button("_Open", -5)
-    file_chooser.add_button("_Cancel", -6)
+    file_chooser.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+    file_chooser.add_button("_Open", Gtk.ResponseType.OK)
 
     initial_folder = Gio.File.new_for_path(packages_dir)
     file_chooser.set_current_folder(initial_folder)
@@ -714,7 +713,7 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
             return
         handled[0] = True
 
-        if response_id == -5 or response_id == -4:
+        if response_id == Gtk.ResponseType.OK or response_id == Gtk.ResponseType.DELETE_EVENT:
             selected_file = dialog.get_file()
             if selected_file:
                 file_path = selected_file.get_path()
