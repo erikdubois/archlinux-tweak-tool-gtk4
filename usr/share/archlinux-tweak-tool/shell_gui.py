@@ -271,6 +271,18 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox_zsh_syntax_btns.append(self.install_zsh_syntax_highlighting)
         hbox_zsh_syntax_btns.append(self.remove_zsh_syntax_highlighting)
 
+        # ── Oh-my-zsh ─────────────────────────────────────────────────
+
+        hbox_zsh_omz_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox_zsh_omz_title_lbl = Gtk.Label(xalign=0)
+        hbox_zsh_omz_title_lbl.set_markup("<b>Oh-my-zsh</b>")
+        hbox_zsh_omz_title_lbl.set_margin_start(10)
+        hbox_zsh_omz_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox_zsh_omz_title_sep.set_hexpand(True)
+        hbox_zsh_omz_title_sep.set_valign(Gtk.Align.CENTER)
+        hbox_zsh_omz_title.append(hbox_zsh_omz_title_lbl)
+        hbox_zsh_omz_title.append(hbox_zsh_omz_title_sep)
+
         hbox_zsh_omz_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.zsh_omz_lbl = Gtk.Label(xalign=0)
         if fn.check_package_installed("oh-my-zsh-git"):
@@ -426,11 +438,12 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         vboxstack2.append(hbox_zsh_completions_btns)
         vboxstack2.append(hbox_zsh_syntax_lbl)
         vboxstack2.append(hbox_zsh_syntax_btns)
-        vboxstack2.append(hbox_zsh_omz_lbl)
-        vboxstack2.append(hbox_zsh_omz_btns)
         vboxstack2.append(hbox_zsh_att_config_title)
         vboxstack2.append(hbox_zsh_config_lbl)
         vboxstack2.append(hbox_zsh_config_btns)
+        vboxstack2.append(hbox_zsh_omz_title)
+        vboxstack2.append(hbox_zsh_omz_lbl)
+        vboxstack2.append(hbox_zsh_omz_btns)
         vboxstack2.append(hbox_zsh_themes_title)
         vboxstack2.append(hbox_zsh_themes_dropdown)
         vboxstack2.append(hbox_zsh_apply_theme_btn)

@@ -9,7 +9,6 @@ def get_themes(combo):
     """get themes"""
     if fn.check_package_installed("oh-my-zsh-git"):
         try:
-            # lists = [x for x in fn.listdir("/usr/share/oh-my-zsh/themes")]
             lists = list(fn.listdir("/usr/share/oh-my-zsh/themes"))
             lists_sorted = sorted(lists)
             with open(fn.zsh_config, "r", encoding="utf-8", errors="ignore") as f:
@@ -18,12 +17,20 @@ def get_themes(combo):
             pos = fn.get_position(theme_list, "ZSH_THEME=")
             # stripping whitespace, and quotation marks
             name = theme_list[pos].split("=")[1].strip().strip('"')
+
+            # Build theme list starting with "random"
+            theme_items = ["random"]
             active = 0
-            combo.get_model().append("random")
             for x in range(len(lists_sorted)):
+                theme_name = lists_sorted[x].split(".")[0].strip()
+                theme_items.append(theme_name)
                 if name in lists_sorted[x].replace(".zsh-theme", ""):
                     active = x + 1  # remember; arrays start at ZERO
-                combo.get_model().append(lists_sorted[x].split(".")[0].strip())
+
+            # Create StringList and populate dropdown
+            string_list = fn.Gtk.StringList()
+            string_list.splice(0, 0, theme_items)
+            combo.set_model(string_list)
             combo.set_selected(active)
         except OSError:
             fn.debug_print(
