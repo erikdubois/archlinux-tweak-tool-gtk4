@@ -622,7 +622,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         "The shell configurations of the ATT contain\
  aliases that require certain applications\n\
 \nHere you can select the missing applications and install them\n\
-Activate the ArcoLinux repos to install all of them\n\n\
+Activate the nemesis repo (when needed) to install all of them\n\n\
 Applications that were NOT installed will be <b>unselected</b> again\n\
 Activate the necessary repos"
     )

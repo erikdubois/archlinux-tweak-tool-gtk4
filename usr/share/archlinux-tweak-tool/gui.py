@@ -156,10 +156,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         vboxstack8.append(hbox31)
         vboxstack8.append(hbox41)
         fastfetch_message = Gtk.Label()
-        fastfetch_message.set_markup(
-            "If you install <b>fastfetch</b> and the <i>ArcoLinux \
-themes</i> you can customize <b>fastfetch</b>"
-        )
         fastfetch_message.set_hexpand(True)
         vboxstack8.append(fastfetch_message)
 

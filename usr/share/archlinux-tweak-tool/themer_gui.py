@@ -196,9 +196,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     ):
         try:
             awesome_lines = themer.get_awesome_themes(awesome_list)
-            # TODO: enumerate
-            for x in range(len(awesome_lines)):
-                self.store.append([x, awesome_lines[x]])
+            for x, theme in enumerate(awesome_lines):
+                self.store.append([x, theme])
         except Exception:
             pass
 
@@ -449,9 +448,8 @@ install them in one go"
     self.leftwm_combo.connect("notify::selected", functools.partial(themer.on_leftwm_combo_changed, self))
     if fn.path_check(fn.leftwm_config_theme_current):
         link_theme = fn.os.path.basename(fn.os.readlink(fn.leftwm_config_theme_current))
-        # TODO: enumerate
-        for i in range(len(fn.leftwm_themes_list)):
-            if link_theme == fn.leftwm_themes_list[i]:
+        for i, theme in enumerate(fn.leftwm_themes_list):
+            if link_theme == theme:
                 self.leftwm_combo.set_selected(i)
     else:
         self.leftwm_combo.set_sensitive(False)

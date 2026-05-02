@@ -323,15 +323,15 @@ def install_oh_my_zsh(self, _widget):
 def on_extra_shell_applications_clicked(self, _widget):
     fn.log_subsection("Install Extra Shell Applications")
     packages = [
-        ("expac",        self.expac),
-        ("ripgrep",      self.ripgrep),
-        ("yay-git",      self.yay),
-        ("paru-git",     self.paru),
-        ("bat",          self.bat),
-        ("downgrade",    self.downgrade),
-        ("hw-probe",     self.hw_probe),
+        ("expac", self.expac),
+        ("ripgrep", self.ripgrep),
+        ("yay-git", self.yay),
+        ("paru-git", self.paru),
+        ("bat", self.bat),
+        ("downgrade", self.downgrade),
+        ("hw-probe", self.hw_probe),
         ("rate-mirrors", self.rate_mirrors),
-        ("most",         self.most),
+        ("most", self.most),
     ]
     try:
         for pkg, checkbox in packages:

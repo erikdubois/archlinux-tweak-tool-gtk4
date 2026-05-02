@@ -6,10 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ArchLinux Tweak Tool (ATT) is a GTK4-based Python application for managing Arch-based Linux systems. It provides a graphical interface for system customization, package management, theming, services, and maintenance tasks without requiring command-line expertise.
 
-- **Language**: Python 3.x
-- **GUI Framework**: GTK4
+- **Language**: Python 3.8+
+- **GUI Framework**: GTK4 (4.6+)
 - **Entry Point**: `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
 - **Desktop Launcher**: `usr/share/applications/archlinux-tweak-tool.desktop`
+
+## Requirements
+
+**Runtime:**
+- Python 3.8 or later
+- GTK4 libraries (version 4.6+)
+- GObject Introspection (gi)
+- Standard library modules: os, sys, subprocess, threading, time, shutil, json
+
+**System Tools:**
+- bash (shell execution)
+- sudo (elevated operations)
+- pacman (package management)
+- git (version control)
+- flake8 (linting, development only)
+
+**For Optional Features:**
+- alacritty (terminal for package operations)
+- fastfetch (system information display)
+- zsh, fish, bash (shell support)
+- systemctl (service management)
 
 ## Developer Objectives
 
@@ -359,20 +380,6 @@ Test each module in order of risk (most likely to be broken first):
 
 ---
 
-#### M5 — Package & Release (Days 27–30 · ~10h)
-
-**Deliverable:** AUR-ready PKGBUILD, v1.0 git tag, release notes
-
-- [ ] Write or update `PKGBUILD` with correct dependencies and install paths
-- [ ] Test clean install from PKGBUILD in a fresh environment (VM or clean chroot)
-- [ ] Write brief `CHANGELOG.md` or release notes
-- [ ] Tag `v1.0.0` on main branch
-- [ ] Push to AUR if applicable
-
-**Final deliverable:** `archlinux-tweak-tool` installable from AUR or package file on Kiro.
-
----
-
 ### Risk Register
 
 | Risk | Likelihood | Mitigation |
@@ -381,7 +388,6 @@ Test each module in order of risk (most likely to be broken first):
 | 723 code references take longer than 30h to migrate safely | Medium | Use plan mode + grep per-file; batch by module not by search term |
 | Feature tab broken after data migration, hard to diagnose | Medium | Test after each module commit, not at end of M2 |
 | Orphan removal cascade bug triggered during testing | Low | Never test `pacman -Rns $(pacman -Qdtq)` without reviewing output first |
-| Packaging dependencies incomplete | Low | Document all imports at start of M5; cross-check with running system |
 
 ---
 
@@ -476,4 +482,3 @@ Use this to pick the right task for the time you have available.
 - [ ] L2 — Clear arco refs in `themes.py` (547 refs, 657 lines) — biggest single task; use plan mode
 - [ ] L3 — Consolidate duplicate helpers found in M8 — touches every module that uses them
 - [ ] L4 — Feature test pass: every tab on Kiro (packages, sddm, shell, maintenance, services, themes, icons, desktopr, fastfetch, performance, kernel, user, ai)
-- [ ] L5 — Write PKGBUILD and test clean install in chroot

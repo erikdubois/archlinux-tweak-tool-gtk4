@@ -1,5 +1,60 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.02 - Code Quality: Themer Refactoring, Linting, Brand Cleanup
+
+### What Changed
+
+#### Themer Module Refactoring (themer.py / themer_gui.py)
+
+- **GTK4 StringList population optimized** — dropdown initialization changed from one-by-one `append()` to batch `splice()` with full list; resolves empty dropdowns on first load
+- **qtile theme detection fixed** — `isfile()` check replaced with `path_check()` for directory validation (line 54 and 353); UnboundLocalError on qtile theme load now resolved
+- **on_polybar_toggle callback signature corrected** — changed from `(self, widget, active)` to `(self, _widget, _pspec=None)` to match GTK4 notify::active signal; polybar checkbox now functions
+- **Theme name extraction refactored** — replaced `range(len(...))` loops with `enumerate()` pattern per PEP 8; removed accompanying TODO comments
+- **Dead debug output removed** — removed temporary debug print statements used during troubleshooting
+- **fn.readlink corrected** — changed incorrect `fn.readlink` to `fn.os.readlink` (line 354)
+
+#### Brand Name Cleanup (4 Files)
+
+- **shell_gui.py** — UI message updated: "Activate the ArcoLinux repos" → "Activate the nemesis repo (when needed)" (line 154)
+- **functions_startup.py** — Startup message updated: "installing default from ARCO template" → "installing default from ATT template"
+- **desktopr_gui.py** — Removed non-existent `button_reinstall.set_sensitive()` call that was causing AttributeError (only `button_install` exists)
+- **gui.py** — Removed deprecated `fastfetch_message.set_markup()` call entirely (fastfetch config section now message-free)
+
+#### Linting & Code Quality (Multiple Files)
+
+- **E241 fixed** — `shell.py` and `shell.py`: Removed alignment spaces after commas in package tuples (lines 326-334)
+- **E226 fixed** — `functions.py`: Added whitespace around operators (`i+1` → `i + 1`)
+- **E128 fixed** — `functions.py`: Reformatted multi-line `subprocess.run()` calls with proper indentation
+- **E501 fixed** — `desktopr.py`: Split long lines at 637 and 659 to ≤120 characters
+- **flake8 audit complete** — all remaining violations addressed; codebase now lint-clean
+
+#### Startup Timer Refinement (archlinux-tweak-tool.py)
+
+- Removed `print()` statement for total startup time; kept debug-only output via `fn.debug_print()`
+- Added `[RESPONSIVE]` timer message marking when initialization completes and UI is ready for interaction
+
+#### Documentation Updates (CLAUDE.md)
+
+- **Requirements section added** — Python 3.8+, GTK4 4.6+, system tools, optional features documented
+- **Objective 12 clarified** — "Data Folder Consolidation: Transition to Kiro-only data folder; update all paths before removing other distro-specific directories"
+
+#### Memory & Developer Notes
+
+- Created `distro_guards_intentional.md` — documents that `fn.distr` detection guards throughout codebase are intentional multi-distro support features, not code to be removed
+
+### Technical Details
+
+- GTK4 StringList splice pattern: build complete list with `[item1, item2, ...]`, then `model.splice(0, 0, full_list)` to populate in one operation
+- enumerate() pattern: `for i, item in enumerate(items):` replaces `for i in range(len(items)):`
+- qtile_config_theme is a directory (`~/.config/qtile/config.py`), not a file; requires `fn.path_check()` not `fn.isfile()`
+- Brand reference policy: remove brand names from user-facing UI messages ("ArcoLinux" → "ATT", "ARCO template" → "ATT template"); preserve real package names (arcolinux-arc-*) and real folder names (/etc/skel/.config/arco-chadwm)
+
+### Files Modified
+
+`themer.py` • `themer_gui.py` • `shell_gui.py` • `shell.py` • `functions.py` • `functions_startup.py` • `desktopr_gui.py` • `gui.py` • `archlinux-tweak-tool.py` • `CLAUDE.md` • `CHANGELOG.md`
+
+---
+
 ## Frozen Files — Do Not Edit Without Explicit Permission
 
 These files are tested and working. Any change requires user confirmation first.

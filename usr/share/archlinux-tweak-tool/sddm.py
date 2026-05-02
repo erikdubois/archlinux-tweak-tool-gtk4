@@ -59,7 +59,6 @@ def ensure_sddm_config(self):
 
 def check_sddmk_complete():
     """see all variabeles are there"""
-    # TODO:make nicer function
     try:
         with open(fn.sddm_default_d2, "r", encoding="utf-8") as f:
             lines = f.readlines()

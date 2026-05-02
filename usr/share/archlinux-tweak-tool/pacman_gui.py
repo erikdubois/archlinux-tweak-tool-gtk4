@@ -342,8 +342,6 @@ def gui(self, Gtk, vboxstack1, fn):
     #               PACK TO WINDOW
     # ========================================================
 
-    # =================ARCO REPO========================
-
     spacer = Gtk.Label()
     spacer.set_hexpand(True)
     hbox5.append(spacer)

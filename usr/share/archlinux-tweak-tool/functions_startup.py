@@ -99,7 +99,7 @@ def setup_icon_theme():
                 fn.debug_print(f"Error restoring index.theme: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("No backup found, installing default from ARCO template")
+            fn.debug_print("No backup found, installing default from ATT template")
             try:
                 fn.shutil.copy(
                     "/usr/share/archlinux-tweak-tool/data/cursor/index.theme",

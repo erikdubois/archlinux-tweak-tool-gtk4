@@ -634,7 +634,8 @@ def uninstall_desktop(self, desktop):
         has_panel = fn.check_package_installed("xfce4-panel")
         has_panel_compiz = fn.check_package_installed("xfce4-panel-compiz")
         fn.log_info(f"Panel detection: xfce4-panel={has_panel}, xfce4-panel-compiz={has_panel_compiz}")
-        fn.debug_print(f"[uninstall_desktop] Panel detection: xfce4-panel={has_panel}, xfce4-panel-compiz={has_panel_compiz}")
+        fn.debug_print(f"[uninstall_desktop] Panel: xfce4-panel={has_panel}, "
+                       f"xfce4-panel-compiz={has_panel_compiz}")
 
         # Replace the panel variant in the list with what's actually installed
         if "xfce4-panel-compiz" in desktop_list_adapted:
@@ -656,7 +657,8 @@ def uninstall_desktop(self, desktop):
     panel_to_remove = None
     if desktop == "xfce":
         # Find which panel we're removing
-        panel_to_remove = next((pkg for pkg in desktop_list_adapted if pkg in ("xfce4-panel", "xfce4-panel-compiz")), None)
+        panel_choices = ("xfce4-panel", "xfce4-panel-compiz")
+        panel_to_remove = next((pkg for pkg in desktop_list_adapted if pkg in panel_choices), None)
 
     packages_to_remove = []
     for pkg in desktop_list_adapted:

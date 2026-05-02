@@ -1092,8 +1092,9 @@ def ensure_nodejs_installed():
             return True
 
     debug_print("[INFO] Node.js not found, installing...")
-    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "nodejs", "npm"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    install_proc = subprocess.run(
+        ["pacman", "-S", "--noconfirm", "--needed", "nodejs", "npm"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     debug_print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
     debug_print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
@@ -1118,8 +1119,9 @@ def ensure_git_installed():
         return True
 
     debug_print("[INFO] Git not found, installing...")
-    install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "git"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    install_proc = subprocess.run(
+        ["pacman", "-S", "--noconfirm", "--needed", "git"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     debug_print(f"[DEBUG] pacman stdout: {install_proc.stdout}")
     debug_print(f"[DEBUG] pacman stderr: {install_proc.stderr}")
@@ -1158,7 +1160,7 @@ def remove_debug_from_makepkg_conf():
         already_fixed = False
         for i, line in enumerate(lines):
             if line.startswith("OPTIONS="):
-                debug_print(f"[DEBUG] Found OPTIONS line at line {i+1}")
+                debug_print(f"[DEBUG] Found OPTIONS line at line {i + 1}")
                 debug_print(f"[DEBUG] Original line: {line.strip()}")
 
                 if " debug " in line or line.endswith("debug)\n"):
@@ -1201,8 +1203,9 @@ def launch_pacman_install_in_terminal(packages):
 
     if not shutil.which("alacritty"):
         log_info("alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             log_error(f"Failed to install alacritty: {install_proc.stderr}")
             return None
@@ -1264,8 +1267,9 @@ def launch_pacman_remove_in_terminal(packages):
 
     if not shutil.which("alacritty"):
         log_info("alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             log_error(f"Failed to install alacritty: {install_proc.stderr}")
             return None
@@ -1325,8 +1329,9 @@ def launch_aur_install_in_terminal(aur_helper, package, username=None):
     import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
@@ -1349,8 +1354,9 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
     import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
@@ -1373,8 +1379,9 @@ def launch_npm_install_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
@@ -1398,8 +1405,9 @@ def launch_npm_remove_in_terminal(npm_package):
     import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
-        install_proc = subprocess.run(["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-                                     capture_output=True, text=True)
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
+            capture_output=True, text=True)
         if install_proc.returncode != 0:
             debug_print(f"[ERROR] Failed to install alacritty: {install_proc.stderr}")
             return None
