@@ -292,7 +292,7 @@ Report them if that is the case"
     hbox42.append(btn_install_pipewire)  # pack_end
 
     hbox48 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox48_label = Gtk.Label(xalign=0)
+    hbox48_label = Gtk.Label(xalign=0.5)
     text1 = ""
     text2 = ""
     status1 = fn.check_if_process_is_running("pulseaudio")
@@ -310,8 +310,8 @@ Report them if that is the case"
     hbox48_label.set_markup(
         "Pulseaudio service : " + text1 + "   Pipewire service : " + text2
     )
-    hbox48_label.set_margin_start(10)
-    hbox48_label.set_margin_end(10)
+    hbox48_label.set_hexpand(True)
+    hbox48_label.set_halign(Gtk.Align.CENTER)
     hbox48.append(hbox48_label)
 
     # ==================================================================
@@ -499,9 +499,8 @@ Report them if that is the case"
     vboxstack4.append(hbox40)
     vboxstack4.append(hbox41)
     vboxstack4.append(hbox42)
-    hbox48.set_margin_start(10)
-    hbox48.set_margin_end(10)
-    vboxstack4.append(hbox48)  # pack_end
+    hbox48.set_margin_top(40)
+    vboxstack4.append(hbox48)
 
     # bluetooth
     vboxstack5.append(hbox50)
