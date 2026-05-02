@@ -701,9 +701,11 @@ def uninstall_desktop(self, desktop):
             "echo 'KDE cleanup complete' && echo '' && "
         )
 
+    package_list_str = "\n".join([f"  • {pkg}" for pkg in packages_to_remove])
     remove_cmd = (
         f"( "
         f"echo 'The following packages will be removed:' && echo '' && "
+        f"echo '{package_list_str}' && echo '' && "
         f"{warning_msg}"
         f"{confirm_prompt}"
         f"pkexec pacman {pacman_flag} {' '.join(packages_to_remove)} --noconfirm && "
