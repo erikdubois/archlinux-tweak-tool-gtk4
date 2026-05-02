@@ -523,6 +523,7 @@ def on_click_sddm_apply(self, _widget=None):
             current_user = fn.sudo_username
             fn.debug_print(f"[DEBUG] Current user: {current_user}")
             set_sddm_value(self, lines, current_user, session, autologin_state, theme, cursor)
+            fn.log_info_concise(f"  User:     {current_user}")
             fn.log_info_concise(f"  Session:  {session or 'default'}")
             fn.log_info_concise(f"  Theme:    {theme or 'default'}")
             fn.log_info_concise(f"  Cursor:   {cursor or 'default'}")

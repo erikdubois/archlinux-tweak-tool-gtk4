@@ -4,6 +4,14 @@
 
 ### What Changed
 
+#### SDDM Settings Save Bug Fix
+
+- **User Context Bug** — Fixed `on_click_sddm_apply()` incorrectly saving settings as root instead of the actual user
+  - Root cause: code was using `os.getenv("SUDO_USER") or os.getenv("USER")` which falls back to "root" when environment variables are unset
+  - Fix: replaced with `fn.sudo_username` which correctly gets the actual logged-in user via `getlogin()`
+  - Impact: SDDM configuration now saves with the correct user in `User=` field instead of `User=root`
+  - **Console Logging** — Added user display in SDDM apply output for verification (`User: <username>`)
+
 #### Services Tab — Full Feature Implementation & Testing
 
 - **Audio Server Switching** — Batch PulseAudio and Pipewire installations (all audio, alsa, gstreamer packages in single terminal); added `check_audio_server()` to verify active server after install
@@ -53,7 +61,7 @@
 
 ### Files Modified
 
-`services.py` • `services_gui.py` • `maintenance.py` • `shell.py` • `functions.py`
+`sddm.py` • `services.py` • `services_gui.py` • `maintenance.py` • `shell.py` • `functions.py`
 
 ### Test Status
 
