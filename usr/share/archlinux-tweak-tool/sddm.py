@@ -520,7 +520,7 @@ def on_click_sddm_apply(self, _widget=None):
         lines = get_sddm_lines(fn.sddm_default_d2)
         if lines:
             fn.debug_print(f"[DEBUG] Found {len(lines)} lines in config file")
-            current_user = fn.os.getenv("SUDO_USER") or fn.os.getenv("USER")
+            current_user = fn.sudo_username
             fn.debug_print(f"[DEBUG] Current user: {current_user}")
             set_sddm_value(self, lines, current_user, session, autologin_state, theme, cursor)
             fn.log_info_concise(f"  Session:  {session or 'default'}")
