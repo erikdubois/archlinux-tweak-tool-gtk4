@@ -46,6 +46,48 @@ These files are tested and working. Any change requires user confirmation first.
 
 ---
 
+## 2026.05.02 - XFCE Removal: Force Removal with Smart Cleanup
+
+### What Changed
+
+- **XFCE now uses `-Rdd` (force removal)** like Plasma, since XFCE has complex inter-package and external dependencies
+- **Detects installed panel variant** — checks for both `xfce4-panel` (default) and `xfce4-panel-compiz`, removes only what's installed
+- **Two-stage cleanup** — main removal of core packages + cleanup step that removes all plugins and ecosystem apps
+- **Comprehensive package removal** includes:
+  - All `xfce4-*` plugins (30+ variants: battery, clipman, cpufreq, cpugraph, dict, diskperf, eyes, fsguard, genmon, mailwatch, mount, mpc, netload, notes, notifyd, places, pulseaudio, screenshooter, sensors, smartbookmark, systemload, time-out, timer, verve, wavelan, weather, whiskermenu, xkb, etc.)
+  - XFCE ecosystem apps: mousepad, parole, ristretto, xfburn
+  - Thunar derivatives: thunar-archive-plugin, thunar-media-tags-plugin
+- **UX improvements**: backup warning shows "might take a while", package list displayed before removal confirmation
+
+### Technical Details
+
+- Panel detection: `fn.check_package_installed("xfce4-panel")` and `fn.check_package_installed("xfce4-panel-compiz")`
+- Panel replacement: removes compiz variant from list, inserts actual installed variant
+- Filter logic: protects all `xfce4-*` except the detected panel variant + other package categories
+- Cleanup: two-pronged approach:
+  - `pacman -Rdd $(pacman -Q | grep '^xfce' | awk '{print $1}')` for all xfce4-* packages
+  - Explicit removal of mousepad, parole, ristretto, xfburn, thunar plugins
+- All in one `-Rdd` command with `--noconfirm` to bypass dependency checks
+
+### Why `-Rdd` for XFCE
+
+Like Plasma, XFCE has many plugins and ecosystem apps that create a complex dependency web:
+
+- 30+ xfce4-*-plugin packages require xfce4-panel
+- parole (media player) requires xfconf, tumbler, libxfce4ui
+- ristretto (image viewer) requires exo, xfconf, tumbler, libxfce4ui
+- xfburn (CD/DVD) requires libxfce4ui, exo
+- Thunar plugins require thunar
+- User may have additional packages (xfce4-screensaver, xfce4-taskmanager, etc.)
+
+Using `-Rs` (respects dependencies) fails due to circular dependencies and external references. Force removal (`-Rdd`) cleanly removes the entire environment in one operation.
+
+### Files Modified
+
+`desktopr.py`, `CHANGELOG.md`
+
+---
+
 ## 2026.05.02 - Desktop UI: Consolidate Install/Re-Install into Single Button
 
 ### What Changed
