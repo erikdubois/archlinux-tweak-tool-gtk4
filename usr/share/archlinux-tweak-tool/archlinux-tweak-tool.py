@@ -140,25 +140,75 @@ class Main(Gtk.ApplicationWindow):
         # Lazy imports to reduce time-to-first-window.
         from subprocess import call as _call
 
+        t_zsh = time.time()
         import zsh_theme as _zsh_theme
+        fn.debug_print(f"[TIMING] zsh_theme: {time.time() - t_zsh:.3f}s")
+
+        t_user = time.time()
         import user as _user
+        fn.debug_print(f"[TIMING] user: {time.time() - t_user:.3f}s")
+
+        t_themer = time.time()
         import themer as _themer
+        fn.debug_print(f"[TIMING] themer: {time.time() - t_themer:.3f}s")
+
+        t_settings = time.time()
         import settings as _settings
+        fn.debug_print(f"[TIMING] settings: {time.time() - t_settings:.3f}s")
+
+        t_services = time.time()
         import services as _services
+        fn.debug_print(f"[TIMING] services: {time.time() - t_services:.3f}s")
+
+        t_sddm = time.time()
         import sddm as _sddm
+        fn.debug_print(f"[TIMING] sddm: {time.time() - t_sddm:.3f}s")
+
+        t_pacman = time.time()
         import pacman_functions as _pacman_functions
+        fn.debug_print(f"[TIMING] pacman_functions: {time.time() - t_pacman:.3f}s")
+
+        t_fastfetch = time.time()
         import fastfetch as _fastfetch
+        fn.debug_print(f"[TIMING] fastfetch: {time.time() - t_fastfetch:.3f}s")
+
+        t_maintenance = time.time()
         import maintenance as _maintenance
+        fn.debug_print(f"[TIMING] maintenance: {time.time() - t_maintenance:.3f}s")
+
+        t_gui = time.time()
         import gui as _gui
+        fn.debug_print(f"[TIMING] gui: {time.time() - t_gui:.3f}s")
+
+        t_icons = time.time()
         import icons as _icons
+        fn.debug_print(f"[TIMING] icons: {time.time() - t_icons:.3f}s")
+
+        t_themes = time.time()
         import themes as _themes
+        fn.debug_print(f"[TIMING] themes: {time.time() - t_themes:.3f}s")
+
+        t_desktopr = time.time()
         import desktopr as _desktopr
+        fn.debug_print(f"[TIMING] desktopr: {time.time() - t_desktopr:.3f}s")
+
+        t_autostart = time.time()
         import autostart as _autostart
+        fn.debug_print(f"[TIMING] autostart: {time.time() - t_autostart:.3f}s")
+
+        t_fastfetch_gui = time.time()
         import fastfetch_gui as _fastfetch_gui
+        fn.debug_print(f"[TIMING] fastfetch_gui: {time.time() - t_fastfetch_gui:.3f}s")
+
+        t_functions = time.time()
         import functions_makedir as _functions_makedir
         import functions_backup as _functions_backup
         import functions_startup as _functions_startup
+        fn.debug_print(f"[TIMING] functions modules: {time.time() - t_functions:.3f}s")
+
+        t_packages = time.time()
         from packages_prompt_gui import PackagesPromptGui as _PackagesPromptGui
+        fn.debug_print(f"[TIMING] packages_prompt_gui: {time.time() - t_packages:.3f}s")
 
         zsh_theme = _zsh_theme
         user = _user
@@ -224,12 +274,26 @@ class Main(Gtk.ApplicationWindow):
 
     def _finish_background_init(self, startup_start):
         """Run backups and permission fixes after the window is already visible."""
+        bg_start = time.time()
+
+        t1 = time.time()
         functions_backup.backup_gtk_config()
+        fn.debug_print(f"[TIMING] backup_gtk_config: {time.time() - t1:.3f}s")
+
+        t2 = time.time()
         functions_backup.backup_system_configs()
+        fn.debug_print(f"[TIMING] backup_system_configs: {time.time() - t2:.3f}s")
+
+        t3 = time.time()
         functions_backup.backup_user_configs()
+        fn.debug_print(f"[TIMING] backup_user_configs: {time.time() - t3:.3f}s")
+
+        t4 = time.time()
         functions_startup.fix_permissions()
+        fn.debug_print(f"[TIMING] fix_permissions: {time.time() - t4:.3f}s")
 
         total_time = time.time()
+        fn.debug_print(f"[TIMING] Background init total: {total_time - bg_start:.3f}s")
         fn.debug_print(f"[INFO] Total startup time (incl. background init): {total_time - startup_start:.3f}s")
         self.initializing = False
 
