@@ -278,22 +278,43 @@ class Main(Gtk.ApplicationWindow):
 
         t1 = time.time()
         functions_backup.backup_gtk_config()
-        fn.debug_print(f"[TIMING] backup_gtk_config: {time.time() - t1:.3f}s")
+        t1_end = time.time()
+        fn.debug_print(f"[TIMING] backup_gtk_config: {t1_end - t1:.3f}s")
 
         t2 = time.time()
         functions_backup.backup_system_configs()
-        fn.debug_print(f"[TIMING] backup_system_configs: {time.time() - t2:.3f}s")
+        t2_end = time.time()
+        fn.debug_print(f"[TIMING] backup_system_configs: {t2_end - t2:.3f}s")
 
         t3 = time.time()
         functions_backup.backup_user_configs()
-        fn.debug_print(f"[TIMING] backup_user_configs: {time.time() - t3:.3f}s")
+        t3_end = time.time()
+        fn.debug_print(f"[TIMING] backup_user_configs: {t3_end - t3:.3f}s")
 
         t4 = time.time()
         functions_startup.fix_permissions()
-        fn.debug_print(f"[TIMING] fix_permissions: {time.time() - t4:.3f}s")
+        t4_end = time.time()
+        fn.debug_print(f"[TIMING] fix_permissions: {t4_end - t4:.3f}s")
 
         total_time = time.time()
-        fn.debug_print(f"[TIMING] Background init total: {total_time - bg_start:.3f}s")
+        t_bg = total_time - bg_start
+
+        fn.debug_print(f"[TIMING] Background init total: {t_bg:.3f}s")
+        fn.debug_print("")
+        fn.debug_print("=" * 70)
+        fn.debug_print("BACKGROUND INIT TIMING SUMMARY")
+        fn.debug_print("=" * 70)
+        fn.debug_print(f"{'Component':<40} {'Time (s)':<12}")
+        fn.debug_print("-" * 70)
+        fn.debug_print(f"{'GTK config backup':<40} {t1_end - t1:>11.3f}s")
+        fn.debug_print(f"{'System config backup':<40} {t2_end - t2:>11.3f}s")
+        fn.debug_print(f"{'User config backup':<40} {t3_end - t3:>11.3f}s")
+        fn.debug_print(f"{'Fix permissions':<40} {t4_end - t4:>11.3f}s")
+        fn.debug_print("-" * 70)
+        fn.debug_print(f"{'TOTAL (background init)':<40} {t_bg:>11.3f}s")
+        fn.debug_print(f"{'TOTAL (incl. window setup)':<40} {total_time - startup_start:>11.3f}s")
+        fn.debug_print("=" * 70)
+        fn.debug_print("")
         fn.debug_print(f"[INFO] Total startup time (incl. background init): {total_time - startup_start:.3f}s")
         self.initializing = False
 
