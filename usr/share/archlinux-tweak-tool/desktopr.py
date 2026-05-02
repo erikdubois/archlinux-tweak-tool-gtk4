@@ -627,10 +627,29 @@ def uninstall_desktop(self, desktop):
     # For GNOME, protect packages with external system dependencies
     critical_set = gnome_critical if desktop == "gnome" else set()
 
+    # Special handling for XFCE: detect which panel is actually installed
+    desktop_list_adapted = list(desktop_list)
+    if desktop == "xfce":
+        fn.debug_print("[uninstall_desktop] Checking for XFCE panel variants...")
+        has_panel = fn.check_package_installed("xfce4-panel")
+        has_panel_compiz = fn.check_package_installed("xfce4-panel-compiz")
+        fn.debug_print(f"[uninstall_desktop] xfce4-panel installed: {has_panel}, xfce4-panel-compiz installed: {has_panel_compiz}")
+
+        # Remove both panel variants from the base list; we'll add back only what's actually installed
+        desktop_list_adapted = [pkg for pkg in desktop_list_adapted if pkg not in ("xfce4-panel", "xfce4-panel-compiz")]
+
+        # Add only the panels that are actually installed
+        if has_panel:
+            fn.debug_print("[uninstall_desktop] Will remove xfce4-panel")
+            desktop_list_adapted.append("xfce4-panel")
+        if has_panel_compiz:
+            fn.debug_print("[uninstall_desktop] Will remove xfce4-panel-compiz")
+            desktop_list_adapted.append("xfce4-panel-compiz")
+
     # Filter packages to remove: exclude essentials, packages used by other desktops, and critical packages
     packages_to_remove = []
-    for pkg in desktop_list:
-        is_essential = pkg in essential_packages or pkg.startswith("xfce4-")
+    for pkg in desktop_list_adapted:
+        is_essential = pkg in essential_packages or (pkg.startswith("xfce4-") and pkg not in ("xfce4-panel", "xfce4-panel-compiz"))
         is_system_critical = pkg in critical_set
         is_used_elsewhere = pkg in all_other_packages
         if not is_essential and not is_system_critical and not is_used_elsewhere:
