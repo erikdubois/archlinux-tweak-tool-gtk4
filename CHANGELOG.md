@@ -1,5 +1,69 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.02 - M4 Feature Testing: Services Tab Complete, UI Layout Refinement
+
+### What Changed
+
+#### Services Tab — Full Feature Implementation & Testing
+
+- **Audio Server Switching** — Batch PulseAudio and Pipewire installations (all audio, alsa, gstreamer packages in single terminal); added `check_audio_server()` to verify active server after install
+- **Bluetooth Operations** — Batch installation (bluez + bluez-utils together); added daemon thread with label updates for enable/disable/restart controls
+- **CUPS Printing** — Batch CUPS installation with systemctl controls (enable, disable, restart)
+- **CUPS-PDF Printer** — Added dynamic label updates showing installed/not-installed status via `self.cups_pdf_label`
+- **Printer Drivers** — Batch installation of all foomatic, gutenprint, ghostscript packages together; dynamic label updates via `self.printer_drivers_label`
+- **HP Printer Support (HPLIP)** — Single-package install/remove with label feedback
+- **System Config Printer** — GUI tool for printer setup (install/remove/status)
+- **Lock File Cleanup** — Added pacman db.lck removal before batch audio server switches to prevent "database is locked" errors during parallel operations
+- **Logging Pattern Refinement** — Introduced `fn.log_info_concise()` for visible path logging without verbose headers (complement to `debug_print()`)
+
+#### UI Layout Reorganization (services_gui.py)
+
+- **Section-Based Headers** — Divided printing section into three logical sections:
+  - **CUPS Service** — contains CUPS install/remove/enable/disable/restart controls
+  - **Printer Drivers** — contains foomatic/gutenprint/ghostscript batch installation
+  - **Tools** — contains system-config-printer and HP drivers (HPLIP)
+- **Consistent Label Styling** — All labels use 3-space indentation prefix and hexpand=True for alignment
+- **Dynamic Status Labels** — Cups-pdf and printer drivers labels update after install/remove operations showing "Installed" status
+
+#### Logging Pattern Addition (functions.py)
+
+- **`log_info_concise()` function** — New logging function that outputs bare `print()` for concise multi-line operations; used for source→target paths in pacman, file copy, and shell operations; complements existing `debug_print()` (--debug only) and `log_info()` (with headers)
+
+#### Other Module Updates
+
+- **maintenance.py** — Added `fn.log_info_concise()` calls to GPG config operations for visible file path logging
+- **shell.py** — Updated bashrc operations to use `fn.log_info_concise()` for visible path logging instead of bare `print()`
+
+### Technical Details
+
+- **Batch Pacman Operations** — All package installations use `fn.launch_pacman_install_in_terminal()` and removals use `fn.launch_pacman_remove_in_terminal()` to prevent multiple alacritty windows and database lock contention
+- **Label Updates Pattern** — Store UI labels as `self.cups_pdf_label`, `self.printer_drivers_label` in GUI init, then call `.set_markup()` in callback functions after terminal operations complete
+- **Lock File Handling** — Check for and remove `/var/lib/pacman/db.lck` before launching audio server switches; prevents cascading errors during rapid pacman calls
+- **Section Headers** — Three section titles (CUPS Service, Printer Drivers, Tools) marked with horizontal dividers (`──`) in comments; each section groups related controls
+- **Logging Layers**:
+  - `fn.log_section()` — major headers (green with separators)
+  - `fn.log_subsection()` — feature headers (cyan)
+  - `fn.log_info()` — blue headers with messages
+  - `fn.log_info_concise()` — bare print for path logging (new)
+  - `fn.debug_print()` — `--debug` flag only
+
+### Files Modified
+
+`services.py` • `services_gui.py` • `maintenance.py` • `shell.py` • `functions.py`
+
+### Test Status
+
+- **Services Tab** ✓ — All batch operations implemented, label updates functional, logging patterns applied
+- **Themes/Icons/Themer** ⏳ — Next for M4 testing (code review shows flake8-clean, ready for feature testing)
+- **Remaining Tabs** ⏳ — desktopr, fastfetch, performance, kernel, user, ai, network, software, system, logging, privacy, autostart
+
+### Next Milestone
+
+- Continue M4 Feature Testing: Themes → Icons → Themer → Desktopr → remaining tabs
+- Each tab: launch app, verify all controls work, confirm no crashes or missing functionality
+
+---
+
 ## 2026.05.02 - Code Cleanup Complete: All S/M/L Tasks Done, Ready for M4 Feature Testing
 
 ### What Changed

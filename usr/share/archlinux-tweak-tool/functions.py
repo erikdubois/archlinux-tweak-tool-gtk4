@@ -129,6 +129,11 @@ def log_item(message):
     print(f"{BLUE}[INFO]{RESET} {message}")
 
 
+def log_info_concise(message):
+    """Concise info output (bare print, no color/separators) — use when many lines between operations"""
+    print(message)
+
+
 def log_success(message):
     """Success message (GREEN with separators)"""
     _print_with_separator(message, GREEN)

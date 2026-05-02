@@ -128,6 +128,27 @@ read -p 'Press Enter to close...'
     fn.threading.Thread(target=_launch, daemon=True).start()
 
 
+def check_audio_server(expected):
+    """Verify which audio server is active"""
+    try:
+        result = fn.subprocess.run(
+            ["pactl", "info"],
+            capture_output=True,
+            text=True,
+            timeout=3
+        )
+        if result.returncode == 0:
+            for line in result.stdout.split('\n'):
+                if 'Server Name' in line:
+                    fn.log_info_concise(f"  Active: {line.strip()}")
+                    if expected.lower() in line.lower():
+                        return True
+        return False
+    except Exception as e:
+        fn.debug_print(f"Could not verify audio server: {e}")
+        return None
+
+
 def add_autoconnect_pulseaudio(self):
     if fn.file_check(fn.pulse_default):
         if fn.check_content("load-module module-switch-on-connect\n", fn.pulse_default):
@@ -201,29 +222,33 @@ def restart_smb(self):
 
 def on_click_switch_to_pulseaudio(self, _widget):
     fn.log_subsection("Switch to PulseAudio")
+    if fn.os.path.exists(fn.pacman_lockfile):
+        try:
+            fn.os.remove(fn.pacman_lockfile)
+            fn.log_info_concise("Removed stale pacman lock file")
+        except Exception as e:
+            fn.log_warn(f"Could not remove pacman lock: {e}")
     try:
         if fn.check_package_installed("pipewire-pulse"):
             fn.debug_print("Removing Pipewire packages")
             fn.remove_package_dd(self, "pipewire-pulse")
             fn.remove_package_dd(self, "wireplumber")
 
-        fn.debug_print("Installing PulseAudio packages")
-        fn.install_package(self, "pulseaudio")
-        fn.install_package(self, "pulseaudio-bluetooth")
-        fn.install_package(self, "pulseaudio-alsa")
-        fn.install_package(self, "pavucontrol")
-        fn.install_package(self, "alsa-utils")
-        fn.install_package(self, "alsa-plugins")
-        fn.install_package(self, "alsa-lib")
-        fn.install_package(self, "alsa-firmware")
-        fn.install_package(self, "gstreamer")
-        fn.install_package(self, "gst-plugins-good")
-        fn.install_package(self, "gst-plugins-bad")
-        fn.install_package(self, "gst-plugins-base")
-        fn.install_package(self, "gst-plugins-ugly")
+        fn.debug_print("Installing PulseAudio packages (batch)")
+        packages = (
+            "pulseaudio pulseaudio-bluetooth pulseaudio-alsa pavucontrol "
+            "alsa-utils alsa-plugins alsa-lib alsa-firmware gstreamer "
+            "gst-plugins-good gst-plugins-bad gst-plugins-base gst-plugins-ugly"
+        )
+        fn.launch_pacman_install_in_terminal(packages)
 
         add_autoconnect_pulseaudio(self)
-        fn.log_success("Switched to PulseAudio successfully")
+
+        fn.log_subsection("Verifying PulseAudio installation")
+        if check_audio_server("pulseaudio"):
+            fn.log_success("PulseAudio verified as active")
+        else:
+            fn.log_info_concise("PulseAudio packages installed, may need restart")
 
     except Exception as error:
         fn.log_error(f"Failed to switch to PulseAudio: {error}")
@@ -231,7 +256,12 @@ def on_click_switch_to_pulseaudio(self, _widget):
 
 def on_click_switch_to_pipewire(self, _widget):
     fn.log_subsection("Switch to Pipewire")
-    blueberry_installed = False
+    if fn.os.path.exists(fn.pacman_lockfile):
+        try:
+            fn.os.remove(fn.pacman_lockfile)
+            fn.log_info_concise("Removed stale pacman lock file")
+        except Exception as e:
+            fn.log_warn(f"Could not remove pacman lock: {e}")
 
     try:
         if fn.check_package_installed("pulseaudio"):
@@ -239,25 +269,13 @@ def on_click_switch_to_pipewire(self, _widget):
             fn.remove_package_dd(self, "pulseaudio")
             fn.remove_package_dd(self, "pulseaudio-bluetooth")
 
-        fn.debug_print("Installing Pipewire packages")
-        fn.install_package(self, "pipewire")
-        fn.install_package(self, "pipewire-pulse")
-        fn.install_package(self, "pipewire-alsa")
-
-        fn.install_package(self, "pavucontrol")
-
-        fn.install_package(self, "alsa-utils")
-        fn.install_package(self, "alsa-plugins")
-        fn.install_package(self, "alsa-lib")
-        fn.install_package(self, "alsa-firmware")
-        fn.install_package(self, "gstreamer")
-        fn.install_package(self, "gst-plugins-good")
-        fn.install_package(self, "gst-plugins-bad")
-        fn.install_package(self, "gst-plugins-base")
-        fn.install_package(self, "gst-plugins-ugly")
-
-        if blueberry_installed:
-            fn.install_package(self, "blueberry")
+        fn.debug_print("Installing Pipewire packages (batch)")
+        packages = (
+            "pipewire pipewire-pulse pipewire-alsa pavucontrol "
+            "alsa-utils alsa-plugins alsa-lib alsa-firmware gstreamer "
+            "gst-plugins-good gst-plugins-bad gst-plugins-base gst-plugins-ugly"
+        )
+        fn.launch_pacman_install_in_terminal(packages)
 
         if fn.check_package_installed("pipewire-media-session"):
             fn.debug_print("Configuring wireplumber")
@@ -265,7 +283,11 @@ def on_click_switch_to_pipewire(self, _widget):
             fn.install_package(self, "pipewire-pulse")
             fn.install_package(self, "wireplumber")
 
-        fn.log_success("Switched to Pipewire successfully")
+        fn.log_subsection("Verifying Pipewire installation")
+        if check_audio_server("pipewire"):
+            fn.log_success("Pipewire verified as active")
+        else:
+            fn.log_info_concise("Pipewire packages installed, may need restart")
 
     except Exception as error:
         fn.log_error(f"Failed to switch to Pipewire: {error}")
@@ -274,8 +296,7 @@ def on_click_switch_to_pipewire(self, _widget):
 def on_click_install_bluetooth(self, _widget):
     fn.log_subsection("Install Bluetooth")
     try:
-        fn.install_package(self, "bluez")
-        fn.install_package(self, "bluez-utils")
+        fn.launch_pacman_install_in_terminal("bluez bluez-utils")
         fn.debug_print("Bluetooth packages installed")
         if fn.check_package_installed("bluez"):
             self.enable_bt.set_sensitive(True)
@@ -291,8 +312,7 @@ def on_click_install_bluetooth(self, _widget):
 def on_click_remove_bluetooth(self, _widget):
     fn.log_subsection("Remove Bluetooth")
     try:
-        fn.remove_package_dd(self, "bluez")
-        fn.remove_package_dd(self, "bluez-utils")
+        fn.launch_pacman_remove_in_terminal("bluez bluez-utils")
         fn.debug_print("Bluetooth packages removed")
         if not fn.check_package_installed("bluez"):
             self.enable_bt.set_sensitive(False)
@@ -308,7 +328,7 @@ def on_click_remove_bluetooth(self, _widget):
 def on_click_install_blueberry(self, _widget):
     fn.log_subsection("Install Blueberry")
     try:
-        fn.install_package(self, "blueberry")
+        fn.launch_pacman_install_in_terminal("blueberry")
         fn.log_success("Blueberry installed")
     except Exception as error:
         fn.log_error(f"Failed to install blueberry: {error}")
@@ -317,7 +337,7 @@ def on_click_install_blueberry(self, _widget):
 def on_click_remove_blueberry(self, _widget):
     fn.log_subsection("Remove Blueberry")
     try:
-        fn.remove_package(self, "blueberry")
+        fn.launch_pacman_remove_in_terminal("blueberry")
         fn.log_success("Blueberry removed")
     except Exception as error:
         fn.log_error(f"Failed to remove blueberry: {error}")
@@ -326,7 +346,7 @@ def on_click_remove_blueberry(self, _widget):
 def on_click_install_blueman(self, _widget):
     fn.log_subsection("Install Blueman")
     try:
-        fn.install_package(self, "blueman")
+        fn.launch_pacman_install_in_terminal("blueman")
         fn.log_success("Blueman installed")
     except Exception as error:
         fn.log_error(f"Failed to install blueman: {error}")
@@ -335,7 +355,7 @@ def on_click_install_blueman(self, _widget):
 def on_click_remove_blueman(self, _widget):
     fn.log_subsection("Remove Blueman")
     try:
-        fn.remove_package(self, "blueman")
+        fn.launch_pacman_remove_in_terminal("blueman")
         fn.log_success("Blueman removed")
     except Exception as error:
         fn.log_error(f"Failed to remove blueman: {error}")
@@ -344,7 +364,7 @@ def on_click_remove_blueman(self, _widget):
 def on_click_install_bluedevil(self, _widget):
     fn.log_subsection("Install Bluedevil")
     try:
-        fn.install_package(self, "bluedevil")
+        fn.launch_pacman_install_in_terminal("bluedevil")
         fn.log_success("Bluedevil installed")
     except Exception as error:
         fn.log_error(f"Failed to install bluedevil: {error}")
@@ -353,7 +373,7 @@ def on_click_install_bluedevil(self, _widget):
 def on_click_remove_bluedevil(self, _widget):
     fn.log_subsection("Remove Bluedevil")
     try:
-        fn.remove_package_s(self, "bluedevil")
+        fn.launch_pacman_remove_in_terminal("bluedevil")
         fn.log_success("Bluedevil removed")
     except Exception as error:
         fn.log_error(f"Failed to remove bluedevil: {error}")
@@ -392,7 +412,7 @@ def on_click_restart_bluetooth(self, _widget):
 def on_click_install_cups(self, _widget):
     fn.log_subsection("Install CUPS")
     try:
-        fn.install_package(self, "cups")
+        fn.launch_pacman_install_in_terminal("cups")
         fn.log_success("CUPS installed")
     except Exception as error:
         fn.log_error(f"Failed to install CUPS: {error}")
@@ -401,7 +421,7 @@ def on_click_install_cups(self, _widget):
 def on_click_remove_cups(self, _widget):
     fn.log_subsection("Remove CUPS")
     try:
-        fn.remove_package(self, "cups")
+        fn.launch_pacman_remove_in_terminal("cups cups-filters")
         fn.log_success("CUPS removed")
     except Exception as error:
         fn.log_error(f"Failed to remove CUPS: {error}")
@@ -409,20 +429,36 @@ def on_click_remove_cups(self, _widget):
 
 def on_click_install_cups_pdf(self, _widget):
     fn.log_subsection("Install CUPS PDF")
-    try:
-        fn.install_package(self, "cups-pdf")
-        fn.log_success("CUPS PDF printer installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install CUPS PDF: {error}")
+
+    def wait_and_update():
+        fn.launch_pacman_install_in_terminal("cups-pdf")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("cups-pdf"):
+            GLib.idle_add(
+                self.cups_pdf_label.set_markup,
+                "Cups-pdf is <b>installed</b>"
+            )
+            GLib.idle_add(fn.log_success, "CUPS PDF printer installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_cups_pdf(self, _widget):
     fn.log_subsection("Remove CUPS PDF")
-    try:
-        fn.remove_package(self, "cups-pdf")
-        fn.log_success("CUPS PDF printer removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove CUPS PDF: {error}")
+
+    def wait_and_update():
+        fn.launch_pacman_remove_in_terminal("cups-pdf")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("cups-pdf"):
+            GLib.idle_add(
+                self.cups_pdf_label.set_markup,
+                "Install cups-pdf printing"
+            )
+            GLib.idle_add(fn.log_success, "CUPS PDF printer removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_enable_cups(self, _widget):
@@ -454,72 +490,116 @@ def on_click_restart_cups(self, _widget):
 
 def on_click_install_printer_drivers(self, _widget):
     fn.log_subsection("Install Printer Drivers")
-    try:
-        packages = [
-            "foomatic-db-engine", "foomatic-db", "foomatic-db-ppds",
-            "foomatic-db-nonfree", "foomatic-db-nonfree-ppds",
-            "gutenprint", "foomatic-db-gutenprint-ppds",
-            "ghostscript", "gsfonts"
-        ]
-        for package in packages:
-            fn.install_package(self, package)
-        fn.debug_print(f"Installed {len(packages)} printer driver packages")
-        fn.log_success("Printer drivers installed successfully")
-    except Exception as error:
-        fn.log_error(f"Failed to install printer drivers: {error}")
+
+    def wait_and_update():
+        packages = (
+            "foomatic-db-engine foomatic-db foomatic-db-ppds "
+            "foomatic-db-nonfree foomatic-db-nonfree-ppds "
+            "gutenprint foomatic-db-gutenprint-ppds ghostscript gsfonts"
+        )
+        fn.launch_pacman_install_in_terminal(packages)
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("foomatic-db"):
+            GLib.idle_add(
+                self.printer_drivers_label.set_markup,
+                "   Install common printer drivers (foomatic, gutenprint, ...) - <b>Installed</b>"
+            )
+            GLib.idle_add(fn.log_success, "Printer drivers installed successfully")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_printer_drivers(self, _widget):
     fn.log_subsection("Remove Printer Drivers")
-    try:
-        packages = [
-            "foomatic-db-engine", "foomatic-db", "foomatic-db-ppds",
-            "foomatic-db-nonfree", "foomatic-db-nonfree-ppds",
-            "gutenprint", "foomatic-db-gutenprint-ppds",
-            "ghostscript", "gsfonts"
-        ]
-        for package in packages:
-            fn.remove_package(self, package)
-        fn.debug_print(f"Removed {len(packages)} printer driver packages")
-        fn.log_success("Printer drivers removed successfully")
-    except Exception as error:
-        fn.log_error(f"Failed to remove printer drivers: {error}")
+
+    def wait_and_update():
+        packages = (
+            "foomatic-db-engine foomatic-db foomatic-db-ppds "
+            "foomatic-db-nonfree foomatic-db-nonfree-ppds "
+            "gutenprint foomatic-db-gutenprint-ppds ghostscript gsfonts"
+        )
+        fn.launch_pacman_remove_in_terminal(packages)
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("foomatic-db"):
+            GLib.idle_add(
+                self.printer_drivers_label.set_markup,
+                "   Install common printer drivers (foomatic, gutenprint, ...)"
+            )
+            GLib.idle_add(fn.log_success, "Printer drivers removed successfully")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_install_hplip(self, _widget):
     fn.log_subsection("Install HPLIP")
-    try:
-        fn.install_package(self, "hplip")
-        fn.log_success("HPLIP installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install HPLIP: {error}")
+
+    def wait_and_update():
+        fn.launch_pacman_install_in_terminal("hplip")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("hplip"):
+            GLib.idle_add(
+                self.hplip_label.set_markup,
+                "   HP drivers have been <b>installed</b>"
+            )
+            GLib.idle_add(fn.log_success, "HPLIP installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_hplip(self, _widget):
     fn.log_subsection("Remove HPLIP")
-    try:
-        fn.remove_package(self, "hplip")
-        fn.log_success("HPLIP removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove HPLIP: {error}")
+
+    def wait_and_update():
+        fn.launch_pacman_remove_in_terminal("hplip")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("hplip"):
+            GLib.idle_add(
+                self.hplip_label.set_markup,
+                "   Install HP drivers"
+            )
+            GLib.idle_add(fn.log_success, "HPLIP removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_install_system_config_printer(self, _widget):
     fn.log_subsection("Install System Config Printer")
-    try:
-        fn.install_package(self, "system-config-printer")
-        fn.log_success("System Config Printer installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install system-config-printer: {error}")
+    fn.show_in_app_notification(self, "Installing System-config-printer...")
+
+    def wait_and_update():
+        fn.launch_pacman_install_in_terminal("system-config-printer")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("system-config-printer"):
+            GLib.idle_add(
+                self.system_config_printer_label.set_markup,
+                "Install System-config-printer - <b>Installed</b>"
+            )
+            GLib.idle_add(fn.log_success, "System Config Printer installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_system_config_printer(self, _widget):
     fn.log_subsection("Remove System Config Printer")
-    try:
-        fn.remove_package(self, "system-config-printer")
-        fn.log_success("System Config Printer removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove system-config-printer: {error}")
+    fn.show_in_app_notification(self, "Removing System-config-printer...")
+
+    def wait_and_update():
+        fn.launch_pacman_remove_in_terminal("system-config-printer")
+        fn.debug_print("Waiting for terminal to close...")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("system-config-printer"):
+            GLib.idle_add(
+                self.system_config_printer_label.set_markup,
+                "Install System-config-printer"
+            )
+            GLib.idle_add(fn.log_success, "System Config Printer removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def update_network_status(self):

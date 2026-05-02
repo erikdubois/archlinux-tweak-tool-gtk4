@@ -65,8 +65,8 @@ def on_install_att_bashrc_clicked(self, _widget):
     try:
         if fn.path.isfile(fn.bashrc_kiro):
             fn.shutil.copy(fn.bashrc_kiro, fn.bash_config)
-            print(f"  From: {fn.bashrc_kiro}")
-            print(f"  To:   {fn.bash_config}")
+            fn.log_info_concise(f"  From: {fn.bashrc_kiro}")
+            fn.log_info_concise(f"  To:   {fn.bash_config}")
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.bashrc")
             fn.debug_print(f"  Perms  : permissions set on {fn.bash_config}")
@@ -90,8 +90,8 @@ def on_bash_reset_clicked(self, _widget):
     try:
         if fn.path.isfile(backup):
             fn.shutil.copy(backup, fn.bash_config)
-            print(f"  From: {backup}")
-            print(f"  To:   {fn.bash_config}")
+            fn.log_info_concise(f"  From: {backup}")
+            fn.log_info_concise(f"  To:   {fn.bash_config}")
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.bashrc")
             fn.debug_print(f"  Perms  : permissions set on {fn.bash_config}")

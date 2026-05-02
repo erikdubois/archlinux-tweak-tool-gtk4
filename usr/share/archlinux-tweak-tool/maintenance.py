@@ -406,6 +406,12 @@ def set_global_cursor(self, cursor):
         fn.debug_print(f"[WARNING] Failed cursor targets: {', '.join(failed)}")
     fn.debug_print("=" * 70)
 
+    fn.log_info_concise(f"Cursor theme '{cursor}' applied to:")
+    for target in changed:
+        fn.log_info_concise(f"  ✓ {target}")
+    if failed:
+        fn.log_info_concise(f"Failed targets: {', '.join(failed)}")
+
     if changed:
         GLib.idle_add(
             fn.show_in_app_notification,
@@ -682,6 +688,8 @@ def on_click_fix_pacman_gpg_conf(self, _widget):
     fn.log_subsection("Resetting gpg.conf...")
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_path = base_dir + "/data/gpg.conf"
+    fn.log_info_concise(f"  From: {gpg_conf_path}")
+    fn.log_info_concise(f"  To:   {fn.gpg_conf}")
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
         fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
         fn.log_info(f"Backup created: {fn.gpg_conf}.bak")
@@ -719,6 +727,8 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_local_path = base_dir + "/data/gpg.conf"
+    fn.log_info_concise(f"  From: {gpg_conf_local_path}")
+    fn.log_info_concise(f"  To:   {fn.gpg_conf_local}")
     fn.debug_print(f"Restoring from: {gpg_conf_local_path}")
     try:
         fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)

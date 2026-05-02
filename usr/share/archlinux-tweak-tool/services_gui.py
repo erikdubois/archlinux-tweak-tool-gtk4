@@ -61,7 +61,7 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     btn_install_cups.connect("clicked", functools.partial(services.on_click_install_cups, self))
     btn_remove_cups = Gtk.Button(label="Remove cups")
     btn_remove_cups.connect("clicked", functools.partial(services.on_click_remove_cups, self))
-    hbox8_label.set_margin_start(10)
+    hbox8_label.set_margin_start(20)
     hbox8_label.set_margin_end(10)
     hbox8_label.set_hexpand(True)
     hbox8.append(hbox8_label)
@@ -73,19 +73,19 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     hbox8.append(btn_remove_cups)  # pack_end
 
     hbox20 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox20_label = Gtk.Label(xalign=0)
+    self.cups_pdf_label = Gtk.Label(xalign=0)
     if fn.check_package_installed("cups-pdf"):
-        hbox20_label.set_markup("Cups-pdf is <b>installed</b>")
+        self.cups_pdf_label.set_markup("Cups-pdf is <b>installed</b>")
     else:
-        hbox20_label.set_markup("Install cups-pdf printing")
+        self.cups_pdf_label.set_markup("Install cups-pdf printing")
     btn_install_cups_pdf = Gtk.Button(label="Install cups-pdf")
     btn_install_cups_pdf.connect("clicked", functools.partial(services.on_click_install_cups_pdf, self))
     btn_remove_cups_pdf = Gtk.Button(label="Remove cups-pdf")
     btn_remove_cups_pdf.connect("clicked", functools.partial(services.on_click_remove_cups_pdf, self))
-    hbox20_label.set_margin_start(10)
-    hbox20_label.set_margin_end(10)
-    hbox20_label.set_hexpand(True)
-    hbox20.append(hbox20_label)
+    self.cups_pdf_label.set_margin_start(20)
+    self.cups_pdf_label.set_margin_end(10)
+    self.cups_pdf_label.set_hexpand(True)
+    hbox20.append(self.cups_pdf_label)
     btn_install_cups_pdf.set_margin_start(10)
     btn_install_cups_pdf.set_margin_end(10)
     hbox20.append(btn_install_cups_pdf)  # pack_end
@@ -93,21 +93,14 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     btn_remove_cups_pdf.set_margin_end(10)
     hbox20.append(btn_remove_cups_pdf)  # pack_end
 
-    hbox26 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox26_label = Gtk.Label(xalign=0)
-    hbox26_label.set_markup("Install drivers")
-    hbox26_label.set_margin_start(10)
-    hbox26_label.set_margin_end(10)
-    hbox26.append(hbox26_label)
-
     hbox27 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox27_label = Gtk.Label(xalign=0)
+    self.printer_drivers_label = Gtk.Label(xalign=0)
     if fn.check_package_installed("foomatic-db"):
-        hbox27_label.set_markup(
+        self.printer_drivers_label.set_markup(
             "   Install common printer drivers (foomatic, gutenprint, ...) - <b>Installed</b>"
         )
     else:
-        hbox27_label.set_markup(
+        self.printer_drivers_label.set_markup(
             "   Install common printer drivers (foomatic, gutenprint, ...)"
         )
     btn_install_printer_drivers = Gtk.Button(label="Install drivers")
@@ -116,10 +109,10 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     )
     btn_remove_printer_drivers = Gtk.Button(label="Remove drivers")
     btn_remove_printer_drivers.connect("clicked", functools.partial(services.on_click_remove_printer_drivers, self))
-    hbox27_label.set_margin_start(10)
-    hbox27_label.set_margin_end(10)
-    hbox27_label.set_hexpand(True)
-    hbox27.append(hbox27_label)
+    self.printer_drivers_label.set_margin_start(10)
+    self.printer_drivers_label.set_margin_end(10)
+    self.printer_drivers_label.set_hexpand(True)
+    hbox27.append(self.printer_drivers_label)
     btn_install_printer_drivers.set_margin_start(10)
     btn_install_printer_drivers.set_margin_end(10)
     hbox27.append(btn_install_printer_drivers)  # pack_end
@@ -128,19 +121,19 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     hbox27.append(btn_remove_printer_drivers)  # pack_end
 
     hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox21_label = Gtk.Label(xalign=0)
+    self.hplip_label = Gtk.Label(xalign=0)
     if fn.check_package_installed("hplip"):
-        hbox21_label.set_markup("   HP drivers have been <b>installed</b>")
+        self.hplip_label.set_markup("   HP drivers have been <b>installed</b>")
     else:
-        hbox21_label.set_markup("   Install HP drivers")
+        self.hplip_label.set_markup("   Install HP drivers")
     btn_install_hplip = Gtk.Button(label="Install hplip")
     btn_install_hplip.connect("clicked", functools.partial(services.on_click_install_hplip, self))
     btn_remove_hplip = Gtk.Button(label="Uninstall hplip")
     btn_remove_hplip.connect("clicked", functools.partial(services.on_click_remove_hplip, self))
-    hbox21_label.set_margin_start(10)
-    hbox21_label.set_margin_end(10)
-    hbox21_label.set_hexpand(True)
-    hbox21.append(hbox21_label)
+    self.hplip_label.set_margin_start(10)
+    self.hplip_label.set_margin_end(10)
+    self.hplip_label.set_hexpand(True)
+    hbox21.append(self.hplip_label)
     btn_install_hplip.set_margin_start(10)
     btn_install_hplip.set_margin_end(10)
     hbox21.append(btn_install_hplip)  # pack_end
@@ -148,15 +141,15 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     btn_remove_hplip.set_margin_end(10)
     hbox21.append(btn_remove_hplip)  # pack_end
 
-    hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox22_label = Gtk.Label(xalign=0)
+    hbox23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.system_config_printer_label = Gtk.Label(xalign=0)
     if fn.check_package_installed("system-config-printer"):
-        hbox22_label.set_markup(
-            "Install configuration tool for cups \nLaunch the app and add your printer  - <b>Installed</b>"
+        self.system_config_printer_label.set_markup(
+            "Install system-config-printer - <b>Installed</b>"
         )
     else:
-        hbox22_label.set_markup(
-            "Install configuration tool for cups \n(launch the app and add your printer)"
+        self.system_config_printer_label.set_markup(
+            "Install system-config-printer"
         )
     btn_install_system_config_printer = Gtk.Button(
         label="Install system-config-printer"
@@ -168,16 +161,43 @@ There are also printer specific pages. Lastly the AUR might contain the driver y
     btn_remove_system_config_printer.connect(
         "clicked", functools.partial(services.on_click_remove_system_config_printer, self)
     )
-    hbox22_label.set_margin_start(10)
-    hbox22_label.set_margin_end(10)
-    hbox22_label.set_hexpand(True)
-    hbox22.append(hbox22_label)
+    self.system_config_printer_label.set_margin_start(10)
+    self.system_config_printer_label.set_margin_end(10)
+    self.system_config_printer_label.set_hexpand(True)
+    hbox23.append(self.system_config_printer_label)
     btn_install_system_config_printer.set_margin_start(10)
     btn_install_system_config_printer.set_margin_end(10)
-    hbox22.append(btn_install_system_config_printer)  # pack_end
+    hbox23.append(btn_install_system_config_printer)
     btn_remove_system_config_printer.set_margin_start(10)
     btn_remove_system_config_printer.set_margin_end(10)
-    hbox22.append(btn_remove_system_config_printer)  # pack_end
+    hbox23.append(btn_remove_system_config_printer)
+
+    hbox_cups_service_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_cups_service_title_lbl = Gtk.Label(xalign=0)
+    hbox_cups_service_title_lbl.set_markup("<b>CUPS Service</b>")
+    hbox_cups_service_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_cups_service_title_sep.set_hexpand(True)
+    hbox_cups_service_title_sep.set_valign(Gtk.Align.CENTER)
+    hbox_cups_service_title.append(hbox_cups_service_title_lbl)
+    hbox_cups_service_title.append(hbox_cups_service_title_sep)
+
+    hbox_drivers_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_drivers_title_lbl = Gtk.Label(xalign=0)
+    hbox_drivers_title_lbl.set_markup("<b>Printer Drivers</b>")
+    hbox_drivers_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_drivers_title_sep.set_hexpand(True)
+    hbox_drivers_title_sep.set_valign(Gtk.Align.CENTER)
+    hbox_drivers_title.append(hbox_drivers_title_lbl)
+    hbox_drivers_title.append(hbox_drivers_title_sep)
+
+    hbox_tools_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_tools_title_lbl = Gtk.Label(xalign=0)
+    hbox_tools_title_lbl.set_markup("<b>Tools</b>")
+    hbox_tools_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_tools_title_sep.set_hexpand(True)
+    hbox_tools_title_sep.set_valign(Gtk.Align.CENTER)
+    hbox_tools_title.append(hbox_tools_title_lbl)
+    hbox_tools_title.append(hbox_tools_title_sep)
 
     # at bottom of page
     hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -437,20 +457,28 @@ Report them if that is the case"
     hbox15.set_margin_start(10)
     hbox15.set_margin_end(10)
     vboxstack3.append(hbox15)
+    hbox_cups_service_title.set_margin_start(10)
+    hbox_cups_service_title.set_margin_end(10)
+    vboxstack3.append(hbox_cups_service_title)
     vboxstack3.append(hbox8)
     vboxstack3.append(hbox20)
-    vboxstack3.append(hbox26)
+    hbox_drivers_title.set_margin_start(10)
+    hbox_drivers_title.set_margin_end(10)
+    vboxstack3.append(hbox_drivers_title)
     vboxstack3.append(hbox27)
     vboxstack3.append(hbox21)
-    hbox22.set_margin_start(10)
-    hbox22.set_margin_end(10)
-    vboxstack3.append(hbox22)
-    hbox31.set_margin_start(10)
-    hbox31.set_margin_end(10)
-    vboxstack3.append(hbox31)  # pack_end
+    hbox_tools_title.set_margin_start(10)
+    hbox_tools_title.set_margin_end(10)
+    vboxstack3.append(hbox_tools_title)
+    hbox23.set_margin_start(10)
+    hbox23.set_margin_end(10)
+    vboxstack3.append(hbox23)
     hbox29.set_margin_start(10)
     hbox29.set_margin_end(10)
     vboxstack3.append(hbox29)  # pack_end
+    hbox31.set_margin_start(10)
+    hbox31.set_margin_end(10)
+    vboxstack3.append(hbox31)  # pack_end
 
     # audio
     hbox40.set_margin_start(10)
