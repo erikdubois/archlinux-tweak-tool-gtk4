@@ -508,6 +508,7 @@ def on_sddm_thumb_clicked(self, _widget, path):
 def on_click_sddm_apply(self, _widget=None):
     """Apply SDDM settings from UI widgets"""
     import functions_sddm as _fs
+    fn.log_subsection("Applying SDDM Settings")
     fn.debug_print("Running setup_sddm_config() from functions_sddm.py")
     _fs.setup_sddm_config(self, sys.modules["sddm"])
     try:
@@ -518,8 +519,17 @@ def on_click_sddm_apply(self, _widget=None):
 
         lines = get_sddm_lines(fn.sddm_default_d2)
         if lines:
+            fn.debug_print(f"[DEBUG] Found {len(lines)} lines in config file")
             current_user = fn.os.getenv("SUDO_USER") or fn.os.getenv("USER")
+            fn.debug_print(f"[DEBUG] Current user: {current_user}")
             set_sddm_value(self, lines, current_user, session, autologin_state, theme, cursor)
+            print(f"  Session:  {session or 'default'}")
+            print(f"  Theme:    {theme or 'default'}")
+            print(f"  Cursor:   {cursor or 'default'}")
+            print(f"  Autologin: {'enabled' if autologin_state else 'disabled'}")
+            print(f"  Saved to: {fn.sddm_default_d2}")
+            fn.debug_print("[DEBUG] Config file written successfully")
+            fn.log_success("SDDM settings applied successfully")
             fn.show_in_app_notification(self, "SDDM settings applied successfully")
         else:
             fn.messagebox(self, "Error", "Could not read SDDM configuration")
@@ -555,6 +565,7 @@ def on_click_sddm_enable(self, _widget=None):
 
 
 def on_set_sddm_wallpaper(self, _widget=None):
+    fn.log_subsection("Applying SDDM Wallpaper")
     simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
     simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
     dest = simplicity_images + "/background.jpg"
@@ -572,10 +583,16 @@ def on_set_sddm_wallpaper(self, _widget=None):
     try:
         if fn.path.isfile(dest) and not fn.path.isfile(dest_bak):
             fn.shutil.copy(dest, dest_bak)
+            fn.debug_print("[DEBUG] Backup created: " + dest_bak)
         pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
         pixbuf.savev(dest, "jpeg", [], [])
         with open(simplicity_conf, "w", encoding="utf-8") as f:
             f.write("[General]\nbackground=images/background.jpg\n")
+        print(f"  Source: {path}")
+        print(f"  Destination: {dest}")
+        print("  Theme: edu-simplicity")
+        fn.debug_print("[DEBUG] Wallpaper saved and theme config updated")
+        fn.log_success("Simplicity wallpaper applied")
         fn.show_in_app_notification(self, "Simplicity wallpaper applied")
     except Exception as error:
         fn.log_error(str(error))
@@ -583,6 +600,7 @@ def on_set_sddm_wallpaper(self, _widget=None):
 
 
 def on_restore_sddm_wallpaper(self, _widget=None):
+    fn.log_subsection("Restoring Default SDDM Wallpaper")
     simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
     simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
     dest = simplicity_images + "/background.jpg"
@@ -604,6 +622,10 @@ def on_restore_sddm_wallpaper(self, _widget=None):
         self.sddm_wallpaper_preview.set_filename(dest)
         self.sddm_wallpaper_preview.get_parent().set_visible(True)
         self.login_wallpaper_path = ""
+        print(f"  Restored from: {dest_bak}")
+        print(f"  Destination: {dest}")
+        fn.debug_print("[DEBUG] Backup restored and theme config updated")
+        fn.log_success("Default wallpaper restored")
         fn.show_in_app_notification(self, "Default wallpaper restored")
     except Exception as error:
         fn.log_error(str(error))
