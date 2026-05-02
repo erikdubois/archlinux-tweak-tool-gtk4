@@ -679,12 +679,13 @@ def uninstall_desktop(self, desktop):
     log_path = log_file.name
     log_file.close()
 
-    pacman_flag = "-Rdd" if desktop == "plasma" else "-Rs"
+    pacman_flag = "-Rdd" if desktop in ("plasma", "xfce") else "-Rs"
     warning_msg = ""
     confirm_prompt = ""
-    if desktop == "plasma":
+    if desktop in ("plasma", "xfce"):
+        desktop_name = "Plasma" if desktop == "plasma" else "XFCE"
         warning_msg = (
-            "echo 'WARNING: Using force removal (-Rdd) for plasma packages' && echo '' && "
+            f"echo 'WARNING: Using force removal (-Rdd) for {desktop_name} packages' && echo '' && "
             "echo 'This will remove packages even if other system utilities depend on them' && echo '' && "
         )
         confirm_prompt = (
