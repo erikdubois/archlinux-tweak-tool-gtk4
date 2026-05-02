@@ -23,8 +23,8 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 
-from os import rmdir, unlink, walk, execl, getpid, system, stat, readlink
-from os import path, getlogin, mkdir, makedirs, listdir
+from os import unlink, execl, mkdir, makedirs, listdir, getpid, stat  # noqa: F401
+from os import path, getlogin, system, readlink  # noqa: F401
 from distro import id
 import os
 from gi.repository import GLib, Gtk
@@ -36,10 +36,8 @@ import datetime
 import subprocess
 import logging
 import time
-from queue import Queue
 import pwd
-import sys
-import subprocess
+from queue import Queue  # noqa: F401
 
 # Debug flag - set by archlinux-tweak-tool when --debug flag is used
 DEBUG = False

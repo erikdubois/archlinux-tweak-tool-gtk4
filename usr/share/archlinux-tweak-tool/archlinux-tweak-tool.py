@@ -8,13 +8,9 @@
 
 import splash
 import os
-import subprocess
 import signal
-import datetime
 import time
 import functions as fn
-import desktopr_gui
-import utilities
 import gi
 
 # Heavy modules are imported lazily in `_finish_startup_init()` so the window can
@@ -38,7 +34,7 @@ call = None
 fastfetch_gui = None
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, GdkPixbuf, Gtk, Pango, GLib, Gio
+from gi.repository import Gdk, GdkPixbuf, Gtk, Pango, GLib
 
 # suppress harmless D-Bus session bus warning when running via pkexec
 
@@ -57,7 +53,6 @@ def _log_writer(_level, fields, _n_fields, _user_data):
 
 
 GLib.log_set_writer_func(_log_writer, None)
-from os import readlink
 
 
 base_dir = fn.path.dirname(fn.path.realpath(__file__))
@@ -135,7 +130,7 @@ class Main(Gtk.ApplicationWindow):
         Runs after the window has had a chance to present itself.
         """
         global zsh_theme, user, themer, settings, services, sddm
-        global pacman_functions, fastfetch, maintenance, gui, icons, themes, att
+        global pacman_functions, fastfetch, maintenance, gui, icons, themes
         global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
         global functions_makedir, functions_backup, functions_startup
 

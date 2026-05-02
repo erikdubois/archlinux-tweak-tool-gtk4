@@ -40,7 +40,6 @@ if fn.distr:
     awesome = [
         "alacritty",
         "edu-awesome-git",
-        "autorandr",
         "awesome",
         "dmenu",
         "edu-xfce-git",
@@ -128,13 +127,56 @@ if fn.distr:
         "xfce4-terminal",
     ]
     gnome = [
-        "dconf-editor",
-        "extension-manager",
-        "file-roller",
         "gnome",
         "gnome-tweaks",
-        "guake",
         "ttf-hack",
+    ]
+    gnome_removal = [
+        "gnome-session",
+        "gnome-shell",
+        "gdm",
+        "gnome-settings-daemon",
+        "gnome-desktop-4",
+        "gnome-tweaks",
+        "gnome-bluetooth-3.0",
+        "decibels",
+        "epiphany",
+        "gdm",
+        "gnome-backgrounds",
+        "gnome-calculator",
+        "gnome-calendar",
+        "gnome-characters",
+        "gnome-clocks",
+        "gnome-color-manager",
+        "gnome-connections",
+        "gnome-console",
+        "gnome-contacts",
+        "gnome-control-center",
+        "gnome-font-viewer",
+        "gnome-logs",
+        "gnome-maps",
+        "gnome-music",
+        "gnome-remote-desktop",
+        "gnome-system-monitor",
+        "gnome-text-editor",
+        "gnome-tour",
+        "gnome-user-docs",
+        "gnome-user-share",
+        "gnome-weather",
+        "grilo-plugins",
+        "gst-thumbnailers",
+        "loupe",
+        "malcontent",
+        "nautilus",
+        "orca",
+        "papers",
+        "rygel",
+        "showtime",
+        "snapshot",
+        "sushi",
+        "tecla",
+        "xdg-desktop-portal-gnome",
+        "yelp",
     ]
     i3 = [
         "alacritty",
@@ -150,7 +192,6 @@ if fn.distr:
         "i3-wm",
         "i3status",
         "lxappearance",
-        "nitrogen",
         "picom-git",
         "polkit-gnome",
         "rofi",
@@ -227,28 +268,8 @@ if fn.distr:
     plasma = [
         "plasma",
         "kde-system-meta",
-        "ark",
-        "breeze",
-        "cryfs",
-        "discover",
-        "dolphin",
-        "dolphin-plugins",
-        "encfs",
-        "ffmpegthumbs",
-        "gocryptfs",
-        "gwenview",
-        "kate",
-        "kde-gtk-config",
-        "kdeconnect",
-        "kdenetwork-filesharing",
-        "ktorrent",
-        "ocs-url",
-        "okular",
-        "packagekit-qt6",
-        "partitionmanager",
-        "spectacle",
-        "surfn-plasma-dark-icons-git",
-        "yakuake",
+        "edu-plasma-keybindings-git",
+        "edu-plasma-servicemenus-git",
     ]
     qtile = [
         "alacritty",
@@ -275,11 +296,13 @@ if fn.distr:
         "xfce4-terminal",
     ]
     xfce = [
-        "alacritty",
-        "edu-xfce-git",
         "xfce4",
         "xfce4-goodies",
+        "xfce4-panel-compiz",
         "catfish",
+        "libxfce4ui",
+        "alacritty",
+        "edu-xfce-git",
         "dmenu",
         "mugshot",
         "polkit-gnome",
@@ -292,19 +315,22 @@ def check_desktop(desktop):
     # /usr/share/xsessions/xfce.desktop
     if os.path.exists("/usr/share/xsessions"):
         lst = fn.listdir("/usr/share/xsessions/")
+        fn.debug_print(f"[check_desktop] Files in /usr/share/xsessions/: {lst}")
         for xsession in lst:
             if desktop + ".desktop" == xsession:
                 return True
     if os.path.exists("/usr/share/wayland-sessions"):
         lst = fn.listdir("/usr/share/wayland-sessions/")
+        fn.debug_print(f"[check_desktop] Files in /usr/share/wayland-sessions/: {lst}")
         for wsession in lst:
             if desktop + ".desktop" == wsession:
                 return True
 
+    fn.debug_print(f"[check_desktop] Desktop '{desktop}' not found. Looking for: {desktop}.desktop")
     return False
 
 
-def check_lock(self, desktop, state):
+def check_lock(self, desktop):
     """check pacman lock"""
     if fn.path.isfile("/var/lib/pacman/db.lck"):
         mess_dialog = Gtk.MessageDialog(
@@ -333,13 +359,13 @@ def check_lock(self, desktop, state):
             fn.unlink("/var/lib/pacman/db.lck")
             t1 = fn.threading.Thread(
                 target=install_desktop,
-                args=(self, fn.get_combo_text(self.d_combo), state),
+                args=(self, fn.get_combo_text(self.d_combo)),
             )
             t1.daemon = True
             t1.start()
     else:
         t1 = fn.threading.Thread(
-            target=install_desktop, args=(self, fn.get_combo_text(self.d_combo), state)
+            target=install_desktop, args=(self, fn.get_combo_text(self.d_combo))
         )
         t1.daemon = True
         t1.start()
@@ -353,16 +379,18 @@ def check_package_and_remove(self, package):
         fn.remove_package(self, package)
 
 
-def install_desktop(self, desktop, state):
+def install_desktop(self, desktop):
+    fn.log_section(f"Installing {desktop} desktop")
+    fn.show_in_app_notification(self, f"Opening terminal for {desktop} installation...")
+
     src = []
     twm = False
-    # error = False
-    # make backup of your .config
     now = datetime.datetime.now()
+    fn.log_info("Backing up ~/.config to ~/.config-att/")
+
     if not fn.path.exists(fn.home + "/.config-att"):
         fn.makedirs(fn.home + "/.config-att")
         fn.permissions(fn.home + "/.config-att")
-    # for all users that have now root permissions
     if fn.path.exists(fn.home + "/.config-att"):
         fn.permissions(fn.home + "/.config-att")
     fn.copy_func(
@@ -425,187 +453,289 @@ def install_desktop(self, desktop, state):
         src.append("/etc/skel/.config/qtile")
         twm = True
     elif desktop == "xfce":
-        check_package_and_remove(self, "edu-xfce-git")
         command = xfce + default_app
 
-    GLib.idle_add(self.desktopr_prog.set_fraction, 0.2)
+    fn.log_subsection(f"Installing {len(command)} packages")
+    fn.debug_print("Packages to install: " + str(command))
 
-    timeout_id = None
-    timeout_id = GLib.timeout_add(100, fn.do_pulse, None, self.desktopr_prog)
-    fn.debug_print("----------------------------------------------------------------")
-    fn.debug_print("Packages list to install")
-    fn.debug_print("----------------------------------------------------------------")
-    fn.debug_print(command)
-    fn.debug_print("----------------------------------------------------------------")
+    import tempfile
+    log_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.log', delete=False)
+    log_path = log_file.name
+    log_file.close()
 
-    if state == "reinst":
-        com1 = pkexec_reinstall
-        if self.ch1.get_active():
-            GLib.idle_add(self.desktopr_stat.set_text, "Clearing cache .....")
-            fn.subprocess.call(
-                ["sh", "-c", "yes | pkexec pacman -Scc"],
-                shell=False,
-                stdout=fn.subprocess.PIPE,
-            )
-    else:
-        com1 = pkexec
+    package_list = "\n".join([f"  • {pkg}" for pkg in command])
+    cache_clear = ""
+    if self.ch1.get_active():
+        cache_clear = "echo 'Clearing package cache...' && yes | pkexec pacman -Scc && echo '' && "
 
-    GLib.idle_add(
-        self.desktopr_stat.set_text,
-        "Installing " + fn.get_combo_text(self.d_combo) + "...",
+    install_cmd = (
+        f"( "
+        f"echo 'Installing {desktop} desktop' && "
+        f"echo '' && "
+        f"echo 'The following packages will be installed:' && "
+        f"echo '{package_list}' && "
+        f"echo '' && "
+        f"{cache_clear}"
+        f"read -p 'Press Enter to begin installation... ' && "
+        f"echo '' && "
+        f"pkexec pacman -S {' '.join(command)} --needed --noconfirm --ask=4 && "
+        f"echo '' && "
+        f"echo '=== Installation Complete ===' && "
+        f"read -p 'Press Enter to close...' "
+        f") 2>&1 | tee {log_path}"
     )
 
-    for line in command:
-        package_name = line if isinstance(line, str) else line[0]
-        fn.debug_print(f"   Installing: {package_name}")
+    def _do_install():
+        fn.log_info(f"Starting package installation for {desktop}...")
         GLib.idle_add(
             self.desktopr_stat.set_text,
-            f"   Installing {package_name}...",
+            f"Installing {desktop} (see terminal)...",
         )
+        process = fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", install_cmd],
+        )
+        process.wait()
+        GLib.idle_add(_after_install)
 
-        try:
-            process = fn.subprocess.Popen(
-                com1 + ([line] if isinstance(line, str) else list(line)),
-                bufsize=1,
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.PIPE,  # Capture stderr for error handling
-                universal_newlines=True,
-            )
-
-            stdout, stderr = process.communicate()  # Read both stdout and stderr
-            process_return_code = process.returncode  # Get the return code
-
-            for output_line in stdout.splitlines():
-                GLib.idle_add(self.desktopr_stat.set_text, output_line.strip())
-
-            # List of group packages
-            group_packages = [
-                "budgie-desktop",
-                "budgie-extras",
-                "cinnamon",
-                "gnome-extra",
-                "gnome",
-                "mate-extra",
-                "mate",
-                "plasma",
-                "xfce4-goodies",
-                "xfce4",
-            ]
-
-            try:
-                # Check the return code for success or failure
-                if process_return_code == 0:
-                    if package_name in group_packages:
-                        fn.debug_print(
-                            "There is no way to check if a group package is installed"
-                        )
+    def _after_install():
+        fn.debug_print(f"Installation terminal closed for {desktop}")
+        if check_desktop(desktop):
+            fn.log_info(f"Copying {len(src)} config files from /etc/skel to {fn.home}...")
+            if twm is True:
+                for x in src:
+                    if fn.path.isdir(x) or fn.path.isfile(x):
+                        fn.debug_print(f"Copying: {x}")
+                        dest = x.replace("/etc/skel", fn.home)
+                        if fn.path.isdir(x):
+                            dest = fn.path.split(dest)[0]
+                        l2 = copy + [x, dest]
                         GLib.idle_add(
                             self.desktopr_stat.set_text,
-                            "There is no way to check if a group package is installed.",
+                            f"Copying {x} to {dest}",
                         )
-                    elif fn.check_package_installed(package_name):
-                        fn.debug_print(f"{package_name} is installed")
-                        GLib.idle_add(
-                            self.desktopr_stat.set_text,
-                            f"Successfully installed {package_name}.",
-                        )
-                    else:
-                        fn.debug_print(
-                            f"{package_name} IS NOT INSTALLED - REMOVE CONFLICTING PACKAGE(S)"
-                        )
-                        GLib.idle_add(
-                            self.desktopr_stat.set_text,
-                            f"Failed to install {package_name}. Possible conflicts detected.",
-                        )
-                else:
-                    # Check for package conflicts in stderr
-                    conflict_message = None
-                    for line in stderr.splitlines():
-                        if "conflicting dependencies" in line or "in conflict" in line:
-                            conflict_message = line
-                            break  # Stop searching once we find a conflict message
+                        with fn.subprocess.Popen(
+                            l2,
+                            bufsize=1,
+                            stdout=fn.subprocess.PIPE,
+                            universal_newlines=True,
+                        ) as p:
+                            for line in p.stdout:
+                                GLib.idle_add(
+                                    self.desktopr_stat.set_text,
+                                    line.strip(),
+                                )
+                        fn.permissions(dest)
 
-                    if conflict_message:
-                        fn.debug_print(f"Installation failed due to package conflict: {conflict_message}")
-                        GLib.idle_add(
-                            self.desktopr_stat.set_text,
-                            f"Installation failed: {conflict_message}",
-                        )
-                    else:
-                        fn.debug_print(f"Failed to install {package_name}: {stderr}")
-                        GLib.idle_add(
-                            self.desktopr_stat.set_text,
-                            f"Failed to install {package_name}. Error: {stderr}",
-                        )
-
-            except Exception as e:
-                fn.debug_print(f"An error occurred while installing {package_name}: {str(e)}")
-                GLib.idle_add(
-                    self.desktopr_stat.set_text,
-                    f"An error occurred: {str(e)}",
-                )
-        except Exception as e:
-            fn.debug_print(f"An error occurred while installing {package_name}: {str(e)}")
+            GLib.idle_add(self.desktopr_stat.set_text, "")
             GLib.idle_add(
-                self.desktopr_stat.set_text,
-                f"An error occurred: {str(e)}",
+                self.desktop_status.set_markup,
+                '<span size="x-large"><b>This desktop is installed</b></span>',
             )
+            fn.log_success(f"{desktop} desktop has been installed successfully")
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"{desktop} has been installed",
+            )
+            fn.debug_print(
+                "Installation complete — config backed up to ~/.config-att/"
+            )
+        else:
+            fn.log_error(f"{desktop} installation failed")
+            fn.debug_print("========== Installation Output ==========")
+            try:
+                with open(log_path, 'r') as f:
+                    log_content = f.read()
+                    if log_content:
+                        fn.debug_print(log_content)
+                    else:
+                        fn.debug_print("(no output captured)")
+            except Exception as e:
+                fn.debug_print(f"Could not read log file: {e}")
+            fn.debug_print("\n========== Package Installation Status ==========")
+            failed_packages = []
+            for pkg in command:
+                installed = fn.check_package_installed(pkg)
+                status = '✓ installed' if installed else '✗ NOT installed'
+                fn.debug_print(f"  {pkg}: {status}")
+                if not installed:
+                    failed_packages.append(pkg)
+            if failed_packages:
+                fn.debug_print(f"\nFailed to install ({len(failed_packages)}): {', '.join(failed_packages)}")
+            fn.debug_print("===================================================")
+            GLib.idle_add(
+                self.desktop_status.set_markup,
+                '<span size="x-large"><b>This desktop is NOT installed</b></span>',
+            )
+            GLib.idle_add(
+                fn.show_in_app_notification,
+                self,
+                f"{desktop} has not been installed",
+            )
+        fn.create_log(self)
+        try:
+            fn.unlink(log_path)
+        except Exception:
+            pass
 
-    GLib.source_remove(timeout_id)
-    timeout_id = None
-    GLib.idle_add(self.desktopr_prog.set_fraction, 0)
-
-    if check_desktop(desktop):
-        fn.debug_print(src)
-        if twm is True:
-            for x in src:
-                if fn.path.isdir(x) or fn.path.isfile(x):
-                    fn.debug_print(x)
-                    dest = x.replace("/etc/skel", fn.home)
-                    if fn.path.isdir(x):
-                        dest = fn.path.split(dest)[0]
-                    l2 = copy + [x, dest]
-                    GLib.idle_add(
-                        self.desktopr_stat.set_text, "Copying " + x + " to " + dest
-                    )
-
-                    with fn.subprocess.Popen(
-                        l2,
-                        bufsize=1,
-                        stdout=fn.subprocess.PIPE,
-                        universal_newlines=True,
-                    ) as p:
-                        for line in p.stdout:
-                            GLib.idle_add(self.desktopr_stat.set_text, line.strip())
-                    fn.permissions(dest)
-
-        GLib.idle_add(self.desktopr_stat.set_text, "")
-        GLib.idle_add(self.desktop_status.set_markup, '<span size="x-large"><b>This desktop is installed</b></span>')
-        GLib.idle_add(
-            fn.show_in_app_notification, self, desktop + " has been installed"
-        )
-        fn.debug_print("----------------------------------------------------------------")
-        fn.debug_print(desktop + " has been installed")
-        fn.debug_print("----------------------------------------------------------------")
-    else:
-        GLib.idle_add(
-            self.desktop_status.set_markup, '<span size="x-large"><b>This desktop is NOT installed</b></span>'
-        )
-        GLib.idle_add(
-            self.desktopr_error.set_text, "Install " + desktop + " via terminal"
-        )
-        # GLib.idle_add(self.desktopr_stat.set_text, "An error has occured in installation")
-        GLib.idle_add(
-            fn.show_in_app_notification, self, desktop + " has not been installed"
-        )
-        fn.debug_print("----------------------------------------------------------------")
-        fn.debug_print(desktop + " has NOT been installed")
-        fn.debug_print("----------------------------------------------------------------")
-    fn.create_log(self)
+    t1 = fn.threading.Thread(target=_do_install, daemon=True)
+    t1.start()
 
 # ====================================================================
 # DESKTOPR CALLBACKS
 # ====================================================================
+
+
+def uninstall_desktop(self, desktop):
+    fn.log_section(f"Removing {desktop} desktop")
+    fn.show_in_app_notification(self, f"Starting removal of {desktop}...")
+
+    # Special handling for plasma: yakuake depends on kwayland (part of plasma group)
+    if desktop == "plasma":
+        if fn.check_package_installed("yakuake"):
+            fn.log_info("yakuake is installed and depends on kwayland (part of plasma)")
+            fn.log_info("Consider removing yakuake first, or kwayland will be protected")
+
+    essential_packages = {
+        "alacritty", "feh", "dmenu", "noto-fonts", "thunar",
+        "thunar-archive-plugin", "thunar-volman",
+        "python-psutil", "python-setuptools"
+    }
+
+    gnome_critical = {
+        "baobab", "gnome-disk-utility", "gnome-software", "simple-scan", "gnome-app-list",
+        "gnome-bluetooth", "gnome-desktop", "gnome-desktop-common", "gnome-screenshot", "gnome-themes-extra",
+        "gvfs", "gvfs-afc", "gvfs-dnssd", "gvfs-goa", "gvfs-gphoto2",
+        "gvfs-mtp", "gvfs-nfs", "gvfs-onedrive", "gvfs-smb", "gvfs-wsdd",
+        "gnome-menus", "gnome-keyring",
+        "xdg-user-dirs-gtk", "polkit-gnome"
+    }
+
+    all_other_packages = set()
+    for desk_name in desktops:
+        if desk_name != desktop:
+            desktop_list = globals().get(desk_name.replace("-", ""))
+            if desktop_list:
+                all_other_packages.update(desktop_list)
+
+    # Get the install array for this desktop
+    desktop_list = globals().get(desktop.replace("-", ""))
+    if not desktop_list:
+        fn.log_error(f"Desktop '{desktop}' not found in configuration")
+        return
+
+    # For GNOME, protect packages with external system dependencies
+    critical_set = gnome_critical if desktop == "gnome" else set()
+
+    # Filter packages to remove: exclude essentials, packages used by other desktops, and critical packages
+    packages_to_remove = []
+    for pkg in desktop_list:
+        is_essential = pkg in essential_packages or pkg.startswith("xfce4-")
+        is_system_critical = pkg in critical_set
+        is_used_elsewhere = pkg in all_other_packages
+        if not is_essential and not is_system_critical and not is_used_elsewhere:
+            packages_to_remove.append(pkg)
+
+    if not packages_to_remove:
+        fn.log_info(f"No packages to safely remove for {desktop} (all are either essential or shared)")
+        fn.show_in_app_notification(self, f"No packages to safely remove for {desktop}")
+        return
+
+    fn.log_info(f"Found {len(packages_to_remove)} packages to remove (preserving shared + essential packages)")
+    fn.debug_print(f"Packages to remove: {packages_to_remove}")
+
+    import tempfile
+    log_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.log', delete=False)
+    log_path = log_file.name
+    log_file.close()
+
+    pacman_flag = "-Rdd" if desktop == "plasma" else "-Rs"
+    warning_msg = ""
+    confirm_prompt = ""
+    if desktop == "plasma":
+        warning_msg = (
+            "echo 'WARNING: Using force removal (-Rdd) for plasma packages' && echo '' && "
+            "echo 'This will remove packages even if other system utilities depend on them' && echo '' && "
+        )
+        confirm_prompt = (
+            "read -p 'Press Enter to confirm removal (or type anything to cancel): ' confirm && "
+            "if [ ! -z \"$confirm\" ]; then echo 'Removal cancelled'; exit 0; fi && echo '' && "
+        )
+
+    cleanup_step = ""
+    if desktop == "plasma":
+        cleanup_step = (
+            "echo '' && echo 'Removing leftover KDE packages...' && echo '' && "
+            "pkexec pacman -Rdd "
+            "signon-kwallet-extension kaccounts-integration "
+            "kdeclarative kdesu kded kde-inotify-survey "
+            "dolphin kcron khelpcenter kio-admin kio-extras kjournald ksystemlog partitionmanager "
+            "--noconfirm 2>/dev/null; "
+            "echo 'KDE cleanup complete' && echo '' && "
+        )
+
+    remove_cmd = (
+        f"( "
+        f"echo 'The following packages will be removed:' && echo '' && "
+        f"{warning_msg}"
+        f"{confirm_prompt}"
+        f"pkexec pacman {pacman_flag} {' '.join(packages_to_remove)} --noconfirm && "
+        f"{cleanup_step}"
+        f"echo '=== Removal Complete ===' && "
+        f"read -p 'Press Enter to close...' "
+        f") 2>&1 | tee {log_path}"
+    )
+
+    fn.debug_print(f"Remove command: {remove_cmd}")
+
+    def _do_remove():
+        fn.log_info(f"Starting package removal for {desktop}...")
+        try:
+            fn.debug_print(f"Launching alacritty for {desktop} removal")
+            process = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", remove_cmd],
+            )
+            fn.debug_print(f"Alacritty launched (PID: {process.pid})")
+            process.wait()
+            fn.debug_print("Alacritty closed")
+        except Exception as e:
+            fn.log_error(f"Failed to launch alacritty: {e}")
+            fn.debug_print(f"Exception details: {type(e).__name__}: {e}")
+        GLib.idle_add(_show_removal_dialog)
+
+    def _show_removal_dialog():
+        try:
+            with open(log_path, 'r') as f:
+                log_content = f.read()
+                if log_content:
+                    fn.debug_print(f"[Removal Log]\n{log_content}")
+        except Exception as e:
+            fn.debug_print(f"Could not read removal log: {e}")
+
+        removal_text = (
+            f"<span size=\"x-large\"><b>{desktop} has been removed</b></span>\n\n"
+            "We do not remove code from your home directory,\nonly packages without dependencies"
+        )
+        GLib.idle_add(self.desktop_status.set_markup, removal_text)
+        fn.log_success(f"{desktop} desktop removal complete")
+        fn.show_in_app_notification(self, f"{desktop} has been removed")
+        fn.debug_print(f"Removal of {desktop} complete — user home directory untouched")
+
+        def _clear_removal_text():
+            GLib.idle_add(
+                self.desktop_status.set_markup,
+                '<span size="x-large"><b>This desktop is NOT installed</b></span>',
+            )
+            try:
+                fn.unlink(log_path)
+            except Exception:
+                pass
+            return False
+
+        GLib.timeout_add(5000, _clear_removal_text)
+
+    t1 = fn.threading.Thread(target=_do_remove, daemon=True)
+    t1.start()
 
 
 def on_d_combo_changed(self, widget, pspec=None):
@@ -628,10 +758,20 @@ def on_d_combo_changed(self, widget, pspec=None):
         self.desktop_status.set_markup('<span size="x-large"><b>This desktop is NOT installed</b></span>')
 
 
-def on_install_clicked(self, widget, state):
+def on_install_clicked(self, _widget):
     fn.create_log(self)
     fn.debug_print("installing " + fn.get_combo_text(self.d_combo))
-    check_lock(self, fn.get_combo_text(self.d_combo), state)
+    check_lock(self, fn.get_combo_text(self.d_combo))
+
+
+def on_uninstall_clicked(self, _widget):
+    fn.create_log(self)
+    desktop = fn.get_combo_text(self.d_combo)
+    fn.debug_print(f"uninstalling {desktop}")
+    if not check_desktop(desktop):
+        fn.show_in_app_notification(self, f"{desktop} is not installed")
+        return
+    uninstall_desktop(self, desktop)
 
 
 def on_default_clicked(self, _widget):

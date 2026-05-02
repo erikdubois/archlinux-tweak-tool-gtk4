@@ -77,25 +77,30 @@ the nemesis and/or chaotic-aur repo"
     # =======================================
 
     self.button_install = Gtk.Button(label="Install")
-    self.button_reinstall = Gtk.Button(label="Re-Install")
 
-    self.button_install.connect("clicked", functools.partial(desktopr.on_install_clicked, self, state="inst"))
-    self.button_reinstall.connect("clicked", functools.partial(desktopr.on_install_clicked, self, state="reinst"))
+    self.button_install.connect("clicked", functools.partial(desktopr.on_install_clicked, self))
 
     self.button_install.set_hexpand(True)
     self.button_install.set_vexpand(False)
     self.button_install.set_sensitive(fn.check_nemesis_repo_active())
     buttonbox.append(self.button_install)
-    self.button_reinstall.set_hexpand(True)
-    self.button_reinstall.set_vexpand(False)
-    self.button_reinstall.set_sensitive(fn.check_nemesis_repo_active())
-    buttonbox.append(self.button_reinstall)
 
     # =======================================
-    #               BUTTONS
+    #               UNINSTALL BUTTON
     # =======================================
 
-    self.ch1 = Gtk.CheckButton(label="Select to clear cache before re-install")
+    uninstall_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.button_uninstall = Gtk.Button(label="Remove Desktop")
+    self.button_uninstall.connect("clicked", functools.partial(desktopr.on_uninstall_clicked, self))
+    self.button_uninstall.set_hexpand(True)
+    self.button_uninstall.set_vexpand(False)
+    uninstall_hbox.append(self.button_uninstall)
+
+    # =======================================
+    #               CHECKBOX
+    # =======================================
+
+    self.ch1 = Gtk.CheckButton(label="Clear package cache before installation")
     checkbox.append(self.ch1)
 
     # =======================================
@@ -169,6 +174,7 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
     vbox.append(statbox)
     vbox.append(checkbox)
     vbox.append(buttonbox)
+    vbox.append(uninstall_hbox)
     # vbox.pack_start(defaultbox, False, False, 0)
 
     vbox.set_hexpand(True)

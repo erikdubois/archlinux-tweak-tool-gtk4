@@ -46,6 +46,164 @@ These files are tested and working. Any change requires user confirmation first.
 
 ---
 
+## 2026.05.02 - Desktop UI: Consolidate Install/Re-Install into Single Button
+
+### What Changed
+
+- **Merged Install and Re-Install buttons** into single "Install" button in `desktopr_gui.py`:
+  - Removed `self.button_reinstall` entirely (was redundant after terminal-first refactor)
+  - Updated install button connection to use new `on_install_clicked(self, _widget)` signature (no state parameter)
+  - Changed checkbox label from "Select to clear cache before re-install" to "Clear package cache before installation"
+  - Checkbox is always visible and functional for both install and reinstall workflows
+- **Simplified install flow in desktopr.py**:
+  - Removed `state` parameter from `on_install_clicked()`, `check_lock()`, and `install_desktop()` functions
+  - All install paths now use same branch (unified logic)
+  - Cache clearing still available via always-visible checkbox
+- **Rationale:** After terminal-first refactor, Install and Re-Install had identical logic; consolidation removes duplication and simplifies UX
+
+### Technical Details
+
+- `check_lock()` signature changed: `def check_lock(self, desktop, state):` → `def check_lock(self, desktop):`
+- `install_desktop()` signature changed: `def install_desktop(self, desktop, state):` → `def install_desktop(self, desktop):`
+- `on_install_clicked()` signature changed: `def on_install_clicked(self, widget, state):` → `def on_install_clicked(self, _widget):`
+- Removed all conditional `if state == "reinst":` branches; cache clear logic now uniform: `if self.ch1.get_active(): cache_clear = ...`
+- Updated both Thread argument tuples in `check_lock()` to pass only `(self, fn.get_combo_text(self.d_combo))`
+
+### Files Modified
+
+`desktopr.py`, `desktopr_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.02 - Desktop Uninstall: Label Feedback Instead of Messagebox
+
+### What Changed
+
+- **uninstall_desktop() UX improved** — removed messagebox, replaced with label feedback:
+  - After removal completes, display removal message directly in `desktop_status` label
+  - Message shows: "[desktop] has been removed" + "We do not remove code from your home directory..."
+  - Message auto-clears after 5 seconds (GLib.timeout_add)
+  - Label updates to "This desktop is NOT installed" after timeout
+- **Rationale:** Less intrusive than modal dialog; user sees result inline with UI; automatic cleanup
+
+### Files Modified
+
+`desktopr.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.02 - Install Desktop: Terminal-First Pattern with Transparency
+
+### What Changed
+
+- **install_desktop() refactored** to use alacritty terminal-first pattern (like uninstall):
+  - Opens alacritty terminal before installation begins
+  - Shows complete list of packages to be installed
+  - Displays actual `pacman -S` command
+  - User reviews and presses Enter to confirm
+  - Installation runs visibly in terminal (not in background)
+  - Shows "=== Installation Complete ===" and waits for Enter to close
+- **Backup happens first** — ~/.config backed up to ~/.config-att/ BEFORE terminal opens (early, safe)
+- **Cache clear option preserved** — if "Re-Install" + checkbox enabled, cache cleared in terminal before install
+- **Config copy still happens after** — only if installation succeeds (check_desktop confirms)
+- **3-channel logging preserved** — console output shows progress at key milestones; debug output shows implementation details
+
+### Technical Details
+
+- Build bash script string with full package list displayed + install command visible
+- Launch via `alacritty -e bash -c` in daemon thread so ATT stays responsive
+- After terminal closes, check if desktop installed before copying configs
+- Uses `GLib.idle_add` for UI updates from daemon thread
+- Console logging unchanged: log_section, log_subsection, log_info, log_success preserved
+
+### Files Modified
+
+`desktopr.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.02 - 3-Channel Communication in Desktop Install/Uninstall
+
+### What Changed
+
+- **install_desktop() communication enhanced** with 3-channel logging:
+  - **In-app notification** — "Starting installation...", "[package] installed", completion status
+  - **Console (always-visible)** — `log_section` at start, `log_subsection` for package count, `log_info` for backup/copy operations, `log_success` on completion, `log_error` on failure
+  - **Debug output** — detailed package list, return codes, copy paths, error details (via `fn.debug_print`)
+- **uninstall_desktop() communication enhanced** with same 3-channel pattern:
+  - **In-app notification** — removal start/completion status
+  - **Console** — `log_section` at start, `log_info` for package filtering details, `log_success` on completion
+  - **Debug output** — package lists, filtering logic, completion notes
+- **Transparency principle:** User can now follow the entire install/uninstall process in console without needing `--debug` flag; debug output provides implementation details
+
+### Technical Details
+
+- Install flow: backup notification → package count subsection → per-package info lines → completion success
+- Uninstall flow: removal start section → filtered package count → removal completion
+- All operations show source→target details in debug mode but only key milestones in normal console output
+- Alacritty terminal still uses "Press Enter to close" pattern for user confirmation
+
+### Files Modified
+
+`desktopr.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.02 - Desktop Uninstall Feature
+
+### What Changed
+
+- **New uninstall_desktop() function** in `desktopr.py` — safely removes desktop environment packages while preserving:
+  - Essential packages: alacritty, feh, dmenu, noto-fonts, thunar (and all thunar plugins), xfce4-* family
+  - Packages used by other installed desktops (no breaking dependencies)
+  - User home directory (never modified)
+- **on_uninstall_clicked() callback** — checks if desktop is installed before uninstall; shows notification if not installed
+- **Remove Desktop button** in `desktopr_gui.py` — new uninstall_hbox with single button, reuses existing dropdown selector
+- **Terminal display** — alacritty shows `pacman -R [packages]` with user confirmation
+- **Completion messagebox** — displays "The desktop [name] has been removed. We do not remove code from your home directory, only apps without dependencies"
+- **Daemon threading** — terminal launches in background thread, ATT stays responsive
+
+### Technical Details
+
+- Package filtering: iterate through all desktops, build set of "packages used elsewhere", exclude those from removal list
+- Essential list is hardcoded (never changes); regex check for xfce4-* prefix handles all xfce metapackages
+- Uses same terminal pattern as install: Popen + daemon thread + messagebox completion dialog
+- Remove command shown to user first (transparency principle)
+
+### Files Modified
+
+`desktopr.py`, `desktopr_gui.py`, `CHANGELOG.md`
+
+---
+
+## 2026.05.02 - Final F401 Cleanup — Unused Imports Removed & Intentional Exports Restored
+
+### What Changed
+
+- **F401 unused imports removed** — achieved flake8 compliance by distinguishing truly unused imports from intentional re-exports
+- `archlinux-tweak-tool.py` — removed: `subprocess`, `datetime`, `desktopr_gui`, `utilities`; removed `Gio` from `gi.repository`; removed `from os import readlink`; removed unused global `att`
+- `functions.py` — removed truly unused: `rmdir`, `walk` from os; removed duplicate `import sys` and `import subprocess`
+- **Intentional re-exports restored with `# noqa: F401`** — marked imports that are deliberately exported for dependent modules to use via `fn.*` pattern:
+  - `getpid` — used by `archlinux-tweak-tool.py` as `fn.getpid()`
+  - `stat` — used by `functions_startup.py` as `fn.stat()`
+  - `system` — used by `user.py`, `services.py` as `fn.system()`
+  - `readlink` — used by `themer_gui.py` as `fn.readlink()`
+  - `Queue` — used by `packages_gui.py` as `fn.Queue`
+
+### Technical Details
+
+- Re-exports are intentional module design: import something into functions.py namespace so dependent code can access it via `fn.*` without knowing the original module
+- Distinguishing re-exports from truly unused imports prevents breaking runtime code during lint cleanup
+- All marked with `# noqa: F401` to suppress flake8 checks
+
+### Files Modified
+
+`archlinux-tweak-tool.py`, `functions.py`, `CHANGELOG.md`
+
+**Objective 13 (Remove Dead Code) & Objective 23 (Lint) status: COMPLETE**
+
+---
+
 ## 2026.05.01 - Project-wide Lint Pass
 
 ### What Changed
