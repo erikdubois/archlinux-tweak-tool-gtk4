@@ -161,9 +161,14 @@ def fix_permissions():
     fn.debug_print(f"archlinux-tweak-tool owner UID: {att_uid}")
 
     if fn.path.exists(fn.home + "/.config-att"):
-        fn.debug_print(f"Found {fn.home}/.config-att, fixing permissions")
-        fn.permissions(fn.home + "/.config-att")
-        fn.debug_print("✓ .config-att permissions fixed")
+        fn.debug_print(f"Found {fn.home}/.config-att, checking permissions")
+        att_backup_uid = fn.stat(fn.home + "/.config-att").st_uid
+        if att_backup_uid == 0:
+            fn.debug_print("Fixing .config-att permissions (currently root-owned)")
+            fn.permissions(fn.home + "/.config-att")
+            fn.debug_print("✓ .config-att permissions fixed")
+        else:
+            fn.debug_print(".config-att permissions are correct (user-owned)")
     else:
         fn.debug_print(f"{fn.home}/.config-att not found, skipping")
 
