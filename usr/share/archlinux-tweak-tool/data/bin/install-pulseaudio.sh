@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ##################################################################################################################################
 # Author    : Erik Dubois
@@ -9,10 +9,6 @@
 #   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
 #
 ##################################################################################################################################
-
-set -euo pipefail
-
-##################################################################################################################################
 # Purpose
 # - Switch from PipeWire to PulseAudio audio stack
 # - Remove all PipeWire packages and services
@@ -20,92 +16,80 @@ set -euo pipefail
 # - Keep Bluetooth audio support enabled
 ##################################################################################################################################
 
-log_section()  { echo ""; echo "==== $* ===="; echo ""; }
-log_info()     { echo "  [INFO] $*"; }
-log_success()  { echo "  [SUCCESS] $*"; }
-log_warn()     { echo "  [WARN] $*"; }
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
 
-pkg_installed() { pacman -Q "$1" &>/dev/null; }
+separator() { echo "${CYAN}===============================================================================${RESET}"; }
+header()    { echo ""; separator; echo "${CYAN}  $1${RESET}"; separator; }
+success()   { echo "${GREEN}  ✓ $1${RESET}"; }
+info()      { echo "    $1"; }
+warn()      { echo "${YELLOW}  ⚠ $1${RESET}"; }
+error()     { echo "${RED}  ✗ $1${RESET}"; }
+
+pkg_installed()     { pacman -Q "$1" &>/dev/null; }
+install_packages()  { sudo pacman -S --needed --noconfirm "$@"; }
 
 remove_if_installed() {
     local pkg="$1"
     if pkg_installed "$pkg"; then
-        log_info "Removing $pkg..."
+        info "Removing $pkg..."
         sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
     fi
 }
 
-install_packages() { sudo pacman -S --needed --noconfirm "$@"; }
-
 audio_summary() {
-    log_section "Current audio state"
+    header "Current audio state"
 
     local server
-    server=$(pactl info 2>/dev/null | awk '/Server Name/ {print $NF}') || server="unknown (pactl failed)"
-    log_info "Active server : $server"
+    server=$(pactl info 2>/dev/null | awk '/Server Name/ {print $NF}') || server="unknown"
+    info "Active server : $server"
 
     for pkg in pulseaudio pipewire pipewire-pulse wireplumber; do
         local ver
         ver=$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}') || ver="not installed"
-        log_info "  $pkg : $ver"
+        info "  $pkg : $ver"
     done
 }
 
-main() {
+audio_summary
 
-    audio_summary
+header "Switching to PulseAudio audio stack"
 
-    log_section "Switching to PulseAudio audio stack"
+# Stop and disable PipeWire services
+systemctl --user disable pipewire-pulse.service 2>/dev/null || true
+systemctl --user stop pipewire-pulse.service 2>/dev/null || true
+systemctl --user disable pipewire.service 2>/dev/null || true
+systemctl --user stop pipewire.service 2>/dev/null || true
+info "Stopped PipeWire services"
 
-    ############################################################################################################
-    # Stop and disable PipeWire services
-    ############################################################################################################
+# Clean up stale PipeWire ALSA config
+if [[ -f /etc/alsa/conf.d/99-pipewire-default.conf ]]; then
+    sudo rm /etc/alsa/conf.d/99-pipewire-default.conf
+    info "Removed stale PipeWire ALSA config"
+fi
 
-    systemctl --user disable pipewire-pulse.service 2>/dev/null || true
-    systemctl --user stop pipewire-pulse.service 2>/dev/null || true
-    systemctl --user disable pipewire.service 2>/dev/null || true
-    systemctl --user stop pipewire.service 2>/dev/null || true
+# Remove conflicting audio packages
+header "Removing PipeWire packages"
+for pkg in pipewire-media-session pipewire lib32-pipewire libpipewire pipewire-alsa \
+           pipewire-audio pipewire-jack lib32-pipewire-jack pipewire-session-manager \
+           pipewire-zeroconf pipewire-pulse wireplumber; do
+    remove_if_installed "$pkg"
+done
 
-    log_info "Stopped PipeWire services"
+# Install PulseAudio stack
+header "Installing PulseAudio"
+install_packages \
+    pulseaudio \
+    pulseaudio-alsa \
+    pulseaudio-bluetooth \
+    jack2 \
+    volctl
 
-    ############################################################################################################
-    # Clean up stale PipeWire ALSA config
-    ############################################################################################################
+# Enable Bluetooth service
+sudo systemctl enable --now bluetooth.service
 
-    if [[ -f /etc/alsa/conf.d/99-pipewire-default.conf ]]; then
-        sudo rm /etc/alsa/conf.d/99-pipewire-default.conf
-        log_info "Removed stale PipeWire ALSA config"
-    fi
-
-    ############################################################################################################
-    # Remove conflicting audio packages
-    ############################################################################################################
-
-    for pkg in pipewire-media-session pipewire lib32-pipewire libpipewire pipewire-alsa \
-               pipewire-audio pipewire-jack lib32-pipewire-jack pipewire-session-manager \
-               pipewire-zeroconf pipewire-pulse wireplumber; do
-        remove_if_installed "$pkg"
-    done
-
-    ############################################################################################################
-    # Install PulseAudio stack
-    ############################################################################################################
-
-    install_packages \
-        pulseaudio \
-        pulseaudio-alsa \
-        pulseaudio-bluetooth \
-        jack2 \
-        volctl
-
-    ############################################################################################################
-    # Enable Bluetooth service
-    ############################################################################################################
-
-    sudo systemctl enable --now bluetooth.service
-
-    log_success "PulseAudio installation completed"
-    log_warn "Reboot recommended"
-}
-
-main "$@"
+success "PulseAudio installation completed"
+warn "Reboot recommended"
