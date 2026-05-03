@@ -21,10 +21,30 @@
 
 workdir=$(pwd)
 
-./chaotic
+URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
+BASE="$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic"
 
-# reset - commit your changes or stash them before you merge
-# git reset --hard - personal alias - grh
+remote_list=$(curl -s "$URL" | grep -oP 'href="[^"]*\.pkg\.tar\.zst"' | cut -d'"' -f2)
+
+for entry in "chaotic-keyring:keyring" "chaotic-mirrorlist:mirrorlist"; do
+    pkg="${entry%%:*}"
+    dest="$BASE/${entry##*:}"
+
+    remote_file=$(echo "$remote_list" | grep "^${pkg}-.*-any\.pkg\.tar\.zst" | sort -Vr | head -n1)
+    [[ -z "$remote_file" ]] && echo "No remote file found for $pkg" && continue
+
+    if [[ -f "$dest/$remote_file" ]]; then
+        echo "$remote_file already present — skipping"
+        continue
+    fi
+
+    echo "Downloading $remote_file → $dest"
+    curl -O "$URL/$remote_file"
+    rm -f "$dest/${pkg}"-*
+    mv "$remote_file" "$dest"
+    echo "Done: $remote_file"
+done
+
 
 # Generate nemesis_packages.txt from nemesis_repo
 echo "Generating nemesis_packages.txt from nemesis_repo..."
