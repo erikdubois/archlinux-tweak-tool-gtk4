@@ -1,5 +1,22 @@
 #!/bin/bash
 
+check_and_fetch() {
+    local pkg="$1"
+    local dest="$2"
+    local url="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64"
+
+    if compgen -G "${dest}/${pkg}-*.pkg.tar.zst" > /dev/null 2>&1; then
+        echo "$pkg already present in $dest"
+        return
+    fi
+
+    echo "$pkg missing — downloading to $dest"
+    wget -q "${url}/${pkg}.pkg.tar.zst" -P "$dest" && echo "$pkg downloaded" || echo "Failed to download $pkg"
+}
+
+check_and_fetch "chaotic-keyring"   "$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic/keyring"
+check_and_fetch "chaotic-mirrorlist" "$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist"
+
 # Configuration
 URL="URL=https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
 DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/chaotic/keyring/"
