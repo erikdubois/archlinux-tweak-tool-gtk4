@@ -86,7 +86,7 @@ wget https://raw.githubusercontent.com/erikdubois/edu-shells/refs/heads/main/etc
 
 ########### Arch Linux
 echo "getting archlinux keyring"
-rm $workdir/usr/share/archlinux-tweak-tool/data/kiro/packages/keyring/*
+rm $workdir/usr/share/archlinux-tweak-tool/data/packages/keyring/*
 #get latest archlinux-keyring
 wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P $workdir/usr/share/archlinux-tweak-tool/data/packages/keyring/
 
