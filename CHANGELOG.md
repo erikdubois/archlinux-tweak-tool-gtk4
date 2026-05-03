@@ -1,5 +1,44 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - Fastfetch Shell Config Guard
+
+### What Changed
+
+- Added guard in `on_fast_util_toggled` and `on_fast_lolcat_toggled`: if no shell config file is detected, log a warning and return early instead of silently writing nothing
+
+### Technical Details
+
+- Both toggle handlers now call `utilities.get_config_file()` before `write_configs()`; if it returns falsy, `fn.log_warn("No shell config files found — fastfetch cannot be added to your shell startup")` is emitted and the function returns
+- `write_configs()` already had a silent `if not config: return` guard; the new check surfaces that failure to the user visibly
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/fastfetch.py`
+
+---
+
+## 2026.05.03 - Fastfetch Page Cleanup &amp; Lolcat Install Fix
+
+### What Changed
+
+- Renamed all numbered widget variables in `fastfetch_gui.py` to descriptive names (objective 27)
+- Removed dead widget `self.hbox26` — created but never appended to any container
+- Removed empty spacer `hbox22` — `hbox_ff_checkboxes` already had `margin_top=10`
+- Fixed `on_fast_lolcat_toggled`: lolcat switch now installs the `lolcat` package via terminal if not present; previously it only wrote the shell config with no install, leaving `fastfetch | lolcat` piping to a missing binary
+
+### Technical Details
+
+- Widget renames: `hbox3`→`hbox_title`, `hbox4`→`hbox_separator`, `hbox27`→`hbox_switches`, `hbox9`→`hbox_distro_specific`, `hbox28`→`hbox_amos_note`, `hbox29`→`hbox_archcraft_note`, `lbl1`→`page_title_label`, `label21`→`presets_label`, `label28`→`amos_note_label`, `label29`→`archcraft_note_label`, `hbox9_label`→`distro_specific_label`
+- Lolcat fix mirrors the fastfetch install pattern: check `/usr/bin/lolcat`, open install terminal via `fn.launch_pacman_install_in_terminal("lolcat")`, wait in daemon thread, call `write_configs` on success, flip switch back to off if install fails/cancelled
+- Dead `lolcat_toggle()` and `util_toggle()` functions still present — not removed as they are out of scope for this session
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/fastfetch_gui.py`
+- `usr/share/archlinux-tweak-tool/fastfetch.py`
+
+---
+
 ## 2026.05.03 - Chaotic AUR Setup Script
 
 ### What Changed

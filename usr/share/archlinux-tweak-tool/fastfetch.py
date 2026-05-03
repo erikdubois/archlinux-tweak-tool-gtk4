@@ -493,6 +493,10 @@ def on_fast_util_toggled(self, switch, gparam):
         self.fast_lolcat.set_active(False)
         lolcat_state = False
 
+    if not utilities.get_config_file():
+        fn.log_warn("No shell config files found — fastfetch cannot be added to your shell startup")
+        fn.show_in_app_notification(self, "No shell config found")
+        return
     write_configs(util_state, lolcat_state)
     self.fast_lolcat.set_sensitive(util_state)
     fn.log_success(f"Fastfetch {label} in shell config")
@@ -528,6 +532,10 @@ def on_fast_lolcat_toggled(self, switch, gparam):
         return
 
     if util_state:
+        if not utilities.get_config_file():
+            fn.log_warn("No shell config files found — fastfetch cannot be added to your shell startup")
+            fn.show_in_app_notification(self, "No shell config found")
+            return
         write_configs(util_state, lolcat_state)
         fn.log_success(f"Lolcat {label} in shell config")
         fn.GLib.idle_add(fn.show_in_app_notification, self, f"Lolcat {label}")

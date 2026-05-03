@@ -288,6 +288,8 @@ Debug output includes D-Bus warnings, initialization steps, and custom debug mes
 ## Recent Work
 
 - **M4 Feature Test complete (2026-05-03)** — all 20 tabs verified working on Kiro
+- **fastfetch_gui.py cleanup (2026-05-03)** — all numbered widget names replaced with descriptive identifiers; dead `self.hbox26` and empty spacer `hbox22` removed
+- **Lolcat install fix (2026-05-03)** — `on_fast_lolcat_toggled` now installs `lolcat` package via terminal if missing; previously only wrote shell config with no install
 - Widget renaming pass (objective 27) — all numbered hbox/vbox names replaced with descriptive identifiers across 10+ GUI files
 - Section header markup consistency (objective 26) — all pages now use `set_markup("<b>...</b>")` for section headers
 - Fastfetch remove button implemented + `set_fastfetch_ui_sensitive()` for install-state control
