@@ -98,23 +98,11 @@ def on_pacman_toggle4(self, widget, active):
         return
     from pacman_functions import repo_exist, append_repo, toggle_test_repos
     if not repo_exist("[extra-testing]"):
-        append_repo(self, fn.arch_community_testing_repo)
-        fn.debug_print("Repo added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
-    else:
-        toggle_test_repos(self, widget.get_active(), "extra-testing")
-
-
-def on_pacman_toggle5(self, widget, active):
-    if hasattr(self, 'initializing') and self.initializing:
-        return
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
-    if not repo_exist("[extra-testing]"):
         append_repo(self, fn.arch_extra_testing_repo)
         fn.debug_print("Repo added to /etc/pacman.conf")
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
-        toggle_test_repos(self, widget.get_active(), "community")
+        toggle_test_repos(self, widget.get_active(), "community-testing")
 
 
 def on_pacman_toggle6(self, widget, active):

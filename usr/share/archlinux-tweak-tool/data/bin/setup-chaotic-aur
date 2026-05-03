@@ -9,8 +9,14 @@ CYAN=$(tput setaf 6)
 GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
 
-KEYRING="/usr/share/archlinux-tweak-tool/data/chaotic/keyring/chaotic-keyring.pkg.tar.zst"
-MIRRORLIST="/usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist/chaotic-mirrorlist.pkg.tar.zst"
+KEYRING=$(find /usr/share/archlinux-tweak-tool/data/chaotic/keyring -name "chaotic-keyring-*.pkg.tar.zst" | head -1)
+MIRRORLIST=$(find /usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist -name "chaotic-mirrorlist-*.pkg.tar.zst" | head -1)
+
+if [[ -z "$KEYRING" || -z "$MIRRORLIST" ]]; then
+    error "Package file not found in data/chaotic/ — cannot install"
+    read -p "Press enter to close"
+    exit 1
+fi
 
 separator() { echo "${CYAN}===============================================================================${RESET}"; }
 header()    { echo ""; separator; echo "${CYAN}  $1${RESET}"; separator; }
