@@ -26,24 +26,31 @@ def on_chaotic_toggle(self, widget, active):
         return
     from pacman_functions import repo_exist, append_repo, toggle_test_repos, ensure_chaotic_packages
     import desktopr_gui
-    if not repo_exist("[chaotic-aur]"):
-        append_repo(self, fn.chaotic_aur_repo)
-        fn.debug_print("Repo added to /etc/pacman.conf")
-        fn.show_in_app_notification(self, "Chaotic-AUR repo has been added to /etc/pacman.conf")
-    else:
-        toggle_test_repos(self, widget.get_active(), "chaotics")
 
     if widget.get_active():
         process = ensure_chaotic_packages(self)
         if process is not None:
             def _finish_chaotic_setup(proc):
                 proc.wait()
-                fn.debug_print("Chaotic-AUR setup terminal closed — updating repos")
+                fn.debug_print("Chaotic-AUR setup terminal closed — appending repo")
+                if not repo_exist("[chaotic-aur]"):
+                    append_repo(self, fn.chaotic_aur_repo)
+                    fn.GLib.idle_add(
+                        fn.show_in_app_notification, self,
+                        "Chaotic-AUR repo has been added to /etc/pacman.conf"
+                    )
                 fn.update_repos(self)
                 fn.GLib.idle_add(desktopr_gui.update_button_state, self, fn)
                 fn.GLib.idle_add(self.refresh_aur_buttons)
             fn.threading.Thread(target=_finish_chaotic_setup, args=(process,), daemon=True).start()
             return
+
+    if not repo_exist("[chaotic-aur]"):
+        append_repo(self, fn.chaotic_aur_repo)
+        fn.debug_print("Repo added to /etc/pacman.conf")
+        fn.show_in_app_notification(self, "Chaotic-AUR repo has been added to /etc/pacman.conf")
+    else:
+        toggle_test_repos(self, widget.get_active(), "chaotics")
 
     fn.update_repos(self)
     desktopr_gui.update_button_state(self, fn)

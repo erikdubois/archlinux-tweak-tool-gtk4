@@ -26,8 +26,8 @@ success "Signing key imported"
 mkdir -p "$PATHWAY"
 
 header "Downloading chaotic-keyring and chaotic-mirrorlist"
-wget https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst -P "$PATHWAY"
-wget https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst -P "$PATHWAY"
+wget https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/chaotic-keyring.pkg.tar.zst -P "$PATHWAY"
+wget https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/chaotic-mirrorlist.pkg.tar.zst -P "$PATHWAY"
 success "Packages downloaded to $PATHWAY"
 
 header "Installing Packages"

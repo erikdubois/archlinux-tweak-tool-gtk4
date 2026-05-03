@@ -2,7 +2,7 @@
 
 # Configuration
 URL="URL=https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
-DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/garuda/packages/keyring/"
+DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/chaotic/keyring/"
 PACKAGES=("chaotic-keyring")
 
 # Function to extract version string (excluding .pkg.tar.zst)
@@ -38,7 +38,7 @@ done
 
 # Configuration
 URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
-DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/garuda/packages/mirrorlist/"
+DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist/"
 PACKAGES=("chaotic-mirrorlist")
 
 # Function to extract version string (excluding .pkg.tar.zst)
