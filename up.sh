@@ -39,7 +39,7 @@ for entry in "chaotic-keyring:keyring" "chaotic-mirrorlist:mirrorlist"; do
     fi
 
     echo "Downloading $remote_file → $dest"
-    curl -O "$URL/$remote_file"
+    curl -OL "$URL/$remote_file"
     rm -f "$dest/${pkg}"-*
     mv "$remote_file" "$dest"
     echo "Done: $remote_file"
