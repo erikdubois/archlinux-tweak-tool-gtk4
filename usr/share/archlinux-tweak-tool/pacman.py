@@ -235,6 +235,8 @@ def set_parallel_downloads(self, widget):
             fn.debug_print(f"Config saved: {lines[pos_par_down].strip()}")
             fn.log_success("Parallel downloads setting saved")
             fn.show_in_app_notification(self, "Settings Saved Successfully")
+            if hasattr(self, "parallel_downloads_label"):
+                self.parallel_downloads_label.set_markup(f"ParallelDownloads: {par_downloads}")
 
             # GLib.idle_add(fn.messagebox,self, "Success!!", "Settings applied successfully")
         except Exception as error:
