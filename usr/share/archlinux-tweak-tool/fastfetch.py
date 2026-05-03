@@ -46,13 +46,16 @@ def get_position(lists, value):
 
 
 def write_configs(util_enabled, lolcat_enabled):
-    """Write fastfetch config to shell rc file"""
     config = utilities.get_config_file()
     if not config:
         return
 
     with open(config, "r", encoding="utf-8") as f:
         lines = f.readlines()
+
+    new_state = "#fastfetch"
+    if util_enabled:
+        new_state = "fastfetch | lolcat" if lolcat_enabled else "fastfetch"
 
     reporting_section_start = -1
     for i, line in enumerate(lines):
@@ -61,6 +64,12 @@ def write_configs(util_enabled, lolcat_enabled):
             break
 
     if reporting_section_start == -1:
+        if not util_enabled:
+            return
+        lines.append("\n# reporting tools\n")
+        lines.append(new_state + "\n")
+        with open(config, "w", encoding="utf-8") as f:
+            f.writelines(lines)
         return
 
     fastfetch_line = -1
@@ -70,19 +79,15 @@ def write_configs(util_enabled, lolcat_enabled):
             break
 
     if fastfetch_line == -1:
-        return
-
-    current_line = lines[fastfetch_line].strip()
-    if util_enabled:
-        new_state = "fastfetch | lolcat" if lolcat_enabled else "fastfetch"
+        if not util_enabled:
+            return
+        lines.insert(reporting_section_start + 1, new_state + "\n")
     else:
-        new_state = "#fastfetch"
+        if lines[fastfetch_line].strip() != new_state:
+            lines[fastfetch_line] = new_state + "\n"
 
-    if current_line != new_state and fastfetch_line >= reporting_section_start:
-        lines[fastfetch_line] = new_state + "\n"
-
-        with open(config, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+    with open(config, "w", encoding="utf-8") as f:
+        f.writelines(lines)
 
 
 def get_term_rc():
