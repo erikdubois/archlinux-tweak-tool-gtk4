@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -e
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
@@ -20,6 +20,13 @@
 ##################################################################################################################
 
 workdir=$(pwd)
+current_branch=$(git branch --show-current)
+
+echo "Pulling latest from origin/$current_branch before making changes..."
+if ! git pull --rebase --autostash origin "$current_branch"; then
+    echo "ERROR: git pull --rebase failed — resolve conflicts before running up.sh"
+    exit 1
+fi
 
 URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
 BASE="$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic"
@@ -117,15 +124,8 @@ git commit -m "update"
 
 # Push the local files to github
 
-if grep -q main .git/config; then
-	echo "Using main"
-		git push -u origin main
-fi
-
-if grep -q master .git/config; then
-	echo "Using master"
-		git push -u origin master
-fi
+echo "Pushing to origin/$current_branch"
+git push -u origin "$current_branch"
 
 echo "################################################################"
 echo "###################    Git Push Done      ######################"
