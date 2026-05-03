@@ -5,7 +5,7 @@ check_and_fetch() {
     local dest="$2"
     local url="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64"
 
-    if compgen -G "${dest}/${pkg}-*.pkg.tar.zst" > /dev/null 2>&1; then
+    if compgen -G "${dest}/${pkg}*.pkg.tar.zst" > /dev/null 2>&1; then
         echo "$pkg already present in $dest"
         return
     fi
