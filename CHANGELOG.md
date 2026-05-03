@@ -1,5 +1,24 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - Fastfetch write_configs: Add Missing Section Support
+
+### What Changed
+
+- `write_configs()` now appends `# reporting tools` and the fastfetch line to the shell config when the section is absent, instead of silently returning
+- Also handles the case where the section exists but has no fastfetch entry — inserts one after the section header
+- Disabling fastfetch on an empty config (no section, no line) still does nothing, as expected
+
+### Technical Details
+
+- Three paths: no section → append section + line (enable only); section exists, no line → insert after header (enable only); line exists → edit in place (existing behaviour)
+- Previously the function only knew how to edit an existing `fastfetch` / `#fastfetch` line; bare shell configs like a stock `.bashrc` were silently ignored
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/fastfetch.py`
+
+---
+
 ## 2026.05.03 - Fastfetch Shell Config Guard
 
 ### What Changed

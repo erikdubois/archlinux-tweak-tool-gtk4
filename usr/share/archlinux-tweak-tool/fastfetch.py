@@ -489,6 +489,7 @@ def on_fast_util_toggled(self, switch, gparam):
             if fn.path.exists("/usr/bin/fastfetch"):
                 fn.log_success("fastfetch installed")
                 fn.GLib.idle_add(set_fastfetch_ui_sensitive, self, True)
+                fn.GLib.idle_add(write_configs, True, lolcat_state)
                 fn.GLib.idle_add(fn.show_in_app_notification, self, "fastfetch installed")
 
         fn.threading.Thread(target=wait_and_enable, daemon=True).start()
