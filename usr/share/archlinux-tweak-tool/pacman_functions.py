@@ -333,8 +333,6 @@ def ensure_chaotic_packages(self):
     setup_script = "/usr/share/archlinux-tweak-tool/data/bin/setup-chaotic-aur"
     return fn.subprocess.Popen(
         ["alacritty", "-e", "sudo", "bash", setup_script],
-        stdout=fn.subprocess.PIPE,
-        stderr=fn.subprocess.PIPE,
     )
 
 
