@@ -3,7 +3,6 @@
 # ============================================================
 
 import kernel
-import kernel_distros
 
 
 def gui(self, Gtk, vboxstack, fn):
@@ -73,19 +72,6 @@ def gui(self, Gtk, vboxstack, fn):
             _build_group_header(Gtk, vboxstack, grp)
 
         _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot)
-
-    # Distro-specific package check — console first, then deferred UI
-    missing = kernel_distros.get_missing_requirements()
-    for req in missing:
-        fn.log_warn(f"Missing required package: {req['pkg']} from {req['repo']} — {req['reason']}")
-
-    if missing:
-        def _deferred():
-            for req in missing:
-                fn.show_in_app_notification(self, f"Missing: {req['pkg']} — kernel detection may not work")
-            _offer_install_packages(self, Gtk, fn, missing)
-            return False
-        fn.GLib.idle_add(_deferred)
 
 
 def _offer_install_packages(self, Gtk, fn, missing):
@@ -372,6 +358,14 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
         lbl_current.set_markup("<small>Current: unknown</small>")
 
     def on_set_default(_widget):
+        import kernel_distros
+        missing = kernel_distros.get_missing_requirements()
+        if missing:
+            for req in missing:
+                fn.log_warn(f"Missing required package: {req['pkg']} from {req['repo']} — {req['reason']}")
+            _offer_install_packages(self, Gtk, fn, missing)
+            return
+
         selected_id = combo.get_active_id()
         if selected_id:
             title = id_to_title.get(selected_id, "")
