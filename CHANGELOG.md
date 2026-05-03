@@ -1,5 +1,40 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - M4 Feature Test Complete
+
+### What Changed
+
+All 20 ATT tabs verified working end-to-end on Kiro. M4 milestone complete.
+
+| Tab | Result |
+| --- | ------ |
+| Packages | ✓ |
+| SDDM | ✓ |
+| Shell | ✓ |
+| Maintenance | ✓ |
+| Services | ✓ |
+| Themes | ✓ |
+| Icons | ✓ |
+| Themer | ✓ |
+| Desktopr | ✓ |
+| Fastfetch | ✓ (remove button pipe deadlock fixed during test) |
+| Performance | ✓ |
+| Kernel | ✓ |
+| User | ✓ |
+| AI | ✓ |
+| Network | ✓ |
+| Software | ✓ |
+| System | ✓ |
+| Logging | ✓ |
+| Privacy | ✓ |
+| Autostart | ✓ |
+
+### Next Milestone
+
+ATT is feature-complete and lint-clean. No remaining milestones defined — project is in a shippable state.
+
+---
+
 ## 2026.05.03 - Fastfetch Remove Button Fix
 
 ### What Changed

@@ -287,21 +287,24 @@ Debug output includes D-Bus warnings, initialization steps, and custom debug mes
 
 ## Recent Work
 
-Recent commits focused on:
+- **M4 Feature Test complete (2026-05-03)** — all 20 tabs verified working on Kiro
+- Widget renaming pass (objective 27) — all numbered hbox/vbox names replaced with descriptive identifiers across 10+ GUI files
+- Section header markup consistency (objective 26) — all pages now use `set_markup("<b>...</b>")` for section headers
+- Fastfetch remove button implemented + `set_fastfetch_ui_sensitive()` for install-state control
+- Kernel: boot entry title parsing fixed; non-systemd-boot fallback message added
+- Desktopr: `refresh_installed_desktops()` added; called after install/remove
+- Autostart: layout fix — add-entry controls moved inside mainbox
+- Audio scripts migrated to `data/bin/` standalone scripts
+- SDDM user context bug fixed (`fn.sudo_username` instead of `os.getenv`)
 
-- GTK4 API compliance (callback signatures, dialog patterns)
-- Logging standardization (replaced print() throughout)
-- Async UI responsiveness (thumbnails, file operations with idle_add)
-- SDDM wallpaper function restoration
-
-Check git log for implementation details on GTK4 patterns and workarounds.
+Check git log for full implementation details.
 
 ## Project Plan — v1.0 Release by 2026-05-29
 
 **Constraint:** 3–5 hours/day · 30 days · ~90–150 hours total  
 **Goal:** Shippable, Kiro-only ATT package with all tabs functional and codebase clean
 
-### Current State Snapshot (2026-05-02)
+### Current State Snapshot (2026-05-03)
 
 | Area | Status |
 | ---- | ------ |
@@ -314,8 +317,7 @@ Check git log for implementation details on GTK4 patterns and workarounds.
 | Kiro data folder | ✓ Done — populated per audit |
 | Duplicate/dead code | ✓ Done — removed, consolidated, no duplicates |
 | Flake8 linting | ✓ Done — codebase passes all checks |
-| **M4 Feature Test** | **In Progress** — 18 tabs remain to test on Kiro |
-| PKGBUILD / packaging | Not started |
+| **M4 Feature Test** | **✓ Done — all 20 tabs verified working on Kiro (2026-05-03)** |
 
 ---
 
