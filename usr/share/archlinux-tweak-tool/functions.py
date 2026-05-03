@@ -1117,8 +1117,6 @@ def ensure_nodejs_installed():
 
 
 def ensure_git_installed():
-    import shutil
-    import time
 
     if shutil.which("git"):
         return True
@@ -1204,7 +1202,6 @@ def remove_debug_from_makepkg_conf():
 
 def launch_pacman_install_in_terminal(packages):
     import tempfile
-    import shutil
 
     if not shutil.which("alacritty"):
         log_info("alacritty not found, installing...")
@@ -1268,7 +1265,6 @@ read -p 'Press Enter to close...'
 
 def launch_pacman_remove_in_terminal(packages):
     import tempfile
-    import shutil
 
     if not shutil.which("alacritty"):
         log_info("alacritty not found, installing...")
@@ -1331,7 +1327,6 @@ read -p 'Press Enter to close...'
 
 
 def launch_aur_install_in_terminal(aur_helper, package, username=None):
-    import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(
@@ -1356,7 +1351,6 @@ def launch_aur_install_in_terminal(aur_helper, package, username=None):
 
 
 def launch_aur_remove_in_terminal(aur_helper, package, username=None):
-    import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(
@@ -1381,7 +1375,6 @@ def launch_aur_remove_in_terminal(aur_helper, package, username=None):
 
 
 def launch_npm_install_in_terminal(npm_package):
-    import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(
@@ -1407,7 +1400,6 @@ def launch_npm_install_in_terminal(npm_package):
 
 
 def launch_npm_remove_in_terminal(npm_package):
-    import shutil
     if not shutil.which("alacritty"):
         debug_print("[INFO] alacritty not found, installing...")
         install_proc = subprocess.run(
@@ -1568,18 +1560,12 @@ def add_autologin_group(self):
 
 
 def install_discovery(self):
-    import shutil
     if not shutil.which("alacritty"):
-        log_info("alacritty not found, installing...")
-        proc = subprocess.run(
-            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-            capture_output=True, text=True
-        )
-        if proc.returncode != 0:
-            log_error(f"Failed to install alacritty: {proc.stderr}")
-            return
-
+        log_error("alacritty not found — install it first")
+        show_in_app_notification(self, "alacritty not found")
+        return None
     log_subsection("Install Network Discovery")
+    show_in_app_notification(self, "Installing network discovery...")
     script = """
 pacman -S --noconfirm --needed avahi nss-mdns gvfs-smb
 RESULT=$?
@@ -1600,37 +1586,26 @@ echo ''
 echo '=== Operation Finished ==='
 read -p 'Press Enter to close...'
 """
-
-    def _launch():
-        try:
-            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
-            GLib.idle_add(show_in_app_notification, self, "Installing network discovery...")
-        except Exception as error:
-            GLib.idle_add(log_error, f"Failed to install network discovery: {error}")
-
-    threading.Thread(target=_launch, daemon=True).start()
+    try:
+        return subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    except Exception as error:
+        log_error(f"Failed to launch terminal: {error}")
+        return None
 
 
 def remove_discovery(self):
-    import shutil
-
     if not shutil.which("alacritty"):
-        log_info("alacritty not found, installing...")
-        proc = subprocess.run(
-            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-            capture_output=True, text=True
-        )
-        if proc.returncode != 0:
-            log_error(f"Failed to install alacritty: {proc.stderr}")
-            return
-
+        log_error("alacritty not found — install it first")
+        show_in_app_notification(self, "alacritty not found")
+        return None
     log_subsection("Disable Network Discovery")
+    show_in_app_notification(self, "Disabling network discovery...")
     script = """
 echo 'Stopping avahi-daemon...'
-systemctl stop avahi-daemon.service
-systemctl disable avahi-daemon.service
 systemctl stop avahi-daemon.socket
 systemctl disable avahi-daemon.socket
+systemctl stop avahi-daemon.service
+systemctl disable avahi-daemon.service
 echo '✓ Network discovery stopped and disabled'
 
 echo ''
@@ -1642,31 +1617,20 @@ echo ''
 echo '=== Operation Finished ==='
 read -p 'Press Enter to close...'
 """
-
-    def _launch():
-        try:
-            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
-            GLib.idle_add(show_in_app_notification, self, "Network discovery disabled")
-            GLib.idle_add(log_success, "Avahi daemon stopped and disabled")
-        except Exception as error:
-            GLib.idle_add(log_error, f"Failed to disable network discovery: {error}")
-
-    threading.Thread(target=_launch, daemon=True).start()
+    try:
+        return subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    except Exception as error:
+        log_error(f"Failed to launch terminal: {error}")
+        return None
 
 
 def install_samba(self):
-    import shutil
     if not shutil.which("alacritty"):
-        log_info("alacritty not found, installing...")
-        proc = subprocess.run(
-            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-            capture_output=True, text=True
-        )
-        if proc.returncode != 0:
-            log_error(f"Failed to install alacritty: {proc.stderr}")
-            return
-
+        log_error("alacritty not found — install it first")
+        show_in_app_notification(self, "alacritty not found")
+        return None
     log_subsection("Install Samba")
+    show_in_app_notification(self, "Installing samba...")
     script = """
 mkdir -p /var/cache/samba
 pacman -S --noconfirm --needed samba gvfs-smb
@@ -1688,30 +1652,20 @@ echo ''
 echo '=== Operation Finished ==='
 read -p 'Press Enter to close...'
 """
-
-    def _launch():
-        try:
-            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
-            GLib.idle_add(show_in_app_notification, self, "Installing samba...")
-        except Exception as error:
-            GLib.idle_add(log_error, f"Failed to install samba: {error}")
-
-    threading.Thread(target=_launch, daemon=True).start()
+    try:
+        return subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    except Exception as error:
+        log_error(f"Failed to launch terminal: {error}")
+        return None
 
 
 def uninstall_samba(self):
-    import shutil
     if not shutil.which("alacritty"):
-        log_info("alacritty not found, installing...")
-        proc = subprocess.run(
-            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"],
-            capture_output=True, text=True
-        )
-        if proc.returncode != 0:
-            log_error(f"Failed to install alacritty: {proc.stderr}")
-            return
-
+        log_error("alacritty not found — install it first")
+        show_in_app_notification(self, "alacritty not found")
+        return None
     log_subsection("Uninstall Samba")
+    show_in_app_notification(self, "Uninstalling samba...")
     script = """
 echo 'Stopping samba services...'
 systemctl stop smb.service
@@ -1737,108 +1691,61 @@ echo ''
 echo '=== Operation Finished ==='
 read -p 'Press Enter to close...'
 """
-
-    def _launch():
-        try:
-            subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
-            GLib.idle_add(show_in_app_notification, self, "Uninstalling samba...")
-        except Exception as error:
-            GLib.idle_add(log_error, f"Failed to uninstall samba: {error}")
-
-    threading.Thread(target=_launch, daemon=True).start()
+    try:
+        return subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    except Exception as error:
+        log_error(f"Failed to launch terminal: {error}")
+        return None
 
 
 def copy_samba(choice):
-    command = (
-        "cp /usr/share/archlinux-tweak-tool/data/samba/"
-        + choice
-        + "/smb.conf /etc/samba/smb.conf"
-    )
-    subprocess.call(
-        command.split(" "),
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    src = f"/usr/share/archlinux-tweak-tool/data/samba/{choice}/smb.conf"
+    if path.isfile(samba_config) and not path.isfile(samba_config + ".bak"):
+        shutil.copy(samba_config, samba_config + ".bak")
+    subprocess.run(["cp", src, samba_config], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     if choice == "example":
         try:
             with open(samba_config, "r", encoding="utf-8") as f:
-                lists = f.readlines()
-                f.close()
+                lines = f.readlines()
 
-            val = get_position(lists, "[SAMBASHARE]")
-            lists[val + 1] = "path = " + "/home/" + sudo_username + "/Shared\n"
-
-            debug_print("You have choosen to install Samba with an example share")
-            debug_print("We have added a folder called 'Shared' to your home directory")
-            debug_print("You can access this folder from any computer in your network")
-            debug_print("You can write and remove items from the shared folder")
-            debug_print("Reboot or restart smb first")
-            debug_print(lists[val + 1])
+            val = get_position(lines, "[SAMBASHARE]")
+            lines[val + 1] = f"path = /home/{sudo_username}/Shared\n"
+            log_info(f"Samba share path set to /home/{sudo_username}/Shared")
 
             with open(samba_config, "w", encoding="utf-8") as f:
-                f.writelines(lists)
-                f.close()
+                f.writelines(lines)
         except Exception as error:
-            debug_print(error)
+            log_error(f"Failed to configure samba share path: {error}")
 
     if choice == "usershares":
-        # make folder
         if not path.isdir("/var/lib/samba/usershares"):
             makedirs("/var/lib/samba/usershares", 0o770)
 
-        # create system sambashare group
-        try:
-            if check_group("sambashare"):
-                pass
-            else:
-                try:
-                    command = "groupadd -r sambashare"
-                    subprocess.call(
-                        command.split(" "),
-                        shell=False,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    )
-                except Exception as error:
-                    debug_print(error)
+        if not check_group("sambashare"):
+            try:
+                subprocess.run(
+                    ["groupadd", "-r", "sambashare"],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+            except Exception as error:
+                log_error(f"Failed to create sambashare group: {error}")
 
-        except Exception as error:
-            debug_print(error)
-
-        # add user to group
         try:
-            command = "gpasswd -a " + sudo_username + " sambashare"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+            subprocess.run(
+                ["gpasswd", "-a", sudo_username, "sambashare"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            subprocess.run(
+                ["chown", "root:sambashare", "/var/lib/samba/usershares"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            subprocess.run(
+                ["chmod", "1770", "/var/lib/samba/usershares"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             )
         except Exception as error:
-            debug_print(error)
-
-        try:
-            command = "chown root:sambashare /var/lib/samba/usershares"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            debug_print(error)
-
-        try:
-            command = "chmod 1770 /var/lib/samba/usershares"
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as error:
-            debug_print(error)
+            log_error(f"Failed to configure usershares directory: {error}")
 
 
 def save_samba_config(self):
@@ -1925,11 +1832,12 @@ def create_sddm_k_dir():
 
 def copy_nsswitch(new_hosts_line):
     dest_file = "/etc/nsswitch.conf"
-
     try:
-        # Read the current nsswitch.conf
         with open(dest_file, 'r') as f:
             dest_lines = f.readlines()
+
+        if not path.isfile(dest_file + ".bak"):
+            shutil.copy(dest_file, dest_file + ".bak")
 
         old_hosts_line = None
         updated_lines = []
@@ -1944,10 +1852,10 @@ def copy_nsswitch(new_hosts_line):
             f.writelines(updated_lines)
 
         if old_hosts_line:
-            debug_print(f"[INFO] Previous: {old_hosts_line}")
-            debug_print(f"[INFO] New:      hosts: {new_hosts_line}")
+            debug_print(f"Previous: {old_hosts_line}")
+            debug_print(f"New:      hosts: {new_hosts_line}")
     except Exception as e:
-        debug_print(f"[INFO] Error updating nsswitch.conf: {e}")
+        log_error(f"Error updating nsswitch.conf: {e}")
 
 
 # =====================================================

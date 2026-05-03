@@ -6,38 +6,37 @@ import functions as fn
 from functions import GLib
 from gi.repository import Gtk
 
+NSSWITCH_OPTIONS = {
+    "Standard (no mdns)":
+        "mymachines resolve [!UNAVAIL=return] files myhostname dns",
+    "With mdns + wins":
+        "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname",
+    "With mdns_minimal":
+        "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+    "With mdns4_minimal":
+        "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
+    "Custom order (no systemd)":
+        "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins",
+}
+
 
 def choose_nsswitch(self):
-    """choose a nsswitch based on hosts: line"""
     fn.log_subsection("Apply Nsswitch Configuration")
     label = fn.get_combo_text(self.nsswitch_choices)
 
-    nsswitch_options = {
-        "Standard (no mdns)":
-            "mymachines resolve [!UNAVAIL=return] files myhostname dns",
-        "With mdns + wins":
-            "mymachines resolve [!UNAVAIL=return] files dns mdns wins myhostname",
-        "With mdns_minimal":
-            "mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
-        "With mdns4_minimal":
-            "mymachines mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns",
-        "Custom order (no systemd)":
-            "files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns wins",
-    }
-
-    if label in nsswitch_options:
-        hosts_line = nsswitch_options[label]
-        fn.debug_print(f"Selected preset : {label}")
-        fn.debug_print(f"Writing hosts:  : hosts: {hosts_line}")
+    if label in NSSWITCH_OPTIONS:
+        hosts_line = NSSWITCH_OPTIONS[label]
+        fn.log_info(f"  Preset : {label}")
+        fn.log_info(f"  hosts: : {hosts_line}")
+        fn.debug_print("  File   : /etc/nsswitch.conf")
         fn.copy_nsswitch(hosts_line)
-        fn.log_success(f"Nsswitch applied: {label}")
+        fn.log_success("Nsswitch configuration applied")
         GLib.idle_add(fn.show_in_app_notification, self, f"Nsswitch: {label}")
     else:
         fn.log_warn(f"Unknown nsswitch preset: {label}")
 
 
 def choose_smb_conf(self):
-    """Apply the Easy samba configuration"""
     fn.log_subsection("Apply Samba Configuration")
     shared_path = f"/home/{fn.sudo_username}/Shared"
 
@@ -79,7 +78,6 @@ def choose_smb_conf(self):
 
 
 def create_samba_user(self):
-    """create a new user for samba"""
     username = fn.sudo_username
 
     if not username:
@@ -129,7 +127,6 @@ read -p 'Press Enter to close...'
 
 
 def check_audio_server(expected):
-    """Verify which audio server is active"""
     try:
         result = fn.subprocess.run(
             ["pactl", "info"],
@@ -150,7 +147,6 @@ def check_audio_server(expected):
 
 
 def restart_smb(self):
-    """restart samba with detailed status checklist"""
     fn.log_subsection("SAMBA SERVICE RESTART - STATUS CHECKLIST")
     fn.debug_print(f"Configuration: {fn.samba_config}")
 
@@ -162,18 +158,7 @@ def restart_smb(self):
     fn.debug_print(f"✓ NetBIOS (nmb):         {'✓ ACTIVE' if nmb_active else '✗ INACTIVE'}")
     fn.debug_print(f"✓ Avahi (discovery):     {'✓ ACTIVE' if avahi_active else '✗ INACTIVE'}")
 
-    if smb_active:
-        fn.debug_print("Restarting samba services...")
-        fn.system("systemctl restart smb")
-        if nmb_active:
-            fn.system("systemctl restart nmb")
-        fn.log_success("Samba services restarted successfully")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "✓ Samba restarted. Check other services in the status bar.",
-        )
-    else:
+    if not smb_active:
         fn.log_error("Samba is not installed or running")
         fn.debug_print("REQUIRED SETUP:")
         fn.debug_print("1. Install samba package: pacman -S samba")
@@ -190,6 +175,22 @@ def restart_smb(self):
             self,
             "✗ Samba not running. Check terminal output for setup instructions.",
         )
+        return
+
+    def _restart():
+        fn.debug_print("Restarting samba services...")
+        fn.subprocess.run(["systemctl", "restart", "smb"], check=False)
+        if nmb_active:
+            fn.subprocess.run(["systemctl", "restart", "nmb"], check=False)
+        fn.log_success("Samba services restarted successfully")
+        GLib.idle_add(update_network_status, self)
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "✓ Samba restarted. Check other services in the status bar.",
+        )
+
+    fn.threading.Thread(target=_restart, daemon=True).start()
 
 
 # ====================================================================
@@ -577,28 +578,23 @@ def update_network_status(self):
 
 
 def on_install_discovery_clicked(self, _widget):
-    fn.log_subsection("Install Network Discovery")
-    try:
-        fn.install_discovery(self)
-        fn.debug_print("Network discovery packages installed")
-        update_network_status(self)
-        fn.log_success("Network discovery installed successfully")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Network discovery is installed - a good nsswitch_config is needed",
-        )
-    except Exception as error:
-        fn.log_error(f"Failed to install network discovery: {error}")
+    def _wait(process):
+        if process is None:
+            return
+        process.wait()
+        GLib.idle_add(update_network_status, self)
+    proc = fn.install_discovery(self)
+    fn.threading.Thread(target=_wait, args=(proc,), daemon=True).start()
 
 
 def on_remove_discovery_clicked(self, _widget):
-    fn.log_subsection("Disable Network Discovery")
-    try:
-        fn.remove_discovery(self)
-        update_network_status(self)
-    except Exception as error:
-        fn.log_error(f"Failed to disable network discovery: {error}")
+    def _wait(process):
+        if process is None:
+            return
+        process.wait()
+        GLib.idle_add(update_network_status, self)
+    proc = fn.remove_discovery(self)
+    fn.threading.Thread(target=_wait, args=(proc,), daemon=True).start()
 
 
 def on_click_reset_nsswitch(self, _widget):
@@ -641,7 +637,6 @@ def on_click_create_samba_user(self, _widget):
 
 def on_click_restart_smb(self, _widget):
     restart_smb(self)
-    update_network_status(self)
 
 
 def on_click_save_samba_share(self, _widget):
@@ -696,17 +691,21 @@ def on_click_edit_samba_nano(self, _widget):
 
 
 def on_click_install_samba(self, _widget):
-    try:
-        fn.install_samba(self)
-        choose_smb_conf(self)
-        update_network_status(self)
-    except Exception as error:
-        fn.log_error(f"Failed to install samba: {error}")
+    def _wait(process):
+        if process is None:
+            return
+        process.wait()
+        GLib.idle_add(choose_smb_conf, self)
+        GLib.idle_add(update_network_status, self)
+    proc = fn.install_samba(self)
+    fn.threading.Thread(target=_wait, args=(proc,), daemon=True).start()
 
 
 def on_click_uninstall_samba(self, _widget):
-    try:
-        fn.uninstall_samba(self)
-        update_network_status(self)
-    except Exception as error:
-        fn.log_error(f"Failed to uninstall samba: {error}")
+    def _wait(process):
+        if process is None:
+            return
+        process.wait()
+        GLib.idle_add(update_network_status, self)
+    proc = fn.uninstall_samba(self)
+    fn.threading.Thread(target=_wait, args=(proc,), daemon=True).start()

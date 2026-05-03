@@ -1,5 +1,25 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - Fastfetch Remove Button Fix
+
+### What Changed
+
+- `on_remove_fast()` rewritten to use `fn.launch_pacman_remove_in_terminal()`, matching the install pattern used by `on_fast_util_toggled()`
+- Detects whether `fastfetch-git` or `fastfetch` is installed before launching the terminal, so the correct package name is passed
+- `wait_and_update` thread now calls `process.communicate()` (not `process.wait()`) consistent with the install path
+
+### Technical Details
+
+- Root cause: the original `on_remove_fast` used a hand-rolled `Popen` with `stdout=PIPE, stderr=PIPE` and `process.wait()` — if alacritty wrote to its stderr, the pipe buffer filled and deadlocked ATT
+- `launch_pacman_remove_in_terminal` handles the script, temp-file logging, success/failure messaging, and `read -p 'Press Enter to close...'` prompt in one tested function — no need to duplicate the pattern inline
+- Package detection: `pacman -Q fastfetch-git` returns 0 if installed; falls back to `fastfetch` if not found
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/fastfetch.py`
+
+---
+
 ## 2026.05.03 - Widget Renaming, Section Headers, Fastfetch Remove, Kernel + Desktopr Fixes
 
 ### What Changed

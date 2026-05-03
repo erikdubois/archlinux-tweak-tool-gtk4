@@ -52,9 +52,10 @@ def gui(self, Gtk, vboxstack, fn):
 
     # ── Default boot entry (systemd-boot only) ────────────
     if kernel.is_systemd_boot():
-        _build_boot_entry_selector(self, Gtk, vboxstack, fn)
+        refresh_boot = _build_boot_entry_selector(self, Gtk, vboxstack, fn)
     else:
         _build_boot_entry_unavailable(Gtk, vboxstack)
+        refresh_boot = None
 
     # ── Kernel rows ───────────────────────────────────────
     chaotic_enabled = kernel.is_chaotic_aur_enabled()
@@ -70,7 +71,7 @@ def gui(self, Gtk, vboxstack, fn):
             current_group = grp
             _build_group_header(Gtk, vboxstack, grp)
 
-        _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info)
+        _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot)
 
 
 def _build_group_header(Gtk, vboxstack, title):
@@ -90,7 +91,7 @@ def _build_group_header(Gtk, vboxstack, title):
     vboxstack.append(hbox_hdr)
 
 
-def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info):
+def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot=None):
     pkg = k["pkg"]
     headers = k["headers"]
     compatible = kernel.is_kernel_compatible(k, cpu_info)
@@ -164,7 +165,8 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
             fn.log_success(f"{action} completed for {pkg_name}")
             fn.GLib.idle_add(lambda: (
                 fn.show_in_app_notification(self, f"{action} completed for {pkg_name}"),
-                refresh()
+                refresh(),
+                refresh_boot() if refresh_boot else None,
             ))
 
         if installed and not is_running:
@@ -210,7 +212,8 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
                 fn.log_success(f"Removal completed for {pkg}")
                 fn.GLib.idle_add(lambda: (
                     fn.show_in_app_notification(self, f"Removal completed for {pkg}"),
-                    refresh()
+                    refresh(),
+                    refresh_boot() if refresh_boot else None,
                 ))
             handler_id[0] = btn.connect(
                 "clicked",
@@ -225,7 +228,8 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
             fn.log_success(f"Installation completed for {pkg}")
             fn.GLib.idle_add(lambda: (
                 fn.show_in_app_notification(self, f"Installation completed for {pkg}"),
-                refresh()
+                refresh(),
+                refresh_boot() if refresh_boot else None,
             ))
         handler_id[0] = btn.connect(
             "clicked",
@@ -309,6 +313,19 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
 
     vboxstack.append(hbox_row)
     vboxstack.append(lbl_current)
+
+    def refresh_combo():
+        new_entries = kernel.get_boot_entries()
+        combo.remove_all()
+        id_to_title.clear()
+        for entry_id, title in new_entries:
+            combo.append(entry_id, title)
+            id_to_title[entry_id] = title
+        new_default = kernel.get_default_boot_entry()
+        if new_default:
+            combo.set_active_id(new_default)
+
+    return refresh_combo
 
 
 def _build_boot_entry_unavailable(Gtk, vboxstack):

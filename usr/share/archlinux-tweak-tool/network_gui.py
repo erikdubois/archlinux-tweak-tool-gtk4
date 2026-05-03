@@ -7,9 +7,7 @@ import services
 
 
 def gui(self, Gtk, vboxstack_network, fn):
-    """create a gui"""
     def format_status(service_name):
-        """Format service status for display"""
         return "<b>active</b>" if fn.check_service(service_name) else "inactive"
 
     status_smb = format_status("smb")
@@ -37,34 +35,32 @@ def gui(self, Gtk, vboxstack_network, fn):
     #                       NETWORK TAB
     # ==================================================================
 
-    hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox2_label = Gtk.Label(xalign=0)
-    hbox2_label.set_text(
-        "Discover other computers in your network"
-    )
+    hbox_discovery = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_discovery = Gtk.Label(xalign=0)
+    label_discovery.set_text("Discover other computers in your network")
     button_install_discovery = Gtk.Button(label="Install network discovery")
     button_install_discovery.connect("clicked", functools.partial(services.on_install_discovery_clicked, self))
     button_remove_discovery = Gtk.Button(label="Uninstall network discovery")
     button_remove_discovery.connect("clicked", functools.partial(services.on_remove_discovery_clicked, self))
-    hbox2_label.set_margin_start(10)
-    hbox2_label.set_margin_end(10)
-    hbox2_label.set_hexpand(True)
-    hbox2.append(hbox2_label)
+    label_discovery.set_margin_start(10)
+    label_discovery.set_margin_end(10)
+    label_discovery.set_hexpand(True)
+    hbox_discovery.append(label_discovery)
     button_install_discovery.set_margin_start(10)
     button_install_discovery.set_margin_end(10)
-    hbox2.append(button_install_discovery)
+    hbox_discovery.append(button_install_discovery)
     button_remove_discovery.set_margin_start(10)
     button_remove_discovery.set_margin_end(10)
-    hbox2.append(button_remove_discovery)
+    hbox_discovery.append(button_remove_discovery)
 
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox3_label = Gtk.Label(xalign=0)
-    hbox3_label.set_text("Select hosts: line for name resolution (connect to computers/NAS)")
-    hbox3_label.set_margin_start(10)
-    hbox3_label.set_margin_end(10)
-    hbox3.append(hbox3_label)
+    hbox_nsswitch_desc = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_nsswitch_desc = Gtk.Label(xalign=0)
+    label_nsswitch_desc.set_text("Select hosts: line for name resolution (connect to computers/NAS)")
+    label_nsswitch_desc.set_margin_start(10)
+    label_nsswitch_desc.set_margin_end(10)
+    hbox_nsswitch_desc.append(label_nsswitch_desc)
 
-    hbox30 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_nsswitch_dropdown = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.nsswitch_choices = Gtk.DropDown.new_from_strings([
         "Standard (no mdns)",
         "With mdns + wins",
@@ -75,7 +71,24 @@ def gui(self, Gtk, vboxstack_network, fn):
     self.nsswitch_choices.set_selected(0)
     self.nsswitch_choices.set_margin_start(10)
     self.nsswitch_choices.set_margin_end(10)
-    hbox30.append(self.nsswitch_choices)
+    hbox_nsswitch_dropdown.append(self.nsswitch_choices)
+
+    hbox_nsswitch_preview = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_nsswitch_preview = Gtk.Label(xalign=0)
+    label_nsswitch_preview.set_margin_start(10)
+    label_nsswitch_preview.set_margin_end(10)
+
+    def _update_nsswitch_preview(*args):
+        key = fn.get_combo_text(self.nsswitch_choices)
+        hosts_line = services.NSSWITCH_OPTIONS.get(key, "")
+        label_nsswitch_preview.set_markup(f"<tt>hosts: {hosts_line}</tt>")
+        if args:
+            fn.log_info(f"  Selected : {key}")
+            fn.log_info(f"  hosts:   : {hosts_line}")
+
+    _update_nsswitch_preview()
+    self.nsswitch_choices.connect("notify::selected", _update_nsswitch_preview)
+    hbox_nsswitch_preview.append(label_nsswitch_preview)
 
     hbox_nsswitch_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_apply_nsswitch = Gtk.Button(label="Apply selected nsswitch.conf")
@@ -96,33 +109,26 @@ def gui(self, Gtk, vboxstack_network, fn):
     button_edit_nsswitch.set_margin_end(10)
     hbox_edit_nsswitch.append(button_edit_nsswitch)
 
-    hbox92 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox92_label = Gtk.Label(xalign=0)
-    hbox92_label.set_markup(
+    hbox_firewall_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_firewall_warning = Gtk.Label(xalign=0)
+    label_firewall_warning.set_markup(
         '<span foreground="red" size="large">We found a firewall on your system</span>'
     )
-    hbox92_label.set_margin_start(10)
-    hbox92_label.set_margin_end(10)
-    hbox92.append(hbox92_label)
+    label_firewall_warning.set_margin_start(10)
+    label_firewall_warning.set_margin_end(10)
+    hbox_firewall_warning.append(label_firewall_warning)
 
-    hbox91 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox91_label = Gtk.Label(xalign=0)
-    hbox91_label.set_text(
+    hbox_discovery_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_discovery_info = Gtk.Label(xalign=0)
+    label_discovery_info.set_text(
         "With the Avahi daemon (network discovery) running on both the server \
 and client,\nthe file manager on the client should automatically find the server - \
 Beware of firewalls"
     )
-    hbox91_label.set_margin_start(10)
-    hbox91_label.set_margin_end(10)
-    hbox91_label.set_hexpand(True)
-    hbox91.append(hbox91_label)
-
-    hbox93 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox93_label = Gtk.Label(xalign=0)
-    hbox93_label.set_markup(status_text)
-    hbox93_label.set_margin_start(10)
-    hbox93_label.set_margin_end(10)
-    hbox93.append(hbox93_label)
+    label_discovery_info.set_margin_start(10)
+    label_discovery_info.set_margin_end(10)
+    label_discovery_info.set_hexpand(True)
+    hbox_discovery_info.append(label_discovery_info)
 
     # ==================================================================
     #                       SAMBA TAB
@@ -137,45 +143,45 @@ access this folder from other computers\n\
 We will create the folder 'Shared' in your home directory \
 if it is not already there\n ")
 
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox4_label = Gtk.Label(xalign=0)
+    hbox_samba_install = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_samba_install = Gtk.Label(xalign=0)
     if fn.check_package_installed("samba"):
-        hbox4_label.set_markup("1. Install the samba server - <b>installed</b>")
+        label_samba_install.set_markup("1. Install the samba server - <b>installed</b>")
     else:
-        hbox4_label.set_text("1. Install the samba server")
+        label_samba_install.set_text("1. Install the samba server")
     button_install_samba = Gtk.Button(label="Install Samba")
     button_install_samba.connect("clicked", functools.partial(services.on_click_install_samba, self))
     button_uninstall_samba = Gtk.Button(label="Uninstall Samba")
     button_uninstall_samba.connect("clicked", functools.partial(services.on_click_uninstall_samba, self))
-    hbox4_label.set_margin_start(10)
-    hbox4_label.set_margin_end(10)
-    hbox4_label.set_hexpand(True)
-    hbox4.append(hbox4_label)
+    label_samba_install.set_margin_start(10)
+    label_samba_install.set_margin_end(10)
+    label_samba_install.set_hexpand(True)
+    hbox_samba_install.append(label_samba_install)
     button_install_samba.set_margin_start(10)
     button_install_samba.set_margin_end(10)
-    hbox4.append(button_install_samba)
+    hbox_samba_install.append(button_install_samba)
     button_uninstall_samba.set_margin_start(10)
     button_uninstall_samba.set_margin_end(10)
-    hbox4.append(button_uninstall_samba)
+    hbox_samba_install.append(button_uninstall_samba)
 
-    hbox4bis = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox4bis_label = Gtk.Label(xalign=0)
-    hbox4bis_label.set_text("2. Apply the /etc/samba/smb.conf of your choice")
-    hbox4bis_label.set_margin_start(10)
-    hbox4bis_label.set_margin_end(10)
-    hbox4bis.append(hbox4bis_label)
+    hbox_samba_conf_desc = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_samba_conf_desc = Gtk.Label(xalign=0)
+    label_samba_conf_desc.set_text("2. Apply the configuration")
+    label_samba_conf_desc.set_margin_start(10)
+    label_samba_conf_desc.set_margin_end(10)
+    hbox_samba_conf_desc.append(label_samba_conf_desc)
 
-    hbox4bis_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    button_apply_samba = Gtk.Button(label="Apply selected samba.conf")
+    hbox_samba_conf_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    button_apply_samba = Gtk.Button(label="Apply default samba.conf")
     button_apply_samba.connect("clicked", functools.partial(services.on_click_apply_samba, self))
-    button_reset_samba = Gtk.Button(label="Reset to default samba.conf")
+    button_reset_samba = Gtk.Button(label="Reset to your default samba.conf")
     button_reset_samba.connect("clicked", functools.partial(services.on_click_reset_samba, self))
     button_apply_samba.set_margin_start(10)
     button_apply_samba.set_margin_end(10)
-    hbox4bis_buttons.append(button_apply_samba)
+    hbox_samba_conf_buttons.append(button_apply_samba)
     button_reset_samba.set_margin_start(10)
     button_reset_samba.set_margin_end(10)
-    hbox4bis_buttons.append(button_reset_samba)
+    hbox_samba_conf_buttons.append(button_reset_samba)
 
     hbox_edit_samba = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_edit_samba = Gtk.Button(label="Edit samba.conf in terminal")
@@ -184,52 +190,32 @@ if it is not already there\n ")
     button_edit_samba.set_margin_end(10)
     hbox_edit_samba.append(button_edit_samba)
 
-    hbox5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox5_label = Gtk.Label(xalign=0)
-    hbox5_label.set_text(
+    hbox_samba_password_desc = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_samba_password_desc = Gtk.Label(xalign=0)
+    label_samba_password_desc.set_text(
         "3. Create a password for the current user to be able to access the Samba server"
     )
-    hbox5_label.set_margin_start(10)
-    hbox5_label.set_margin_end(10)
-    hbox5.append(hbox5_label)
+    label_samba_password_desc.set_margin_start(10)
+    label_samba_password_desc.set_margin_end(10)
+    hbox_samba_password_desc.append(label_samba_password_desc)
 
-    hbox5_button = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_samba_password_button = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     button_create_samba_user = Gtk.Button(
         label="Create a password for the current user (pop-up)"
     )
     button_create_samba_user.connect("clicked", functools.partial(services.on_click_create_samba_user, self))
     button_create_samba_user.set_margin_start(10)
     button_create_samba_user.set_margin_end(10)
-    hbox5_button.append(button_create_samba_user)
+    hbox_samba_password_button.append(button_create_samba_user)
 
-    hbox16 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox16_label = Gtk.Label(xalign=0)
-    hbox16_label.set_markup(
+    hbox_samba_reboot_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_samba_reboot_note = Gtk.Label(xalign=0)
+    label_samba_reboot_note.set_markup(
         "You can now reboot and enjoy the <b>'Shared'</b> folder"
     )
-    hbox16_label.set_margin_start(10)
-    hbox16_label.set_margin_end(10)
-    hbox16.append(hbox16_label)
-
-    hbox94 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox94_label = Gtk.Label(xalign=0)
-    hbox94_label.set_markup(status_text)
-    hbox94_label.set_margin_start(10)
-    hbox94_label.set_margin_end(10)
-    hbox94.append(hbox94_label)
-
-    hbox95 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox95_label = Gtk.Label(xalign=0)
-    hbox95_label.set_text(
-        "With the Avahi daemon (network discovery) running on both \
-the server and client,\n\
-the file manager on the client should automatically find the server- Beware of firewalls\n\
-All computers in your network must have a unique name /etc/hostname"
-    )
-    hbox95_label.set_margin_start(10)
-    hbox95_label.set_margin_end(10)
-    hbox95_label.set_hexpand(True)
-    hbox95.append(hbox95_label)
+    label_samba_reboot_note.set_margin_start(10)
+    label_samba_reboot_note.set_margin_end(10)
+    hbox_samba_reboot_note.append(label_samba_reboot_note)
 
     # ======================================================================
     #                       SHARED STATUS BAR
@@ -243,11 +229,11 @@ All computers in your network must have a unique name /etc/hostname"
     self.network_status_label.set_margin_end(10)
     hbox_status.append(self.network_status_label)
 
-    restart_smb_button3 = Gtk.Button(label="Restart Smb")
-    restart_smb_button3.connect("clicked", functools.partial(services.on_click_restart_smb, self))
-    restart_smb_button3.set_margin_start(10)
-    restart_smb_button3.set_margin_end(10)
-    hbox_status.append(restart_smb_button3)
+    button_restart_smb = Gtk.Button(label="Restart Smb")
+    button_restart_smb.connect("clicked", functools.partial(services.on_click_restart_smb, self))
+    button_restart_smb.set_margin_start(10)
+    button_restart_smb.set_margin_end(10)
+    hbox_status.append(button_restart_smb)
 
     hbox_discovery_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     discovery_status_label = Gtk.Label(xalign=0)
@@ -263,23 +249,23 @@ All computers in your network must have a unique name /etc/hostname"
     #                   SECTION 1: NETWORK DISCOVERY
     # ======================================================================
 
-    hbox_section1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    section1_label = Gtk.Label(xalign=0)
-    section1_label.set_markup("<b>Network Discovery</b>")
-    section1_label.set_margin_start(10)
-    section1_label.set_margin_end(10)
-    hbox_section1.append(section1_label)
+    hbox_section_discovery = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_section_discovery = Gtk.Label(xalign=0)
+    label_section_discovery.set_markup("<b>Network Discovery</b>")
+    label_section_discovery.set_margin_start(10)
+    label_section_discovery.set_margin_end(10)
+    hbox_section_discovery.append(label_section_discovery)
 
     # ======================================================================
     #                   SECTION 2: SAMBA FILE SHARING
     # ======================================================================
 
-    hbox_section2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    section2_label = Gtk.Label(xalign=0)
-    section2_label.set_markup("<b>Samba File Sharing</b>")
-    section2_label.set_margin_start(10)
-    section2_label.set_margin_end(10)
-    hbox_section2.append(section2_label)
+    hbox_section_samba = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    label_section_samba = Gtk.Label(xalign=0)
+    label_section_samba.set_markup("<b>Samba File Sharing</b>")
+    label_section_samba.set_margin_start(10)
+    label_section_samba.set_margin_end(10)
+    hbox_section_samba.append(label_section_samba)
 
     sep1 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     sep2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
@@ -306,58 +292,61 @@ All computers in your network must have a unique name /etc/hostname"
     vbox.append(sep1)
 
     # Section 1: Network Discovery
-    vbox.append(hbox_section1)
-    hbox2.set_margin_start(20)
-    hbox2.set_margin_end(10)
-    vbox.append(hbox2)
+    vbox.append(hbox_section_discovery)
+    hbox_discovery.set_margin_start(20)
+    hbox_discovery.set_margin_end(10)
+    vbox.append(hbox_discovery)
     if fn.check_service("firewalld"):
-        hbox92.set_margin_start(20)
-        hbox92.set_margin_end(10)
-        vbox.append(hbox92)
-    hbox3.set_margin_start(20)
-    hbox3.set_margin_end(10)
-    vbox.append(hbox3)
-    hbox30.set_margin_start(20)
-    hbox30.set_margin_end(10)
-    vbox.append(hbox30)
+        hbox_firewall_warning.set_margin_start(20)
+        hbox_firewall_warning.set_margin_end(10)
+        vbox.append(hbox_firewall_warning)
+    hbox_nsswitch_desc.set_margin_start(20)
+    hbox_nsswitch_desc.set_margin_end(10)
+    vbox.append(hbox_nsswitch_desc)
+    hbox_nsswitch_dropdown.set_margin_start(20)
+    hbox_nsswitch_dropdown.set_margin_end(10)
+    vbox.append(hbox_nsswitch_dropdown)
+    hbox_nsswitch_preview.set_margin_start(20)
+    hbox_nsswitch_preview.set_margin_end(10)
+    vbox.append(hbox_nsswitch_preview)
     hbox_nsswitch_buttons.set_margin_start(20)
     hbox_nsswitch_buttons.set_margin_end(10)
     vbox.append(hbox_nsswitch_buttons)
     hbox_edit_nsswitch.set_margin_start(20)
     hbox_edit_nsswitch.set_margin_end(10)
     vbox.append(hbox_edit_nsswitch)
-    hbox91.set_margin_start(20)
-    hbox91.set_margin_end(10)
-    vbox.append(hbox91)
+    hbox_discovery_info.set_margin_start(20)
+    hbox_discovery_info.set_margin_end(10)
+    vbox.append(hbox_discovery_info)
 
     vbox.append(sep2)
 
     # Section 2: Samba File Sharing
-    vbox.append(hbox_section2)
+    vbox.append(hbox_section_samba)
     hbox_header_samba.set_margin_start(20)
     hbox_header_samba.set_margin_end(10)
     vbox.append(hbox_header_samba)
-    hbox4.set_margin_start(20)
-    hbox4.set_margin_end(10)
-    vbox.append(hbox4)
-    hbox4bis.set_margin_start(20)
-    hbox4bis.set_margin_end(10)
-    vbox.append(hbox4bis)
-    hbox4bis_buttons.set_margin_start(20)
-    hbox4bis_buttons.set_margin_end(10)
-    vbox.append(hbox4bis_buttons)
+    hbox_samba_install.set_margin_start(20)
+    hbox_samba_install.set_margin_end(10)
+    vbox.append(hbox_samba_install)
+    hbox_samba_conf_desc.set_margin_start(20)
+    hbox_samba_conf_desc.set_margin_end(10)
+    vbox.append(hbox_samba_conf_desc)
+    hbox_samba_conf_buttons.set_margin_start(20)
+    hbox_samba_conf_buttons.set_margin_end(10)
+    vbox.append(hbox_samba_conf_buttons)
     hbox_edit_samba.set_margin_start(20)
     hbox_edit_samba.set_margin_end(10)
     vbox.append(hbox_edit_samba)
-    hbox5.set_margin_start(20)
-    hbox5.set_margin_end(10)
-    vbox.append(hbox5)
-    hbox5_button.set_margin_start(20)
-    hbox5_button.set_margin_end(10)
-    vbox.append(hbox5_button)
-    hbox16.set_margin_start(20)
-    hbox16.set_margin_end(10)
-    vbox.append(hbox16)
+    hbox_samba_password_desc.set_margin_start(20)
+    hbox_samba_password_desc.set_margin_end(10)
+    vbox.append(hbox_samba_password_desc)
+    hbox_samba_password_button.set_margin_start(20)
+    hbox_samba_password_button.set_margin_end(10)
+    vbox.append(hbox_samba_password_button)
+    hbox_samba_reboot_note.set_margin_start(20)
+    hbox_samba_reboot_note.set_margin_end(10)
+    vbox.append(hbox_samba_reboot_note)
 
     vboxstack_network.append(hbox_title)
     vboxstack_network.append(hbox_sep)
