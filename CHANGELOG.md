@@ -1,5 +1,55 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - Widget Renaming, Section Headers, Fastfetch Remove, Kernel + Desktopr Fixes
+
+### What Changed
+
+#### Widget Renaming Pass (Objective 27 — No Numbered Boxes)
+
+- All numbered widget names (`hbox1`, `hbox2`, `hbox23`, `vboxstack27`, etc.) renamed to descriptive identifiers across 10+ GUI files
+- `performance_gui.py` function parameter `vboxstack27` → `vboxstack_performance`
+- `fastfetch_gui.py` several local hboxes promoted to `self.` attributes so `set_fastfetch_ui_sensitive()` can reach them
+
+#### Section Header Markup Consistency (Objective 26)
+
+- `sddm_gui.py` — new **Configuration Setup** section header added using `set_markup("<b>...</b>")`; existing labels converted from `set_text()` to markup
+- `performance_gui.py` — **Tuned**, **Zram**, **Preload**, **Irqbalance** section headers converted from `set_name("title")` to `set_markup("<b>...</b>")`
+- `logging_gui.py` — new **Journal**, **Pacman Log**, **Xorg Log** section headers added with bold markup
+- `system_gui.py` — new **Hardware**, **Storage**, **System**, **Systemd** section headers added (bold label + inline horizontal separator pattern)
+
+#### Fastfetch: Remove Button + Sensitive State Control
+
+- `fastfetch.py` — new `set_fastfetch_ui_sensitive(self, state)` function enables/disables all fastfetch controls when fastfetch is not installed
+- `fastfetch.py` — new `on_remove_fast()` remove handler using alacritty terminal with `wait_and_update` daemon thread; after removal disables UI and resets the install switch
+- `fastfetch_gui.py` — `set_fastfetch_ui_sensitive()` now called at end of lazy load so initial state is always correct; `on_reset_fast_att` callback parameter fixed `widget` → `_widget`
+
+#### Kernel: Boot Entry Parsing + Non-systemd-boot Message
+
+- `kernel.py` — `get_boot_entries()` now strips any parenthesised suffixes from title (e.g. "Linux (default)" → "Linux") using `re.sub`; entries with "reported/absent" in title are skipped
+- `kernel_gui.py` — `_build_boot_entry_unavailable()` added: shown instead of the selector when systemd-boot is not active; informs user the feature requires systemd-boot
+
+#### Desktopr: Refresh Installed Desktops After Install/Remove
+
+- `desktopr.py` — new `refresh_installed_desktops(self)` function rebuilds the "Installed: …" label after an install or removal completes
+- `desktopr.py` — `install_desktop()` and `uninstall_desktop()` both call `refresh_installed_desktops` via `GLib.idle_add` on completion; stale `desktopr_stat.set_text()` status updates removed (were updating a widget removed in a prior refactor)
+- `desktopr_gui.py` — IMAGE_PREVIEW_LOAD/MIN tuned (900→855, 480→456) to better fit the panel
+
+#### Autostart: Layout Fix
+
+- `autostart.py` — `hbox_add_label` and `hbox2` moved inside `mainbox` (were appended to `vboxstack13` directly, causing layout regression); `scrolled_window.set_vexpand(True)` replaced with `set_propagate_natural_height(True)` to avoid over-expanding
+
+### Technical Details
+
+- Section headers now use two patterns: (a) standalone bold label (per services/logging/sddm model) or (b) bold label + inline `hexpand` separator on the same row (per system_gui model); both are acceptable; pick whichever fits the page density
+- `set_fastfetch_ui_sensitive()` iterates a list of `self.` widget references — this is why several fastfetch hboxes were promoted from local vars to instance attributes in the same commit
+- Kernel boot entry parsing: `re.sub(r'\s*\([^)]+\)', '', raw_title)` strips ALL parenthesised segments, not just "(default)" — this future-proofs against other suffixes bootctl may add
+
+### Files Modified
+
+`sddm_gui.py` • `performance_gui.py` • `performance.py` • `logging_gui.py` • `system_gui.py` • `fastfetch.py` • `fastfetch_gui.py` • `kernel.py` • `kernel_gui.py` • `desktopr.py` • `desktopr_gui.py` • `autostart.py` • `themes_gui.py` • `packages_gui.py` • `services_gui.py` • `user.py` • `user_gui.py` • `sddm.py` • `gui.py`
+
+---
+
 ## 2026.05.03 - UI Layout Consistency: Software Page Section Headers
 
 ### What Changed
@@ -154,6 +204,7 @@
 ### Technical Details
 
 All code cleanup tasks systematically completed. No real arco/brand references remain except:
+
 1. Multi-distro support in `change_distro_label()` (intentional)
 2. Real AUR package names in themes modules (untouchable)
 3. System folder path `/etc/skel/.config/arco-chadwm` (untouchable)
@@ -467,7 +518,7 @@ Using `-Rs` (respects dependencies) fails due to circular dependencies and exter
 
 `archlinux-tweak-tool.py`, `functions.py`, `CHANGELOG.md`
 
-**Objective 13 (Remove Dead Code) & Objective 23 (Lint) status: COMPLETE**
+Objective 13 (Remove Dead Code) & Objective 23 (Lint) status: COMPLETE
 
 ---
 
