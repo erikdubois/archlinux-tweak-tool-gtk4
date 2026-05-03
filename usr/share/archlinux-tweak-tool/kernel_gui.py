@@ -58,20 +58,21 @@ def gui(self, Gtk, vboxstack, fn):
         refresh_boot = None
 
     # ── Kernel rows ───────────────────────────────────────
-    chaotic_enabled = kernel.is_chaotic_aur_enabled()
-    installed_pkgs = kernel.get_installed_kernels()
-    cpu_info = kernel.get_cpu_info()
-    current_group = None
-    for k in kernel.KERNELS:
-        if k.get("requires_chaotic") and not chaotic_enabled:
-            continue
+    vbox_kernels = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack.append(vbox_kernels)
 
-        grp = k.get("group", "")
-        if grp != current_group:
-            current_group = grp
-            _build_group_header(Gtk, vboxstack, grp)
+    last_chaotic = [kernel.is_chaotic_aur_enabled()]
+    _populate_kernel_rows(self, Gtk, vbox_kernels, fn, refresh_boot)
 
-        _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot)
+    def on_map(_widget):
+        current = kernel.is_chaotic_aur_enabled()
+        if current == last_chaotic[0]:
+            return
+        last_chaotic[0] = current
+        _clear_box(vbox_kernels)
+        _populate_kernel_rows(self, Gtk, vbox_kernels, fn, refresh_boot)
+
+    vbox_kernels.connect("map", on_map)
 
 
 def _offer_install_packages(self, Gtk, fn, missing):
@@ -139,6 +140,30 @@ read -p 'Press Enter to close...'"""
         target=lambda: fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script]).wait(),
         daemon=True,
     ).start()
+
+
+def _clear_box(box):
+    child = box.get_first_child()
+    while child:
+        nxt = child.get_next_sibling()
+        box.remove(child)
+        child = nxt
+
+
+def _populate_kernel_rows(self, Gtk, vbox_kernels, fn, refresh_boot):
+    chaotic_enabled = kernel.is_chaotic_aur_enabled()
+    installed_pkgs = kernel.get_installed_kernels()
+    cpu_info = kernel.get_cpu_info()
+    running_pkg = kernel.get_running_kernel()
+    current_group = None
+    for k in kernel.KERNELS:
+        if k.get("requires_chaotic") and not chaotic_enabled:
+            continue
+        grp = k.get("group", "")
+        if grp != current_group:
+            current_group = grp
+            _build_group_header(Gtk, vbox_kernels, grp)
+        _build_kernel_row(self, Gtk, vbox_kernels, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot)
 
 
 def _build_group_header(Gtk, vboxstack, title):

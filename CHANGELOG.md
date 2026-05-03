@@ -1,5 +1,24 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.04 - Kernel Tab: Dynamic Chaotic-AUR Kernel List Refresh
+
+### What Changed
+
+- Kernel page now hides chaotic-aur kernels automatically when chaotic-aur is removed from pacman.conf, and shows them again when it is re-added — no restart required
+
+### Technical Details
+
+- Kernel rows extracted into a dedicated `vbox_kernels` child `Gtk.Box` inside the page's main container
+- New `_populate_kernel_rows()` helper fetches fresh chaotic/installed/cpu/running state and builds all group headers and kernel rows into `vbox_kernels`
+- New `_clear_box()` helper removes all children from a box (same pattern used elsewhere for FlowBox clearing)
+- GTK `map` signal on `vbox_kernels` fires each time the Kernels tab becomes visible; a `last_chaotic` guard ensures the rebuild only happens when chaotic status actually changed — no-op on normal tab switches
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/kernel_gui.py`
+
+---
+
 ## 2026.05.04 - Kernel Tab: Resolve Kernel Package per Boot Entry
 
 ### What Changed
