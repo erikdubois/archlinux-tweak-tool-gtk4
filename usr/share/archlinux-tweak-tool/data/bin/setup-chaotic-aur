@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== Chaotic-AUR Setup ==="
+echo ""
+echo ">>> Importing signing key..."
+pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+pacman-key --lsign-key 3056513887B78AEB
+
+echo ""
+echo ">>> Installing chaotic-keyring and chaotic-mirrorlist..."
+pacman -U --noconfirm \
+    'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' \
+    'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
+echo ""
+echo "Chaotic-AUR setup complete."
+read -p "Press enter to close"

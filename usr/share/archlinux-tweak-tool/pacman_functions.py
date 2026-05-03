@@ -268,7 +268,8 @@ def install_yay_git(self):
         build_script = "/usr/share/archlinux-tweak-tool/data/bin/build-yay-git"
         fn.log_success("Build terminal opened")
         return fn.subprocess.Popen(
-            ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+            ["alacritty", "-e", "bash", "-c",
+             f"{build_script} {fn.sudo_username}; read -p 'Press enter to close'"],
             shell=False,
         )
     except Exception as error:
@@ -302,7 +303,8 @@ def install_paru_git(self):
         build_script = "/usr/share/archlinux-tweak-tool/data/bin/build-paru-git"
         fn.log_success("Build terminal opened")
         return fn.subprocess.Popen(
-            ["alacritty", "--hold", "-e", build_script, fn.sudo_username],
+            ["alacritty", "-e", "bash", "-c",
+             f"{build_script} {fn.sudo_username}; read -p 'Press enter to close'"],
             shell=False,
         )
     except Exception as error:
@@ -310,24 +312,55 @@ def install_paru_git(self):
         return None
 
 
-def remove_aur_helper(self, binary):
-    """Remove yay or paru by detecting the package that owns the binary."""
-    fn.log_subsection(f"Remove AUR Helper: {binary}")
+def ensure_chaotic_packages(self):
+    """Open setup terminal to install chaotic-keyring and chaotic-mirrorlist if missing."""
+    has_keyring = True
+    has_mirrorlist = True
     try:
-        fn.debug_print(f"Detecting package for /usr/bin/{binary}")
-        result = fn.subprocess.check_output(
-            ["pacman", "-Qo", f"/usr/bin/{binary}"],
-            stderr=fn.subprocess.STDOUT,
-        ).decode().strip()
-        pkg = result.split(" is owned by ")[1].split(" ")[0]
-        fn.debug_print(f"Package to remove: {pkg}")
-        fn.show_in_app_notification(self, f"Opening terminal to remove {pkg}")
-        return fn.subprocess.Popen(
-            ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press enter to close'"],
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.PIPE,
-        )
-    except Exception:
-        fn.log_error(f"Could not find package owning {binary}")
+        fn.subprocess.check_output(["pacman", "-Q", "chaotic-keyring"], stderr=fn.subprocess.DEVNULL)
+    except fn.subprocess.CalledProcessError:
+        has_keyring = False
+    try:
+        fn.subprocess.check_output(["pacman", "-Q", "chaotic-mirrorlist"], stderr=fn.subprocess.DEVNULL)
+    except fn.subprocess.CalledProcessError:
+        has_mirrorlist = False
+
+    if has_keyring and has_mirrorlist:
         return None
-        fn.show_in_app_notification(self, f"Could not find package owning {binary}")
+
+    fn.log_subsection("Chaotic-AUR: keyring/mirrorlist missing — running setup")
+    fn.show_in_app_notification(self, "Installing Chaotic-AUR keyring and mirrorlist...")
+    setup_script = "/usr/share/archlinux-tweak-tool/data/bin/setup-chaotic-aur"
+    return fn.subprocess.Popen(
+        ["alacritty", "-e", "sudo", "bash", setup_script],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
+
+
+def _find_aur_package(binary):
+    """Return the installed pacman package name for an AUR helper binary."""
+    for pkg in [f"{binary}-git", f"{binary}-bin", binary]:
+        try:
+            fn.subprocess.check_output(["pacman", "-Q", pkg], stderr=fn.subprocess.DEVNULL)
+            return pkg
+        except fn.subprocess.CalledProcessError:
+            continue
+    return None
+
+
+def remove_aur_helper(self, binary):
+    """Remove yay or paru by checking known package name variants."""
+    fn.log_subsection(f"Remove AUR Helper: {binary}")
+    pkg = _find_aur_package(binary)
+    if pkg is None:
+        fn.log_error(f"Could not find installed package for {binary}")
+        fn.show_in_app_notification(self, f"Could not find installed package for {binary}")
+        return None
+    fn.debug_print(f"Package to remove: {pkg}")
+    fn.show_in_app_notification(self, f"Opening terminal to remove {pkg}")
+    return fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", f"sudo pacman -R {pkg}; read -p 'Press enter to close'"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
