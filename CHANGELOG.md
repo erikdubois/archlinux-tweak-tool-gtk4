@@ -1,5 +1,25 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - Chaotic AUR Setup Script
+
+### What Changed
+
+- `data/bin/setup-chaotic-aur` updated to use locally bundled packages instead of downloading via wget
+- Signing key import (`pacman-key --recv-key` / `--lsign-key`) retained — required to verify the package signature before `pacman -U` can proceed
+- No changes to `pacman.py`, `pacman_gui.py`, or `pacman_functions.py` — the Chaotic AUR switch and `ensure_chaotic_packages` logic was already fully implemented there
+
+### Technical Details
+
+- Original script used `wget` to fetch packages from `geo-mirror.chaotic.cx` into `/tmp`; replaced with direct paths to `data/chaotic/keyring/chaotic-keyring.pkg.tar.zst` and `data/chaotic/mirrorlist/chaotic-mirrorlist.pkg.tar.zst`
+- Key import is still necessary: `chaotic-keyring.pkg.tar.zst` is itself a signed package; pacman verifies its signature before installing, so key `3056513887B78AEB` must be trusted first
+- `ensure_chaotic_packages` in `pacman_functions.py` calls the script via `alacritty -e sudo bash setup-chaotic-aur` — no change needed there
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/data/bin/setup-chaotic-aur`
+
+---
+
 ## 2026.05.03 - M4 Feature Test Complete
 
 ### What Changed
