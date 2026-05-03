@@ -42,16 +42,16 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     img_load = desktopr_gui.IMAGE_PREVIEW_LOAD
     img_min = desktopr_gui.IMAGE_PREVIEW_MIN
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    lbl1 = Gtk.Label(xalign=0)
-    lbl1.set_text("Fastfetch Editor")
-    lbl1.set_name("title")
+    hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_separator = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    page_title_label = Gtk.Label(xalign=0)
+    page_title_label.set_text("Fastfetch Editor")
+    page_title_label.set_name("title")
     hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator.set_hexpand(True)
     hseparator.set_vexpand(False)
-    hbox4.append(hseparator)
-    hbox3.append(lbl1)
+    hbox_separator.append(hseparator)
+    hbox_title.append(page_title_label)
 
     # ==========================================================
     #                     fastfetch
@@ -85,13 +85,10 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     resetnormalfastfetch.connect("clicked", functools.partial(fastfetch.on_reset_fast, self))
     resetattfastfetch.connect("clicked", functools.partial(fastfetch.on_reset_fast_att, self))
 
-    hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox22.set_margin_top(10)
     self.hbox_ff_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.hbox_ff_checkboxes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     self.hbox_ff_checkboxes.set_margin_top(10)
-    self.hbox26 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox27 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_switches = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
     self.os = Gtk.CheckButton(label="Show os")
     self.host = Gtk.CheckButton(label="Show hostname")
@@ -125,8 +122,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     fastfetch.get_checkboxes(self)
 
     self.hbox_ff_presets = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label21 = Gtk.Label()
-    label21.set_text("Or choose what to select with a button")
+    presets_label = Gtk.Label()
+    presets_label.set_text("Or choose what to select with a button")
     btn_all_selection = Gtk.Button(label="All")
     btn_all_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_all_selection, self))
     btn_normal_selection = Gtk.Button(label="Normal")
@@ -135,50 +132,50 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     btn_small_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_small_selection, self))
     btn_none_selection = Gtk.Button(label="None")
     btn_none_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_none_selection, self))
-    label21.set_margin_start(10)
-    label21.set_margin_end(10)
-    self.hbox_ff_presets.append(label21)
+    presets_label.set_margin_start(10)
+    presets_label.set_margin_end(10)
+    self.hbox_ff_presets.append(presets_label)
     btn_all_selection.set_margin_start(10)
     btn_all_selection.set_margin_end(10)
-    self.hbox_ff_presets.append(btn_all_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_all_selection)
     btn_normal_selection.set_margin_start(10)
     btn_normal_selection.set_margin_end(10)
-    self.hbox_ff_presets.append(btn_normal_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_normal_selection)
     btn_small_selection.set_margin_start(10)
     btn_small_selection.set_margin_end(10)
-    self.hbox_ff_presets.append(btn_small_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_small_selection)
     btn_none_selection.set_margin_start(10)
     btn_none_selection.set_margin_end(10)
-    self.hbox_ff_presets.append(btn_none_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_none_selection)
 
-    hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox9_label = Gtk.Label(xalign=0)
-    hbox9_label.set_markup(
+    hbox_distro_specific = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    distro_specific_label = Gtk.Label(xalign=0)
+    distro_specific_label.set_markup(
         "<b>Distro specific:  </b>" + fn.change_distro_label(fn.distr)
     )
-    hbox9_label.set_margin_start(10)
-    hbox9_label.set_margin_end(10)
-    hbox9.append(hbox9_label)
+    distro_specific_label.set_margin_start(10)
+    distro_specific_label.set_margin_end(10)
+    hbox_distro_specific.append(distro_specific_label)
 
-    hbox28 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label28 = Gtk.Label()
-    label28.set_text(
+    hbox_amos_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    amos_note_label = Gtk.Label()
+    amos_note_label.set_text(
         "AmOS is using a personalized fastfetch application\n\
 Switch to the default fastfetch to use this tab"
     )
-    label28.set_margin_start(10)
-    label28.set_margin_end(10)
-    hbox28.append(label28)
+    amos_note_label.set_margin_start(10)
+    amos_note_label.set_margin_end(10)
+    hbox_amos_note.append(amos_note_label)
 
-    hbox29 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label29 = Gtk.Label()
-    label29.set_text(
+    hbox_archcraft_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    archcraft_note_label = Gtk.Label()
+    archcraft_note_label.set_text(
         "Archcraft is using a personalized fastfetch configuration\n\
 Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch/config.conf"
     )
-    label29.set_margin_start(10)
-    label29.set_margin_end(10)
-    hbox29.append(label29)
+    archcraft_note_label.set_margin_start(10)
+    archcraft_note_label.set_margin_end(10)
+    hbox_archcraft_note.append(archcraft_note_label)
 
     flowbox = Gtk.FlowBox()
     flowbox.set_valign(Gtk.Align.START)
@@ -244,36 +241,35 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
 
     fast_util_label.set_margin_start(10)
     fast_util_label.set_margin_end(10)
-    hbox27.append(fast_util_label)
+    hbox_switches.append(fast_util_label)
     self.fast_util.set_margin_start(30)
     self.fast_util.set_margin_end(30)
-    hbox27.append(self.fast_util)
-    hbox27.append(fast_lolcat_label)
+    hbox_switches.append(self.fast_util)
+    hbox_switches.append(fast_lolcat_label)
     self.fast_lolcat.set_margin_start(30)
     self.fast_lolcat.set_margin_end(30)
-    hbox27.append(self.fast_lolcat)
+    hbox_switches.append(self.fast_lolcat)
 
     self.hbox_ff_actions.set_halign(Gtk.Align.CENTER)
     self.hbox_ff_actions.append(resetnormalfastfetch)
     self.hbox_ff_actions.append(resetattfastfetch)
     self.hbox_ff_actions.append(applyfastfetch)
 
-    vboxstack8.append(hbox3)
-    vboxstack8.append(hbox4)
+    vboxstack8.append(hbox_title)
+    vboxstack8.append(hbox_separator)
     vboxstack8.append(self.hbox_ff_warning)
-    vboxstack8.append(hbox27)
-    vboxstack8.append(hbox22)
+    vboxstack8.append(hbox_switches)
     vboxstack8.append(self.hbox_ff_checkboxes)
     vboxstack8.append(self.fastfetch_image)
     vboxstack8.append(self.hbox_ff_presets)
 
     if fn.distr == "amos":
-        vboxstack8.append(hbox9)
-        vboxstack8.append(hbox28)
+        vboxstack8.append(hbox_distro_specific)
+        vboxstack8.append(hbox_amos_note)
 
     if fn.distr == "archcraft":
-        vboxstack8.append(hbox9)
-        vboxstack8.append(hbox29)
+        vboxstack8.append(hbox_distro_specific)
+        vboxstack8.append(hbox_archcraft_note)
 
     vboxstack8.append(self.hbox_ff_actions)
 

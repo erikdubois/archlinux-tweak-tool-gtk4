@@ -508,6 +508,25 @@ def on_fast_lolcat_toggled(self, switch, gparam):
     fn.log_subsection(f"Lolcat {label}")
     fn.debug_print(f"  Config : {utilities.get_config_file()}")
 
+    if lolcat_state and not fn.path.exists("/usr/bin/lolcat"):
+        fn.log_subsection("Installing lolcat...")
+        fn.show_in_app_notification(self, "Opening terminal to install lolcat...")
+        process = fn.launch_pacman_install_in_terminal("lolcat")
+
+        def wait_and_enable():
+            if process:
+                process.communicate()
+            if fn.path.exists("/usr/bin/lolcat"):
+                fn.log_success("lolcat installed")
+                if util_state:
+                    fn.GLib.idle_add(write_configs, util_state, True)
+                fn.GLib.idle_add(fn.show_in_app_notification, self, "lolcat installed")
+            else:
+                fn.GLib.idle_add(self.fast_lolcat.set_active, False)
+
+        fn.threading.Thread(target=wait_and_enable, daemon=True).start()
+        return
+
     if util_state:
         write_configs(util_state, lolcat_state)
         fn.log_success(f"Lolcat {label} in shell config")
