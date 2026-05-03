@@ -30,6 +30,7 @@ def init_fastfetch_lazy_load(self, fn):
             self.fast_lolcat.set_active(lolcat_enabled)
             self.fast_lolcat.set_sensitive(fastfetch_enabled)
         self.ff_initializing = False
+        fastfetch.set_fastfetch_ui_sensitive(self, fn.path.exists("/usr/bin/fastfetch"))
         elapsed = time.time() - start
         fn.debug_print(f"[LAZY] Fastfetch page switches loaded in {elapsed:.3f}s")
     except Exception as e:
@@ -60,14 +61,14 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     #                     fastfetch
     # ==========================================================
 
-    hbox23 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.hbox_ff_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     warning_label = Gtk.Label(xalign=0)
     warning_label.set_markup(
         "<b>Some distros have their own configuration and/or application, investigate</b>"
     )
     warning_label.set_margin_start(10)
     warning_label.set_margin_end(10)
-    hbox23.append(warning_label)
+    self.hbox_ff_warning.append(warning_label)
 
     self.fast_util = Gtk.Switch()
     fast_util_label = Gtk.Label(xalign=0)
@@ -90,9 +91,9 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     hbox22 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox22.set_margin_top(10)
-    hbox24 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox25 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox25.set_margin_top(10)
+    self.hbox_ff_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.hbox_ff_checkboxes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.hbox_ff_checkboxes.set_margin_top(10)
     self.hbox26 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox27 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
@@ -127,7 +128,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
 
     fastfetch.get_checkboxes(self)
 
-    hbox21 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.hbox_ff_presets = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     label21 = Gtk.Label()
     label21.set_text("Or choose what to select with a button")
     btn_all_selection = Gtk.Button(label="All")
@@ -140,19 +141,19 @@ def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     btn_none_selection.connect("clicked", functools.partial(fastfetch.on_click_fastfetch_none_selection, self))
     label21.set_margin_start(10)
     label21.set_margin_end(10)
-    hbox21.append(label21)
+    self.hbox_ff_presets.append(label21)
     btn_all_selection.set_margin_start(10)
     btn_all_selection.set_margin_end(10)
-    hbox21.append(btn_all_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_all_selection)  # pack_end
     btn_normal_selection.set_margin_start(10)
     btn_normal_selection.set_margin_end(10)
-    hbox21.append(btn_normal_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_normal_selection)  # pack_end
     btn_small_selection.set_margin_start(10)
     btn_small_selection.set_margin_end(10)
-    hbox21.append(btn_small_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_small_selection)  # pack_end
     btn_none_selection.set_margin_start(10)
     btn_none_selection.set_margin_end(10)
-    hbox21.append(btn_none_selection)  # pack_end
+    self.hbox_ff_presets.append(btn_none_selection)  # pack_end
 
     hbox9 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox9_label = Gtk.Label(xalign=0)
@@ -221,9 +222,9 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     flowbox.set_vexpand(True)
     flowbox.set_margin_start(10)
     flowbox.set_margin_end(10)
-    hbox25.append(flowbox)
+    self.hbox_ff_checkboxes.append(flowbox)
 
-    fastfetch_image = Gtk.Picture()
+    self.fastfetch_image = Gtk.Picture()
     try:
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/images/fastfetch.jpg",
@@ -231,19 +232,19 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
             img_load,
         )
         texture = Gdk.Texture.new_for_pixbuf(pixbuf)
-        fastfetch_image.set_paintable(texture)
+        self.fastfetch_image.set_paintable(texture)
     except Exception as e:
         fn.debug_print(f"Failed to load fastfetch image: {e}")
-    fastfetch_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
-    fastfetch_image.set_size_request(img_min, img_min)
-    fastfetch_image.set_hexpand(True)
-    fastfetch_image.set_vexpand(False)
-    fastfetch_image.set_halign(Gtk.Align.CENTER)
-    fastfetch_image.set_valign(Gtk.Align.CENTER)
-    fastfetch_image.set_margin_start(10)
-    fastfetch_image.set_margin_end(10)
-    fastfetch_image.set_margin_top(10)
-    fastfetch_image.set_margin_bottom(10)
+    self.fastfetch_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
+    self.fastfetch_image.set_size_request(img_min, img_min)
+    self.fastfetch_image.set_hexpand(True)
+    self.fastfetch_image.set_vexpand(False)
+    self.fastfetch_image.set_halign(Gtk.Align.CENTER)
+    self.fastfetch_image.set_valign(Gtk.Align.CENTER)
+    self.fastfetch_image.set_margin_start(10)
+    self.fastfetch_image.set_margin_end(10)
+    self.fastfetch_image.set_margin_top(10)
+    self.fastfetch_image.set_margin_bottom(10)
 
     fast_util_label.set_margin_start(10)
     fast_util_label.set_margin_end(10)
@@ -256,24 +257,19 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
     self.fast_lolcat.set_margin_end(30)
     hbox27.append(self.fast_lolcat)
 
-    hbox24.append(resetnormalfastfetch)
-    spacer1 = Gtk.Box()
-    spacer1.set_hexpand(True)
-    hbox24.append(spacer1)
-    hbox24.append(resetattfastfetch)
-    spacer2 = Gtk.Box()
-    spacer2.set_hexpand(True)
-    hbox24.append(spacer2)
-    hbox24.append(applyfastfetch)
+    self.hbox_ff_actions.set_halign(Gtk.Align.CENTER)
+    self.hbox_ff_actions.append(resetnormalfastfetch)
+    self.hbox_ff_actions.append(resetattfastfetch)
+    self.hbox_ff_actions.append(applyfastfetch)
 
     vboxstack8.append(hbox3)
     vboxstack8.append(hbox4)
-    vboxstack8.append(hbox23)
+    vboxstack8.append(self.hbox_ff_warning)
     vboxstack8.append(hbox27)
     vboxstack8.append(hbox22)
-    vboxstack8.append(hbox25)
-    vboxstack8.append(fastfetch_image)
-    vboxstack8.append(hbox21)
+    vboxstack8.append(self.hbox_ff_checkboxes)
+    vboxstack8.append(self.fastfetch_image)
+    vboxstack8.append(self.hbox_ff_presets)
 
     if fn.distr == "amos":
         vboxstack8.append(hbox9)
@@ -283,6 +279,15 @@ Switch to the default fastfetch to use this tab - delete the ~/.config/fastfetch
         vboxstack8.append(hbox9)
         vboxstack8.append(hbox29)
 
-    vboxstack8.append(hbox24)  # pack_end
+    vboxstack8.append(self.hbox_ff_actions)
+
+    hbox_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_remove.set_halign(Gtk.Align.CENTER)
+    hbox_remove.set_margin_top(10)
+    hbox_remove.set_margin_bottom(10)
+    self.btn_remove_fastfetch = Gtk.Button(label="Remove Fastfetch")
+    self.btn_remove_fastfetch.connect("clicked", functools.partial(fastfetch.on_remove_fast, self))
+    hbox_remove.append(self.btn_remove_fastfetch)
+    vboxstack8.append(hbox_remove)
 
     fn.GLib.idle_add(init_fastfetch_lazy_load, self, fn, priority=fn.GLib.PRIORITY_LOW)

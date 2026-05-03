@@ -134,7 +134,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     #                DESKTOP
     # ==========================================================
 
-    desktopr_gui.gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango)
+    desktopr_gui.gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir)
 
     # # ==========================================================
     # #               FASTFETCH

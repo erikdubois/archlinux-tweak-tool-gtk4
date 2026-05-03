@@ -5,20 +5,19 @@
 import functools
 
 # Desktop preview: decode at this max edge (sharp when scaled); minimum widget size (GTK size_request).
-IMAGE_PREVIEW_LOAD = 900
-IMAGE_PREVIEW_MIN = 480
+IMAGE_PREVIEW_LOAD = 855
+IMAGE_PREVIEW_MIN = 456
 
 
-def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
+def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir):
     """create a gui"""
     from gi.repository import Gdk
 
     self.base_dir = base_dir
 
-    hbox3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_separator = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     buttonbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    statbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     checkbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
@@ -32,8 +31,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir, Pango):
     hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator.set_hexpand(True)
     hseparator.set_vexpand(False)
-    hbox4.append(hseparator)
-    hbox3.append(lbl1)
+    hbox_separator.append(hseparator)
+    hbox_title.append(lbl1)
 
     # =======================================
     #               DROPDOWN
@@ -65,24 +64,24 @@ the nemesis and/or chaotic-aur repo"
     combo_hbox.append(self.d_combo)
     dropbox.append(combo_hbox)
 
-    # =======================================
-    #               STATUS
-    # =======================================
-    self.desktop_status.set_hexpand(True)
-    self.desktop_status.set_vexpand(True)
-    statbox.append(self.desktop_status)
+    self.label_installed_desktops = Gtk.Label(xalign=0.5)
+    self.label_installed_desktops.set_halign(Gtk.Align.CENTER)
+    self.label_installed_desktops.set_margin_top(6)
+    dropbox.append(self.label_installed_desktops)
+    desktopr.refresh_installed_desktops(self)
 
     # =======================================
     #               BUTTONS
     # =======================================
 
-    self.button_install = Gtk.Button(label="Install")
+    self.button_install = Gtk.Button(label="Install desktop")
 
     self.button_install.connect("clicked", functools.partial(desktopr.on_install_clicked, self))
 
-    self.button_install.set_hexpand(True)
+    self.button_install.set_hexpand(False)
     self.button_install.set_vexpand(False)
     self.button_install.set_sensitive(fn.check_nemesis_repo_active())
+    buttonbox.set_halign(Gtk.Align.CENTER)
     buttonbox.append(self.button_install)
 
     # =======================================
@@ -90,10 +89,11 @@ the nemesis and/or chaotic-aur repo"
     # =======================================
 
     uninstall_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    self.button_uninstall = Gtk.Button(label="Remove Desktop")
+    self.button_uninstall = Gtk.Button(label="Remove desktop")
     self.button_uninstall.connect("clicked", functools.partial(desktopr.on_uninstall_clicked, self))
-    self.button_uninstall.set_hexpand(True)
+    self.button_uninstall.set_hexpand(False)
     self.button_uninstall.set_vexpand(False)
+    uninstall_hbox.set_halign(Gtk.Align.CENTER)
     uninstall_hbox.append(self.button_uninstall)
 
     # =======================================
@@ -106,11 +106,9 @@ the nemesis and/or chaotic-aur repo"
     # =======================================
     #               TEXTVIEW
     # =======================================
-    self.desktopr_prog = Gtk.ProgressBar()
-    self.desktopr_stat = Gtk.Label(xalign=0)
-    self.desktopr_stat.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-
-    warning_picom = Gtk.Label(xalign=0)
+    warning_picom = Gtk.Label(xalign=0.5)
+    warning_picom.set_halign(Gtk.Align.CENTER)
+    warning_picom.set_justify(Gtk.Justification.CENTER)
     message = "We have found picom-ibhagwan-git or picom-jonaburg-git on this system\n\
 Know that these packages conflict with picom-git. It will be removed."
     warning_picom.set_markup(
@@ -118,22 +116,19 @@ Know that these packages conflict with picom-git. It will be removed."
     )
     warning_picom.set_wrap(True)
 
-    noice = Gtk.Label(xalign=0)
+    noice = Gtk.Label(xalign=0.5)
+    noice.set_halign(Gtk.Align.CENTER)
+    noice.set_justify(Gtk.Justification.CENTER)
     noice.set_markup(
         "We will backup and overwrite your ~/.config when installing desktops\n\
-Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n"
+Backup is in ~/.config-att folder\n"
     )
     noice.set_wrap(True)
-    self.desktopr_error = Gtk.Label(xalign=0)
-
     if fn.check_package_installed("picom-ibhagwan-git") or fn.check_package_installed(
         "picom-jonaburg-git"
     ):
         vboxprog.append(warning_picom)
     vboxprog.append(noice)
-    vboxprog.append(self.desktopr_error)
-    vboxprog.append(self.desktopr_stat)
-    vboxprog.append(self.desktopr_prog)
 
     # =======================================
     #               FRAME PREVIEW
@@ -159,9 +154,6 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
     frame = Gtk.Frame(label="Preview")
     frame.set_child(self.image_DE)
 
-    lbl = Gtk.Label(xalign=0)
-    lbl.set_text("Installation output")
-
     # =======================================
     #               PACK TO BOXES
     # =======================================
@@ -171,28 +163,22 @@ Backup is in ~/.config-att folder\nLog files are located in /var/log/archlinux\n
     frame.set_margin_start(0)
     frame.set_margin_end(0)
     vbox.append(frame)
-    vbox.append(statbox)
     vbox.append(checkbox)
     vbox.append(buttonbox)
     vbox.append(uninstall_hbox)
-    # vbox.pack_start(defaultbox, False, False, 0)
+    vbox.append(vboxprog)
 
     vbox.set_hexpand(True)
     vbox.set_vexpand(True)
     vbox.set_margin_start(10)
     vbox.set_margin_end(10)
 
-    vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vbox1.append(vbox)
-
     # =======================================
     #               PACK TO WINDOW
     # =======================================
-    vboxstack12.append(hbox3)
-    vboxstack12.append(hbox4)
-    vbox1.set_hexpand(True)
-    vbox1.set_vexpand(True)
-    vboxstack12.append(vbox1)
+    vboxstack12.append(hbox_title)
+    vboxstack12.append(hbox_separator)
+    vboxstack12.append(vbox)
 
 
 def update_button_state(self, fn):

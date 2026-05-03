@@ -53,6 +53,8 @@ def gui(self, Gtk, vboxstack, fn):
     # ── Default boot entry (systemd-boot only) ────────────
     if kernel.is_systemd_boot():
         _build_boot_entry_selector(self, Gtk, vboxstack, fn)
+    else:
+        _build_boot_entry_unavailable(Gtk, vboxstack)
 
     # ── Kernel rows ───────────────────────────────────────
     chaotic_enabled = kernel.is_chaotic_aur_enabled()
@@ -307,6 +309,33 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
 
     vboxstack.append(hbox_row)
     vboxstack.append(lbl_current)
+
+
+def _build_boot_entry_unavailable(Gtk, vboxstack):
+    hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    sep.set_hexpand(True)
+    hbox_sep.append(sep)
+
+    hbox_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_hdr = Gtk.Label(xalign=0)
+    lbl_hdr.set_markup("<b>Default Boot Entry</b>")
+    lbl_hdr.set_margin_start(10)
+    lbl_hdr.set_margin_end(10)
+    hbox_hdr.append(lbl_hdr)
+
+    hbox_msg = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_msg = Gtk.Label(xalign=0)
+    lbl_msg.set_text("Setting a default boot entry is only available on systemd-boot systems.")
+    lbl_msg.set_margin_start(25)
+    lbl_msg.set_margin_end(10)
+    lbl_msg.set_margin_top(5)
+    lbl_msg.set_margin_bottom(10)
+    hbox_msg.append(lbl_msg)
+
+    vboxstack.append(hbox_sep)
+    vboxstack.append(hbox_hdr)
+    vboxstack.append(hbox_msg)
 
 
 def _refresh_boot_entry_display(entry_id, label_widget):

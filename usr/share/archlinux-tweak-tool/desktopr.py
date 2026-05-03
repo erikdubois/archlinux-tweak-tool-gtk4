@@ -487,10 +487,6 @@ def install_desktop(self, desktop):
 
     def _do_install():
         fn.log_info(f"Starting package installation for {desktop}...")
-        GLib.idle_add(
-            self.desktopr_stat.set_text,
-            f"Installing {desktop} (see terminal)...",
-        )
         process = fn.subprocess.Popen(
             ["alacritty", "-e", "bash", "-c", install_cmd],
         )
@@ -509,10 +505,6 @@ def install_desktop(self, desktop):
                         if fn.path.isdir(x):
                             dest = fn.path.split(dest)[0]
                         l2 = copy + [x, dest]
-                        GLib.idle_add(
-                            self.desktopr_stat.set_text,
-                            f"Copying {x} to {dest}",
-                        )
                         with fn.subprocess.Popen(
                             l2,
                             bufsize=1,
@@ -520,18 +512,15 @@ def install_desktop(self, desktop):
                             universal_newlines=True,
                         ) as p:
                             for line in p.stdout:
-                                GLib.idle_add(
-                                    self.desktopr_stat.set_text,
-                                    line.strip(),
-                                )
+                                fn.debug_print(line.strip())
                         fn.permissions(dest)
 
-            GLib.idle_add(self.desktopr_stat.set_text, "")
             GLib.idle_add(
                 self.desktop_status.set_markup,
                 '<span size="x-large"><b>This desktop is installed</b></span>',
             )
             fn.log_success(f"{desktop} desktop has been installed successfully")
+            GLib.idle_add(refresh_installed_desktops, self)
             GLib.idle_add(
                 fn.show_in_app_notification,
                 self,
@@ -763,6 +752,7 @@ def uninstall_desktop(self, desktop):
         )
         GLib.idle_add(self.desktop_status.set_markup, removal_text)
         fn.log_success(f"{desktop} desktop removal complete")
+        GLib.idle_add(refresh_installed_desktops, self)
         fn.show_in_app_notification(self, f"{desktop} has been removed")
         fn.debug_print(f"Removal of {desktop} complete — user home directory untouched")
 
@@ -781,6 +771,12 @@ def uninstall_desktop(self, desktop):
 
     t1 = fn.threading.Thread(target=_do_remove, daemon=True)
     t1.start()
+
+
+def refresh_installed_desktops(self):
+    installed = [d for d in desktops if check_desktop(d)]
+    text = "Installed: " + ", ".join(installed) if installed else "No desktops installed"
+    self.label_installed_desktops.set_text(text)
 
 
 def on_d_combo_changed(self, widget, pspec=None):

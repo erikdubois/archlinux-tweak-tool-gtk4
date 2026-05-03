@@ -11,11 +11,11 @@ from functions import GLib
 def create_user(self):
     """Create a new user"""
     fn.log_subsection("Create New User Account")
-    username = self.hbox_username.get_text()
-    name = self.hbox_name.get_text()
+    username = self.entry_username.get_text()
+    name = self.entry_name.get_text()
     atype = fn.get_combo_text(self.combo_account_type)
-    password = self.hbox_password.get_text()
-    confirm_password = self.hbox_confirm_password.get_text()
+    password = self.entry_password.get_text()
+    confirm_password = self.entry_confirm_password.get_text()
     if (
         len(username) > 0
         and len(name) > 0

@@ -606,18 +606,14 @@ def get_unit_state(unit, command):
 
 def get_fstrim_status_markup():
     """Build the fstrim timer status label text."""
-    active_status = get_unit_state(fstrim_timer, "is-active")
     enabled_status = get_unit_state(fstrim_timer, "is-enabled")
-
-    if active_status == "active":
-        active_status = "<b>active</b>"
 
     if enabled_status == "enabled":
         enabled_status = "<b>enabled</b>"
 
     return (
         "Enable weekly TRIM for SSD/NVMe drives with fstrim.timer\n"
-        "fstrim.timer : " + active_status + " / " + enabled_status
+        "fstrim.timer : " + enabled_status
     )
 
 

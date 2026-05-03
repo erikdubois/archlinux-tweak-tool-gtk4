@@ -2,6 +2,7 @@
 # Authors: Erik Dubois
 # ============================================================
 
+import re
 import functions as fn
 import subprocess
 
@@ -456,7 +457,11 @@ def get_boot_entries():
             if line.startswith("id:"):
                 current_id = line.split(":", 1)[1].strip()
             elif line.startswith("title:"):
-                current_title = line.split(":", 1)[1].strip().replace(" (default)", "")
+                raw_title = line.split(":", 1)[1].strip()
+                if "reported/absent" in raw_title:
+                    current_id = None
+                    continue
+                current_title = re.sub(r'\s*\([^)]+\)', '', raw_title).strip()
             if current_id and current_title:
                 entries.append((current_id, current_title))
                 current_id = None

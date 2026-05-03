@@ -376,7 +376,43 @@ def _ensure_separator_commented():
 # ====================================================================
 
 
-def on_install_fast(self, widget):
+def set_fastfetch_ui_sensitive(self, state):
+    for widget in [
+        self.fast_lolcat,
+        self.hbox_ff_warning,
+        self.hbox_ff_checkboxes,
+        self.fastfetch_image,
+        self.hbox_ff_presets,
+        self.hbox_ff_actions,
+        self.btn_remove_fastfetch,
+    ]:
+        widget.set_sensitive(state)
+
+
+def on_remove_fast(self, _widget):
+    fn.log_subsection("Removing fastfetch")
+    fn.show_in_app_notification(self, "Opening terminal to remove fastfetch...")
+    script = (
+        "sudo pacman -Rdd fastfetch-git 2>/dev/null || sudo pacman -Rdd fastfetch 2>/dev/null; "
+        "echo; read -p 'Press enter to close'"
+    )
+    process = fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
+
+    def wait_and_update():
+        process.wait()
+        if not fn.path.exists("/usr/bin/fastfetch"):
+            fn.log_success("Fastfetch removed")
+            fn.GLib.idle_add(set_fastfetch_ui_sensitive, self, False)
+            fn.GLib.idle_add(self.fast_util.set_active, False)
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
+
+
+def on_install_fast(self, _widget):
     fn.install_package(self, "fastfetch-git")
 
 
@@ -391,7 +427,7 @@ def on_apply_fast(self, _widget):
     fn.log_success("Fastfetch configuration applied")
 
 
-def on_reset_fast_att(self, widget):
+def on_reset_fast_att(self, _widget):
     fn.debug_print("Reset fastfetch to ATT defaults")
     fn.debug_print(f"  Source : {fn.fastfetch_kiro}")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
@@ -406,7 +442,7 @@ def on_reset_fast_att(self, widget):
         fn.debug_print("  Result : source file not found - nothing copied")
 
 
-def on_reset_fast(self, widget):
+def on_reset_fast(self, _widget):
     fn.debug_print("Reset fastfetch from backup")
     fn.debug_print(f"  Source : {fn.fastfetch_config}.bak")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
@@ -444,7 +480,18 @@ def on_fast_util_toggled(self, switch, gparam):
 
     if util_state and not fn.path.exists("/usr/bin/fastfetch"):
         fn.log_subsection("Installing fastfetch-git...")
-        fn.install_package(self, "fastfetch-git")
+        fn.show_in_app_notification(self, "Opening terminal to install fastfetch...")
+        process = fn.launch_pacman_install_in_terminal("fastfetch-git")
+
+        def wait_and_enable():
+            if process:
+                process.communicate()
+            if fn.path.exists("/usr/bin/fastfetch"):
+                fn.log_success("fastfetch installed")
+                fn.GLib.idle_add(set_fastfetch_ui_sensitive, self, True)
+                fn.GLib.idle_add(fn.show_in_app_notification, self, "fastfetch installed")
+
+        fn.threading.Thread(target=wait_and_enable, daemon=True).start()
         return
 
     if not util_state:

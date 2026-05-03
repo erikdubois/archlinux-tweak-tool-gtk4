@@ -103,12 +103,12 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_install = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         label_install_desc = Gtk.Label(xalign=0, yalign=0)
         label_install_desc.set_markup(
-            " <b>WARNING: Proceed with caution this will install packages onto your system!</b>\n"
-            " <b>Packages from the AUR are not supported </b>\n"
-            " <b>This also performs a full system upgrade</b>\n\n"
+            " <b>WARNING:</b> Proceed with caution this will install packages onto your system!\n"
+            " Packages from the AUR are not supported \n"
+            " This also performs a full system upgrade\n\n"
             " - A list of packages are sourced from <b>.config/att-exports</b>\n"
             " - To ignore a package, add a # in front of the package name\n"
-            " - <b>A reboot is recommended when core Linux packages are installed</b>"
+            " - A reboot is needed when core Linux packages are installed"
         )
 
         label_install_desc.set_selectable(True)

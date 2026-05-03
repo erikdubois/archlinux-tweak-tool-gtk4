@@ -25,7 +25,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # Section 1: GUI Package Managers
     hbox_section1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section1_label = Gtk.Label(xalign=0)
-    hbox_section1_label.set_text("GUI Package Managers")
+    hbox_section1_label.set_markup("<b>GUI Package Managers</b>")
     hbox_section1_label.set_margin_start(10)
     hbox_section1_label.set_margin_top(15)
     hbox_section1_label.set_margin_bottom(10)
@@ -155,7 +155,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # Section 2: AUR Helpers
     hbox_section2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section2_label = Gtk.Label(xalign=0)
-    hbox_section2_label.set_text("AUR Helpers")
+    hbox_section2_label.set_markup("<b>AUR Helpers</b>")
     hbox_section2_label.set_margin_start(10)
     hbox_section2_label.set_margin_top(15)
     hbox_section2_label.set_margin_bottom(10)
@@ -268,7 +268,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # Section 3: Flatpak / Snap / AppImage
     hbox_section3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section3_label = Gtk.Label(xalign=0)
-    hbox_section3_label.set_text("Flatpak / Snap / AppImage")
+    hbox_section3_label.set_markup("<b>Flatpak / Snap / AppImage</b>")
     hbox_section3_label.set_margin_start(10)
     hbox_section3_label.set_margin_top(15)
     hbox_section3_label.set_margin_bottom(10)
@@ -355,7 +355,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # Section 4: TUI Package Tools
     hbox_section4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section4_label = Gtk.Label(xalign=0)
-    hbox_section4_label.set_text("TUI Package Tools")
+    hbox_section4_label.set_markup("<b>TUI Package Tools</b>")
     hbox_section4_label.set_margin_start(10)
     hbox_section4_label.set_margin_top(15)
     hbox_section4_label.set_margin_bottom(10)
@@ -416,7 +416,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     # Section 5: Logout Managers
     hbox_section5 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_section5_label = Gtk.Label(xalign=0)
-    hbox_section5_label.set_text("Logout Managers")
+    hbox_section5_label.set_markup("<b>Logout Managers</b>")
     hbox_section5_label.set_margin_start(10)
     hbox_section5_label.set_margin_top(15)
     hbox_section5_label.set_margin_bottom(10)

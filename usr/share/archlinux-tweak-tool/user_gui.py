@@ -9,7 +9,7 @@ def gui(self, Gtk, vboxstack_user, user, fn):
     """create a gui"""
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
-    lbl_title.set_text("Create User")
+    lbl_title.set_text("User management")
     lbl_title.set_name("title")
     hbox_title.append(lbl_title)
 
@@ -18,6 +18,11 @@ def gui(self, Gtk, vboxstack_user, user, fn):
     hseparator.set_hexpand(True)
     hseparator.set_vexpand(False)
     hbox_separator.append(hseparator)
+
+    hbox_create_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_create_user = Gtk.Label(xalign=0)
+    lbl_create_user.set_markup("<b>Create user</b>")
+    hbox_create_title.append(lbl_create_user)
 
     sep_text = "                       "
 
@@ -46,12 +51,12 @@ def gui(self, Gtk, vboxstack_user, user, fn):
     conf_pwd_sep = Gtk.Label(xalign=0)
     conf_pwd_sep.set_text(sep_text)
 
-    self.hbox_username = Gtk.Entry()
-    self.hbox_name = Gtk.Entry()
-    self.hbox_password = Gtk.Entry()
-    self.hbox_password.set_visibility(False)
-    self.hbox_confirm_password = Gtk.Entry()
-    self.hbox_confirm_password.set_visibility(False)
+    self.entry_username = Gtk.Entry()
+    self.entry_name = Gtk.Entry()
+    self.entry_password = Gtk.Entry()
+    self.entry_password.set_visibility(False)
+    self.entry_confirm_password = Gtk.Entry()
+    self.entry_confirm_password.set_visibility(False)
 
     self.combo_account_type = Gtk.DropDown.new_from_strings(list(fn.account_list))
     self.combo_account_type.set_selected(1)
@@ -59,10 +64,10 @@ def gui(self, Gtk, vboxstack_user, user, fn):
     grid = Gtk.Grid()
     grid.attach(label_username, 0, 0, 2, 1)
     grid.attach_next_to(uname_sep, label_username, Gtk.PositionType.RIGHT, 1, 1)
-    grid.attach_next_to(self.hbox_username, uname_sep, Gtk.PositionType.RIGHT, 1, 1)
+    grid.attach_next_to(self.entry_username, uname_sep, Gtk.PositionType.RIGHT, 1, 1)
     grid.attach(label_name, 0, 2, 2, 1)
     grid.attach_next_to(name_sep, label_name, Gtk.PositionType.RIGHT, 1, 1)
-    grid.attach_next_to(self.hbox_name, name_sep, Gtk.PositionType.RIGHT, 1, 1)
+    grid.attach_next_to(self.entry_name, name_sep, Gtk.PositionType.RIGHT, 1, 1)
     grid.attach(label_account_type, 0, 4, 2, 1)
     grid.attach_next_to(account_sep, label_account_type, Gtk.PositionType.RIGHT, 1, 1)
     grid.attach_next_to(
@@ -70,13 +75,13 @@ def gui(self, Gtk, vboxstack_user, user, fn):
     )
     grid.attach(label_password, 0, 6, 2, 1)
     grid.attach_next_to(pwd_sep, label_password, Gtk.PositionType.RIGHT, 1, 1)
-    grid.attach_next_to(self.hbox_password, pwd_sep, Gtk.PositionType.RIGHT, 1, 1)
+    grid.attach_next_to(self.entry_password, pwd_sep, Gtk.PositionType.RIGHT, 1, 1)
     grid.attach(label_confirm_password, 0, 8, 2, 1)
     grid.attach_next_to(
         conf_pwd_sep, label_confirm_password, Gtk.PositionType.RIGHT, 1, 1
     )
     grid.attach_next_to(
-        self.hbox_confirm_password, conf_pwd_sep, Gtk.PositionType.RIGHT, 1, 1
+        self.entry_confirm_password, conf_pwd_sep, Gtk.PositionType.RIGHT, 1, 1
     )
 
     hbox_admin_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -94,8 +99,7 @@ def gui(self, Gtk, vboxstack_user, user, fn):
 
     hbox_delete_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_delete_user = Gtk.Label(xalign=0)
-    lbl_delete_user.set_text("Delete User")
-    lbl_delete_user.set_name("title")
+    lbl_delete_user.set_markup("<b>Delete user</b>")
     hbox_delete_title.append(lbl_delete_user)
 
     hbox_delete_separator = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -150,6 +154,7 @@ def gui(self, Gtk, vboxstack_user, user, fn):
 
     vboxstack_user.append(hbox_title)
     vboxstack_user.append(hbox_separator)
+    vboxstack_user.append(hbox_create_title)
     vboxstack_user.append(grid)
     vboxstack_user.append(hbox_admin_info)
     vboxstack_user.append(hbox_apply)

@@ -274,7 +274,7 @@ def gui(self, Gtk, vboxstack13, fn_module):
 
     scrolled_window.set_child(self.vvbox)
     scrolled_window.set_hexpand(True)
-    scrolled_window.set_vexpand(True)
+    scrolled_window.set_propagate_natural_height(True)
     mainbox.append(scrolled_window)
 
     load_autostart(self, files, base_dir)
@@ -342,11 +342,11 @@ def gui(self, Gtk, vboxstack13, fn_module):
     vbox6.set_margin_end(5)
     hbox2.append(vbox6)
 
+    mainbox.set_hexpand(True)
+    mainbox.append(hbox_add_label)
+    mainbox.append(hbox2)
+
     vboxstack13.append(hbox3)
     vboxstack13.append(hbox4)
     vboxstack13.append(toplabelbox)
-    mainbox.set_hexpand(True)
     vboxstack13.append(mainbox)
-    vboxstack13.append(labelbox)
-    vboxstack13.append(hbox_add_label)
-    vboxstack13.append(hbox2)

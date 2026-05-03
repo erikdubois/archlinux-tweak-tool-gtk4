@@ -214,8 +214,8 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
 
     hbox_presets = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     hbox_presets.set_hexpand(True)
-    label18 = Gtk.Label()
-    label18.set_text("Choose what to select with a button")
+    lbl_preset_hint = Gtk.Label()
+    lbl_preset_hint.set_text("Choose what to select with a button")
     btn_all_selection_themes = Gtk.Button(label="All")
     btn_all_selection_themes.connect("clicked", functools.partial(themes.on_click_att_theming_all_selection, self))
     btn_blue_selection_themes = Gtk.Button(label="Blue")
@@ -230,11 +230,11 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     btn_none_selection_themes.connect(
         "clicked", functools.partial(themes.on_click_att_theming_none_selection, self)
     )
-    label18.set_margin_start(10)
-    label18.set_margin_end(10)
-    label18.set_hexpand(True)
-    label18.set_xalign(0)
-    hbox_presets.append(label18)
+    lbl_preset_hint.set_margin_start(10)
+    lbl_preset_hint.set_margin_end(10)
+    lbl_preset_hint.set_hexpand(True)
+    lbl_preset_hint.set_xalign(0)
+    hbox_presets.append(lbl_preset_hint)
     btn_all_selection_themes.set_margin_start(10)
     btn_all_selection_themes.set_margin_end(10)
     hbox_presets.append(btn_all_selection_themes)
@@ -256,16 +256,19 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     button_find_themes = Gtk.Button(label="Show the installed themes")
     button_find_themes.connect("clicked", functools.partial(themes.on_find_att_themes_clicked, self))
 
-    button_remove_themes.set_margin_start(10)
-    button_remove_themes.set_margin_end(10)
-    button_remove_themes.set_hexpand(True)
-    hbox_actions.append(button_remove_themes)
     button_find_themes.set_margin_start(10)
     button_find_themes.set_margin_end(10)
     hbox_actions.append(button_find_themes)
     button_install_themes.set_margin_start(10)
     button_install_themes.set_margin_end(10)
     hbox_actions.append(button_install_themes)
+    hbox_actions.set_halign(Gtk.Align.CENTER)
+
+    hbox_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_remove.set_halign(Gtk.Align.CENTER)
+    button_remove_themes.set_margin_start(10)
+    button_remove_themes.set_margin_end(10)
+    hbox_remove.append(button_remove_themes)
 
     _themes_pics = []
 
@@ -285,5 +288,6 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     hbox_presets.set_margin_end(10)
     vboxstack_themes.append(hbox_presets)
     vboxstack_themes.append(hbox_actions)
+    vboxstack_themes.append(hbox_remove)
 
     return _themes_pics

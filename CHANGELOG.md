@@ -1,5 +1,24 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.03 - UI Layout Consistency: Software Page Section Headers
+
+### What Changed
+
+- **Section headers on software page are now bold** — all 5 section labels (`GUI Package Managers`, `AUR Helpers`, `Flatpak / Snap / AppImage`, `TUI Package Tools`, `Logout Managers`) changed from `set_text()` to `set_markup("<b>...</b>")` to match the system page pattern
+- **Layout consistency rule added to CLAUDE.md** — objective 26 now mandates that all pages use `set_markup("<b>...</b>")` for section headers and `set_name("title")` for page titles; any page being edited must have its section labels verified against this standard
+
+### Technical Details
+
+- The system_gui.py pattern (`set_markup("<b>Hardware</b>")`) is now the canonical standard for all section headers across the app
+- Page titles continue to use `set_name("title")` for CSS-based styling — no change needed there
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/software_gui.py`
+- `CLAUDE.md`
+
+---
+
 ## 2026.05.02 - Audio Scripts Migrated to ATT data/bin
 
 ### What Changed

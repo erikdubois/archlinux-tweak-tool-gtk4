@@ -390,8 +390,8 @@ def on_click_sddm_reset_original(self, _widget=None):
 
 
 def on_sddm_setting_changed(self, message, *_):
-    fn.log_info(f"{message} — click Apply to save")
-    fn.show_in_app_notification(self, f"{message} — click Apply to save")
+    fn.log_info(f"{message} — click 'Apply the above mentioned settings' to save")
+    fn.show_in_app_notification(self, f"{message} — click 'Apply the above mentioned settings' to save")
 
 
 def on_autologin_sddm_activated(self, widget, param_spec=None):
