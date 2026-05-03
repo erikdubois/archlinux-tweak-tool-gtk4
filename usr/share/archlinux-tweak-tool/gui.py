@@ -4,6 +4,7 @@
 
 # ============Functions============
 import functions as fn
+import functions_startup
 import settings
 
 import desktopr
@@ -140,6 +141,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     # #               FASTFETCH
     # # ==========================================================
 
+    functions_startup.setup_fastfetch_config()
     if fn.file_check(fn.fastfetch_config):
         fastfetch_gui.gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir)
     else:
@@ -150,13 +152,17 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         lbl1.set_name("title")
         hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         hseparator.set_hexpand(True)
-        hseparator.set_vexpand(True)
+        hseparator.set_vexpand(False)
         hbox41.append(hseparator)
         hbox31.append(lbl1)
         vboxstack8.append(hbox31)
         vboxstack8.append(hbox41)
         fastfetch_message = Gtk.Label()
         fastfetch_message.set_hexpand(True)
+        fastfetch_message.set_markup(
+            "fastfetch configuration file not found.\n"
+            "Install <b>fastfetch</b> and enable it to use this tab."
+        )
         vboxstack8.append(fastfetch_message)
 
     # # ==========================================================

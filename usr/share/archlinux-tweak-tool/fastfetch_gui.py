@@ -5,7 +5,6 @@
 import functools
 import fastfetch
 import utilities
-import functions_startup
 
 import desktopr_gui
 
@@ -40,9 +39,6 @@ def init_fastfetch_lazy_load(self, fn):
 def gui(self, Gtk, GdkPixbuf, vboxstack8, fastfetch, fn, base_dir):
     """create a gui"""
     from gi.repository import Gdk
-
-    # Setup fastfetch config on-demand
-    functions_startup.setup_fastfetch_config()
 
     img_load = desktopr_gui.IMAGE_PREVIEW_LOAD
     img_min = desktopr_gui.IMAGE_PREVIEW_MIN
