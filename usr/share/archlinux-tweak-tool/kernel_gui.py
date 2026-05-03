@@ -3,6 +3,7 @@
 # ============================================================
 
 import kernel
+import kernel_distros
 
 
 def gui(self, Gtk, vboxstack, fn):
@@ -72,6 +73,86 @@ def gui(self, Gtk, vboxstack, fn):
             _build_group_header(Gtk, vboxstack, grp)
 
         _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, cpu_info, refresh_boot)
+
+    # Distro-specific package check — console first, then deferred UI
+    missing = kernel_distros.get_missing_requirements()
+    for req in missing:
+        fn.log_warn(f"Missing required package: {req['pkg']} from {req['repo']} — {req['reason']}")
+
+    if missing:
+        def _deferred():
+            for req in missing:
+                fn.show_in_app_notification(self, f"Missing: {req['pkg']} — kernel detection may not work")
+            _offer_install_packages(self, Gtk, fn, missing)
+            return False
+        fn.GLib.idle_add(_deferred)
+
+
+def _offer_install_packages(self, Gtk, fn, missing):
+    pkg_list = "\n".join(f"  • {req['pkg']} ({req['repo']})" for req in missing)
+    reasons = "\n".join(f"  • {req['reason']}" for req in missing)
+
+    dialog = Gtk.MessageDialog(
+        transient_for=self.window,
+        modal=True,
+        message_type=Gtk.MessageType.QUESTION,
+        buttons=Gtk.ButtonsType.YES_NO,
+        text="Missing required packages",
+    )
+    dialog.format_secondary_text(
+        f"The following packages are needed for full kernel management:\n\n"
+        f"{pkg_list}\n\n"
+        f"Reason:\n{reasons}\n\n"
+        f"Would you like to install them now?"
+    )
+
+    def on_response(_dialog, response):
+        _dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            _install_missing_packages(self, fn, [req["pkg"] for req in missing])
+
+    dialog.connect("response", on_response)
+    dialog.present()
+
+
+def _install_missing_packages(self, fn, pkg_names):
+    pkgs = " ".join(f'"{p}"' for p in pkg_names)
+    script = f"""#!/bin/bash
+tput setaf 6
+echo "================================================================"
+echo "  Installing required packages"
+echo "================================================================"
+tput sgr0
+
+pacman -S {pkgs} --noconfirm --needed
+RESULT=$?
+
+echo
+if [ $RESULT -eq 0 ]; then
+    tput setaf 2
+    echo "================================================================"
+    echo "  ✓ Successfully installed required packages"
+    echo "================================================================"
+    tput sgr0
+else
+    tput setaf 1
+    echo "================================================================"
+    echo "  ✗ Installation failed"
+    echo "================================================================"
+    tput sgr0
+fi
+
+echo
+echo "###############################################################################"
+echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
+echo "###############################################################################"
+read -p 'Press Enter to close...'"""
+    fn.log_subsection("Installing missing kernel management packages...")
+    fn.show_in_app_notification(self, f"Installing {', '.join(pkg_names)}...")
+    fn.threading.Thread(
+        target=lambda: fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script]).wait(),
+        daemon=True,
+    ).start()
 
 
 def _build_group_header(Gtk, vboxstack, title):
