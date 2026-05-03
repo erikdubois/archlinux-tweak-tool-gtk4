@@ -798,6 +798,7 @@ def set_att_checkboxes_extras_all(self):
     self.edu_papirus_dark_tela.set_active(True)
     self.edu_papirus_dark_tela_grey.set_active(True)
     self.edu_vimix_dark_tela.set_active(True)
+    self.edu_neo_candy_qogir.set_active(True)
 
 
 def set_att_checkboxes_extras_none(self):
@@ -809,6 +810,7 @@ def set_att_checkboxes_extras_none(self):
     self.edu_papirus_dark_tela.set_active(False)
     self.edu_papirus_dark_tela_grey.set_active(False)
     self.edu_vimix_dark_tela.set_active(False)
+    self.edu_neo_candy_qogir.set_active(False)
 
 
 # install
@@ -830,6 +832,8 @@ def install_att_extras(self):
         packages.append("edu-papirus-dark-tela-grey-git")
     if self.edu_vimix_dark_tela.get_active():
         packages.append("edu-vimix-dark-tela-git")
+    if self.edu_neo_candy_qogir.get_active():
+        packages.append("edu-neo-candy-qogir-git")
 
     if not packages:
         fn.log_info("No Neo Candy icons selected for installation")
@@ -862,6 +866,8 @@ def remove_att_extras(self):
         packages.append("edu-papirus-dark-tela-grey-git")
     if self.edu_vimix_dark_tela.get_active():
         packages.append("edu-vimix-dark-tela-git")
+    if self.edu_neo_candy_qogir.get_active():
+        packages.append("edu-neo-candy-qogir-git")
 
     if not packages:
         fn.log_info("No Neo Candy icons selected for removal")
@@ -902,3 +908,5 @@ def find_att_extras(self):
         self.edu_papirus_dark_tela_grey.set_active(True)
     if fn.check_package_installed("edu-vimix-dark-tela-git"):
         self.edu_vimix_dark_tela.set_active(True)
+    if fn.check_package_installed("edu-neo-candy-qogir-git"):
+        self.edu_neo_candy_qogir.set_active(True)

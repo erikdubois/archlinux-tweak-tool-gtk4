@@ -392,18 +392,13 @@ def set_fastfetch_ui_sensitive(self, state):
 def on_remove_fast(self, _widget):
     fn.log_subsection("Removing fastfetch")
     fn.show_in_app_notification(self, "Opening terminal to remove fastfetch...")
-    script = (
-        "sudo pacman -Rdd fastfetch-git 2>/dev/null || sudo pacman -Rdd fastfetch 2>/dev/null; "
-        "echo; read -p 'Press enter to close'"
-    )
-    process = fn.subprocess.Popen(
-        ["alacritty", "-e", "bash", "-c", script],
-        stdout=fn.subprocess.PIPE,
-        stderr=fn.subprocess.PIPE,
-    )
+    result = fn.subprocess.run(["pacman", "-Q", "fastfetch-git"], capture_output=True)
+    package = "fastfetch-git" if result.returncode == 0 else "fastfetch"
+    process = fn.launch_pacman_remove_in_terminal(package)
 
     def wait_and_update():
-        process.wait()
+        if process:
+            process.communicate()
         if not fn.path.exists("/usr/bin/fastfetch"):
             fn.log_success("Fastfetch removed")
             fn.GLib.idle_add(set_fastfetch_ui_sensitive, self, False)

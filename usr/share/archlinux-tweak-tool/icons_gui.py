@@ -493,6 +493,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
         label="Edu Papirus Dark Tela Grey "
     )
     self.edu_vimix_dark_tela = Gtk.CheckButton(label="Edu Vimix Dark Tela")
+    self.edu_neo_candy_qogir = Gtk.CheckButton(label="Edu Neo Candy Qogir")
 
     flowbox_extra = Gtk.FlowBox()
     flowbox_extra.set_valign(Gtk.Align.START)
@@ -507,6 +508,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     flowbox_extra.append(self.edu_papirus_dark_tela)
     flowbox_extra.append(self.edu_papirus_dark_tela_grey)
     flowbox_extra.append(self.edu_vimix_dark_tela)
+    flowbox_extra.append(self.edu_neo_candy_qogir)
 
     flowbox_extra.set_column_spacing(4)
     flowbox_extra.set_row_spacing(4)
