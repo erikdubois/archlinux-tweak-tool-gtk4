@@ -93,7 +93,7 @@ def _offer_install_packages(self, Gtk, fn, missing):
     reasons = "\n".join(f"  • {req['reason']}" for req in missing)
 
     dialog = Gtk.MessageDialog(
-        transient_for=self.window,
+        transient_for=self,
         modal=True,
         message_type=Gtk.MessageType.QUESTION,
         buttons=Gtk.ButtonsType.YES_NO,
