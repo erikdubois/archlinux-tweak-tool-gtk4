@@ -24,7 +24,7 @@ workdir=$(pwd)
 URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
 BASE="$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic"
 
-remote_list=$(curl -s "$URL" | grep -oP 'href="[^"]*\.pkg\.tar\.zst"' | cut -d'"' -f2)
+remote_list=$(curl -sL "$URL" | grep -oP 'href="[^"]*\.pkg\.tar\.zst"' | cut -d'"' -f2)
 
 for entry in "chaotic-keyring:keyring" "chaotic-mirrorlist:mirrorlist"; do
     pkg="${entry%%:*}"
