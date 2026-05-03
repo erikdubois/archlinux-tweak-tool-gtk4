@@ -1,5 +1,30 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.04 - Kernel Tab: Resolve Kernel Package per Boot Entry
+
+### What Changed
+
+- Default-boot-entry dropdown now shows the kernel package alongside the bootctl title, e.g. *"Arch Linux — linux-cachyos-bore"* instead of just *"Arch Linux"*
+- `lbl_current` (the "Current:" label below the dropdown) shows the same enriched string instead of the cryptic `.conf` filename
+- Orphan boot entries (whose kernel package is no longer installed) are filtered out of the dropdown
+
+### Technical Details
+
+- New helper `_resolve_kernel_for_entry(version, linux_path)` in `kernel.py` returns `(pkg_name, is_orphan)`:
+  - With `version:` set → reads `/usr/lib/modules/<version>/pkgbase` (file owned by the kernel package and contains its name) — same trick `get_running_kernel()` already uses; missing file means orphan
+  - Without `version:` but with `linux:` basename starting with `vmlinuz-` → strips the prefix to get the pkgbase
+  - Otherwise → `(None, False)`; used for firmware/Automatic entries which stay visible with their bootctl title
+- `get_boot_entries()` parser rewritten to accumulate fields per blank-line-separated block, capture `version:` and `linux:` in addition to `id:`/`title:`, call the resolver, drop orphans, and return `(id, title, kernel_pkg)` triples
+- `_build_boot_entry_selector` and `refresh_combo` in `kernel_gui.py` updated to unpack the new triples; combo label format is `f"{title} — {kernel_pkg}"` when `kernel_pkg` is set, else `title`. Same string is stored in `id_to_title` so the "Current:" label, log lines, and notifications all use the enriched form
+- `set_default_boot_entry` still takes the entry id (filename); no change there
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/kernel.py`
+- `usr/share/archlinux-tweak-tool/kernel_gui.py`
+
+---
+
 ## 2026.05.03 - Fastfetch write_configs: Add Missing Section Support
 
 ### What Changed

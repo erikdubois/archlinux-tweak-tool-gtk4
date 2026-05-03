@@ -341,9 +341,10 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
     combo_active_id = [None]
     id_to_title = {}
 
-    for entry_id, title in boot_entries:
-        combo.append(entry_id, title)
-        id_to_title[entry_id] = title
+    for entry_id, title, kernel_pkg in boot_entries:
+        label = f"{title} — {kernel_pkg}" if kernel_pkg else title
+        combo.append(entry_id, label)
+        id_to_title[entry_id] = label
         if entry_id == current_default:
             combo_active_id[0] = entry_id
 
@@ -353,7 +354,8 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
     lbl_current = Gtk.Label(xalign=0)
     lbl_current.set_margin_start(25)
     if current_default:
-        lbl_current.set_markup(f"<small>Current: {current_default}</small>")
+        current_label = id_to_title.get(current_default, current_default)
+        lbl_current.set_markup(f"<small>Current: {current_label}</small>")
     else:
         lbl_current.set_markup("<small>Current: unknown</small>")
 
@@ -368,16 +370,16 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
 
         selected_id = combo.get_active_id()
         if selected_id:
-            title = id_to_title.get(selected_id, "")
-            fn.log_info(f"Setting default boot entry to: {title}")
+            label = id_to_title.get(selected_id, selected_id)
+            fn.log_info(f"Setting default boot entry to: {label}")
             success = kernel.set_default_boot_entry(selected_id)
             if success:
-                fn.log_success(f"Default boot entry set to: {title} — Reboot to verify")
-                _refresh_boot_entry_display(selected_id, lbl_current)
-                fn.show_in_app_notification(self, f"Default boot entry set to: {title} — Reboot to verify")
+                fn.log_success(f"Default boot entry set to: {label} — Reboot to verify")
+                _refresh_boot_entry_display(label, lbl_current)
+                fn.show_in_app_notification(self, f"Default boot entry set to: {label} — Reboot to verify")
             else:
-                fn.log_error(f"Failed to set default boot entry: {title}")
-                fn.show_in_app_notification(self, f"Failed to set default boot entry: {title}")
+                fn.log_error(f"Failed to set default boot entry: {label}")
+                fn.show_in_app_notification(self, f"Failed to set default boot entry: {label}")
 
     btn_set = Gtk.Button(label="Set as Default")
     btn_set.set_size_request(160, -1)
@@ -393,9 +395,10 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
         new_entries = kernel.get_boot_entries()
         combo.remove_all()
         id_to_title.clear()
-        for entry_id, title in new_entries:
-            combo.append(entry_id, title)
-            id_to_title[entry_id] = title
+        for entry_id, title, kernel_pkg in new_entries:
+            label = f"{title} — {kernel_pkg}" if kernel_pkg else title
+            combo.append(entry_id, label)
+            id_to_title[entry_id] = label
         new_default = kernel.get_default_boot_entry()
         if new_default:
             combo.set_active_id(new_default)

@@ -442,30 +442,77 @@ def is_systemd_boot():
         return False
 
 
+def _resolve_kernel_for_entry(version, linux_path):
+    """Return (pkg_name, is_orphan) for a boot entry.
+
+    Strategy:
+      1. If `version:` is set, read /usr/lib/modules/<version>/pkgbase — that file
+         is owned by the kernel package and its contents are the package name.
+         Missing file means the kernel was uninstalled but the .conf remains.
+      2. Else if `linux:` basename starts with "vmlinuz-", strip the prefix.
+      3. Else no kernel can be resolved (e.g. firmware/automatic entries).
+    """
+    if version:
+        pkgbase_path = f"/usr/lib/modules/{version}/pkgbase"
+        try:
+            with open(pkgbase_path, "r", encoding="utf-8") as f:
+                return f.read().strip(), False
+        except FileNotFoundError:
+            return None, True
+        except Exception:
+            return None, False
+
+    if linux_path:
+        basename = linux_path.rsplit("/", 1)[-1]
+        if basename.startswith("vmlinuz-"):
+            return basename[len("vmlinuz-"):], False
+
+    return None, False
+
+
 def get_boot_entries():
-    """Return list of (id, title) tuples from bootctl list."""
+    """Return list of (id, title, kernel_pkg) tuples from bootctl list.
+
+    Orphan entries (whose kernel package is no longer installed) are filtered
+    out so they never reach the dropdown.
+    """
     try:
         output = subprocess.check_output(
             ["bootctl", "list", "--no-pager"],
             text=True, stderr=subprocess.DEVNULL
         )
         entries = []
-        current_id = None
-        current_title = None
+        current = {}
         for line in output.splitlines():
-            line = line.strip()
-            if line.startswith("id:"):
-                current_id = line.split(":", 1)[1].strip()
-            elif line.startswith("title:"):
-                raw_title = line.split(":", 1)[1].strip()
+            stripped = line.strip()
+            if not stripped:
+                if current.get("id") and current.get("title"):
+                    kernel_pkg, is_orphan = _resolve_kernel_for_entry(
+                        current.get("version"), current.get("linux")
+                    )
+                    if not is_orphan:
+                        entries.append((current["id"], current["title"], kernel_pkg))
+                current = {}
+                continue
+            if stripped.startswith("id:"):
+                current["id"] = stripped.split(":", 1)[1].strip()
+            elif stripped.startswith("title:"):
+                raw_title = stripped.split(":", 1)[1].strip()
                 if "reported/absent" in raw_title:
-                    current_id = None
+                    current = {}
                     continue
-                current_title = re.sub(r'\s*\((default|selected|current)\)', '', raw_title).strip()
-            if current_id and current_title:
-                entries.append((current_id, current_title))
-                current_id = None
-                current_title = None
+                current["title"] = re.sub(r'\s*\((default|selected|current)\)', '', raw_title).strip()
+            elif stripped.startswith("version:"):
+                current["version"] = stripped.split(":", 1)[1].strip()
+            elif stripped.startswith("linux:"):
+                current["linux"] = stripped.split(":", 1)[1].strip()
+        # Flush trailing entry if file did not end with a blank line
+        if current.get("id") and current.get("title"):
+            kernel_pkg, is_orphan = _resolve_kernel_for_entry(
+                current.get("version"), current.get("linux")
+            )
+            if not is_orphan:
+                entries.append((current["id"], current["title"], kernel_pkg))
         return entries
     except Exception:
         return []
