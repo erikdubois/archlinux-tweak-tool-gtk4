@@ -1,88 +1,33 @@
 #!/bin/bash
+set -euo pipefail
 
-check_and_fetch() {
-    local pkg="$1"
-    local dest="$2"
-    local url="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64"
-
-    if compgen -G "${dest}/${pkg}*.pkg.tar.zst" > /dev/null 2>&1; then
-        echo "$pkg already present in $dest"
-        return
-    fi
-
-    echo "$pkg missing — downloading to $dest"
-    wget -q "${url}/${pkg}.pkg.tar.zst" -P "$dest" && echo "$pkg downloaded" || echo "Failed to download $pkg"
-}
-
-check_and_fetch "chaotic-keyring"   "$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic/keyring"
-check_and_fetch "chaotic-mirrorlist" "$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist"
-
-# Configuration
-URL="URL=https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
-DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/chaotic/keyring/"
-PACKAGES=("chaotic-keyring")
-
-# Function to extract version string (excluding .pkg.tar.zst)
-get_version() {
-    echo "$1" | sed -E 's/^.*-([0-9]{8,})-[0-9]+-any\.pkg\.tar\.zst$/\1/'
-}
-
-# Get remote package list
-remote_list=$(curl -s "$URL" | grep -oP 'href="[^"]*\.pkg\.tar\.zst"' | cut -d'"' -f2)
-
-# Process each target package
-for pkg in "${PACKAGES[@]}"; do
-    # Get latest remote file
-    remote_file=$(echo "$remote_list" | grep "^${pkg}-.*-any\.pkg\.tar\.zst" | sort -Vr | head -n1)
-    [[ -z "$remote_file" ]] && echo "No remote version found for $pkg" && continue
-
-    # Get latest local file
-    local_file=$(find "$DEST" -maxdepth 1 -type f -name "${pkg}-*-any.pkg.tar.zst" | sort -Vr | head -n1)
-    
-    remote_version=$(get_version "$remote_file")
-    local_version=$(get_version "$local_file")
-
-    if [[ "$remote_version" != "$local_version" ]]; then
-        echo "Updating $pkg: $local_version → $remote_version"
-        curl -O "$URL/$remote_file"
-        rm $DEST/chaotic-keyring*
-        mv $remote_file $DEST
-    else
-        echo "$pkg is up to date: $local_version"
-    fi
-done
-
-
-# Configuration
 URL="https://geo-mirror.chaotic.cx/chaotic-aur/x86_64/"
-DEST="/home/erik/DATA/EDU/archlinux-tweak-tool/usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist/"
-PACKAGES=("chaotic-mirrorlist")
+BASE="$(dirname "$0")/usr/share/archlinux-tweak-tool/data/chaotic"
 
-# Function to extract version string (excluding .pkg.tar.zst)
 get_version() {
     echo "$1" | sed -E 's/^.*-([0-9]{8,})-[0-9]+-any\.pkg\.tar\.zst$/\1/'
 }
 
-# Get remote package list
 remote_list=$(curl -s "$URL" | grep -oP 'href="[^"]*\.pkg\.tar\.zst"' | cut -d'"' -f2)
 
-# Process each target package
-for pkg in "${PACKAGES[@]}"; do
-    # Get latest remote file
+for entry in "chaotic-keyring:keyring" "chaotic-mirrorlist:mirrorlist"; do
+    pkg="${entry%%:*}"
+    subdir="${entry##*:}"
+    dest="$BASE/$subdir"
+
     remote_file=$(echo "$remote_list" | grep "^${pkg}-.*-any\.pkg\.tar\.zst" | sort -Vr | head -n1)
     [[ -z "$remote_file" ]] && echo "No remote version found for $pkg" && continue
 
-    # Get latest local file
-    local_file=$(find "$DEST" -maxdepth 1 -type f -name "${pkg}-*-any.pkg.tar.zst" | sort -Vr | head -n1)
-    
+    local_file=$(find "$dest" -maxdepth 1 -type f -name "${pkg}-*-any.pkg.tar.zst" | sort -Vr | head -n1)
+
     remote_version=$(get_version "$remote_file")
     local_version=$(get_version "$local_file")
 
     if [[ "$remote_version" != "$local_version" ]]; then
         echo "Updating $pkg: $local_version → $remote_version"
         curl -O "$URL/$remote_file"
-        rm $DEST/chaotic-mirrorlist*
-        mv $remote_file $DEST
+        rm -f "$dest/${pkg}"-*
+        mv "$remote_file" "$dest"
     else
         echo "$pkg is up to date: $local_version"
     fi
