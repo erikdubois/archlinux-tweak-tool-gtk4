@@ -48,6 +48,7 @@ the nemesis and/or chaotic-aur repo"
     label.set_halign(Gtk.Align.CENTER)
 
     self.d_combo = Gtk.DropDown.new_from_strings(list(desktopr.desktops))
+    self.d_combo.set_name("desktop_combo")
     self.d_combo.set_size_request(220, 0)
     self.d_combo.set_selected(0)
     self.d_combo.connect("notify::selected", functools.partial(desktopr.on_d_combo_changed, self))

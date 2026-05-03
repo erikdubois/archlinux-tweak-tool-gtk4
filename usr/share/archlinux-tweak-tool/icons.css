@@ -39,6 +39,10 @@ label#title {
     font-family: 'Open Sans', 'Helvetica', sans-serif;
 }
 
+#desktop_combo popover scrolledwindow {
+    min-height: 390px;
+}
+
 label#label_package_status {
     background-color: @window_bg_color;
     border-top: 1px solid alpha(currentColor, 0.2);
