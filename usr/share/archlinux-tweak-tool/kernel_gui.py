@@ -98,12 +98,12 @@ def _offer_install_packages(self, Gtk, fn, missing):
         message_type=Gtk.MessageType.QUESTION,
         buttons=Gtk.ButtonsType.YES_NO,
         text="Missing required packages",
-    )
-    dialog.format_secondary_text(
-        f"The following packages are needed for full kernel management:\n\n"
-        f"{pkg_list}\n\n"
-        f"Reason:\n{reasons}\n\n"
-        f"Would you like to install them now?"
+        secondary_text=(
+            f"The following packages are needed for full kernel management:\n\n"
+            f"{pkg_list}\n\n"
+            f"Reason:\n{reasons}\n\n"
+            f"Would you like to install them now?"
+        ),
     )
 
     def on_response(_dialog, response):
