@@ -498,16 +498,19 @@ def install_desktop(self, desktop):
         GLib.idle_add(_after_install)
 
     def _after_install():
+        global _xsession_files, _wayland_files
+        _xsession_files = None
+        _wayland_files = None
         fn.debug_print(f"Installation terminal closed for {desktop}")
         if check_desktop(desktop):
             fn.log_info(f"Copying {len(src)} config files from /etc/skel to {fn.home}...")
             if twm is True:
                 for x in src:
                     if fn.path.isdir(x) or fn.path.isfile(x):
-                        fn.debug_print(f"Copying: {x}")
                         dest = x.replace("/etc/skel", fn.home)
                         if fn.path.isdir(x):
                             dest = fn.path.split(dest)[0]
+                        fn.log_info(f"Copying skel: {x}  →  {dest}")
                         l2 = copy + [x, dest]
                         with fn.subprocess.Popen(
                             l2,
