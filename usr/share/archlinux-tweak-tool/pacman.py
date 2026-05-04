@@ -204,6 +204,16 @@ def update_repos_switches(self):
         self.chaotic_switch.set_active(check_repo("[chaotic-aur]"))
     finally:
         self.initializing = False
+    if hasattr(self, "parallel_downloads_label"):
+        try:
+            with open(fn.pacman, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("ParallelDownloads"):
+                        value = line.split("=")[1].strip()
+                        self.parallel_downloads_label.set_markup(f"ParallelDownloads: {value}")
+                        break
+        except Exception:
+            pass
 
 
 def check_parallel_downloads(lists, value):
