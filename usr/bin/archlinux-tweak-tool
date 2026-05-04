@@ -42,15 +42,21 @@ if [[ -z "${DISPLAY:-}" ]]; then
 fi
 
 # ── Detect session ─────────────────────────────────────────────────────────────
-SESSION="${XDG_SESSION_TYPE:-}"
-if [[ -z "$SESSION" ]]; then
+if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+    SESSION="wayland"
+elif [[ -n "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
+    SESSION="x11"
+elif [[ -n "${XDG_SESSION_TYPE:-}" ]]; then
+    SESSION="${XDG_SESSION_TYPE}"
+else
     SESSION=$(loginctl show-session "$(loginctl | grep "$(whoami)" | awk '{print $1}' | head -1)" -p Type \
         | awk -F= '{print $2}' | grep "x11\|wayland\|tty" || true)
 fi
 
+# Plan B: DISPLAY is verified non-empty above — if all else fails, assume x11
 if [[ -z "$SESSION" ]]; then
-    error "Failed to verify session for user — SESSION is empty"
-    exit 1
+    warn "Could not detect session type — DISPLAY is set, assuming x11"
+    SESSION="x11"
 fi
 
 # ── Xauth setup ────────────────────────────────────────────────────────────────
