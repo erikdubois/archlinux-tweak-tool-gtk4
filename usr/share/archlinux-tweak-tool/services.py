@@ -44,7 +44,7 @@ def choose_smb_conf(self):
         fn.debug_print("  Config : example smb.conf")
         fn.copy_samba("example")
         fn.log_success("Samba configuration applied")
-        GLib.idle_add(fn.show_in_app_notification, self, "Smb.conf easy configuration applied")
+        GLib.idle_add(fn.show_in_app_notification, self, "Smb.conf ATT configuration applied")
 
     if fn.path.isdir(shared_path):
         fn.debug_print(f"  Folder : {shared_path} already exists")
