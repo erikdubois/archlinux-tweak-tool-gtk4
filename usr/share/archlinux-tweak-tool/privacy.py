@@ -22,6 +22,10 @@ def _refresh_hblock_label(self):
 
 
 def on_click_install_ublock(self, _widget):
+    if fn.check_package_installed("firefox-ublock-origin"):
+        fn.log_info("uBlock Origin is already installed")
+        fn.show_in_app_notification(self, "uBlock Origin is already installed")
+        return
     fn.log_subsection("Install uBlock Origin")
     script = "sudo pacman -S firefox-ublock-origin --needed; read -p 'Press enter to close'"
     process = fn.subprocess.Popen(
@@ -58,6 +62,10 @@ def on_click_remove_ublock(self, _widget):
 
 
 def on_click_install_hblock(self, _widget):
+    if fn.check_package_installed("edu-hblock-git"):
+        fn.log_info("hblock is already installed")
+        fn.show_in_app_notification(self, "hblock is already installed")
+        return
     fn.log_subsection("Install hblock")
     script = "sudo pacman -S edu-hblock-git --needed; read -p 'Press enter to close'"
     process = fn.subprocess.Popen(

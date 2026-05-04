@@ -309,25 +309,25 @@ def pop_theme_box(self, combo):
     _m = combo.get_model()
     _m.splice(0, _m.get_n_items(), [])
 
-    if (
-        fn.path.exists("/usr/share/sddm")
-        and fn.path.exists(fn.sddm_default_d2)
-        and fn.path.exists(fn.sddm_default_d1)
-    ):
-        for items in fn.listdir("/usr/share/sddm/themes/"):
-            coms.append(items.split(".")[0])
-        lines = get_sddm_lines(fn.sddm_default_d2)
+    if not fn.path.exists("/usr/share/sddm/themes/"):
+        return
 
+    for items in fn.listdir("/usr/share/sddm/themes/"):
+        coms.append(items.split(".")[0])
+
+    name = ""
+    if fn.path.exists(fn.sddm_default_d2):
+        lines = get_sddm_lines(fn.sddm_default_d2)
         try:
             name = check_sddm(lines, "Current=").split("=")[1]
-        except IndexError:
+        except (IndexError, TypeError):
             name = ""
 
-        coms.sort()
-        for i, item in enumerate(coms):
-            combo.get_model().append(item)
-            if name.lower() == item.lower():
-                combo.set_selected(i)
+    coms.sort()
+    for i, item in enumerate(coms):
+        combo.get_model().append(item)
+        if name.lower() == item.lower():
+            combo.set_selected(i)
 
 
 def pop_gtk_cursor_names(self, combo):
