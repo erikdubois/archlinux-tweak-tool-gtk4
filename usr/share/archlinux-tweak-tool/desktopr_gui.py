@@ -122,7 +122,9 @@ Know that these packages conflict with picom-git. It will be removed."
     noice.set_justify(Gtk.Justification.CENTER)
     noice.set_markup(
         "We will backup and overwrite your ~/.config when installing desktops\n\
-Backup is in ~/.config-att folder\n"
+Backup is in ~/.config-att folder\n\
+Uninstalling a desktop leaves its ~/.config subfolder intact\n\
+Remove it yourself if no longer needed\n"
     )
     noice.set_wrap(True)
     if fn.check_package_installed("picom-ibhagwan-git") or fn.check_package_installed(
