@@ -226,14 +226,15 @@ def set_parallel_downloads(self, widget):
                 lines = f.readlines()
                 f.close()
             par_downloads = fn.get_combo_text(self.parallel_downloads)
+            fn.log_info_concise(f"  Value : {par_downloads}")
+            fn.log_info_concise(f"  File  : {fn.pacman}")
             pos_par_down = fn.get_position(lines, "ParallelDownloads")
             lines[pos_par_down] = "ParallelDownloads = " + par_downloads + "\n"
 
             with open(fn.pacman, "w", encoding="utf-8") as f:
                 f.writelines(lines)
                 f.close()
-            fn.debug_print(f"Config saved: {lines[pos_par_down].strip()}")
-            fn.log_success("Parallel downloads setting saved")
+            fn.log_success(f"ParallelDownloads = {par_downloads} saved to {fn.pacman}")
             fn.show_in_app_notification(self, "Settings Saved Successfully")
             if hasattr(self, "parallel_downloads_label"):
                 self.parallel_downloads_label.set_markup(f"ParallelDownloads: {par_downloads}")
