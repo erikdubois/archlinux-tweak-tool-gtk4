@@ -2359,6 +2359,7 @@ def update_image(self, widget, image, theme_type, att_base, image_width, image_h
             att_base + "/themer_data/i3/" + get_combo_text(widget) + ".jpg"
         )
     elif theme_type == "awesome":
+        name = "multicolor"
         tree_iter = self.awesome_combo.get_active_iter()
         if tree_iter is not None:
             model = self.awesome_combo.get_model()

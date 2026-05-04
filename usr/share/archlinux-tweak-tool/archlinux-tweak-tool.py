@@ -95,8 +95,8 @@ class Main(Gtk.ApplicationWindow):
             print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
             print("-" * 75)
         fn.log_info(
-            "For full functionality, add Chaotic-AUR and Nemesis repo to your pacman.conf.\n"
-            "For full functionality/transparency, we need alacritty to be installed"
+            "To unlock all features, add Chaotic-AUR and Nemesis repo to your pacman.conf.\n"
+            "For terminal operations and full transparency, alacritty must be installed"
         )
 
         fn.findgroup()

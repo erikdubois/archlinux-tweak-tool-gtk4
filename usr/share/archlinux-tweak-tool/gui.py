@@ -201,6 +201,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     # ==========================================================
 
     themer_gui.gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir)
+    self.on_desktop_changed = lambda: themer_gui.refresh_themer_dropdowns(self, fn, themer)
 
     # # ==========================================================
     # #                USER

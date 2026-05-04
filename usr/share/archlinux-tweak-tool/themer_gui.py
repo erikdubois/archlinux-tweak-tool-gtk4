@@ -25,6 +25,49 @@ def init_themer_lazy_load(self, fn):
         pass
 
 
+def refresh_themer_dropdowns(self, fn, themer):
+    fn.log_info("Refreshing themer dropdowns after desktop change...")
+
+    i3_ok = fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed("edu-i3-git")
+    if i3_ok:
+        i3_list = themer.get_list(fn.i3wm_config)
+        themer.get_i3_themes(self.i3_combo, i3_list)
+    self.i3_combo.set_sensitive(i3_ok)
+    self.applyi3.set_sensitive(i3_ok)
+    self.reseti3.set_sensitive(i3_ok)
+    self.poly.set_sensitive(i3_ok)
+
+    aw_ok = fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed("edu-awesome-git")
+    if aw_ok:
+        try:
+            awesome_list = themer.get_list(fn.awesome_config)
+            awesome_lines = themer.get_awesome_themes(awesome_list)
+            self.store.clear()
+            for x, theme in enumerate(awesome_lines):
+                self.store.append([x, theme])
+        except Exception:
+            pass
+    self.awesome_combo.set_sensitive(aw_ok)
+    self.applyawesome.set_sensitive(aw_ok)
+    self.resetawesome.set_sensitive(aw_ok)
+
+    qt_ok = fn.path_check(fn.qtile_config_theme) and fn.check_package_installed("edu-qtile-git")
+    if qt_ok:
+        qtile_list = themer.get_list(fn.qtile_config)
+        themer.get_qtile_themes(self.qtile_combo, qtile_list)
+    self.qtile_combo.set_sensitive(qt_ok)
+    self.applyqtile.set_sensitive(qt_ok)
+    self.resetqtile.set_sensitive(qt_ok)
+
+    lft_ok = fn.os.path.isfile(fn.leftwm_config) and fn.check_package_installed("edu-leftwm-git")
+    self.leftwm_combo.set_sensitive(lft_ok)
+    self.applyleftwm.set_sensitive(lft_ok)
+    self.resetleftwm.set_sensitive(lft_ok)
+    self.removeleftwm.set_sensitive(lft_ok)
+
+    fn.log_success("Themer dropdowns refreshed")
+
+
 def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     """create a gui"""
     from gi.repository import Gdk
@@ -107,10 +150,10 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     vbox2.append(self.i3_combo)
 
-    applyi3 = Gtk.Button(label="Apply theme")
-    applyi3.connect("clicked", functools.partial(themer.i3wm_apply_clicked, self))
-    reseti3 = Gtk.Button(label="Reset")
-    reseti3.connect("clicked", functools.partial(themer.i3wm_reset_clicked, self))
+    self.applyi3 = Gtk.Button(label="Apply theme")
+    self.applyi3.connect("clicked", functools.partial(themer.i3wm_apply_clicked, self))
+    self.reseti3 = Gtk.Button(label="Reset")
+    self.reseti3.connect("clicked", functools.partial(themer.i3wm_reset_clicked, self))
 
     lbls = Gtk.Label(label="Toggle polybar")
     self.poly = Gtk.Switch()
@@ -119,8 +162,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     if not fn.os.path.isfile(fn.i3wm_config) or not fn.check_package_installed(
         "edu-i3-git"
     ):
-        applyi3.set_sensitive(False)
-        reseti3.set_sensitive(False)
+        self.applyi3.set_sensitive(False)
+        self.reseti3.set_sensitive(False)
         self.poly.set_sensitive(False)
 
     label.set_margin_start(10)
@@ -163,8 +206,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         img_load,
     )
 
-    hbox2.append(reseti3)  # pack_end
-    hbox2.append(applyi3)  # pack_end
+    hbox2.append(self.reseti3)  # pack_end
+    hbox2.append(self.applyi3)  # pack_end
 
     hbox3.append(lbls)  # pack_end
     hbox3.append(self.poly)  # pack_end
@@ -308,19 +351,19 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     frame.set_margin_end(10)
     hbox5.append(frame)
 
-    apply = Gtk.Button(label="Apply theme")
-    apply.connect("clicked", functools.partial(themer.awesome_apply_clicked, self))
-    reset = Gtk.Button(label="Reset")
-    reset.connect("clicked", functools.partial(themer.awesome_reset_clicked, self))
+    self.applyawesome = Gtk.Button(label="Apply theme")
+    self.applyawesome.connect("clicked", functools.partial(themer.awesome_apply_clicked, self))
+    self.resetawesome = Gtk.Button(label="Reset")
+    self.resetawesome.connect("clicked", functools.partial(themer.awesome_reset_clicked, self))
 
     if not fn.os.path.isfile(fn.awesome_config) or not fn.check_package_installed(
         "edu-awesome-git"
     ):
-        apply.set_sensitive(False)
-        reset.set_sensitive(False)
+        self.applyawesome.set_sensitive(False)
+        self.resetawesome.set_sensitive(False)
 
-    hbox4.append(reset)  # pack_end
-    hbox4.append(apply)  # pack_end
+    hbox4.append(self.resetawesome)  # pack_end
+    hbox4.append(self.applyawesome)  # pack_end
 
     hbox2.set_margin_start(10)
     hbox2.set_margin_end(10)
@@ -361,16 +404,16 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
 
     vbox4.append(self.qtile_combo)
 
-    applyqtile = Gtk.Button(label="Apply theme")
-    applyqtile.connect("clicked", functools.partial(themer.qtile_apply_clicked, self))
-    resetqtile = Gtk.Button(label="Reset")
-    resetqtile.connect("clicked", functools.partial(themer.qtile_reset_clicked, self))
+    self.applyqtile = Gtk.Button(label="Apply theme")
+    self.applyqtile.connect("clicked", functools.partial(themer.qtile_apply_clicked, self))
+    self.resetqtile = Gtk.Button(label="Reset")
+    self.resetqtile.connect("clicked", functools.partial(themer.qtile_reset_clicked, self))
 
     if not fn.path_check(fn.qtile_config_theme) or not fn.check_package_installed(
         "edu-qtile-git"
     ):
-        applyqtile.set_sensitive(False)
-        resetqtile.set_sensitive(False)
+        self.applyqtile.set_sensitive(False)
+        self.resetqtile.set_sensitive(False)
 
     labelqt.set_margin_start(10)
     labelqt.set_margin_end(10)
@@ -415,8 +458,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
         img_load,
     )
 
-    hbox9.append(resetqtile)  # pack_end
-    hbox9.append(applyqtile)  # pack_end
+    hbox9.append(self.resetqtile)  # pack_end
+    hbox9.append(self.applyqtile)  # pack_end
 
     vboxstack3.append(hbox8)
     vboxstack3.append(hbox10)
@@ -460,19 +503,19 @@ install them in one go"
 
     vbox5.append(self.leftwm_combo)
 
-    applyleftwm = Gtk.Button(label="Install and apply selected theme")
-    applyleftwm.connect("clicked", functools.partial(themer.leftwm_apply_clicked, self))
-    removeleftwm = Gtk.Button(label="Remove selected theme and apply Candy")
-    removeleftwm.connect("clicked", functools.partial(themer.leftwm_remove_clicked, self))
-    resetleftwm = Gtk.Button(label="Reset selected theme")
-    resetleftwm.connect("clicked", functools.partial(themer.leftwm_reset_clicked, self))
+    self.applyleftwm = Gtk.Button(label="Install and apply selected theme")
+    self.applyleftwm.connect("clicked", functools.partial(themer.leftwm_apply_clicked, self))
+    self.removeleftwm = Gtk.Button(label="Remove selected theme and apply Candy")
+    self.removeleftwm.connect("clicked", functools.partial(themer.leftwm_remove_clicked, self))
+    self.resetleftwm = Gtk.Button(label="Reset selected theme")
+    self.resetleftwm.connect("clicked", functools.partial(themer.leftwm_reset_clicked, self))
 
     if not fn.os.path.isfile(fn.leftwm_config) or not fn.check_package_installed(
         "edu-leftwm-git"
     ):
-        applyleftwm.set_sensitive(False)
-        resetleftwm.set_sensitive(False)
-        removeleftwm.set_sensitive(False)
+        self.applyleftwm.set_sensitive(False)
+        self.resetleftwm.set_sensitive(False)
+        self.removeleftwm.set_sensitive(False)
 
     hbox11 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     labellft.set_margin_start(10)
@@ -518,9 +561,9 @@ install them in one go"
         img_load,
     )
 
-    hbox12.append(removeleftwm)  # pack_end
-    hbox12.append(resetleftwm)  # pack_end
-    hbox12.append(applyleftwm)  # pack_end
+    hbox12.append(self.removeleftwm)  # pack_end
+    hbox12.append(self.resetleftwm)  # pack_end
+    hbox12.append(self.applyleftwm)  # pack_end
 
     vboxstack4.append(hbox11)
     vboxstack4.append(hbox13)
