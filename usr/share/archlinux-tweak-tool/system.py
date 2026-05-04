@@ -20,11 +20,13 @@ def _run_cmd(cmd):
 
 
 def on_click_system_cpu(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching CPU info viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
-        fn.install_package(self, "bat")
         _run_cmd("alacritty -e bash -c 'lscpu | bat --color=always -l conf | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
@@ -33,7 +35,6 @@ def on_click_system_cpu(self, _widget):
 def on_click_system_memory_disk(self, _widget):
     try:
         fn.log_subsection("Launching memory and disk usage viewer...")
-        fn.install_package(self, "alacritty")
         _run_cmd(
             "alacritty -e bash -c "
             "'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\";"
@@ -44,51 +45,61 @@ def on_click_system_memory_disk(self, _widget):
 
 
 def on_click_system_lsblk(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching block devices viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd("alacritty -e bash -c 'lsblk -f -o+SIZE | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_lspci(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching PCI devices viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd("alacritty -e bash -c 'lspci -vnn | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_lsusb(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching USB devices viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd("alacritty -e bash -c 'lsusb | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_lsmod(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching loaded modules viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
-        fn.install_package(self, "bat")
         _run_cmd("alacritty -e bash -c 'lsmod | bat --color=always -l conf | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_inxi(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching system information viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         fn.install_package(self, "inxi")
         _run_cmd("alacritty -e bash -c 'inxi -Fxx -c 2 --za | fzf --ansi'")
     except Exception as error:
@@ -96,34 +107,40 @@ def on_click_system_inxi(self, _widget):
 
 
 def on_click_system_hwinfo(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching hardware information viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         fn.install_package(self, "hwinfo")
-        fn.install_package(self, "bat")
         _run_cmd("alacritty -e bash -c 'hwinfo --short | bat --color=always -l conf | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_fdisk(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching disk partitioning viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
-        fn.install_package(self, "bat")
         _run_cmd("alacritty -e bash -c 'sudo fdisk -l | bat --color=always -l conf | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_fstab(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching fstab viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
-        fn.install_package(self, "bat")
         _run_cmd("alacritty -e bash -c 'bat --color=always /etc/fstab | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
@@ -132,7 +149,6 @@ def on_click_system_fstab(self, _widget):
 def on_click_system_hostnamectl(self, _widget):
     try:
         fn.log_subsection("Launching hostname settings viewer...")
-        fn.install_package(self, "alacritty")
         _run_cmd("alacritty -e bash -c 'hostnamectl; read -p \"Press enter to close\"'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
@@ -141,17 +157,23 @@ def on_click_system_hostnamectl(self, _widget):
 def on_click_system_localectl(self, _widget):
     try:
         fn.log_subsection("Launching locale settings viewer...")
-        fn.install_package(self, "alacritty")
-        _run_cmd("alacritty -e bash -c 'localectl; read -p \"Press enter to close\"'")
+        _run_cmd(
+            "alacritty -e bash -c '"
+            "localectl; echo; "
+            "echo \"Timezone: $(timedatectl show --property=Timezone --value)\"; "
+            "read -p \"Press enter to close\"'"
+        )
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
 
 def on_click_system_services(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching system services viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd(
             "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --type=service | fzf --ansi'"
         )
@@ -160,10 +182,12 @@ def on_click_system_services(self, _widget):
 
 
 def on_click_system_services_enabled(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching enabled services viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd(
             "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-unit-files"
             " --type=service --state=enabled | fzf --ansi'"
@@ -173,10 +197,12 @@ def on_click_system_services_enabled(self, _widget):
 
 
 def on_click_system_services_failed(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching failed services viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd(
             "alacritty -e bash -c 'SYSTEMD_COLORS=1 systemctl list-units --failed | fzf --ansi'"
         )
@@ -185,10 +211,12 @@ def on_click_system_services_failed(self, _widget):
 
 
 def on_click_system_timers_enabled(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching enabled timers viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         uid = pwd.getpwnam(fn.sudo_username).pw_uid
         cmd = (
             "alacritty -e bash -c '{ echo \"=== System Timers ===\"; "
@@ -208,10 +236,12 @@ def on_click_system_timers_enabled(self, _widget):
 
 
 def on_click_system_dmesg(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching kernel messages viewer...")
-        fn.install_package(self, "alacritty")
-        fn.install_package(self, "fzf")
         _run_cmd("alacritty -e bash -c 'sudo dmesg --color=always | fzf --ansi'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
