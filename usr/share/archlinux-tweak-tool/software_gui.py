@@ -78,6 +78,30 @@ def gui(self, Gtk, vboxstack_software, fn):
     self.btn_software_octopi_remove.set_margin_end(10)
     hbox_octopi.append(self.btn_software_octopi_remove)
 
+    # Bazaar
+    hbox_bazaar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_software_bazaar = Gtk.Label(xalign=0)
+    self.lbl_software_bazaar.set_markup(
+        "Bazaar"
+        + (" <b>installed</b>" if fn.path.exists("/usr/bin/bazaar") else "")
+    )
+    btn_bazaar_launch = Gtk.Button(label="Launch/Install")
+    btn_bazaar_launch.connect("clicked", functools.partial(software.on_click_software_bazaar, self))
+    self.btn_software_bazaar_remove = Gtk.Button(label="Remove")
+    self.btn_software_bazaar_remove.connect(
+        "clicked", functools.partial(software.on_click_software_bazaar_remove, self)
+    )
+    self.lbl_software_bazaar.set_margin_start(20)
+    self.lbl_software_bazaar.set_margin_end(10)
+    self.lbl_software_bazaar.set_hexpand(True)
+    hbox_bazaar.append(self.lbl_software_bazaar)
+    btn_bazaar_launch.set_margin_start(10)
+    btn_bazaar_launch.set_margin_end(5)
+    hbox_bazaar.append(btn_bazaar_launch)
+    self.btn_software_bazaar_remove.set_margin_start(5)
+    self.btn_software_bazaar_remove.set_margin_end(10)
+    hbox_bazaar.append(self.btn_software_bazaar_remove)
+
     # GNOME Software
     hbox_gnome = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.lbl_software_gnome = Gtk.Label(xalign=0)
@@ -483,6 +507,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     vboxstack_software.append(hbox_section1)
     vboxstack_software.append(hbox_pamac)
     vboxstack_software.append(hbox_octopi)
+    vboxstack_software.append(hbox_bazaar)
     vboxstack_software.append(hbox_gnome)
     vboxstack_software.append(hbox_discover)
     vboxstack_software.append(hbox_bauh)

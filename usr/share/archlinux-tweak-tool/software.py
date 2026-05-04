@@ -106,6 +106,56 @@ def on_click_software_octopi(self, _widget):
         fn.log_error(f"Error with octopi: {error}")
 
 
+def on_click_software_bazaar(self, _widget):
+    try:
+        if fn.path.exists("/usr/bin/bazaar"):
+            fn.log_subsection("Launching bazaar...")
+            fn.subprocess.Popen(
+                "sudo -E -u " + fn.sudo_username + " bazaar &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Bazaar launched")
+        else:
+            fn.log_subsection("Installing bazaar...")
+            process = fn.launch_pacman_install_in_terminal("bazaar")
+            GLib.idle_add(fn.show_in_app_notification, self, "bazaar installation started")
+
+            def wait_install():
+                try:
+                    import time
+                    fn.debug_print("Waiting for bazaar installation to complete...")
+                    process.wait()
+                    fn.debug_print("Installation process completed")
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/bazaar"):
+                        fn.log_success("bazaar installed successfully")
+                        GLib.idle_add(
+                            self.lbl_software_bazaar.set_markup,
+                            "Bazaar <b>installed</b>"
+                        )
+                        GLib.idle_add(fn.show_in_app_notification, self, "bazaar installed")
+                        time.sleep(1)
+                        fn.log_subsection("Launching bazaar...")
+                        fn.subprocess.Popen(
+                            "sudo -E -u " + fn.sudo_username + " bazaar &",
+                            shell=True,
+                            stdout=fn.subprocess.PIPE,
+                            stderr=fn.subprocess.STDOUT,
+                        )
+                        GLib.idle_add(fn.show_in_app_notification, self, "Bazaar launched")
+                    else:
+                        fn.log_warn("bazaar binary NOT found, installation may have failed")
+                        fn.check_missing_repo_error(self, "", "bazaar")
+                except Exception as e:
+                    fn.log_error(f"Error during installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+    except Exception as error:
+        fn.log_error(f"Error with bazaar: {error}")
+
+
 def on_click_software_gnome(self, _widget):
     try:
         if fn.path.exists("/usr/bin/gnome-software"):
@@ -767,6 +817,19 @@ def on_click_software_octopi_remove(self, _widget):
         )
     except Exception as error:
         fn.log_error(f"Error with octopi removal: {error}")
+
+
+def on_click_software_bazaar_remove(self, _widget):
+    try:
+        fn.log_subsection("Removing bazaar...")
+        process = fn.launch_pacman_remove_in_terminal("bazaar")
+        GLib.idle_add(fn.show_in_app_notification, self, "bazaar removal started")
+        fn.wait_remove_and_update(
+            process, "/usr/bin/bazaar", self.lbl_software_bazaar,
+            "Bazaar", self, "bazaar removal complete"
+        )
+    except Exception as error:
+        fn.log_error(f"Error with bazaar removal: {error}")
 
 
 def on_click_software_gnome_remove(self, _widget):

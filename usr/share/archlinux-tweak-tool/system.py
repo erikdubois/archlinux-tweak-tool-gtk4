@@ -35,8 +35,9 @@ def on_click_system_memory_disk(self, _widget):
         fn.log_subsection("Launching memory and disk usage viewer...")
         fn.install_package(self, "alacritty")
         _run_cmd(
-            "alacritty --hold -e bash -c "
-            "'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\"; df -h'"
+            "alacritty -e bash -c "
+            "'echo \"=== MEMORY ===\"; free -h; echo; echo \"=== DISK USAGE ===\";"
+            " df -h; read -p \"Press enter to close\"'"
         )
     except Exception as error:
         fn.log_error(f"Error: {error}")
@@ -132,7 +133,7 @@ def on_click_system_hostnamectl(self, _widget):
     try:
         fn.log_subsection("Launching hostname settings viewer...")
         fn.install_package(self, "alacritty")
-        _run_cmd("alacritty --hold -e bash -c 'hostnamectl'")
+        _run_cmd("alacritty -e bash -c 'hostnamectl; read -p \"Press enter to close\"'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
@@ -141,7 +142,7 @@ def on_click_system_localectl(self, _widget):
     try:
         fn.log_subsection("Launching locale settings viewer...")
         fn.install_package(self, "alacritty")
-        _run_cmd("alacritty --hold -e bash -c 'localectl'")
+        _run_cmd("alacritty -e bash -c 'localectl; read -p \"Press enter to close\"'")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
