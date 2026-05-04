@@ -734,6 +734,7 @@ def on_click_install_simplicity(self, _widget=None):
             self.sddm_folder_entry.set_sensitive(True)
             self.btn_install_simplicity.set_visible(False)
             self.btn_remove_simplicity.set_visible(True)
+            pop_theme_box(self, self.theme_sddm)
 
     def wait_and_refresh():
         fn.debug_print("Waiting for Simplicity install terminal to close...")
@@ -761,6 +762,7 @@ def on_click_remove_simplicity(self, _widget=None):
             self.sddm_folder_entry.set_sensitive(False)
             self.btn_remove_simplicity.set_visible(False)
             self.btn_install_simplicity.set_visible(True)
+            pop_theme_box(self, self.theme_sddm)
             self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
             child = self.sddm_thumb_flow.get_first_child()
             while child is not None:
