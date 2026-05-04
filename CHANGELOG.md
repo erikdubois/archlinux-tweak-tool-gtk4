@@ -1,5 +1,23 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.04 - SDDM: Theme Dropdown Refreshes After Install/Remove
+
+### What Changed
+
+- SDDM theme dropdown now updates immediately after installing or removing the edu-simplicity theme — no app restart required
+
+### Technical Details
+
+- Added `pop_theme_box(self, self.theme_sddm)` at the end of the `refresh()` closure in both `on_click_install_simplicity` and `on_click_remove_simplicity`
+- Called on the GLib main thread via the existing `GLib.idle_add(refresh)` path, so no threading changes needed
+- `pop_theme_box` clears and repopulates the `Gtk.DropDown` model from `/usr/share/sddm/themes/` and re-selects the currently active theme from `sddm.conf.d`
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/sddm.py`
+
+---
+
 ## 2026.05.04 - Kernel Tab: Dynamic Chaotic-AUR Kernel List Refresh
 
 ### What Changed

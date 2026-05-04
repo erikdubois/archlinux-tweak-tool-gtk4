@@ -289,6 +289,9 @@ Debug output includes D-Bus warnings, initialization steps, and custom debug mes
 
 ## Recent Work
 
+- **SDDM theme dropdown refresh (2026-05-04)** — `pop_theme_box` called inside `refresh()` after install/remove of edu-simplicity; dropdown now updates without restart
+- **Kernel tab: chaotic-AUR dynamic refresh (2026-05-04)** — kernel rows rebuilt on tab map signal when chaotic status changes; no restart needed
+- **Kernel tab: boot entry enrichment (2026-05-04)** — dropdown shows `title — kernel_pkg`; orphan entries filtered; `lbl_current` uses enriched string
 - **M4 Feature Test complete (2026-05-03)** — all 20 tabs verified working on Kiro
 - **fastfetch_gui.py cleanup (2026-05-03)** — all numbered widget names replaced with descriptive identifiers; dead `self.hbox26` and empty spacer `hbox22` removed
 - **Lolcat install fix (2026-05-03)** — `on_fast_lolcat_toggled` now installs `lolcat` package via terminal if missing; previously only wrote shell config with no install
