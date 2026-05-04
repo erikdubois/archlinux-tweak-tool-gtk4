@@ -745,11 +745,21 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
 
 def on_click_install_arch_mirrors(self, _widget):
+    fn.log_subsection("Installing reflector...")
+    if fn.path.exists("/usr/bin/reflector"):
+        fn.log_info("reflector is already installed")
+        fn.show_in_app_notification(self, "reflector is already installed")
+        return
     fn.install_package(self, "reflector")
     self.btn_run_reflector.set_sensitive(True)
 
 
 def on_click_install_arch_mirrors2(self, _widget):
+    fn.log_subsection("Installing rate-mirrors...")
+    if fn.path.exists("/usr/bin/rate-mirrors"):
+        fn.log_info("rate-mirrors is already installed")
+        fn.show_in_app_notification(self, "rate-mirrors is already installed")
+        return
     fn.install_package(self, "rate-mirrors")
     self.btn_run_rate_mirrors.set_sensitive(True)
 
