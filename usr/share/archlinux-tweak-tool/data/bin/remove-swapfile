@@ -1,49 +1,60 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-trap 'echo; read -p "Press Enter to close..."' EXIT
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 SWAPFILE=/swapfile
 
-tput setaf 6
-echo "================================================================"
-echo "  Removing swapfile at $SWAPFILE"
-echo "================================================================"
-tput sgr0
+header "Remove Swapfile"
+info "Target: $SWAPFILE"
 
-if [ ! -f "$SWAPFILE" ]; then
-    tput setaf 3
-    echo "No swapfile found at $SWAPFILE - nothing to do"
-    tput sgr0
-else
-    if swapon --show | grep -q "$SWAPFILE"; then
-        echo "Disabling swapfile..."
-        swapoff "$SWAPFILE"
-    fi
-
-    echo "Removing $SWAPFILE from /etc/fstab..."
-    sed -i "\|$SWAPFILE|d" /etc/fstab
-
-    echo "Deleting swapfile..."
-    rm -f "$SWAPFILE"
-
-    tput setaf 2
-    echo "Swapfile removed successfully"
-    tput sgr0
+if [[ ! -f "$SWAPFILE" ]]; then
+    warn "No swapfile found at $SWAPFILE — nothing to do"
+    read -rp "Press Enter to close..."
+    exit 0
 fi
 
-echo
+# ── Disable swapfile ──────────────────────────────────────────────────────────
+header "Disabling Swapfile"
+if swapon --show | grep -q "$SWAPFILE"; then
+    info "Disabling $SWAPFILE..."
+    swapoff "$SWAPFILE"
+    success "Swapfile disabled"
+else
+    info "Swapfile not currently active"
+fi
+
+# ── Remove from fstab ─────────────────────────────────────────────────────────
+header "Updating /etc/fstab"
+info "Removing $SWAPFILE entry from /etc/fstab..."
+sed -i "\|$SWAPFILE|d" /etc/fstab
+success "fstab updated"
+
+# ── Delete swapfile ───────────────────────────────────────────────────────────
+header "Deleting Swapfile"
+info "Removing $SWAPFILE..."
+rm -f "$SWAPFILE"
+success "Swapfile deleted"
+
+# ── Summary ───────────────────────────────────────────────────────────────────
+header "Active Swap Devices"
 swapon --show
-echo
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "Swapfile removed successfully"
+
+read -rp "Press Enter to close..."

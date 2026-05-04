@@ -26,7 +26,6 @@ def _write_lines(path, lines):
 
 
 def _set_key_value(path, key, value, sep="=", quoted=False, section=None):
-    """Set or append a simple key/value setting."""
     lines = []
     key_line = key + sep
     line_value = '"' + value + '"' if quoted else value
@@ -80,7 +79,6 @@ def _set_key_value(path, key, value, sep="=", quoted=False, section=None):
 
 
 def _set_index_theme(path, cursor):
-    """Set Inherits in an XCursor index.theme file."""
     fn.debug_print(f"[INFO] Setting cursor '{cursor}' in {path}")
     lines = []
     found_section = False
@@ -119,7 +117,6 @@ def _set_index_theme(path, cursor):
 
 
 def _set_xfce_cursor(path, cursor):
-    """Set XFCE xsettings CursorThemeName, creating the property if needed."""
     fn.debug_print(f"[INFO] Setting XFCE cursor '{cursor}' in {path}")
     if fn.path.isfile(path):
         fn.debug_print(f"[INFO] File exists: {path}")
@@ -160,7 +157,6 @@ def _set_xfce_cursor(path, cursor):
 
 
 def _set_gsettings_cursor(cursor):
-    """Set cursor through gsettings when available."""
     fn.debug_print(f"[INFO] Setting gsettings cursor '{cursor}'")
     username = fn.sudo_username
     pkexec_uid = fn.os.environ.get("PKEXEC_UID")
@@ -213,7 +209,6 @@ def _set_gsettings_cursor(cursor):
 
 
 def _set_plasma_cursor(cursor):
-    """Set KDE Plasma cursor configuration."""
     fn.debug_print(f"[INFO] Setting KDE Plasma cursor '{cursor}'")
     path = fn.home + "/.config/kcminputrc"
     fn.debug_print(f"[INFO] Updating KDE Plasma config: {path}")
@@ -224,7 +219,6 @@ def _set_plasma_cursor(cursor):
 
 
 def _set_sddm_cursor(cursor):
-    """Set SDDM CursorTheme in existing config files."""
     fn.debug_print(f"[INFO] Setting SDDM cursor '{cursor}'")
     paths = [
         fn.sddm_default_d2,
@@ -266,7 +260,6 @@ def _set_sddm_cursor(cursor):
 
 
 def get_installed_sessions():
-    """Read installed X11 and Wayland desktop session names."""
     sessions = set()
     aliases = {
         "gnome-wayland": "gnome",
@@ -318,7 +311,6 @@ def get_installed_sessions():
 
 
 def check_cursor_global(lists, value):
-    """find name of global cursor"""
     if fn.path.isfile(fn.icons_default):
         try:
             pos = fn.get_position(lists, value)
@@ -329,7 +321,6 @@ def check_cursor_global(lists, value):
 
 
 def set_global_cursor(self, cursor):
-    """Set cursor in common user and desktop-specific configuration files."""
     if not cursor:
         fn.show_in_app_notification(self, "Select a cursor theme first")
         return
@@ -434,11 +425,11 @@ def pop_gtk_cursor_names(combo):
     for item in fn.listdir("/usr/share/icons/"):
         if fn.path_check("/usr/share/icons/" + item + "/cursors/"):
             coms.append(item)
-            coms.sort()
     lines = fn.get_lines(fn.icons_default)
     try:
-        cursor_theme = check_cursor_global(lines, "Inherits=").split("=")[1]
-    except IndexError:
+        raw = check_cursor_global(lines, "Inherits=")
+        cursor_theme = raw.split("=")[1] if raw else ""
+    except (IndexError, AttributeError):
         cursor_theme = ""
 
     coms.sort()
@@ -458,7 +449,6 @@ def pop_gtk_cursor_names(combo):
 
 
 def _run_terminal(self, cmd, done_msg, start_msg=None):
-    """Launch cmd in alacritty in a daemon thread; notify when it closes."""
     if start_msg:
         GLib.idle_add(fn.show_in_app_notification, self, start_msg)
 
@@ -500,11 +490,6 @@ def on_click_apply_global_cursor(self, _widget):
         fn.debug_print(f"Selected cursor theme: {cursor}")
         set_global_cursor(self, cursor)
         fn.log_success(f"Cursor '{cursor}' saved globally")
-        GLib.idle_add(
-            fn.show_in_app_notification,
-            self,
-            "Cursor is saved globally",
-        )
     except Exception as error:
         fn.log_error(f"Error: {error}")
         GLib.idle_add(
@@ -526,14 +511,21 @@ def on_click_update_system(self, _widget):
 def on_click_clean_cache(self, _widget):
     fn.log_subsection("Launching pacman cache cleanup...")
     pkg_dir = "/var/cache/pacman/pkg/"
-    temp_files = [f for f in fn.os.listdir(pkg_dir) if f.startswith("download-")]
-    if temp_files:
-        fn.log_info("Removing leftover temp download files from /var/cache/pacman/pkg/")
+    temp_dirs = [f for f in fn.os.listdir(pkg_dir) if f.startswith("download-")]
+    part_files = [f for f in fn.os.listdir(pkg_dir) if f.endswith(".part")]
+    if temp_dirs:
+        fn.log_info("Removing leftover temp download folders from /var/cache/pacman/pkg/")
+    if part_files:
+        fn.log_info("Removing partial download files (.part) from /var/cache/pacman/pkg/")
     cmd = (
         "alacritty -e bash -c '"
         "if compgen -G \"/var/cache/pacman/pkg/download-*\" > /dev/null 2>&1; then "
         "sudo rm -rf /var/cache/pacman/pkg/download-*; "
-        "echo \"  Temp download files removed\"; "
+        "echo \"  Temp download folders removed\"; "
+        "fi; "
+        "if compgen -G \"/var/cache/pacman/pkg/*.part\" > /dev/null 2>&1; then "
+        "sudo rm -f /var/cache/pacman/pkg/*.part; "
+        "echo \"  Partial download files (.part) removed\"; "
         "fi; "
         "sudo pacman -Sc; echo \"\"; "
         "echo \"=== Clean complete ===\"; read -p \"Press Enter to close...\"'"
@@ -581,37 +573,36 @@ def on_click_install_arch_keyring_online(self, _widget):
     pathway = "/tmp/att-installation/"
     fn.debug_print(f"Creating temporary directory: {pathway}")
     fn.mkdir(pathway)
-    command = (
-        "wget https://archlinux.org/packages/core/any/archlinux-keyring/download --content-disposition -P"
-        + pathway
-    )
-    try:
-        GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
-        fn.subprocess.call(
-            command,
-            shell=True,
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.STDOUT,
-        )
-        fn.debug_print("Download completed successfully")
-        GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
-        files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
-        if not files:
-            raise Exception("No files found after download")
-        package_file = fn.os.path.join(pathway, files[0])
-        fn.debug_print(f"Found package: {package_file}")
-        if not fn.os.path.exists(package_file):
-            raise Exception(f"Package file not found: {package_file}")
-        fn.install_local_package(self, package_file)
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
-    finally:
+    GLib.idle_add(fn.show_in_app_notification, self, "Downloading archlinux-keyring package...")
+
+    def _download_and_install():
         try:
-            fn.shutil.rmtree(pathway)
-            fn.debug_print("Temporary files cleaned up")
+            command = (
+                "wget https://archlinux.org/packages/core/any/archlinux-keyring/download"
+                " --content-disposition -P" + pathway
+            )
+            fn.subprocess.Popen(command, shell=True).wait()
+            fn.debug_print("Download completed successfully")
+            GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
+            files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
+            if not files:
+                raise Exception("No files found after download")
+            package_file = fn.os.path.join(pathway, files[0])
+            fn.debug_print(f"Found package: {package_file}")
+            if not fn.os.path.exists(package_file):
+                raise Exception(f"Package file not found: {package_file}")
+            fn.install_local_package(self, package_file)
         except Exception as error:
-            fn.log_warn(f"Cleanup failed: {error}")
+            fn.log_error(f"Error: {error}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
+        finally:
+            try:
+                fn.shutil.rmtree(pathway)
+                fn.debug_print("Temporary files cleaned up")
+            except Exception as error:
+                fn.log_warn(f"Cleanup failed: {error}")
+
+    fn.threading.Thread(target=_download_and_install, daemon=True).start()
 
 
 def on_click_fix_pacman_keys(self, _widget):
@@ -712,12 +703,19 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
     if not fn.path.isdir(fn.home + "/.gnupg"):
         try:
             fn.debug_print(f"Creating directory: {fn.home}/.gnupg")
-            fn.makedirs(fn.home + "/.gnupg", 0o766)
+            fn.makedirs(fn.home + "/.gnupg", 0o700)
             fn.permissions(fn.home + "/.gnupg")
         except Exception as error:
             fn.log_error(f"Error creating directory: {error}")
 
-    if not fn.path.isfile(fn.gpg_conf_local + ".bak"):
+    if not fn.path.isfile(fn.gpg_conf_local):
+        fn.log_info("No ~/.gnupg/gpg.conf found — no backup needed; a fresh copy will be created")
+        GLib.idle_add(
+            fn.show_in_app_notification,
+            self,
+            "No ~/.gnupg/gpg.conf found — a fresh copy will be created",
+        )
+    elif not fn.path.isfile(fn.gpg_conf_local + ".bak"):
         try:
             fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
             fn.permissions(fn.gpg_conf_local + ".bak")
@@ -727,11 +725,11 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_local_path = base_dir + "/data/gpg.conf"
-    fn.log_info_concise(f"  From: {gpg_conf_local_path}")
-    fn.log_info_concise(f"  To:   {fn.gpg_conf_local}")
-    fn.debug_print(f"Restoring from: {gpg_conf_local_path}")
+    fn.log_info(f"From: {gpg_conf_local_path}")
+    fn.log_info(f"To:   {fn.gpg_conf_local}")
     try:
         fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)
+        fn.os.chmod(fn.gpg_conf_local, 0o600)
         fn.permissions(fn.gpg_conf_local)
     except Exception as e:
         fn.log_error(f"Error restoring local gpg.conf: {e}")
@@ -772,3 +770,35 @@ def on_update_pacman_databases_clicked(self, _widget):
         stdout=fn.subprocess.PIPE,
         stderr=fn.subprocess.PIPE,
     )
+
+
+def on_click_install_bibata_cursors(self, _widget):
+    fn.log_subsection("Install Bibata Cursors")
+    GLib.idle_add(fn.show_in_app_notification, self, "Installing Bibata cursors...")
+
+    def _wait():
+        fn.subprocess.Popen(
+            "alacritty -e bash -c 'sudo pacman -S bibata-cursor-theme; read -p \"Press Enter to close...\"'",
+            shell=True,
+        ).wait()
+        fn.log_success("Bibata cursors installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "Bibata cursors installed")
+        GLib.idle_add(fn.refresh_all_cursor_dropdowns, self)
+
+    fn.threading.Thread(target=_wait, daemon=True).start()
+
+
+def on_click_remove_bibata_cursors(self, _widget):
+    fn.log_subsection("Remove Bibata Cursors")
+    GLib.idle_add(fn.show_in_app_notification, self, "Removing Bibata cursors...")
+
+    def _wait():
+        fn.subprocess.Popen(
+            "alacritty -e bash -c 'sudo pacman -R bibata-cursor-theme; read -p \"Press Enter to close...\"'",
+            shell=True,
+        ).wait()
+        fn.log_success("Bibata cursors removed")
+        GLib.idle_add(fn.show_in_app_notification, self, "Bibata cursors removed")
+        GLib.idle_add(fn.refresh_all_cursor_dropdowns, self)
+
+    fn.threading.Thread(target=_wait, daemon=True).start()

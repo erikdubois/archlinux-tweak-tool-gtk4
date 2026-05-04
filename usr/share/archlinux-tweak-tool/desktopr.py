@@ -310,23 +310,27 @@ if fn.distr:
     ]
 
 
+_xsession_files = None
+_wayland_files = None
+
+
 def check_desktop(desktop):
     """check if desktop is installed"""
-    # /usr/share/xsessions/xfce.desktop
-    if os.path.exists("/usr/share/xsessions"):
-        lst = fn.listdir("/usr/share/xsessions/")
-        fn.debug_print(f"[check_desktop] Files in /usr/share/xsessions/: {lst}")
-        for xsession in lst:
-            if desktop + ".desktop" == xsession:
-                return True
-    if os.path.exists("/usr/share/wayland-sessions"):
-        lst = fn.listdir("/usr/share/wayland-sessions/")
-        fn.debug_print(f"[check_desktop] Files in /usr/share/wayland-sessions/: {lst}")
-        for wsession in lst:
-            if desktop + ".desktop" == wsession:
-                return True
+    global _xsession_files, _wayland_files
 
-    fn.debug_print(f"[check_desktop] Desktop '{desktop}' not found. Looking for: {desktop}.desktop")
+    if _xsession_files is None:
+        _xsession_files = sorted(fn.listdir("/usr/share/xsessions/")) if os.path.exists("/usr/share/xsessions") else []
+
+    if _wayland_files is None:
+        wayland_dir = "/usr/share/wayland-sessions"
+        _wayland_files = sorted(fn.listdir(wayland_dir + "/")) if os.path.exists(wayland_dir) else []
+
+    target = desktop + ".desktop"
+    if target in _xsession_files or target in _wayland_files:
+        fn.debug_print(f"[check_desktop] found:     {target}")
+        return True
+
+    fn.debug_print(f"[check_desktop] not found: {target}")
     return False
 
 

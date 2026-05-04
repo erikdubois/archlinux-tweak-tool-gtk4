@@ -3,6 +3,15 @@
 # ============================================================
 
 import functions as fn
+import maintenance
+
+
+def _sync_if_db_missing(self, repo_name):
+    db_path = f"/var/lib/pacman/sync/{repo_name}.db"
+    if not fn.path.exists(db_path):
+        maintenance.on_update_pacman_databases_clicked(self, None)
+    else:
+        fn.log_info(f"Database already exists for {repo_name} — skipping sync")
 
 
 def on_nemesis_toggle(self, widget, active):
@@ -16,7 +25,8 @@ def on_nemesis_toggle(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "nemesis")
-    fn.update_repos(self)
+    if widget.get_active():
+        _sync_if_db_missing(self, "nemesis_repo")
     desktopr_gui.update_button_state(self, fn)
     fn.GLib.timeout_add(100, self.refresh_aur_buttons)
 
@@ -39,7 +49,7 @@ def on_chaotic_toggle(self, widget, active):
                         fn.show_in_app_notification, self,
                         "Chaotic-AUR repo has been added to /etc/pacman.conf"
                     )
-                fn.update_repos(self)
+                fn.GLib.idle_add(_sync_if_db_missing, self, "chaotic-aur")
                 fn.GLib.idle_add(desktopr_gui.update_button_state, self, fn)
                 fn.GLib.idle_add(self.refresh_aur_buttons)
             fn.threading.Thread(target=_finish_chaotic_setup, args=(process,), daemon=True).start()
@@ -52,7 +62,8 @@ def on_chaotic_toggle(self, widget, active):
     else:
         toggle_test_repos(self, widget.get_active(), "chaotics")
 
-    fn.update_repos(self)
+    if widget.get_active():
+        _sync_if_db_missing(self, "chaotic-aur")
     desktopr_gui.update_button_state(self, fn)
     fn.GLib.timeout_add(100, self.refresh_aur_buttons)
 
@@ -67,6 +78,8 @@ def on_pacman_toggle1(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "testing")
+    if widget.get_active():
+        _sync_if_db_missing(self, "core-testing")
 
 
 def on_pacman_toggle2(self, widget, active):
@@ -79,6 +92,8 @@ def on_pacman_toggle2(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "core")
+    if widget.get_active():
+        _sync_if_db_missing(self, "core")
 
 
 def on_pacman_toggle3(self, widget, active):
@@ -91,6 +106,8 @@ def on_pacman_toggle3(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "extra")
+    if widget.get_active():
+        _sync_if_db_missing(self, "extra")
 
 
 def on_pacman_toggle4(self, widget, active):
@@ -103,6 +120,8 @@ def on_pacman_toggle4(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "community-testing")
+    if widget.get_active():
+        _sync_if_db_missing(self, "extra-testing")
 
 
 def on_pacman_toggle6(self, widget, active):
@@ -115,6 +134,8 @@ def on_pacman_toggle6(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "multilib-testing")
+    if widget.get_active():
+        _sync_if_db_missing(self, "multilib-testing")
 
 
 def on_pacman_toggle7(self, widget, active):
@@ -127,6 +148,8 @@ def on_pacman_toggle7(self, widget, active):
         fn.show_in_app_notification(self, "Repo has been added to /etc/pacman.conf")
     else:
         toggle_test_repos(self, widget.get_active(), "multilib")
+    if widget.get_active():
+        _sync_if_db_missing(self, "multilib")
 
 
 def custom_repo_clicked(self, widget):

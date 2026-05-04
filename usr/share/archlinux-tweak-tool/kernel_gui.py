@@ -271,14 +271,20 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
                 ).start(),
             )
         elif not installed:
-            hid[0] = b.connect(
-                "clicked",
-                lambda _w: fn.threading.Thread(
+            def on_install_clicked(_w, _p=p, _h=h):
+                import kernel_distros
+                missing = kernel_distros.get_missing_requirements()
+                if missing:
+                    for req in missing:
+                        fn.log_warn(f"Missing: {req['pkg']} — {req['reason']}")
+                    _offer_install_packages(self, Gtk, fn, missing)
+                    return
+                fn.threading.Thread(
                     target=launch_and_wait,
-                    args=(kernel.install_kernel(self, p, h), "Installation", p),
+                    args=(kernel.install_kernel(self, _p, _h), "Installation", _p),
                     daemon=True,
-                ).start(),
-            )
+                ).start()
+            hid[0] = b.connect("clicked", on_install_clicked)
 
         return False
 
@@ -316,6 +322,13 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
         btn.set_label(f"Install {pkg}")
 
         def install_and_notify():
+            import kernel_distros
+            missing = kernel_distros.get_missing_requirements()
+            if missing:
+                for req in missing:
+                    fn.log_warn(f"Missing: {req['pkg']} — {req['reason']}")
+                fn.GLib.idle_add(_offer_install_packages, self, Gtk, fn, missing)
+                return
             kernel.install_kernel(self, pkg, headers).wait()
             fn.log_success(f"Installation completed for {pkg}")
             fn.GLib.idle_add(lambda: (

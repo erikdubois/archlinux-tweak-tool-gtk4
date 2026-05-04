@@ -664,6 +664,7 @@ Activate the necessary repos"
     self.hw_probe = Gtk.CheckButton(label="hw-probe")
     self.rate_mirrors = Gtk.CheckButton(label="rate-mirrors")
     self.most = Gtk.CheckButton(label="most")
+    self.fzf = Gtk.CheckButton(label="fzf")
 
     flowbox = Gtk.FlowBox()
     flowbox.set_valign(Gtk.Align.START)
@@ -679,8 +680,9 @@ Activate the necessary repos"
     flowbox.append(self.hw_probe)
     flowbox.append(self.rate_mirrors)
     flowbox.append(self.most)
+    flowbox.append(self.fzf)
 
-    extra_shell_applications = Gtk.Button(label="Install these applications")
+    extra_shell_applications = Gtk.Button(label="Install packages")
     extra_shell_applications.connect(
         "clicked", functools.partial(shell.on_extra_shell_applications_clicked, self)
     )
@@ -688,8 +690,15 @@ Activate the necessary repos"
     vboxstack4.append(hbox51)
     # vboxstack4.pack_start(hbox52, False, False, 0)
     vboxstack4.append(flowbox)
+    remove_shell_applications = Gtk.Button(label="Remove packages")
+    remove_shell_applications.connect(
+        "clicked", functools.partial(shell.on_extra_shell_applications_remove_clicked, self)
+    )
+
     hbox_extra_btn = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_extra_btn.set_margin_start(10)
     hbox_extra_btn.append(extra_shell_applications)
+    hbox_extra_btn.append(remove_shell_applications)
     vboxstack4.append(hbox_extra_btn)
     # vboxstack4.pack_start(install_only_fish, False, False, 0)
 

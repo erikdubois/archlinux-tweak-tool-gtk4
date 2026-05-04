@@ -1,7 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
 RESET=$(tput sgr0)
@@ -84,8 +86,5 @@ else
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
-echo ""
-separator
-echo "${GREEN}  DONE — you can close this window${RESET}"
-separator
-echo ""
+success "Done — you can close this window"
+read -rp "Press Enter to close..."

@@ -1,33 +1,29 @@
 #!/bin/bash
-#set -e
+set -euo pipefail
 ##################################################################################################################
-# Author 	: Erik Dubois
+# Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.alci.online
-# Website	: https://www.arcolinux.info
-# Website	: https://www.arcolinux.com
-# Website	: https://www.arcolinuxd.com
-# Website	: https://www.arcolinuxb.com
-# Website	: https://www.arcolinuxiso.com
-# Website	: https://www.arcolinuxforum.com
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-#tput setaf 0 = black 
-#tput setaf 1 = red 
-#tput setaf 2 = green
-#tput setaf 3 = yellow 
-#tput setaf 4 = dark blue 
-#tput setaf 5 = purple
-#tput setaf 6 = cyan 
-#tput setaf 7 = gray 
-#tput setaf 8 = light blue
-##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}────────────────────────────────────────────────────────────${RESET}"; }
+header()    { separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [OK]  $*${RESET}"; }
+info()      { echo "  [..] $*"; }
+warn()      { echo "${YELLOW}  [!!] $*${RESET}"; }
+error()     { echo "${RED}  [EE] $*${RESET}"; }
+
+header "Ranking Arch mirrors with rate-mirrors"
+info "Writing result to /etc/pacman.d/mirrorlist ..."
 
 rate-mirrors --allow-root arch | sudo tee /etc/pacman.d/mirrorlist
 
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "Mirrorlist updated — you can close this window"
+
+read -rp "Press Enter to close..."

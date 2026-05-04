@@ -1,53 +1,59 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-trap 'echo; read -p "Press Enter to close..."' EXIT
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 ZRAM_CONF=/etc/systemd/zram-generator.conf
 
-tput setaf 6
-echo "================================================================"
-echo "  Disabling zram"
-echo "================================================================"
-tput sgr0
+header "Disable zram"
 
-echo "Stopping zram device..."
+# ── Stop zram service ─────────────────────────────────────────────────────────
+header "Stopping zram Service"
+info "Stopping systemd-zram-setup@zram0.service..."
 systemctl stop systemd-zram-setup@zram0.service 2>/dev/null || true
+success "Service stopped"
 
-if [ -b /dev/zram0 ]; then
-    echo "Swapping off /dev/zram0..."
+if [[ -b /dev/zram0 ]]; then
+    info "Swapping off /dev/zram0..."
     swapoff /dev/zram0 2>/dev/null || true
+    success "/dev/zram0 swapped off"
 fi
 
-if [ -f "$ZRAM_CONF" ]; then
-    echo "Removing $ZRAM_CONF..."
+# ── Remove config ─────────────────────────────────────────────────────────────
+header "Removing zram Configuration"
+if [[ -f "$ZRAM_CONF" ]]; then
+    info "Removing $ZRAM_CONF..."
     rm -f "$ZRAM_CONF"
+    success "$ZRAM_CONF removed"
 else
-    tput setaf 3
-    echo "No zram configuration found at $ZRAM_CONF - nothing to remove"
-    tput sgr0
+    warn "No zram configuration found at $ZRAM_CONF — nothing to remove"
 fi
 
-echo "Reloading systemd daemon..."
+# ── Reload systemd ────────────────────────────────────────────────────────────
+header "Reloading systemd"
+info "Running daemon-reload..."
 systemctl daemon-reload
+success "Daemon reloaded"
 
-echo
-tput setaf 2
-echo "================================================================"
-echo "  zram disabled successfully"
-echo "================================================================"
-tput sgr0
+# ── Summary ───────────────────────────────────────────────────────────────────
+header "Active Swap Devices"
 swapon --show
-echo
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "zram disabled successfully"
+
+read -rp "Press Enter to close..."

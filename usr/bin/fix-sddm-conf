@@ -1,58 +1,86 @@
 #!/bin/bash
-#set -e
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.alci.online
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-# Website   : https://www.arcolinuxd.com
-# Website   : https://www.arcolinuxb.com
-# Website   : https://www.arcolinuxiso.com
-# Website   : https://www.arcolinuxforum.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-#tput setaf 0 = black
-#tput setaf 1 = red
-#tput setaf 2 = green
-#tput setaf 3 = yellow
-#tput setaf 4 = dark blue
-#tput setaf 5 = purple
-#tput setaf 6 = cyan
-#tput setaf 7 = gray
-#tput setaf 8 = light blue
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-echo "###############################################################################"
-echo "Copying both files : /etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf"
-echo "This script names them /etc/backup-sddm.conf and /etc/backup-kde_settings.conf"
-echo "###############################################################################"
-echo "If directory /etc/sddm.conf.d does not exist, make it"
-[ -d /etc/sddm.conf.d/ ] || sudo mkdir -p /etc/sddm.conf.d/
-echo "If file /etc/sddm.conf.d/kde_settings.conf exists, make a backup"
-echo "to /etc/backup-kde_settings.conf"
-echo
-[ -f /etc/sddm.conf.d/kde_settings.conf ] && sudo cp -p /etc/sddm.conf.d/kde_settings.conf /etc/backup-kde_settings.conf
-echo "Start with clean slate - there can be only one file in the folder"
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() {
+    echo "${CYAN}===============================================================================${RESET}"
+}
+
+header() {
+    echo ""
+    separator
+    echo "${CYAN}  $1${RESET}"
+    separator
+}
+
+success() { echo "${GREEN}  ✓ $1${RESET}"; }
+info()    { echo "    $1"; }
+warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
+error()   { echo "${RED}  ✗ $1${RESET}"; }
+
+# ── Header ─────────────────────────────────────────────────────────────────────
+header "Fix SDDM Configuration"
+
+# ── Ensure /etc/sddm.conf.d exists ────────────────────────────────────────────
+header "Ensuring /etc/sddm.conf.d Directory Exists"
+if [ -d /etc/sddm.conf.d/ ]; then
+    info "Directory already exists"
+else
+    sudo mkdir -p /etc/sddm.conf.d/
+    success "Directory created: /etc/sddm.conf.d/"
+fi
+
+# ── Backup kde_settings.conf ──────────────────────────────────────────────────
+header "Backing Up kde_settings.conf"
+if [ -f /etc/sddm.conf.d/kde_settings.conf ]; then
+    sudo cp -p /etc/sddm.conf.d/kde_settings.conf /etc/backup-kde_settings.conf
+    success "Backup created: /etc/backup-kde_settings.conf"
+else
+    info "No existing kde_settings.conf — skipping backup"
+fi
+
+# ── Clean /etc/sddm.conf.d ────────────────────────────────────────────────────
+header "Clearing /etc/sddm.conf.d"
+info "Removing all files to ensure only one config is present..."
 sudo rm -rf /etc/sddm.conf.d/*
-echo "If file exists, make a backup"
-[ -f /etc/sddm.conf ] && sudo cp -p /etc/sddm.conf /etc/backup-sddm.conf
-echo
-echo "Overwriting /etc/sddm.conf"
-echo
-sudo cp -v /usr/share/archlinux-tweak-tool/data/arco/sddm/sddm.conf /etc/sddm.conf
-echo
-echo "Overwriting /etc/sddm.conf.d/kde_settings.conf"
-echo
-sudo cp -v /usr/share/archlinux-tweak-tool/data/arco/sddm.conf.d/kde_settings.conf /etc/sddm.conf.d/kde_settings.conf
-echo
-echo "/etc/sddm.conf and /etc/sddm.conf.d/kde_settings.conf changed with configs of ATT"
-echo "Always make sure there is one file present in /etc/sddm.conf.d folder"
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "Directory cleared"
 
+# ── Backup /etc/sddm.conf ─────────────────────────────────────────────────────
+header "Backing Up /etc/sddm.conf"
+if [ -f /etc/sddm.conf ]; then
+    sudo cp -p /etc/sddm.conf /etc/backup-sddm.conf
+    success "Backup created: /etc/backup-sddm.conf"
+else
+    info "No existing /etc/sddm.conf — skipping backup"
+fi
 
+# ── Install ATT sddm.conf ─────────────────────────────────────────────────────
+header "Installing ATT sddm.conf"
+info "Source: /usr/share/archlinux-tweak-tool/data/sddm/sddm.conf"
+info "Target: /etc/sddm.conf"
+sudo cp -v /usr/share/archlinux-tweak-tool/data/sddm/sddm.conf /etc/sddm.conf
+success "sddm.conf installed"
+
+# ── Install ATT kde_settings.conf ─────────────────────────────────────────────
+header "Installing ATT kde_settings.conf"
+info "Source: /usr/share/archlinux-tweak-tool/data/sddm.conf.d/kde_settings.conf"
+info "Target: /etc/sddm.conf.d/kde_settings.conf"
+sudo cp -v /usr/share/archlinux-tweak-tool/data/sddm.conf.d/kde_settings.conf /etc/sddm.conf.d/kde_settings.conf
+success "kde_settings.conf installed"
+
+# ── Done ──────────────────────────────────────────────────────────────────────
+echo ""
+separator
+echo "${GREEN}  DONE — you can close this window${RESET}"
+separator
+echo ""

@@ -9,11 +9,7 @@ import icons
 
 
 def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out_pics=None):
-    """Preview image wrapped in a Frame.
-
-    out_pics: if provided, (pic, scale) is appended so the caller can update
-    set_size_request dynamically via a size-allocate handler.
-    """
+    # out_pics: if provided, (pic, scale) is appended so the caller can update size_request on resize
     img_load = int(desktopr_gui.IMAGE_PREVIEW_LOAD * scale)
     img_min = int(desktopr_gui.IMAGE_PREVIEW_MIN * scale)
     pic = Gtk.Picture()
@@ -135,14 +131,14 @@ def gui(self, Gtk, GdkPixbuf, vboxstack25, att, fn, base_dir):
     # ==================================================================
 
     hbox_sardi_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox20_label = Gtk.Label(xalign=0)
-    hbox20_label.set_markup(
+    sardi_info_label = Gtk.Label(xalign=0)
+    sardi_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
 Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
     )
-    hbox20_label.set_margin_start(10)
-    hbox20_label.set_margin_end(10)
-    hbox_sardi_info.append(hbox20_label)
+    sardi_info_label.set_margin_start(10)
+    sardi_info_label.set_margin_end(10)
+    hbox_sardi_info.append(sardi_info_label)
 
     hbox_sardi_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
@@ -252,11 +248,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox_sardi_checks.append(flowbox_sardi)
 
     hbox_sardi_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label23 = Gtk.Label()
-    label23.set_text("Choose the icon theme(s)")
-    label23.set_margin_start(10)
-    label23.set_margin_end(10)
-    hbox_sardi_select_label.append(label23)
+    lbl_sardi_select_prompt = Gtk.Label()
+    lbl_sardi_select_prompt.set_text("Choose the icon theme(s)")
+    lbl_sardi_select_prompt.set_margin_start(10)
+    lbl_sardi_select_prompt.set_margin_end(10)
+    hbox_sardi_select_label.append(lbl_sardi_select_prompt)
 
     hbox_sardi_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_all_sardi = Gtk.Button(label="All")
@@ -295,11 +291,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
     # families
     hbox_sardi_family_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label22 = Gtk.Label()
-    label22.set_text("Choose the family with a button")
-    label22.set_margin_start(10)
-    label22.set_margin_end(10)
-    hbox_sardi_family_label.append(label22)
+    lbl_sardi_family_prompt = Gtk.Label()
+    lbl_sardi_family_prompt.set_text("Choose the family with a button")
+    lbl_sardi_family_prompt.set_margin_start(10)
+    lbl_sardi_family_prompt.set_margin_end(10)
+    hbox_sardi_family_label.append(lbl_sardi_family_prompt)
 
     hbox_sardi_family_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_sardi_fam = Gtk.Button(label="Sardi")
@@ -377,14 +373,14 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     # ==================================================================
 
     hbox_surfn_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox30_label = Gtk.Label(xalign=0)
-    hbox30_label.set_markup(
+    surfn_info_label = Gtk.Label(xalign=0)
+    surfn_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
 Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
     )
-    hbox30_label.set_margin_start(10)
-    hbox30_label.set_margin_end(10)
-    hbox_surfn_info.append(hbox30_label)
+    surfn_info_label.set_margin_start(10)
+    surfn_info_label.set_margin_end(10)
+    hbox_surfn_info.append(surfn_info_label)
 
     hbox_surfn_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
@@ -418,11 +414,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox_surfn_checks.append(flowbox_surfn)
 
     hbox_surfn_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label32 = Gtk.Label()
-    label32.set_text("Choose the icon theme(s)")
-    label32.set_margin_start(10)
-    label32.set_margin_end(10)
-    hbox_surfn_select_label.append(label32)
+    lbl_surfn_select_prompt = Gtk.Label()
+    lbl_surfn_select_prompt.set_text("Choose the icon theme(s)")
+    lbl_surfn_select_prompt.set_margin_start(10)
+    lbl_surfn_select_prompt.set_margin_end(10)
+    hbox_surfn_select_label.append(lbl_surfn_select_prompt)
 
     hbox_surfn_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_all_surfn = Gtk.Button(label="All")
@@ -468,14 +464,14 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     # ==================================================================
 
     hbox_neocandy_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox40_label = Gtk.Label(xalign=0)
-    hbox40_label.set_markup(
+    neocandy_info_label = Gtk.Label(xalign=0)
+    neocandy_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
 Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
     )
-    hbox40_label.set_margin_start(10)
-    hbox40_label.set_margin_end(10)
-    hbox_neocandy_info.append(hbox40_label)
+    neocandy_info_label.set_margin_start(10)
+    neocandy_info_label.set_margin_end(10)
+    hbox_neocandy_info.append(neocandy_info_label)
 
     hbox_neocandy_checks = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
@@ -519,11 +515,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     hbox_neocandy_checks.append(flowbox_extra)
 
     hbox_neocandy_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    label42 = Gtk.Label()
-    label42.set_text("Choose the icon theme(s)")
-    label42.set_margin_start(10)
-    label42.set_margin_end(10)
-    hbox_neocandy_select_label.append(label42)
+    lbl_neocandy_select_prompt = Gtk.Label()
+    lbl_neocandy_select_prompt.set_text("Choose the icon theme(s)")
+    lbl_neocandy_select_prompt.set_margin_start(10)
+    lbl_neocandy_select_prompt.set_margin_end(10)
+    hbox_neocandy_select_label.append(lbl_neocandy_select_prompt)
 
     hbox_neocandy_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     btn_all_extra = Gtk.Button(label="All")

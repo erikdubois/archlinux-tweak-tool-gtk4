@@ -94,7 +94,11 @@ class Main(Gtk.ApplicationWindow):
         else:
             print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
             print("-" * 75)
-        fn.log_info("For full functionality, add Chaotic-AUR and Nemesis repo to your pacman.conf.")
+        fn.log_info(
+            "For full functionality, add Chaotic-AUR and Nemesis repo to your pacman.conf.\n"
+            "For full functionality/transparency, we need alacritty to be installed"
+        )
+
         fn.findgroup()
         if DEBUG:
             fn.debug_print("[DEBUG] Debug mode enabled")

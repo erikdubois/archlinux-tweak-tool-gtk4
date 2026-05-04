@@ -1,17 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-##################################################################################################################
-# tput setaf 0 = black
-# tput setaf 1 = red
-# tput setaf 2 = green
-# tput setaf 3 = yellow
-# tput setaf 4 = dark blue
-# tput setaf 5 = purple
-# tput setaf 6 = cyan
-# tput setaf 7 = gray
-# tput setaf 8 = light blue
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
 RESET=$(tput sgr0)
@@ -20,7 +12,7 @@ GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
 YELLOW=$(tput setaf 3)
 
-DATA_DIR="/usr/share/archlinux-tweak-tool/data/kiro/sddm"
+DATA_DIR="/usr/share/archlinux-tweak-tool/data/sddm"
 SDDM_CONF="/etc/sddm.conf"
 SDDM_KDE="/etc/sddm.conf.d/kde_settings.conf"
 GITHUB_BASE="https://raw.githubusercontent.com/kirodubes/kiro-iso/refs/heads/main/archiso/airootfs"
@@ -67,6 +59,25 @@ else
     warn "$SDDM_KDE not found"
 fi
 
+# ── Backup existing files ──────────────────────────────────────────────────────
+header "Creating Backups"
+if [[ -f "$SDDM_CONF" ]]; then
+    if [[ ! -f "${SDDM_CONF}.bak" ]]; then
+        sudo cp -p "$SDDM_CONF" "${SDDM_CONF}.bak"
+        success "Backup created: ${SDDM_CONF}.bak"
+    else
+        info "Backup already exists: ${SDDM_CONF}.bak — skipping"
+    fi
+fi
+if [[ -f "$SDDM_KDE" ]]; then
+    if [[ ! -f "${SDDM_KDE}.bak" ]]; then
+        sudo cp -p "$SDDM_KDE" "${SDDM_KDE}.bak"
+        success "Backup created: ${SDDM_KDE}.bak"
+    else
+        info "Backup already exists: ${SDDM_KDE}.bak — skipping"
+    fi
+fi
+
 # ── Helper functions ───────────────────────────────────────────────────────────
 patch_live_user_settings() {
     info "Removing live-user specific settings..."
@@ -110,9 +121,5 @@ else
 fi
 
 # ── Done ───────────────────────────────────────────────────────────────────────
-echo ""
-separator
-echo "${GREEN}  DONE — you can close this window${RESET}"
-separator
-echo ""
-read -p "  Press Enter to close..."
+success "Done — you can close this window"
+read -rp "  Press Enter to close..."

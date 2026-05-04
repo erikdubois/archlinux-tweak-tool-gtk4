@@ -1,56 +1,43 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-# Usage: build-yay-git <build_user>
-##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}================================================================${RESET}"; }
+header()    { separator; echo "${CYAN}  $1${RESET}"; separator; }
+success()   { echo "${GREEN}[OK]  $1${RESET}"; }
+info()      { echo "${CYAN}[>>]  $1${RESET}"; }
+warn()      { echo "${YELLOW}[!!]  $1${RESET}"; }
+error()     { echo "${RED}[XX]  $1${RESET}"; }
 
 BUILD_USER=${1:-$SUDO_USER}
 
-tput setaf 6
-echo "================================================================"
-echo "  Building yay-git from AUR"
-echo "  Build user: $BUILD_USER"
-echo "================================================================"
-tput sgr0
+header "Building yay-git from AUR — build user: $BUILD_USER"
 
-# Clean up any previous build
 if [ -d /tmp/yay-git ]; then
-    tput setaf 3
-    echo "Removing existing /tmp/yay-git..."
-    tput sgr0
+    warn "Removing existing /tmp/yay-git"
     rm -rf /tmp/yay-git
 fi
 
-tput setaf 2
-echo "Cloning yay-git from AUR..."
-tput sgr0
-sudo -u "$BUILD_USER" git clone https://aur.archlinux.org/yay-git.git /tmp/yay-git
-
-if [ $? -ne 0 ]; then
-    tput setaf 1
-    echo "ERROR: git clone failed"
-    tput sgr0
-    echo
-    echo "###############################################################################"
-    echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-    echo "###############################################################################"
+header "Cloning yay-git from AUR"
+if ! sudo -u "$BUILD_USER" git clone https://aur.archlinux.org/yay-git.git /tmp/yay-git; then
+    error "git clone failed"
+    read -p "Press Enter to close..."
     exit 1
 fi
+success "Clone complete"
 
-tput setaf 2
-echo "Building and installing yay-git..."
-tput sgr0
+header "Building and installing yay-git"
 cd /tmp/yay-git && sudo -u "$BUILD_USER" makepkg -si --noconfirm
+success "yay-git installed"
 
-echo
-echo "=== Installation complete ==="
-echo "You can close this window"
 read -p "Press Enter to close..."

@@ -1,27 +1,32 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
 RESET=$(tput sgr0)
 CYAN=$(tput setaf 6)
 GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 KEYRING=$(find /usr/share/archlinux-tweak-tool/data/chaotic/keyring -name "chaotic-keyring-*.pkg.tar.zst" | head -1)
 MIRRORLIST=$(find /usr/share/archlinux-tweak-tool/data/chaotic/mirrorlist -name "chaotic-mirrorlist-*.pkg.tar.zst" | head -1)
 
 if [[ -z "$KEYRING" || -z "$MIRRORLIST" ]]; then
     error "Package file not found in data/chaotic/ — cannot install"
-    read -p "Press enter to close"
+    read -rp "Press Enter to close..."
     exit 1
 fi
-
-separator() { echo "${CYAN}===============================================================================${RESET}"; }
-header()    { echo ""; separator; echo "${CYAN}  $1${RESET}"; separator; }
-success()   { echo "${GREEN}  ✓ $1${RESET}"; }
-error()     { echo "${RED}  ✗ $1${RESET}"; }
 
 header "Chaotic-AUR Setup"
 
@@ -34,8 +39,4 @@ header "Installing chaotic-keyring and chaotic-mirrorlist"
 pacman -U --noconfirm "$KEYRING" "$MIRRORLIST"
 success "Chaotic-AUR setup complete"
 
-separator
-echo "${GREEN}  DONE — you can close this window${RESET}"
-separator
-echo ""
-read -p "Press enter to close"
+read -rp "Press Enter to close..."

@@ -1,60 +1,63 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-# Usage: enable-zram <size>   e.g. enable-zram "ram / 2"
-# Size is passed as a zram-generator expression: ram/2, ram*3/4, 4096, etc.
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-trap 'echo; read -p "Press Enter to close..."' EXIT
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 SIZE=${1:-"ram / 2"}
 ZRAM_CONF=/etc/systemd/zram-generator.conf
 
-tput setaf 6
-echo "================================================================"
-echo "  Enabling zram with size: $SIZE"
-echo "================================================================"
-tput sgr0
+header "Enable zram"
+info "zram size: $SIZE"
 
-# Install zram-generator if not present
-if ! command -v zram-generator &>/dev/null && ! pacman -Qi zram-generator &>/dev/null; then
-    tput setaf 2
-    echo "Installing zram-generator..."
-    tput sgr0
+# ── Install zram-generator if missing ─────────────────────────────────────────
+header "Checking zram-generator"
+if ! pacman -Qi zram-generator &>/dev/null; then
+    info "zram-generator not installed — installing..."
     pacman -S zram-generator --noconfirm --needed
+    success "zram-generator installed"
+else
+    info "zram-generator already installed"
 fi
 
-echo "Writing $ZRAM_CONF..."
+# ── Write config ──────────────────────────────────────────────────────────────
+header "Writing zram Configuration"
+info "Target: $ZRAM_CONF"
 cat > "$ZRAM_CONF" << EOF
 [zram0]
 zram-size = $SIZE
 compression-algorithm = zstd
 EOF
+success "Config written"
 
-echo "Reloading systemd daemon..."
+# ── Reload and start ──────────────────────────────────────────────────────────
+header "Starting zram"
+info "Reloading systemd daemon..."
 systemctl daemon-reload
-
-echo "Starting zram device..."
+info "Starting systemd-zram-setup@zram0.service..."
 systemctl start systemd-zram-setup@zram0.service
+success "zram started"
 
-echo
-tput setaf 2
-echo "================================================================"
-echo "  zram enabled successfully"
-echo "================================================================"
-tput sgr0
+# ── Summary ───────────────────────────────────────────────────────────────────
+header "Active Swap Devices"
 swapon --show
-echo
+info "Config contents:"
 cat "$ZRAM_CONF"
-echo
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "zram enabled successfully"
+
+read -rp "Press Enter to close..."

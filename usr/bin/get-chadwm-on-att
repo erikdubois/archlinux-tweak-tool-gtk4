@@ -1,66 +1,25 @@
 #!/bin/bash
-#set -e
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.alci.online
-# Website   : https://www.ariser.eu
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-# Website   : https://www.arcolinuxd.com
-# Website   : https://www.arcolinuxb.com
-# Website   : https://www.arcolinuxiso.com
-# Website   : https://www.arcolinuxforum.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-#tput setaf 0 = black
-#tput setaf 1 = red
-#tput setaf 2 = green
-#tput setaf 3 = yellow
-#tput setaf 4 = dark blue
-#tput setaf 5 = purple
-#tput setaf 6 = cyan
-#tput setaf 7 = gray
-#tput setaf 8 = light blue
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-installed_dir=$(dirname $(readlink -f $(basename `pwd`)))
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
 
-##################################################################################################################
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
-func_install() {
-    if pacman -Qi $1 &> /dev/null; then
-        tput setaf 2
-        echo "###############################################################################"
-        echo "################## The package "$1" is already installed"
-        echo "###############################################################################"
-        echo
-        tput sgr0
-    else
-        tput setaf 3
-        echo "###############################################################################"
-        echo "##################  Installing package "  $1
-        echo "###############################################################################"
-        echo
-        tput sgr0
-        sudo pacman -S --noconfirm --needed $1
-    fi
-}
-
-func_install_chadwm() {
-
-    echo
-    tput setaf 2
-    echo "################################################################"
-    echo "################### Install chadwm"
-    echo "################################################################"
-    tput sgr0
-    echo
-
-    list=(
+packages=(
     alacritty
     archlinux-logout-git
     arconet-variety-config
@@ -90,22 +49,49 @@ func_install_chadwm() {
     xfce4-settings
     xfce4-taskmanager
     xfce4-terminal
-    )
+)
 
-    count=0
-
-    for name in "${list[@]}" ; do
-        count=$[count+1]
-        tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-        func_install $name
-    done
+install_package() {
+    if pacman -Qi "$1" &>/dev/null; then
+        info "Already installed: $1"
+    else
+        info "Installing: $1"
+        sudo pacman -S --noconfirm --needed "$1"
+        success "$1 installed"
+    fi
 }
 
-sudo pacman -Rdd --noconfirm rofi
-sudo pacman -Rdd --noconfirm rofi-lbonn-wayland-git
-sudo pacman -Rdd --noconfirm rofi-lbonn-wayland-only-git
+header "Remove conflicting rofi packages"
+for pkg in rofi rofi-lbonn-wayland-git rofi-lbonn-wayland-only-git; do
+    if pacman -Qi "$pkg" &>/dev/null; then
+        info "Removing $pkg"
+        sudo pacman -Rdd --noconfirm "$pkg"
+        success "$pkg removed"
+    else
+        info "$pkg not installed — skipping"
+    fi
+done
 
-func_install_chadwm
+header "Install chadwm packages"
+count=0
+for name in "${packages[@]}"; do
+    count=$((count + 1))
+    info "Package $count/${#packages[@]}: $name"
+    install_package "$name"
+done
+success "All chadwm packages processed"
 
-cp -Rf ~/.config ~/.config-backup-$(date +%Y.%m.%d-%H.%M.%S)
-cp -arf /etc/skel/. ~
+header "Back up existing config and apply skel"
+backup_dir="$HOME/.config-backup-$(date +%Y.%m.%d-%H.%M.%S)"
+info "Backing up ~/.config to $backup_dir"
+cp -Rf "$HOME/.config" "$backup_dir"
+success "Backup created at $backup_dir"
+
+info "Copying /etc/skel to home"
+cp -arf /etc/skel/. "$HOME"
+success "Skel applied"
+
+header "Done"
+success "chadwm installation complete"
+
+read -rp "Press Enter to close..."

@@ -10,6 +10,10 @@ import functions as fn
 
 
 def on_click_log_current_boot(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching current boot log viewer...")
         fn.subprocess.Popen(
@@ -21,6 +25,10 @@ def on_click_log_current_boot(self, _widget):
 
 
 def on_click_log_prev_boot(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching previous boot log viewer...")
         fn.subprocess.Popen(
@@ -32,6 +40,10 @@ def on_click_log_prev_boot(self, _widget):
 
 
 def on_click_log_errors(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching system errors log viewer...")
         fn.subprocess.Popen(
@@ -43,6 +55,10 @@ def on_click_log_errors(self, _widget):
 
 
 def on_click_log_recent(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching recent logs viewer...")
         fn.subprocess.Popen(
@@ -54,6 +70,11 @@ def on_click_log_recent(self, _widget):
 
 
 def on_click_log_xorg(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching Xorg log viewer...")
         fn.subprocess.Popen(
@@ -65,6 +86,11 @@ def on_click_log_xorg(self, _widget):
 
 
 def on_click_log_pacman(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching pacman log viewer...")
         fn.subprocess.Popen(
@@ -76,6 +102,11 @@ def on_click_log_pacman(self, _widget):
 
 
 def on_click_log_xsession(self, _widget):
+    for pkg in ("fzf", "bat"):
+        if not fn.check_package_installed(pkg):
+            fn.log_info(f"{pkg} is not installed — please install it first")
+            fn.show_in_app_notification(self, f"{pkg} is required — install it first")
+            return
     try:
         fn.log_subsection("Launching X session log viewer...")
         cmd = (
@@ -93,6 +124,10 @@ def on_click_log_xsession(self, _widget):
 
 
 def on_click_log_blame(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching boot blame analyzer...")
         fn.subprocess.Popen(
@@ -104,6 +139,10 @@ def on_click_log_blame(self, _widget):
 
 
 def on_click_log_dmesg(self, _widget):
+    if not fn.check_package_installed("fzf"):
+        fn.log_info("fzf is not installed — please install it first")
+        fn.show_in_app_notification(self, "fzf is required — install it first")
+        return
     try:
         fn.log_subsection("Launching kernel messages viewer...")
         fn.subprocess.Popen(

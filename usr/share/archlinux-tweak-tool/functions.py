@@ -99,49 +99,32 @@ def debug_print(message):
 # =====================================================
 # Logging functions with color support
 # =====================================================
-def _print_with_separator(message, color):
-    """Print message with colored separators"""
-    sep = "=" * 72
-    print()
-    print(f"{color}{sep}{RESET}")
-    print(message)
-    print(f"{color}{sep}{RESET}")
-    print()
-
-
 def log_section(message):
-    """Major section header (GREEN with separators)"""
-    _print_with_separator(message, GREEN)
+    print(f"\n{GREEN}[SECTION] {message}{RESET}")
 
 
 def log_subsection(message):
-    """Minor section header (CYAN with separators)"""
-    _print_with_separator(message, CYAN)
+    print(f"{CYAN}[SUB] {message}{RESET}")
 
 
 def log_info(message):
-    """Informational message (BLUE with separators)"""
-    _print_with_separator(message, BLUE)
+    print(f"{BLUE}[INFO] {message}{RESET}")
 
 
 def log_item(message):
-    """Single item line (BLUE, no separators) — use for list summaries"""
     print(f"{BLUE}[INFO]{RESET} {message}")
 
 
 def log_info_concise(message):
-    """Concise info output (bare print, no color/separators) — use when many lines between operations"""
     print(message)
 
 
 def log_success(message):
-    """Success message (GREEN with separators)"""
-    _print_with_separator(message, GREEN)
+    print(f"{GREEN}[OK] {message}{RESET}")
 
 
 def log_warn(message):
-    """Warning message (YELLOW with separators)"""
-    _print_with_separator(message, YELLOW)
+    print(f"{YELLOW}[WARN] {message}{RESET}")
 
 
 def log_error(message, lineno=None, cmd=None):
@@ -812,6 +795,20 @@ def check_nemesis_repo_active():
                 return False
             else:
                 return True
+
+
+def check_chaotic_aur_active():
+    with open(pacman, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    chaotic = "[chaotic-aur]"
+    for line in lines:
+        if chaotic in line:
+            if "#" + chaotic in line:
+                return False
+            else:
+                return True
+    return False
 
 
 _nemesis_packages_cache = None
@@ -2322,6 +2319,15 @@ def wait_and_notify(process, self_ref, notification):
         except Exception as e:
             log_error(f"Exception in wait_and_notify: {e}")
     threading.Thread(target=_wait, daemon=True).start()
+
+
+def refresh_all_cursor_dropdowns(self):
+    import maintenance as _maint
+    import sddm as _sddm
+    if hasattr(self, 'cursor_themes'):
+        _maint.pop_gtk_cursor_names(self.cursor_themes)
+    if hasattr(self, 'sddm_cursor_themes'):
+        _sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
 
 
 def update_image(self, widget, image, theme_type, att_base, image_width, image_height):

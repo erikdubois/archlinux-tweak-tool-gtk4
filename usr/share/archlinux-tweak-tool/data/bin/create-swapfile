@@ -1,121 +1,102 @@
 #!/bin/bash
+set -euo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.arcolinux.info
-# Website   : https://www.arcolinux.com
-##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-# Usage: create-swapfile <size>   e.g. create-swapfile 4G
-# Supported filesystems: ext4, btrfs
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
 
-trap 'echo; read -p "Press Enter to close..."' EXIT
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 SIZE=${1:-2G}
 SWAPFILE=/swapfile
 
-# Detect filesystem type of /
-FSTYPE=$(findmnt -n -o FSTYPE /)
-
-tput setaf 6
-echo "================================================================"
-echo "  Creating swapfile at $SWAPFILE with size $SIZE"
-echo "  Detected filesystem: $FSTYPE"
-echo "  Supported filesystems: ext4, btrfs"
-echo "================================================================"
-tput sgr0
-
-# Only ext4 and btrfs are supported
-if [ "$FSTYPE" != "ext4" ] && [ "$FSTYPE" != "btrfs" ]; then
-    tput setaf 1
-    echo "================================================================"
-    echo "  ERROR: Unsupported filesystem: $FSTYPE"
-    echo "  Only ext4 and btrfs are supported."
-    echo "================================================================"
-    tput sgr0
-    echo
-    echo "###############################################################################"
-    echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-    echo "###############################################################################"
-    exit 1
-fi
-
-# Convert size to bytes for dd (e.g. 2G -> count=2048 bs=1M)
 parse_size_mb() {
-    local s="${1^^}"  # uppercase
+    local s="${1^^}"
     local num="${s//[^0-9]/}"
     local unit="${s//[0-9]/}"
     case "$unit" in
         G) echo $(( num * 1024 )) ;;
         M) echo "$num" ;;
         K) echo $(( num / 1024 )) ;;
-        *) echo $(( num / 1024 / 1024 )) ;;  # assume bytes
+        *) echo $(( num / 1024 / 1024 )) ;;
     esac
 }
 
-# Disable existing swapfile if active
+header "Create Swapfile"
+FSTYPE=$(findmnt -n -o FSTYPE /)
+info "Swapfile  : $SWAPFILE"
+info "Size      : $SIZE"
+info "Filesystem: $FSTYPE"
+
+if [[ "$FSTYPE" != "ext4" && "$FSTYPE" != "btrfs" ]]; then
+    error "Unsupported filesystem: $FSTYPE"
+    error "Only ext4 and btrfs are supported"
+    read -rp "Press Enter to close..."
+    exit 1
+fi
+
+# ── Disable and remove existing swapfile ──────────────────────────────────────
+header "Checking for Existing Swapfile"
 if swapon --show | grep -q "$SWAPFILE"; then
-    tput setaf 3
-    echo "Disabling existing swapfile..."
-    tput sgr0
+    warn "Active swapfile found — disabling..."
     swapoff "$SWAPFILE"
+    success "Swapfile disabled"
 fi
-
-# Remove old swapfile if it exists
-if [ -f "$SWAPFILE" ]; then
-    tput setaf 3
-    echo "Removing existing swapfile..."
-    tput sgr0
+if [[ -f "$SWAPFILE" ]]; then
+    warn "Old swapfile found — removing..."
     rm -f "$SWAPFILE"
+    success "Old swapfile removed"
+else
+    info "No existing swapfile — proceeding"
 fi
 
+# ── Create swapfile ───────────────────────────────────────────────────────────
+header "Writing Swapfile ($SIZE)"
 MB=$(parse_size_mb "$SIZE")
 
-if [ "$FSTYPE" = "btrfs" ]; then
-    tput setaf 3
-    echo "btrfs detected - disabling Copy-on-Write before writing..."
-    tput sgr0
+if [[ "$FSTYPE" = "btrfs" ]]; then
+    info "btrfs detected — disabling Copy-on-Write before writing"
     touch "$SWAPFILE"
     chattr +C "$SWAPFILE"
 fi
 
-tput setaf 2
-echo "Writing $SIZE swapfile (dd with progress)..."
-tput sgr0
 dd if=/dev/zero of="$SWAPFILE" bs=1M count="$MB" status=progress
-echo  # newline after dd progress line
+echo
+success "Swapfile written"
 
-echo "Setting permissions (chmod 600)..."
+# ── Configure swapfile ────────────────────────────────────────────────────────
+header "Configuring Swapfile"
+info "Setting permissions (chmod 600)..."
 chmod 600 "$SWAPFILE"
-
-echo "Formatting as swap..."
+info "Formatting as swap..."
 mkswap "$SWAPFILE"
-
-echo "Activating swapfile..."
+info "Activating swapfile..."
 swapon "$SWAPFILE"
+success "Swapfile active"
 
-# Add to /etc/fstab if not already present
 if ! grep -q "$SWAPFILE" /etc/fstab; then
-    echo "Adding $SWAPFILE to /etc/fstab..."
+    info "Adding $SWAPFILE to /etc/fstab..."
     echo "$SWAPFILE none swap defaults 0 0" >> /etc/fstab
+    success "fstab updated"
 else
-    tput setaf 3
-    echo "$SWAPFILE already present in /etc/fstab - skipping"
-    tput sgr0
+    warn "$SWAPFILE already in /etc/fstab — skipping"
 fi
 
-echo
-tput setaf 2
-echo "================================================================"
-echo "  Swapfile created successfully"
-echo "================================================================"
-tput sgr0
+# ── Summary ───────────────────────────────────────────────────────────────────
+header "Active Swap Devices"
 swapon --show
-echo
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+success "Swapfile created successfully"
+
+read -rp "Press Enter to close..."

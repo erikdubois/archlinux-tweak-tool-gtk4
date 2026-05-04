@@ -1,116 +1,91 @@
 #!/bin/bash
-#set -e
+set -euo pipefail
 ##################################################################################################################
-# Author 	: Erik Dubois
+# Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
-# Website   : https://www.alci.online
-# Website	: https://www.arcolinux.info
-# Website	: https://www.arcolinux.com
-# Website	: https://www.arcolinuxd.com
-# Website	: https://www.arcolinuxb.com
-# Website	: https://www.arcolinuxiso.com
-# Website	: https://www.arcolinuxforum.com
+# Youtube   : https://youtube.com/erikdubois
 ##################################################################################################################
-#
-#   DO NOT JUST RUN THIS. EXAMINE AND JUDGE. RUN AT YOUR OWN RISK.
-#
-##################################################################################################################
-#tput setaf 0 = black 
-#tput setaf 1 = red 
-#tput setaf 2 = green
-#tput setaf 3 = yellow 
-#tput setaf 4 = dark blue 
-#tput setaf 5 = purple
-#tput setaf 6 = cyan 
-#tput setaf 7 = gray 
-#tput setaf 8 = light blue
-##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() {
+    echo "${CYAN}===============================================================================${RESET}"
+}
+
+header() {
+    echo ""
+    separator
+    echo "${CYAN}  $1${RESET}"
+    separator
+}
+
+success() { echo "${GREEN}  ✓ $1${RESET}"; }
+info()    { echo "    $1"; }
+warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
+error()   { echo "${RED}  ✗ $1${RESET}"; }
+
+# ── Connectivity check ────────────────────────────────────────────────────────
+header "Checking Internet Connectivity"
 
 Online=0
-
-function check_connectivity() {
-
-    local test_ip
-    local test_count
-
-    test_ip="8.8.8.8"
-    test_count=1
-
-    if ping -c ${test_count} ${test_ip} > /dev/null; then
-       	tput setaf 2
-       	echo 
-       	echo "You are online"
-       	echo
-       	tput sgr0
-       	Online=1
-    else
-    	tput setaf 1
-    	echo
-       	echo "You are not connected to the internet"
-       	echo "We can not download the latest archlinux-keyring package"
-       	echo
-       	echo "Make sure you are online to retrieve packages"
-       	echo
-       	tput sgr0
-       	Online=0
-    fi
- }
-
-check_connectivity
-
-if [ $Online -eq 1 ] ; then
-	tput setaf 2
-	echo
-	echo "Installing the latest archlinux-keyring package from the internet"
-	echo
-	tput sgr0
-	sudo pacman -Sy archlinux-keyring --noconfirm
-	echo
+if ping -c 1 8.8.8.8 > /dev/null 2>&1; then
+    success "You are online"
+    Online=1
+else
+    warn "Not connected to the internet"
+    info "Cannot download the latest archlinux-keyring package"
+    info "Make sure you are online to retrieve packages"
+    Online=0
 fi
 
-echo "###############################################################################"
-echo "Removing the pacman databases at /var/lib/pacman/sync/*"
-echo "###############################################################################"
-echo
-sudo rm /var/lib/pacman/sync/*
-echo
+# ── Install latest archlinux-keyring ─────────────────────────────────────────
+if [ "$Online" -eq 1 ]; then
+    header "Installing Latest archlinux-keyring"
+    sudo pacman -Sy archlinux-keyring --noconfirm
+    success "archlinux-keyring installed"
+fi
 
-echo "###############################################################################"
-echo "Removing /etc/pacman.d/gnupg folder"
-echo "###############################################################################"
-echo
+# ── Remove pacman databases ───────────────────────────────────────────────────
+header "Removing Pacman Databases"
+info "Target: /var/lib/pacman/sync/*"
+sudo rm -f /var/lib/pacman/sync/*
+success "Pacman databases removed"
+
+# ── Remove gnupg folder ───────────────────────────────────────────────────────
+header "Removing /etc/pacman.d/gnupg"
+info "Target: /etc/pacman.d/gnupg/*"
 sudo rm -rf /etc/pacman.d/gnupg/*
-echo
+success "gnupg folder cleared"
 
-echo "###############################################################################"
-echo "Initialize pacman keys with pacman-key --init"
-echo "###############################################################################"
-echo
+# ── Initialize pacman keys ────────────────────────────────────────────────────
+header "Initializing Pacman Keys"
 sudo pacman-key --init
-echo
+success "pacman-key --init complete"
 
-echo "###############################################################################"
-echo "Populating keyring with pacman-key --populate"
-echo "###############################################################################"
-echo 
+# ── Populate keyring ──────────────────────────────────────────────────────────
+header "Populating Keyring"
 sudo pacman-key --populate
-echo
+success "pacman-key --populate complete"
 
-echo "###############################################################################"
-echo "Adding Ubuntu keyserver to /etc/pacman.d/gnupg/gpg.conf"
-echo "###############################################################################"
-echo 
+# ── Add Ubuntu keyserver ──────────────────────────────────────────────────────
+header "Adding Ubuntu Keyserver to gpg.conf"
+info "Target: /etc/pacman.d/gnupg/gpg.conf"
 echo "
-keyserver hkp://keyserver.ubuntu.com:80" | sudo tee --append /etc/pacman.d/gnupg/gpg.conf
+keyserver hkp://keyserver.ubuntu.com:80" | sudo tee --append /etc/pacman.d/gnupg/gpg.conf > /dev/null
+success "Keyserver added"
 
-echo
-echo "###############################################################################"
-echo "Getting new databases with pacman -Sy"
-echo "###############################################################################"
-echo 
+# ── Refresh databases ─────────────────────────────────────────────────────────
+header "Refreshing Package Databases"
 sudo pacman -Sy
-echo
+success "Package databases refreshed"
 
-echo "###############################################################################"
-echo "###                DONE - YOU CAN CLOSE THIS WINDOW                        ####"
-echo "###############################################################################"
+# ── Done ──────────────────────────────────────────────────────────────────────
+echo ""
+separator
+echo "${GREEN}  DONE — you can close this window${RESET}"
+separator
+echo ""

@@ -326,7 +326,7 @@ def install_oh_my_zsh(self, _widget):
 
 def on_extra_shell_applications_clicked(self, _widget):
     fn.log_subsection("Install Extra Shell Applications")
-    packages = [
+    pairs = [
         ("expac", self.expac),
         ("ripgrep", self.ripgrep),
         ("yay-git", self.yay),
@@ -336,22 +336,68 @@ def on_extra_shell_applications_clicked(self, _widget):
         ("hw-probe", self.hw_probe),
         ("rate-mirrors", self.rate_mirrors),
         ("most", self.most),
+        ("fzf", self.fzf),
     ]
-    try:
-        for pkg, checkbox in packages:
-            if checkbox.get_active():
-                fn.install_package(self, pkg)
+    selected = [pkg for pkg, cb in pairs if cb.get_active()]
+    if not selected:
+        fn.log_info("No packages selected")
+        fn.show_in_app_notification(self, "No packages selected")
+        return
 
-        for pkg, checkbox in packages:
+    fn.log_info(f"Installing: {' '.join(selected)}")
+    fn.show_in_app_notification(self, "Opening terminal...")
+
+    def wait_and_refresh(process):
+        if process is not None:
+            process.wait()
+        for pkg, cb in pairs:
             installed = fn.check_package_installed(pkg)
+            fn.GLib.idle_add(cb.set_active, installed)
             fn.log_item(f"  {pkg:<20} {'OK' if installed else 'NOT INSTALLED'}")
-            checkbox.set_active(installed)
+        fn.GLib.idle_add(fn.log_success, "Extra shell applications done")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Extra shell applications installed")
 
-        fn.log_success("Extra shell applications done")
-        fn.show_in_app_notification(self, "Extra shell applications installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install shell applications: {error}")
-        fn.messagebox(self, "Error", f"Failed to install applications: {error}")
+    process = fn.launch_pacman_install_in_terminal(" ".join(selected))
+    fn.threading.Thread(target=wait_and_refresh, args=(process,), daemon=True).start()
+
+
+def on_extra_shell_applications_remove_clicked(self, _widget):
+    fn.log_subsection("Remove Extra Shell Applications")
+    pairs = [
+        ("expac", self.expac),
+        ("ripgrep", self.ripgrep),
+        ("yay-git", self.yay),
+        ("paru-git", self.paru),
+        ("bat", self.bat),
+        ("downgrade", self.downgrade),
+        ("hw-probe", self.hw_probe),
+        ("rate-mirrors", self.rate_mirrors),
+        ("most", self.most),
+        ("fzf", self.fzf),
+    ]
+    selected = [pkg for pkg, cb in pairs if cb.get_active()]
+    if not selected:
+        fn.log_info("No packages selected")
+        fn.show_in_app_notification(self, "No packages selected")
+        return
+
+    fn.log_info(f"Removing: {' '.join(selected)}")
+    fn.show_in_app_notification(self, "Opening terminal...")
+
+    def wait_and_refresh(process):
+        if process is not None:
+            process.wait()
+        for pkg, cb in pairs:
+            installed = fn.check_package_installed(pkg)
+            fn.GLib.idle_add(cb.set_active, installed)
+            fn.log_item(f"  {pkg:<20} {'OK' if installed else 'NOT INSTALLED'}")
+        fn.GLib.idle_add(fn.log_success, "Extra shell applications removal done")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Extra shell applications removed")
+
+    pkgs = " ".join(selected)
+    script = f"sudo pacman -Rdd --noconfirm {pkgs}; echo ''; read -p 'Press Enter to close'"
+    process = fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script])
+    fn.threading.Thread(target=wait_and_refresh, args=(process,), daemon=True).start()
 
 
 def on_select_all_toggle(self, _widget, active):
@@ -365,6 +411,7 @@ def on_select_all_toggle(self, _widget, active):
         self.hw_probe.set_active(True)
         self.rate_mirrors.set_active(True)
         self.most.set_active(True)
+        self.fzf.set_active(True)
 
 
 def on_clicked_install_only_zsh(self, _widget):

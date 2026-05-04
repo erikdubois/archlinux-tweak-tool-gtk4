@@ -9,12 +9,10 @@ from gi.repository import Gtk, Gio, Gdk, GdkPixbuf, Pango
 
 
 def _refresh_cursor_theme_dropdown(self):
-    """Refresh the cursor theme dropdown after install/remove"""
     try:
-        if hasattr(self, 'sddm_cursor_themes'):
-            pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        fn.refresh_all_cursor_dropdowns(self)
     except Exception as error:
-        fn.debug_print(f"Failed to refresh cursor themes dropdown: {error}")
+        fn.debug_print(f"Failed to refresh cursor dropdowns: {error}")
 
 
 def ensure_sddm_config(self):
@@ -370,6 +368,7 @@ def on_click_sddm_reset_original_att(self, _widget=None):
     """Apply the default ATT SDDM configuration"""
     try:
         fn.log_subsection("Apply ATT SDDM Configuration")
+        fn.create_sddm_k_dir()
         fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
         fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
         fn.log_success("ATT SDDM configuration applied")
