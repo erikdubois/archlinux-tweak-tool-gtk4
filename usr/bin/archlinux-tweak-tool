@@ -82,17 +82,17 @@ info "DESKTOP_SESSION  = ${DESKTOP_SESSION:-not set}"
 start_in_wayland() {
     info "Starting in Wayland session"
     xauth gen "$DISPLAY" &>/dev/null || true
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 start_in_x11() {
     info "Starting in X11 session"
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 start_in_tty() {
     info "Starting in TTY session"
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 # ── Launch ─────────────────────────────────────────────────────────────────────
@@ -100,20 +100,20 @@ header "Launching ATT — Session: $SESSION / Display: ${DISPLAY:-not set}"
 
 case "$SESSION" in
     wayland)
-        start_in_wayland
+        start_in_wayland "$@"
         ;;
     x11)
-        start_in_x11
+        start_in_x11 "$@"
         ;;
     tty)
-        start_in_tty
+        start_in_tty "$@"
         ;;
     *)
         warn "Session could not be verified — falling back to XDG_SESSION_TYPE"
         case "${XDG_SESSION_TYPE:-}" in
-            wayland) start_in_wayland ;;
-            tty)     start_in_tty ;;
-            x11)     start_in_x11 ;;
+            wayland) start_in_wayland "$@" ;;
+            tty)     start_in_tty "$@" ;;
+            x11)     start_in_x11 "$@" ;;
             *)
                 error "${XDG_SESSION_TYPE:-XDG_SESSION_TYPE} is empty — cannot continue"
                 exit 1
