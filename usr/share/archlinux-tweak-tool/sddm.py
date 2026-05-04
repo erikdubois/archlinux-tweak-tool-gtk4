@@ -181,19 +181,21 @@ def check_sddm(lists, value):
 def set_sddm_value(self, lists, value, session, state, theme, cursor):
     """set values in sddm_default_d2"""
     try:
-        com = fn.subprocess.run(
-            ["sh", "-c", "su - " + fn.sudo_username + " -c groups"],
-            check=True,
-            shell=False,
-            stdout=fn.subprocess.PIPE,
-        )
-        groups = com.stdout.decode().strip().split(" ")
-        if "autologin" not in groups:
-            fn.subprocess.run(
-                ["gpasswd", "-a", fn.sudo_username, "autologin"],
+        if state:
+            fn.subprocess.run(["groupadd", "-f", "autologin"], check=True, shell=False)
+            com = fn.subprocess.run(
+                ["sh", "-c", "su - " + fn.sudo_username + " -c groups"],
                 check=True,
                 shell=False,
+                stdout=fn.subprocess.PIPE,
             )
+            groups = com.stdout.decode().strip().split(" ")
+            if "autologin" not in groups:
+                fn.subprocess.run(
+                    ["gpasswd", "-a", fn.sudo_username, "autologin"],
+                    check=True,
+                    shell=False,
+                )
 
         pos = fn.get_position(lists, "Session=")
         pos_session = fn.get_position(lists, "User=")
