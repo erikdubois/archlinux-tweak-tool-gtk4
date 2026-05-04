@@ -42,8 +42,11 @@ if [[ -z "${DISPLAY:-}" ]]; then
 fi
 
 # ── Detect session ─────────────────────────────────────────────────────────────
-SESSION=$(loginctl show-session "$(loginctl | grep "$(whoami)" | awk '{print $1}')" -p Type \
-    | awk -F= '{print $2}' | grep "x11\|wayland\|tty" || true)
+SESSION="${XDG_SESSION_TYPE:-}"
+if [[ -z "$SESSION" ]]; then
+    SESSION=$(loginctl show-session "$(loginctl | grep "$(whoami)" | awk '{print $1}' | head -1)" -p Type \
+        | awk -F= '{print $2}' | grep "x11\|wayland\|tty" || true)
+fi
 
 if [[ -z "$SESSION" ]]; then
     error "Failed to verify session for user — SESSION is empty"
