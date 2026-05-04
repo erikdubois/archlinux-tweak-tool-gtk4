@@ -267,56 +267,80 @@ def on_click_remove_bluetooth(self, _widget):
 
 def on_click_install_blueberry(self, _widget):
     fn.log_subsection("Install Blueberry")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_install_in_terminal("blueberry")
-        fn.log_success("Blueberry installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install blueberry: {error}")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("blueberry"):
+            GLib.idle_add(self.blueberry_label.set_markup, "   Blueberry is already <b>installed</b>")
+            GLib.idle_add(fn.log_success, "Blueberry installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_blueberry(self, _widget):
     fn.log_subsection("Remove Blueberry")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_remove_in_terminal("blueberry")
-        fn.log_success("Blueberry removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove blueberry: {error}")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("blueberry"):
+            GLib.idle_add(self.blueberry_label.set_markup, "   Install blueberry")
+            GLib.idle_add(fn.log_success, "Blueberry removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_install_blueman(self, _widget):
     fn.log_subsection("Install Blueman")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_install_in_terminal("blueman")
-        fn.log_success("Blueman installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install blueman: {error}")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("blueman"):
+            GLib.idle_add(self.blueman_label.set_markup, "   Blueman is already <b>installed</b>")
+            GLib.idle_add(fn.log_success, "Blueman installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_blueman(self, _widget):
     fn.log_subsection("Remove Blueman")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_remove_in_terminal("blueman")
-        fn.log_success("Blueman removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove blueman: {error}")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("blueman"):
+            GLib.idle_add(self.blueman_label.set_markup, "   Install blueman")
+            GLib.idle_add(fn.log_success, "Blueman removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_install_bluedevil(self, _widget):
     fn.log_subsection("Install Bluedevil")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_install_in_terminal("bluedevil")
-        fn.log_success("Bluedevil installed")
-    except Exception as error:
-        fn.log_error(f"Failed to install bluedevil: {error}")
+        fn.threading.Event().wait(2)
+        if fn.check_package_installed("bluedevil"):
+            GLib.idle_add(self.bluedevil_label.set_markup, "   Bluedevil is already <b>installed</b>")
+            GLib.idle_add(fn.log_success, "Bluedevil installed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_remove_bluedevil(self, _widget):
     fn.log_subsection("Remove Bluedevil")
-    try:
+
+    def wait_and_update():
         fn.launch_pacman_remove_in_terminal("bluedevil")
-        fn.log_success("Bluedevil removed")
-    except Exception as error:
-        fn.log_error(f"Failed to remove bluedevil: {error}")
+        fn.threading.Event().wait(2)
+        if not fn.check_package_installed("bluedevil"):
+            GLib.idle_add(self.bluedevil_label.set_markup, "   Install bluedevil (Plasma dependencies)")
+            GLib.idle_add(fn.log_success, "Bluedevil removed")
+
+    fn.threading.Thread(target=wait_and_update, daemon=True).start()
 
 
 def on_click_enable_bluetooth(self, _widget):

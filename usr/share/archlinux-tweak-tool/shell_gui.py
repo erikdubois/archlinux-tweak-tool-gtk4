@@ -123,7 +123,7 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
         hbox_bash_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.install_bash_config = Gtk.Button(label="Install the ATT bashrc configuration")
         self.install_bash_config.connect("clicked", functools.partial(shell.on_install_att_bashrc_clicked, self))
-        self.bash_reset = Gtk.Button(label="Reset back to the original ~/.bashrc")
+        self.bash_reset = Gtk.Button(label="Reset back to your original ~/.bashrc")
         self.bash_reset.connect("clicked", functools.partial(shell.on_bash_reset_clicked, self))
         hbox_bash_config_btns.set_margin_start(10)
         hbox_bash_config_btns.append(self.install_bash_config)
