@@ -668,6 +668,8 @@ def copy_func(src, dst, isdir=False):
 # exceptions
 if distr == "manjaro" and check_content("biglinux", "/etc/os-release"):
     distr = "biglinux"
+if distr == "arch" and check_content("omarchy", "/etc/plymouth/plymouthd.conf"):
+    distr = "omarchy"
 
 
 def change_distro_label(name):  # noqa
