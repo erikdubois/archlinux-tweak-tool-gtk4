@@ -9,38 +9,7 @@ import shell
 def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf, fn):
     from gi.repository import Gdk
 
-    hbox19 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox19_lbl = Gtk.Label(xalign=0)
-    hbox19_lbl.set_markup("Zsh")
-    hbox19_lbl.set_name("title")
-    hbox19.append(hbox19_lbl)
-
-    hbox_zsh_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-    hseparator.set_hexpand(True)
-    hseparator.set_vexpand(False)
-    hbox_zsh_top_sep.append(hseparator)
-
-    # ── Installation ──────────────────────────────────────────────
-
-    hbox_zsh_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_zsh_installation_title_lbl = Gtk.Label(xalign=0)
-    hbox_zsh_installation_title_lbl.set_markup("<b>Installation</b>")
-    hbox_zsh_installation_title_lbl.set_margin_start(10)
-    hbox_zsh_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-    hbox_zsh_installation_sep.set_hexpand(True)
-    hbox_zsh_installation_sep.set_valign(Gtk.Align.CENTER)
-    hbox_zsh_installation_title.append(hbox_zsh_installation_title_lbl)
-    hbox_zsh_installation_title.append(hbox_zsh_installation_sep)
-
     hbox_zsh_status_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    self.zsh_status_lbl = Gtk.Label(xalign=0)
-    if fn.check_package_installed("zsh"):
-        self.zsh_status_lbl.set_markup("Zsh is <b>installed</b>")
-    else:
-        self.zsh_status_lbl.set_markup("Zsh is <b>not installed</b>")
-    self.zsh_status_lbl.set_margin_start(10)
-    self.zsh_status_lbl.set_margin_end(10)
     self.zsh_completions_lbl = Gtk.Label(xalign=0)
     if fn.check_package_installed("zsh-completions"):
         self.zsh_completions_lbl.set_markup("Zsh-completion is already <b>installed</b>")
@@ -48,7 +17,6 @@ def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf
         self.zsh_completions_lbl.set_markup("Zsh-completion is <b>not</b> installed")
     self.zsh_completions_lbl.set_margin_start(10)
     self.zsh_completions_lbl.set_margin_end(10)
-    hbox_zsh_status_lbl.append(self.zsh_status_lbl)
     hbox_zsh_status_lbl.append(self.zsh_completions_lbl)
 
     hbox_zsh_completions_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -247,9 +215,6 @@ def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf
     hbox_zsh_shell_buttons.set_margin_start(10)
     hbox_zsh_shell_buttons.append(tozsh)
 
-    vbox.append(hbox19)
-    vbox.append(hbox_zsh_top_sep)
-    vbox.append(hbox_zsh_installation_title)
     vbox.append(hbox_zsh_status_lbl)
     vbox.append(hbox_zsh_completions_btns)
     vbox.append(hbox_zsh_syntax_lbl)
@@ -457,6 +422,59 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
     # ==================================================================
 
     self.zsh_vbox = vboxstack2
+
+    # ── Title ─────────────────────────────────────────────────────
+
+    hbox_zsh_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_zsh_title_lbl = Gtk.Label(xalign=0)
+    hbox_zsh_title_lbl.set_markup("Zsh")
+    hbox_zsh_title_lbl.set_name("title")
+    hbox_zsh_title.append(hbox_zsh_title_lbl)
+
+    hbox_zsh_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hseparator_zsh = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hseparator_zsh.set_hexpand(True)
+    hseparator_zsh.set_vexpand(False)
+    hbox_zsh_top_sep.append(hseparator_zsh)
+
+    # ── Installation (always active) ──────────────────────────────
+
+    hbox_zsh_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_zsh_installation_title_lbl = Gtk.Label(xalign=0)
+    hbox_zsh_installation_title_lbl.set_markup("<b>Installation</b>")
+    hbox_zsh_installation_title_lbl.set_margin_start(10)
+    hbox_zsh_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_zsh_installation_sep.set_hexpand(True)
+    hbox_zsh_installation_sep.set_valign(Gtk.Align.CENTER)
+    hbox_zsh_installation_title.append(hbox_zsh_installation_title_lbl)
+    hbox_zsh_installation_title.append(hbox_zsh_installation_sep)
+
+    hbox_zsh_status_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.zsh_status_lbl = Gtk.Label(xalign=0)
+    if fn.check_package_installed("zsh"):
+        self.zsh_status_lbl.set_markup("Zsh is <b>installed</b>")
+    else:
+        self.zsh_status_lbl.set_markup("Zsh is <b>not installed</b>")
+    self.zsh_status_lbl.set_margin_start(10)
+    self.zsh_status_lbl.set_margin_end(10)
+    hbox_zsh_status_row.append(self.zsh_status_lbl)
+
+    hbox_zsh_install_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.install_zsh = Gtk.Button(label="Install Zsh")
+    self.install_zsh.connect("clicked", functools.partial(shell.on_install_zsh_clicked, self))
+    self.remove_zsh = Gtk.Button(label="Remove Zsh")
+    self.remove_zsh.connect("clicked", functools.partial(shell.on_remove_zsh_clicked, self))
+    hbox_zsh_install_btns.set_margin_start(10)
+    hbox_zsh_install_btns.append(self.install_zsh)
+    hbox_zsh_install_btns.append(self.remove_zsh)
+
+    vboxstack2.append(hbox_zsh_title)
+    vboxstack2.append(hbox_zsh_top_sep)
+    vboxstack2.append(hbox_zsh_installation_title)
+    vboxstack2.append(hbox_zsh_status_row)
+    vboxstack2.append(hbox_zsh_install_btns)
+
+    # ── Config + rest (greyed when zsh absent) ────────────────────
 
     self.zsh_config_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     _build_zsh_installed_content(self, self.zsh_config_section, Gtk, zsh_theme, base_dir, GdkPixbuf, fn)

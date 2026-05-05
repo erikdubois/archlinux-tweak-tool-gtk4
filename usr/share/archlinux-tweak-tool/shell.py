@@ -451,6 +451,28 @@ def on_install_zsh_clicked(self, _widget):
     fn.threading.Thread(target=wait_install, daemon=True).start()
 
 
+def on_remove_zsh_clicked(self, _widget):
+    fn.log_subsection("Remove Zsh")
+    if not fn.check_package_installed("zsh"):
+        fn.log_info("zsh is not installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Zsh is not installed")
+        return
+    process = fn.launch_pacman_remove_in_terminal("zsh")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Removing zsh - terminal opened")
+
+    def wait_remove():
+        try:
+            process.wait()
+            fn.log_success("Zsh removed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "Zsh removed")
+            fn.GLib.idle_add(self.zsh_status_lbl.set_markup, "Zsh is <b>not installed</b>")
+            fn.GLib.idle_add(self.zsh_config_section.set_sensitive, False)
+        except Exception as e:
+            fn.log_error(f"Error removing zsh: {e}")
+
+    fn.threading.Thread(target=wait_remove, daemon=True).start()
+
+
 def _refresh_zsh_completions_lbl(self):
     if fn.check_package_installed("zsh-completions"):
         self.zsh_completions_lbl.set_markup("Zsh-completion is already <b>installed</b>")
