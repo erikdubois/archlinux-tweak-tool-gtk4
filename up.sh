@@ -119,13 +119,10 @@ wget https://archlinux.org/packages/core/any/archlinux-keyring/download --conten
 
 ########### Variety
 
-origin="/home/erik/EDU/edu-variety-config/etc/skel/.config/variety/variety.conf"
-destination="/home/erik/EDU/archlinux-tweak-tool-gtk4/usr/share/archlinux-tweak-tool/data/variety/"
-cp $origin $destination
-
-origin_scripts="/home/erik/EDU/edu-variety-config/etc/skel/.config/variety/scripts/*"
-destination_scripts="/home/erik/EDU/archlinux-tweak-tool-gtk4/usr/share/archlinux-tweak-tool/data/variety/scripts/"
-cp $origin_scripts $destination_scripts
+cp "/home/erik/EDU/edu-variety-config/etc/skel/.config/variety/variety.conf" \
+    "$workdir/usr/share/archlinux-tweak-tool/data/variety/"
+cp /home/erik/EDU/edu-variety-config/etc/skel/.config/variety/scripts/* \
+    "$workdir/usr/share/archlinux-tweak-tool/data/variety/scripts/"
 
 # Below command will backup everything inside the project folder
 git add --all .

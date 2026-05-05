@@ -60,14 +60,15 @@ if [[ -z "$SESSION" ]]; then
 fi
 
 # ── Xauth setup ────────────────────────────────────────────────────────────────
-XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ' || true)
-
-if [[ -z "$XAUTHORITY" ]]; then
-    error "XAUTHORITY file is not set."
-    exit 1
+if [[ -z "${XAUTHORITY:-}" ]]; then
+    XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ' || true)
 fi
-
+if [[ -z "$XAUTHORITY" ]]; then
+    XAUTHORITY="$HOME/.Xauthority"
+    warn "XAUTHORITY not found via xauth — defaulting to $XAUTHORITY"
+fi
 [[ -s "$XAUTHORITY" ]] || touch "$XAUTHORITY"
+export XAUTHORITY
 
 XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ' || true)
 if [[ "$XAUTH_HONORED" != "yes" ]]; then

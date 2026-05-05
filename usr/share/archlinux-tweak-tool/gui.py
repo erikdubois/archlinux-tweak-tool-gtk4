@@ -40,6 +40,8 @@ import network_gui
 import system_gui
 import software_gui
 import packages_gui
+import wallpaper
+import wallpaper_gui
 
 
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
@@ -112,6 +114,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_wallpaper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 ICONS
@@ -236,6 +239,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     software_gui.gui(self, Gtk, vboxstack_software, fn)
 
+    wallpaper_gui.gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir)
+
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
@@ -282,6 +287,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_themes, "stack_themes", "Themes")  # arc themes
 
     stack.add_titled(vboxstack18, "stack18", "User")  # user
+
+    stack.add_titled(vboxstack_wallpaper, "stack_wallpaper", "Wallpaper")  # wallpaper
 
     stack_switcher = Gtk.StackSidebar()
     stack_switcher.set_name("sidebar")

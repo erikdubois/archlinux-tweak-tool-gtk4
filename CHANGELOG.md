@@ -1,5 +1,32 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Wallpaper Tab: New Page with Variety + ATT Picker
+
+### What Changed
+
+- Added a new **Wallpaper** tab (last entry in sidebar, alphabetically after User)
+- Install/Remove variety via alacritty terminal with post-close refresh of button visibility
+- Save ATT variety config button copies `data/kiro/variety/` → `~/.config/variety/` with `.bak` of any existing file
+- Open variety settings button launches `variety --preferences` in a daemon thread
+- ATT Wallpaper Picker: folder entry pre-filled with bundled wallpapers, Browse/Load/Stop controls, async FlowBox thumbnail grid, 180px preview, path label, scale dropdown (Fill/Fit/Center/Tile/Stretch), Apply (feh) and Random buttons
+- Bundled wallpapers auto-load on page build via `GLib.idle_add` at PRIORITY_LOW
+
+### Technical Details
+
+- `wallpaper.py`: all backend logic — install/remove variety, save config (shutil.copy2 + .bak), open settings, folder dialog (Gtk.FileDialog + Gio), async thumb loading with generation counter (same stop-signal pattern as SDDM), feh apply via `_FEH_FLAGS` dict, random pick
+- `wallpaper_gui.py`: pure UI construction; passes `self.*` widget refs so wallpaper.py callbacks can update them; auto-triggers `_populate_wallpaper_thumbs` on build
+- `gui.py`: added `import wallpaper`, `import wallpaper_gui`, `vboxstack_wallpaper`, gui call, and `stack.add_titled` entry
+- feh called via `Popen` (non-blocking); `FileNotFoundError` caught and surfaced to user via notification
+- All flake8 clean (max-line-length 120)
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/wallpaper.py` (new)
+- `usr/share/archlinux-tweak-tool/wallpaper_gui.py` (new)
+- `usr/share/archlinux-tweak-tool/gui.py`
+
+---
+
 ## 2026.05.05 - Shell Tab: Live ZSH UI Rebuild + Dropdown/Image Guards
 
 ### What Changed
