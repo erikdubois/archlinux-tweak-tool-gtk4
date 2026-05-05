@@ -63,6 +63,37 @@ def _find_wayland_setter():
     return None
 
 
+def _get_user_env(keys):
+    result = {k: fn.os.environ.get(k, "") for k in keys}
+    if any(result.values()):
+        return result
+    username = getattr(fn, "sudo_username", None)
+    if not username:
+        return result
+    try:
+        for pid in fn.os.listdir("/proc"):
+            env_file = f"/proc/{pid}/environ"
+            if not fn.path.isfile(env_file):
+                continue
+            try:
+                with open(env_file, "rb") as f:
+                    entries = dict(
+                        e.split(b"=", 1) for e in f.read().split(b"\x00") if b"=" in e
+                    )
+                if entries.get(b"LOGNAME", b"").decode() == username:
+                    for k in keys:
+                        val = entries.get(k.encode(), b"").decode()
+                        if val:
+                            result[k] = val
+                    if any(result.values()):
+                        break
+            except (PermissionError, OSError, ValueError):
+                continue
+    except Exception:
+        pass
+    return result
+
+
 def on_install_variety(self, _widget=None):
     fn.log_subsection("Install variety")
     fn.show_in_app_notification(self, "Opening terminal to install variety...")
@@ -374,14 +405,17 @@ def _apply_wayland(self, path, scale):
 
 
 def _apply_x11(self, path, scale):
-    desktop = fn.os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-    kde = fn.os.environ.get("KDE_FULL_SESSION", "") == "true"
+    env = _get_user_env(["XDG_CURRENT_DESKTOP", "DESKTOP_SESSION", "XDG_SESSION_DESKTOP", "KDE_FULL_SESSION"])
+    desktop = (env["XDG_CURRENT_DESKTOP"] + env["DESKTOP_SESSION"] + env["XDG_SESSION_DESKTOP"]).lower()
+    kde = env["KDE_FULL_SESSION"] == "true"
 
-    fn.debug_print(f"X11 DE detection: XDG_CURRENT_DESKTOP={desktop!r} KDE_FULL_SESSION={kde}")
+    fn.debug_print(f"X11 DE detection: {env}")
+
+    xfce_running = fn.subprocess.run(["pgrep", "-x", "xfce4-session"], capture_output=True).returncode == 0
 
     if kde:
         _set_kde(self, path)
-    elif "xfce" in desktop:
+    elif "xfce" in desktop or xfce_running:
         _set_xfce(self, path, scale)
     elif "gnome" in desktop or "unity" in desktop:
         _set_gnome(self, path, scale)

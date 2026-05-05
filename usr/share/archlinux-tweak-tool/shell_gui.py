@@ -34,10 +34,13 @@ def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf
     hbox_zsh_installation_title.append(hbox_zsh_installation_sep)
 
     hbox_zsh_status_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    zsh_status_lbl = Gtk.Label(xalign=0)
-    zsh_status_lbl.set_markup("Zsh is <b>installed</b>")
-    zsh_status_lbl.set_margin_start(10)
-    zsh_status_lbl.set_margin_end(10)
+    self.zsh_status_lbl = Gtk.Label(xalign=0)
+    if fn.check_package_installed("zsh"):
+        self.zsh_status_lbl.set_markup("Zsh is <b>installed</b>")
+    else:
+        self.zsh_status_lbl.set_markup("Zsh is <b>not installed</b>")
+    self.zsh_status_lbl.set_margin_start(10)
+    self.zsh_status_lbl.set_margin_end(10)
     self.zsh_completions_lbl = Gtk.Label(xalign=0)
     if fn.check_package_installed("zsh-completions"):
         self.zsh_completions_lbl.set_markup("Zsh-completion is already <b>installed</b>")
@@ -45,7 +48,7 @@ def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf
         self.zsh_completions_lbl.set_markup("Zsh-completion is <b>not</b> installed")
     self.zsh_completions_lbl.set_margin_start(10)
     self.zsh_completions_lbl.set_margin_end(10)
-    hbox_zsh_status_lbl.append(zsh_status_lbl)
+    hbox_zsh_status_lbl.append(self.zsh_status_lbl)
     hbox_zsh_status_lbl.append(self.zsh_completions_lbl)
 
     hbox_zsh_completions_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -266,15 +269,6 @@ def _build_zsh_installed_content(self, vbox, Gtk, zsh_theme, base_dir, GdkPixbuf
     vbox.append(hbox_zsh_shell_buttons)
 
 
-def _rebuild_zsh_tab(self, Gtk, zsh_theme, base_dir, GdkPixbuf, fn):
-    child = self.zsh_vbox.get_first_child()
-    while child:
-        nxt = child.get_next_sibling()
-        self.zsh_vbox.remove(child)
-        child = nxt
-    _build_zsh_installed_content(self, self.zsh_vbox, Gtk, zsh_theme, base_dir, GdkPixbuf, fn)
-
-
 def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
     """create a gui"""
     hbox1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -463,179 +457,135 @@ def gui(self, Gtk, vboxstack23, zsh_theme, base_dir, GdkPixbuf, fn):
     # ==================================================================
 
     self.zsh_vbox = vboxstack2
-    self._refresh_zsh_tab = lambda: _rebuild_zsh_tab(self, Gtk, zsh_theme, base_dir, GdkPixbuf, fn)
-    if fn.check_package_installed("zsh"):
-        _build_zsh_installed_content(self, vboxstack2, Gtk, zsh_theme, base_dir, GdkPixbuf, fn)
-    else:
-        # no zsh installed
-        hbox_zsh_no_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_zsh_no_title_lbl = Gtk.Label(xalign=0)
-        hbox_zsh_no_title_lbl.set_markup("Zsh is not installed")
-        hbox_zsh_no_title_lbl.set_name("title")
-        hbox_zsh_no_title.append(hbox_zsh_no_title_lbl)
 
-        hbox_zsh_no_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hseparator.set_hexpand(True)
-        hseparator.set_vexpand(False)
-        hbox_zsh_no_sep.append(hseparator)
-
-        zsh_not_installed_msg = Gtk.Label()
-        zsh_not_installed_msg.set_markup("<b>Zsh does not seem to be installed</b>")
-
-        install_only_zsh = Gtk.Button(label="Install Zsh")
-        install_only_zsh.connect("clicked", functools.partial(shell.on_install_zsh_clicked, self))
-
-        vboxstack2.append(hbox_zsh_no_title)
-        vboxstack2.append(hbox_zsh_no_sep)
-        vboxstack2.append(zsh_not_installed_msg)
-        vboxstack2.append(install_only_zsh)
+    self.zsh_config_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    _build_zsh_installed_content(self, self.zsh_config_section, Gtk, zsh_theme, base_dir, GdkPixbuf, fn)
+    if not fn.check_package_installed("zsh"):
+        self.zsh_config_section.set_sensitive(False)
+    vboxstack2.append(self.zsh_config_section)
 
     # ==================================================================
     #                       FISH
     # ==================================================================
 
+    # ── Title ─────────────────────────────────────────────────────
+
+    hbox_fish_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_fish_title_lbl = Gtk.Label(xalign=0)
+    hbox_fish_title_lbl.set_markup("Fish")
+    hbox_fish_title_lbl.set_name("title")
+    hbox_fish_title.append(hbox_fish_title_lbl)
+
+    hbox_fish_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hseparator.set_hexpand(True)
+    hseparator.set_vexpand(False)
+    hbox_fish_top_sep.append(hseparator)
+
+    # ── Installation (always active) ──────────────────────────────
+
+    hbox_fish_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_fish_installation_title_lbl = Gtk.Label(xalign=0)
+    hbox_fish_installation_title_lbl.set_markup("<b>Installation</b>")
+    hbox_fish_installation_title_lbl.set_margin_start(10)
+    hbox_fish_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_fish_installation_sep.set_hexpand(True)
+    hbox_fish_installation_sep.set_valign(Gtk.Align.CENTER)
+    hbox_fish_installation_title.append(hbox_fish_installation_title_lbl)
+    hbox_fish_installation_title.append(hbox_fish_installation_sep)
+
+    hbox_fish_status_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.fish_status_lbl = Gtk.Label(xalign=0)
     if fn.check_package_installed("fish"):
-        # ── Title ─────────────────────────────────────────────────────
-
-        hbox_fish_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_title_lbl = Gtk.Label(xalign=0)
-        hbox_fish_title_lbl.set_markup("Fish")
-        hbox_fish_title_lbl.set_name("title")
-        hbox_fish_title.append(hbox_fish_title_lbl)
-
-        hbox_fish_top_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hseparator.set_hexpand(True)
-        hseparator.set_vexpand(False)
-        hbox_fish_top_sep.append(hseparator)
-
-        # ── Installation ──────────────────────────────────────────────
-
-        hbox_fish_installation_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_installation_title_lbl = Gtk.Label(xalign=0)
-        hbox_fish_installation_title_lbl.set_markup("<b>Installation</b>")
-        hbox_fish_installation_title_lbl.set_margin_start(10)
-        hbox_fish_installation_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hbox_fish_installation_sep.set_hexpand(True)
-        hbox_fish_installation_sep.set_valign(Gtk.Align.CENTER)
-        hbox_fish_installation_title.append(hbox_fish_installation_title_lbl)
-        hbox_fish_installation_title.append(hbox_fish_installation_sep)
-
-        hbox_fish_status_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        fish_status_lbl = Gtk.Label(xalign=0)
-        fish_status_lbl.set_markup("Fish is <b>installed</b>")
-        fish_status_lbl.set_margin_start(10)
-        fish_status_lbl.set_margin_end(10)
-        hbox_fish_status_lbl.append(fish_status_lbl)
-
-        hbox_fish_install_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        self.install_fish = Gtk.Button(label="Install Fish")
-        self.install_fish.connect("clicked", functools.partial(shell.on_install_only_fish_clicked, self))
-        self.remove_fish = Gtk.Button(label="Remove Fish")
-        self.remove_fish.connect("clicked", functools.partial(shell.on_remove_only_fish_clicked, self))
-        hbox_fish_install_btns.set_margin_start(10)
-        hbox_fish_install_btns.append(self.install_fish)
-        hbox_fish_install_btns.append(self.remove_fish)
-
-        # ── ATT config ────────────────────────────────────────────────
-
-        hbox_fish_att_config_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_att_config_title_lbl = Gtk.Label(xalign=0)
-        hbox_fish_att_config_title_lbl.set_markup("<b>ATT config</b>")
-        hbox_fish_att_config_title_lbl.set_margin_start(10)
-        hbox_fish_att_config_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hbox_fish_att_config_sep.set_hexpand(True)
-        hbox_fish_att_config_sep.set_valign(Gtk.Align.CENTER)
-        hbox_fish_att_config_title.append(hbox_fish_att_config_title_lbl)
-        hbox_fish_att_config_title.append(hbox_fish_att_config_sep)
-
-        hbox_fish_config_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox_fish_config_lbl_txt = Gtk.Label(xalign=0)
-        hbox_fish_config_lbl_txt.set_markup("Overwrite your ~/.config/fish/config.fish with the ATT config")
-        hbox_fish_config_lbl_txt.set_margin_start(10)
-        hbox_fish_config_lbl_txt.set_margin_end(10)
-        hbox_fish_config_lbl.append(hbox_fish_config_lbl_txt)
-
-        hbox_fish_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        self.install_fish_config = Gtk.Button(label="Install the ATT config.fish")
-        self.install_fish_config.connect("clicked", functools.partial(shell.on_install_att_fish_config_clicked, self))
-        self.fish_reset = Gtk.Button(label="Reset back to the original ~/.config/fish/config.fish")
-        self.fish_reset.connect("clicked", functools.partial(shell.on_fish_reset_clicked, self))
-        hbox_fish_config_btns.set_margin_start(10)
-        hbox_fish_config_btns.append(self.install_fish_config)
-        hbox_fish_config_btns.append(self.fish_reset)
-
-        # ── Change shell ──────────────────────────────────────────────
-
-        hbox_fish_change_shell_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_change_shell_title_lbl = Gtk.Label(xalign=0)
-        hbox_fish_change_shell_title_lbl.set_markup("<b>Change shell</b>")
-        hbox_fish_change_shell_title_lbl.set_margin_start(10)
-        hbox_fish_change_shell_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hbox_fish_change_shell_sep.set_hexpand(True)
-        hbox_fish_change_shell_sep.set_valign(Gtk.Align.CENTER)
-        hbox_fish_change_shell_title.append(hbox_fish_change_shell_title_lbl)
-        hbox_fish_change_shell_title.append(hbox_fish_change_shell_sep)
-
-        hbox_fish_logout_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_logout_warning_lbl = Gtk.Label(xalign=0)
-        hbox_fish_logout_warning_lbl.set_markup(
-            "Restart your terminal to apply the new Fish config\n"
-            "<b>If you just switched shell, log-out first</b>"
-        )
-        hbox_fish_logout_warning_lbl.set_margin_start(10)
-        hbox_fish_logout_warning_lbl.set_margin_end(10)
-        hbox_fish_logout_warning.append(hbox_fish_logout_warning_lbl)
-
-        hbox_fish_shell_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        tofish = Gtk.Button(label="Apply fish")
-        tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
-        hbox_fish_shell_btns.set_margin_start(10)
-        if not fn.distr == "archcraft":
-            hbox_fish_shell_btns.append(tofish)
-
-        vboxstack3.append(hbox_fish_title)
-        vboxstack3.append(hbox_fish_top_sep)
-        vboxstack3.append(hbox_fish_installation_title)
-        vboxstack3.append(hbox_fish_status_lbl)
-        vboxstack3.append(hbox_fish_install_btns)
-        vboxstack3.append(hbox_fish_att_config_title)
-        vboxstack3.append(hbox_fish_config_lbl)
-        vboxstack3.append(hbox_fish_config_btns)
-        vboxstack3.append(hbox_fish_change_shell_title)
-        vboxstack3.append(hbox_fish_logout_warning)
-        vboxstack3.append(hbox_fish_shell_btns)
-
+        self.fish_status_lbl.set_markup("Fish is <b>installed</b>")
     else:
-        # no fish installed
-        hbox_fish_no_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox_fish_no_title_lbl = Gtk.Label(xalign=0)
-        hbox_fish_no_title_lbl.set_markup("Fish is not installed")
-        hbox_fish_no_title_lbl.set_name("title")
-        hbox_fish_no_title.append(hbox_fish_no_title_lbl)
+        self.fish_status_lbl.set_markup("Fish is <b>not installed</b>")
+    self.fish_status_lbl.set_margin_start(10)
+    self.fish_status_lbl.set_margin_end(10)
+    hbox_fish_status_lbl.append(self.fish_status_lbl)
 
-        hbox_fish_no_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        hseparator.set_hexpand(True)
-        hseparator.set_vexpand(False)
-        hbox_fish_no_sep.append(hseparator)
+    hbox_fish_install_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.install_fish = Gtk.Button(label="Install Fish")
+    self.install_fish.connect("clicked", functools.partial(shell.on_install_only_fish_clicked, self))
+    self.remove_fish = Gtk.Button(label="Remove Fish")
+    self.remove_fish.connect("clicked", functools.partial(shell.on_remove_only_fish_clicked, self))
+    hbox_fish_install_btns.set_margin_start(10)
+    hbox_fish_install_btns.append(self.install_fish)
+    hbox_fish_install_btns.append(self.remove_fish)
 
-        fish_not_installed_msg = Gtk.Label()
-        fish_not_installed_msg.set_markup(
-            "<b>Fish does not seem to be installed\nRestart ATT to see the information</b>"
-        )
+    # ── Config + Change shell (greyed when fish absent) ───────────
 
-        hbox_fish_no_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        install_only_fish = Gtk.Button(label="Install Fish and restart ATT to configure")
-        install_only_fish.connect("clicked", functools.partial(shell.on_install_only_fish_clicked_reboot, self))
-        hbox_fish_no_btns.set_margin_start(10)
-        hbox_fish_no_btns.append(install_only_fish)
+    self.fish_config_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
-        vboxstack3.append(hbox_fish_no_title)
-        vboxstack3.append(hbox_fish_no_sep)
-        vboxstack3.append(fish_not_installed_msg)
-        vboxstack3.append(hbox_fish_no_btns)
+    hbox_fish_att_config_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_fish_att_config_title_lbl = Gtk.Label(xalign=0)
+    hbox_fish_att_config_title_lbl.set_markup("<b>ATT config</b>")
+    hbox_fish_att_config_title_lbl.set_margin_start(10)
+    hbox_fish_att_config_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_fish_att_config_sep.set_hexpand(True)
+    hbox_fish_att_config_sep.set_valign(Gtk.Align.CENTER)
+    hbox_fish_att_config_title.append(hbox_fish_att_config_title_lbl)
+    hbox_fish_att_config_title.append(hbox_fish_att_config_sep)
+
+    hbox_fish_config_lbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_fish_config_lbl_txt = Gtk.Label(xalign=0)
+    hbox_fish_config_lbl_txt.set_markup("Overwrite your ~/.config/fish/config.fish with the ATT config")
+    hbox_fish_config_lbl_txt.set_margin_start(10)
+    hbox_fish_config_lbl_txt.set_margin_end(10)
+    hbox_fish_config_lbl.append(hbox_fish_config_lbl_txt)
+
+    hbox_fish_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.install_fish_config = Gtk.Button(label="Install the ATT config.fish")
+    self.install_fish_config.connect("clicked", functools.partial(shell.on_install_att_fish_config_clicked, self))
+    self.fish_reset = Gtk.Button(label="Reset back to the original ~/.config/fish/config.fish")
+    self.fish_reset.connect("clicked", functools.partial(shell.on_fish_reset_clicked, self))
+    hbox_fish_config_btns.set_margin_start(10)
+    hbox_fish_config_btns.append(self.install_fish_config)
+    hbox_fish_config_btns.append(self.fish_reset)
+
+    hbox_fish_change_shell_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_fish_change_shell_title_lbl = Gtk.Label(xalign=0)
+    hbox_fish_change_shell_title_lbl.set_markup("<b>Change shell</b>")
+    hbox_fish_change_shell_title_lbl.set_margin_start(10)
+    hbox_fish_change_shell_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_fish_change_shell_sep.set_hexpand(True)
+    hbox_fish_change_shell_sep.set_valign(Gtk.Align.CENTER)
+    hbox_fish_change_shell_title.append(hbox_fish_change_shell_title_lbl)
+    hbox_fish_change_shell_title.append(hbox_fish_change_shell_sep)
+
+    hbox_fish_logout_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_fish_logout_warning_lbl = Gtk.Label(xalign=0)
+    hbox_fish_logout_warning_lbl.set_markup(
+        "Restart your terminal to apply the new Fish config\n"
+        "<b>If you just switched shell, log-out first</b>"
+    )
+    hbox_fish_logout_warning_lbl.set_margin_start(10)
+    hbox_fish_logout_warning_lbl.set_margin_end(10)
+    hbox_fish_logout_warning.append(hbox_fish_logout_warning_lbl)
+
+    hbox_fish_shell_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    tofish = Gtk.Button(label="Apply fish")
+    tofish.connect("clicked", functools.partial(shell.tofish_apply, self))
+    hbox_fish_shell_btns.set_margin_start(10)
+    if not fn.distr == "archcraft":
+        hbox_fish_shell_btns.append(tofish)
+
+    self.fish_config_section.append(hbox_fish_att_config_title)
+    self.fish_config_section.append(hbox_fish_config_lbl)
+    self.fish_config_section.append(hbox_fish_config_btns)
+    self.fish_config_section.append(hbox_fish_change_shell_title)
+    self.fish_config_section.append(hbox_fish_logout_warning)
+    self.fish_config_section.append(hbox_fish_shell_btns)
+
+    if not fn.check_package_installed("fish"):
+        self.fish_config_section.set_sensitive(False)
+
+    vboxstack3.append(hbox_fish_title)
+    vboxstack3.append(hbox_fish_top_sep)
+    vboxstack3.append(hbox_fish_installation_title)
+    vboxstack3.append(hbox_fish_status_lbl)
+    vboxstack3.append(hbox_fish_install_btns)
+    vboxstack3.append(self.fish_config_section)
 
     # ==================================================================
     #                       EXTRA

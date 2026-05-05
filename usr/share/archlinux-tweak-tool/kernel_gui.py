@@ -364,7 +364,7 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
 
     hbox_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl = Gtk.Label(xalign=0)
-    lbl.set_markup("<b>Default Boot Entry (only systemd-boot)</b>")
+    lbl.set_markup("<b>Default Boot Entry (systemd-boot)</b>")
     lbl.set_margin_start(10)
     lbl.set_margin_end(10)
     hbox_hdr.append(lbl)

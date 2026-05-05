@@ -167,20 +167,20 @@ def on_install_only_fish_clicked(self, _widget):
         fn.log_info("Fish is already installed")
         fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is already installed")
         return
-    fn.install_package(self, "fish")
+    process = fn.launch_pacman_install_in_terminal("fish")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Installing fish...")
 
+    def wait_install():
+        try:
+            process.wait()
+            fn.log_success("Fish installed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish installed — page updated")
+            fn.GLib.idle_add(self.fish_status_lbl.set_markup, "Fish is <b>installed</b>")
+            fn.GLib.idle_add(self.fish_config_section.set_sensitive, True)
+        except Exception as error:
+            fn.log_error(f"Error installing fish: {error}")
 
-def on_install_only_fish_clicked_reboot(self, _widget):
-    fn.log_subsection("Install Fish")
-    fn.debug_print("  Package  : fish")
-    fn.debug_print(f"  Installed: {fn.check_package_installed('fish')}")
-    fn.debug_print("  Reboot   : ATT will restart after install")
-    if fn.check_package_installed("fish"):
-        fn.log_info("Fish is already installed")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish is already installed")
-        return
-    fn.install_package(self, "fish")
-    fn.restart_program()
+    fn.threading.Thread(target=wait_install, daemon=True).start()
 
 
 def on_remove_fish_all(self, _widget):
@@ -221,6 +221,8 @@ def on_remove_only_fish_clicked(self, _widget):
             process.wait()
             fn.log_success("Fish removed")
             fn.GLib.idle_add(fn.show_in_app_notification, self, "Fish removed")
+            fn.GLib.idle_add(self.fish_status_lbl.set_markup, "Fish is <b>not installed</b>")
+            fn.GLib.idle_add(self.fish_config_section.set_sensitive, False)
         except Exception as error:
             fn.log_error(f"Failed to remove fish: {error}")
 
@@ -441,7 +443,8 @@ def on_install_zsh_clicked(self, _widget):
             process.wait()
             fn.log_success("zsh installed")
             fn.GLib.idle_add(fn.show_in_app_notification, self, "zsh installed — page updated")
-            fn.GLib.idle_add(self._refresh_zsh_tab)
+            fn.GLib.idle_add(self.zsh_status_lbl.set_markup, "Zsh is <b>installed</b>")
+            fn.GLib.idle_add(self.zsh_config_section.set_sensitive, True)
         except Exception as e:
             fn.log_error(f"Error installing zsh: {e}")
 
