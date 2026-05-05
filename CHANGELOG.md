@@ -1,5 +1,21 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Wallpaper: Demote verbose thumb-load message to debug-only
+
+### What Changed
+
+- `_populate_wallpaper_thumbs` log line "Loading wallpapers from: ..." demoted from `log_subsection` to `debug_print` — it fires on every folder change and adds noise to normal console output
+
+### Technical Details
+
+- `log_subsection` is for user-meaningful events; high-frequency internal status lines belong in `debug_print` (only visible with `--debug` flag)
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/wallpaper.py`
+
+---
+
 ## 2026.05.05 - Codebase Review: Consistency, Performance, and Code Quality
 
 ### What Changed
