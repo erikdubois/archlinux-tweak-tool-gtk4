@@ -589,7 +589,16 @@ def on_click_install_arch_keyring_online(self, _widget):
             fn.debug_print(f"Found package: {package_file}")
             if not fn.os.path.exists(package_file):
                 raise Exception(f"Package file not found: {package_file}")
-            fn.install_local_package(self, package_file)
+            script = f"sudo pacman -U {package_file} --noconfirm; read -p 'Press Enter to close...'"
+            process = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Installation started...")
+            process.wait()
+            fn.log_success("archlinux-keyring installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "archlinux-keyring installed")
         except Exception as error:
             fn.log_error(f"Error: {error}")
             GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")

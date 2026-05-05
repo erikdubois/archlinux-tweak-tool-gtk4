@@ -565,21 +565,27 @@ def is_limine():
 def get_limine_boot_entries():
     """Return list of (index_str, title) parsed from limine.conf.
 
-    Entries are lines starting with '/' (but not '//').
-    Index is 1-based, matching limine's default_entry numbering.
+    All entry lines at any depth are counted for correct default_entry indexing.
+    Only levels 1 (/) and 2 (//) are returned for display in the dropdown.
     """
     path = get_limine_conf_path()
     if not path:
         return []
     entries = []
+    index = 0
     try:
         with open(path, "r", encoding="utf-8") as f:
             for line in f:
                 stripped = line.strip()
-                if stripped.startswith("/") and not stripped.startswith("//"):
-                    title = stripped[1:].strip().replace("\\/", "/")
-                    if title:
-                        entries.append((str(len(entries) + 1), title))
+                if not stripped.startswith("/"):
+                    continue
+                level = len(stripped) - len(stripped.lstrip("/"))
+                title = stripped[level:].strip().replace("\\/", "/").lstrip("+").strip()
+                if not title:
+                    continue
+                index += 1
+                if level <= 2:
+                    entries.append((str(index), title))
     except Exception:
         pass
     return entries
