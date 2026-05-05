@@ -718,10 +718,11 @@ Activate the necessary repos"
     #                       PACK TO STACK
     # ==================================================================
 
-    stack.add_titled(vboxstack1, "stack1", "BASH")
-    stack.add_titled(vboxstack2, "stack2", "ZSH")
+    active_shell = fn.get_shell()
+    stack.add_titled(vboxstack1, "stack1", "BASH (active)" if active_shell == "bash" else "BASH")
+    stack.add_titled(vboxstack2, "stack2", "ZSH (active)" if active_shell == "zsh" else "ZSH")
     if not fn.distr == "archcraft":
-        stack.add_titled(vboxstack3, "stack3", "FISH")
+        stack.add_titled(vboxstack3, "stack3", "FISH (active)" if active_shell == "fish" else "FISH")
     stack.add_titled(vboxstack4, "stack4", "EXTRA")
 
     vbox.append(stack_switcher)

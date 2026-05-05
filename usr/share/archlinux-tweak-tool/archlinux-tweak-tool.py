@@ -83,7 +83,7 @@ class Main(Gtk.ApplicationWindow):
         print("EndeavourOS, Garuda, Liya, LinuxHub Prime, Mabox, Manjaro, Nyarch, ParchLinux,")
         print("PrismLinux, RebornOS, StormOS (other Arch-based distros supported)")
         print("=" * 75)
-        print("Backups: Files modified by ATT are backed up (.bak extension)")
+        print("Backups: Files modified by ATT are backed up (-bak extension)")
         print("Support: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
         print("=" * 75)
 
