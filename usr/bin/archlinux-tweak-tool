@@ -6,75 +6,81 @@
 echo "---------------------------------------------------------------------------"
 echo "[INFO]: Checking session"
 test $(whoami) == "root" && echo "[ERROR]: Do not run this script as root." && exit 1
-test -z $DISPLAY && echo "[ERROR]: DISPLAY variable is not set." && exit 1
+
+# Allow launch if either X11 DISPLAY or Wayland display is available
+if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]]; then
+    echo "[ERROR]: Neither DISPLAY nor WAYLAND_DISPLAY is set."
+    exit 1
+fi
 
 # check session is either one of X11, Wayland or TTY
 SESSION=$(loginctl show-session $(loginctl|grep $(whoami) | awk '{print $1}') -p Type | awk -F= '{print $2}' | grep "x11\|wayland\|tty")
 test -z "$SESSION" && echo "[ERROR]: Failed to verify session for user, SESSION = $SESSION" && exit 1
 
-XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ')
-test -z "$XAUTHORITY" && echo "[ERROR]: XAUTHORIY file is not set" && exit 1
-test -s "$XAUTHORITY" || touch "$XAUTHORITY"
+# xauth checks are only relevant on X11 / XWayland
+if [[ -n "$DISPLAY" ]]; then
+    XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ')
+    test -z "$XAUTHORITY" && echo "[ERROR]: XAUTHORITY file is not set" && exit 1
+    test -s "$XAUTHORITY" || touch "$XAUTHORITY"
 
-XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
-test $XAUTH_HONORED = "yes" || echo "[ERROR]: Xauth changes honored = no, restart X server" || exit 1
+    XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
+    if [[ "$XAUTH_HONORED" != "yes" ]]; then
+        echo "[ERROR]: Xauth changes honored = no, restart X server"
+        exit 1
+    fi
 
-echo "[INFO]: XAUTHORITY = $XAUTHORITY"
+    echo "[INFO]: XAUTHORITY = $XAUTHORITY"
+fi
+
 echo "[INFO]: DBUS_SESSION_BUS_ADDRESS = $DBUS_SESSION_BUS_ADDRESS"
 echo "[INFO]: DESKTOP SESSION = $DESKTOP_SESSION"
 
 function start_in_wayland() {
   echo "[INFO]: Starting in Wayland session"
-  xauth gen $DISPLAY &> /dev/null
-  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  [[ -n "$DISPLAY" ]] && xauth gen "$DISPLAY" &> /dev/null
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 function start_in_x11() {
   echo "[INFO]: Starting in X11 session"
-  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 function start_in_tty() {
   echo "[INFO]: Starting in TTY session"
-  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
 }
 
 case "$SESSION" in
     "wayland")
-      # Wayland session, generate Xauth session cookie for $DISPLAY
       echo "[INFO]: Display = $DISPLAY"
+      echo "[INFO]: WAYLAND_DISPLAY = $WAYLAND_DISPLAY"
       echo "[INFO]: Session = $SESSION"
-      start_in_wayland
+      start_in_wayland "$@"
     ;;
     "x11")
-      # X11 session, don't do anything here
       echo "[INFO]: Display = $DISPLAY"
       echo "[INFO]: Session = $SESSION"
-
-      # just show msg on whether the Xauth session cookie is setup
-      start_in_x11
+      start_in_x11 "$@"
     ;;
     "tty")
-      # TTY session, as user may not use a display manager
       echo "[INFO]: Display = $DISPLAY"
       echo "[INFO]: Session = $SESSION"
-
-      start_in_tty
+      start_in_tty "$@"
     ;;
     *)
-      # anything here is an unknown session, fallback to XDG_SESSION_TYPE
       echo "[INFO]: Display = $DISPLAY"
       echo "[WARN]: Session could not be verified, using XDG_SESSION_TYPE"
 
       case "$XDG_SESSION_TYPE" in
         "wayland")
-          start_in_wayland
+          start_in_wayland "$@"
         ;;
         "tty")
-          start_in_tty
+          start_in_tty "$@"
         ;;
         "x11")
-          start_in_x11
+          start_in_x11 "$@"
         ;;
         *)
           echo "[ERROR]: $XDG_SESSION_TYPE is empty, cannot continue"
