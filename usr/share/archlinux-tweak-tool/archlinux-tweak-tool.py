@@ -80,7 +80,7 @@ class Main(Gtk.ApplicationWindow):
         print("=" * 75)
         print("Supported distributions: Arch, ArchBang, Archcraft, Archman, Artix, Axyl,")
         print("BerserkerOS, BigLinux, BlendOS, Bluestar, CachyOS, Calam-arch, Crystal Linux,")
-        print("EndeavourOS, Garuda, Liya, LinuxHub Prime, Mabox, Manjaro, Nyarch, ParchLinux,")
+        print("EndeavourOS, Garuda, Liya, LinuxHub Prime, Mabox, Manjaro, Nyarch, Omarchy, ParchLinux,")
         print("PrismLinux, RebornOS, StormOS (other Arch-based distros supported)")
         print("=" * 75)
         print("Backups: Files modified by ATT are backed up (-bak extension)")

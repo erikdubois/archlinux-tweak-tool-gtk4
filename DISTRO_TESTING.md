@@ -6,3 +6,4 @@ This file tracks compatibility testing of ArchLinux Tweak Tool (ATT) across supp
 | ------ | ------- | ------- |
 | Kiro | v26.05.01.01 | <a href="https://sourceforge.net/projects/kiro/files/" target="_blank">sourceforge.net/projects/kiro</a> |
 | Arch Linux | 2026.05.01 | <a href="https://archlinux.org" target="_blank">archlinux.org</a> |
+| Omarchy | 3.7.0-2 | <a href="https://omarchy.org" target="_blank">omarchy.org</a> |
