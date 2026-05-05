@@ -23,10 +23,15 @@ if [[ "$SESSION" == "x11" ]]; then
     test -z "$XAUTHORITY" && echo "[ERROR]: XAUTHORITY file is not set" && exit 1
     test -s "$XAUTHORITY" || touch "$XAUTHORITY"
 
-    XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
+    for i in {1..5}; do
+        XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
+        [[ "$XAUTH_HONORED" == "yes" ]] && break
+        echo "[WARN]: Xauth changes honored = no, retrying ($i/5)..."
+        sleep 1
+    done
+
     if [[ "$XAUTH_HONORED" != "yes" ]]; then
-        echo "[ERROR]: Xauth changes honored = no, restart X server"
-        exit 1
+        echo "[WARN]: Xauth changes honored still no after 5s, continuing anyway"
     fi
 
     echo "[INFO]: XAUTHORITY = $XAUTHORITY"
