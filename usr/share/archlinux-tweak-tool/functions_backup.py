@@ -231,7 +231,7 @@ def backup_user_configs():
     else:
         fn.debug_print("/etc/hosts not found")
 
-    # Fastfetch config
+    # Fastfetch config — backup only; ATT jsonc placement happens on install toggle
     if fn.path.isfile(fn.fastfetch_config):
         if not fn.path.isfile(fn.fastfetch_config + ".bak"):
             try:
@@ -246,8 +246,6 @@ def backup_user_configs():
                 fn.log_error(str(error))
         else:
             fn.debug_print("fastfetch.json.bak already exists, skipping")
-    else:
-        fn.debug_print(f"fastfetch config not found at {fn.fastfetch_config}")
 
     # Bash config
     if fn.path.isfile(fn.bash_config):
@@ -284,19 +282,6 @@ def backup_user_configs():
             fn.debug_print(".zshrc.bak already exists, skipping")
     else:
         fn.debug_print(f"zshrc not found at {fn.zsh_config}")
-
-    # Create default zshrc if missing
-    if not fn.path.isfile(fn.zsh_config):
-        try:
-            fn.debug_print(f"zshrc missing, copying default from {fn.zshrc_kiro}")
-            fn.log_info_concise(f"  From: {fn.zshrc_kiro}")
-            fn.log_info_concise(f"  To:   {fn.home}")
-            fn.shutil.copy(fn.zshrc_kiro, fn.home)
-            fn.permissions(fn.home + "/.zshrc")
-            fn.debug_print("✓ Default .zshrc installed")
-        except Exception as error:
-            fn.debug_print(f"Error installing default zshrc: {error}")
-            fn.log_error(str(error))
 
     # Pacman config
     if fn.path.isfile(fn.pacman):

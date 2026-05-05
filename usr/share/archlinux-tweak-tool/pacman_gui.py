@@ -142,7 +142,7 @@ def gui(self, Gtk, vboxstack1, fn):
     self.chaotic_switch = Gtk.Switch()
     self.chaotic_switch.connect("notify::active", functools.partial(pacman.on_chaotic_toggle, self))
     label_chaotic = Gtk.Label(xalign=0)
-    label_chaotic.set_markup("Enable Chaotic-AUR repo")
+    label_chaotic.set_markup("Enable Chaotic-Aur repo")
 
     # ========================================================
     #               CUSTOM REPO

@@ -402,6 +402,7 @@ def on_extra_shell_applications_remove_clicked(self, _widget):
             installed = fn.check_package_installed(pkg)
             fn.GLib.idle_add(cb.set_active, installed)
             fn.log_item(f"  {pkg:<20} {'OK' if installed else 'NOT INSTALLED'}")
+        fn.GLib.idle_add(self.select_all.set_active, False)
         fn.GLib.idle_add(fn.log_success, "Extra shell applications removal done")
         fn.GLib.idle_add(fn.show_in_app_notification, self, "Extra shell applications removed")
 

@@ -816,6 +816,8 @@ def on_d_combo_changed(self, widget, pspec=None):
 
 def on_install_clicked(self, _widget):
     fn.create_log(self)
+    fn.log_warn("chaotic-AUR and nemesis_repo must be enabled — many desktop packages are sourced from these repos")
+    fn.show_in_app_notification(self, "Enable chaotic-AUR and nemesis_repo before installing a desktop")
     fn.debug_print("installing " + fn.get_combo_text(self.d_combo))
     check_lock(self, fn.get_combo_text(self.d_combo))
 
