@@ -18,7 +18,7 @@ SESSION=$(loginctl show-session $(loginctl|grep $(whoami) | awk '{print $1}') -p
 test -z "$SESSION" && echo "[ERROR]: Failed to verify session for user, SESSION = $SESSION" && exit 1
 
 # xauth checks are only relevant on X11 / XWayland
-if [[ -n "$DISPLAY" ]]; then
+if [[ "$SESSION" == "x11" ]]; then
     XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ')
     test -z "$XAUTHORITY" && echo "[ERROR]: XAUTHORITY file is not set" && exit 1
     test -s "$XAUTHORITY" || touch "$XAUTHORITY"
