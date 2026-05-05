@@ -185,7 +185,7 @@ def on_stop_wallpaper_loading(self, _widget=None):
 
 
 def _populate_wallpaper_thumbs(self, folder_path):
-    fn.log_subsection(f"Loading wallpapers from: {folder_path}")
+    fn.debug_print(f"Loading wallpapers from: {folder_path}")
     self._wp_load_gen = getattr(self, "_wp_load_gen", 0) + 1
     current_gen = self._wp_load_gen
 

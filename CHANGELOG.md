@@ -1,5 +1,47 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Codebase Review: Consistency, Performance, and Code Quality
+
+### What Changed
+
+- Masterplan task list fully audited — all previously completed tasks marked done
+- Full three-agent codebase review (consistency, performance, code quality) run against all Python files
+- Fixed 8 GTK callback violations: unused widget param renamed `widget` → `_widget` in `fastfetch.py`, `autostart.py`, `packages.py`
+- Renamed all numbered widget names in `autostart.py` (`vbox1`–`vbox6`, `hbox2`–`hbox4`) to descriptive identifiers
+- Consolidated three independent implementations of the chaotic-AUR / nemesis repo check into the canonical `fn.check_chaotic_aur_active()` and `fn.check_nemesis_repo_active()`; fixed bug in `check_nemesis_repo_active()` which returned `None` instead of `False` when repo was absent
+- Extracted shared icon-scan logic from `maintenance.py` and `sddm.py` into `fn.list_cursor_themes()`; dropped unused `self` param from `sddm.pop_gtk_cursor_names`; removed O(N² log N) in-loop sort
+- `/etc/pacman.conf` now cached after first read; all read-only functions use the cache; every write path calls `fn.invalidate_pacman_conf_cache()` — eliminates ~23 redundant file reads at startup
+- `user.py` `create_user()` moved to daemon thread via `on_click_user_apply`; `subprocess.call()` replaced with `Popen().wait()`
+- Added `fn.display_manager_service` constant; removed duplicate hardcoded path from `sddm.py` and `sddm_gui.py`
+- Removed all redundant `f.close()` / `myfile.close()` calls inside `with` blocks across `sddm.py`, `pacman_functions.py`, `insert_repo()`
+
+### Technical Details
+
+- `check_nemesis_repo_active()` / `check_chaotic_aur_active()` in `functions.py` now call `get_pacman_conf_lines()` instead of opening the file; `check_repo()` and `repo_exist()` in `pacman_functions.py` same; cache is a module-level `_pacman_conf_cache` list, invalidated on every write to pacman.conf
+- `is_chaotic_aur_enabled()` deleted from `kernel.py` and `pacman_functions.py`; 3 call sites in `kernel_gui.py` and 1 in `pacman_gui.py` redirected to `fn.check_chaotic_aur_active()`
+- `fn.list_cursor_themes()` added to `functions.py` using `os.listdir` + `path_check`; both `pop_gtk_cursor_names` functions rewritten to call it; `sddm.py` version drops `self`, removes the in-loop sort at line 303 and the redundant final sort
+- `on_click_user_apply` wraps `create_user()` in a `threading.Thread(daemon=True)`; `pop_cbt_users` called via `GLib.idle_add` after thread completes
+- All changes pass `flake8 --max-line-length=120`
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/pacman_functions.py`
+- `usr/share/archlinux-tweak-tool/pacman.py`
+- `usr/share/archlinux-tweak-tool/kernel.py`
+- `usr/share/archlinux-tweak-tool/kernel_gui.py`
+- `usr/share/archlinux-tweak-tool/pacman_gui.py`
+- `usr/share/archlinux-tweak-tool/sddm.py`
+- `usr/share/archlinux-tweak-tool/sddm_gui.py`
+- `usr/share/archlinux-tweak-tool/maintenance.py`
+- `usr/share/archlinux-tweak-tool/fastfetch.py`
+- `usr/share/archlinux-tweak-tool/autostart.py`
+- `usr/share/archlinux-tweak-tool/packages.py`
+- `usr/share/archlinux-tweak-tool/user.py`
+- `CLAUDE.md` (masterplan task list updated)
+
+---
+
 ## 2026.05.05 - Wallpaper Tab: New Page with Variety + ATT Picker
 
 ### What Changed
