@@ -420,7 +420,10 @@ def on_apply_fast(self, _widget):
     fn.log_subsection("Apply Fastfetch configuration")
     if not self.fast_util.get_active():
         fn.log_info("Fastfetch was not enabled — enabling now")
+        self.ff_initializing = True
         self.fast_util.set_active(True)
+        self.ff_initializing = False
+        write_configs(True, self.fast_lolcat.get_active())
     small_ascii = "auto"
     backend = "off"
     apply_config(self, backend, small_ascii)
