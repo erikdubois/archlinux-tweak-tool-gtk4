@@ -169,7 +169,10 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
             hbox_cursor.append(self.sddm_cursor_themes)
 
             hbox_apply = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-            btn_apply_settings = Gtk.Button(label="Apply the above mentioned settings")
+            btn_apply_settings = Gtk.Button()
+            btn_apply_lbl = Gtk.Label()
+            btn_apply_lbl.set_markup("<b>Apply the above mentioned settings</b>")
+            btn_apply_settings.set_child(btn_apply_lbl)
             btn_apply_settings.connect("clicked", functools.partial(sddm.on_click_sddm_apply, self))
             btn_apply_settings.set_margin_start(10)
             btn_apply_settings.set_margin_end(10)

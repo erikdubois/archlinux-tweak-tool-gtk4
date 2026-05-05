@@ -329,6 +329,7 @@ def install_oh_my_zsh(self, _widget):
             fn.GLib.idle_add(fn.show_in_app_notification, self, "oh-my-zsh-git installed")
             fn.GLib.idle_add(_refresh_zsh_omz_lbl, self)
             fn.GLib.idle_add(_refresh_termset_sensitive, self)
+            fn.GLib.idle_add(_refresh_zsh_themes_dropdown, self)
         except Exception as e:
             fn.log_error(f"Error: {e}")
 
@@ -426,9 +427,25 @@ def on_select_all_toggle(self, _widget, active):
         self.fzf.set_active(True)
 
 
-def on_clicked_install_only_zsh(self, _widget):
-    fn.install_package(self, "zsh")
-    fn.restart_program()
+def on_install_zsh_clicked(self, _widget):
+    fn.log_subsection("Install Zsh")
+    if fn.check_package_installed("zsh"):
+        fn.log_info("zsh is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "zsh is already installed")
+        return
+    process = fn.launch_pacman_install_in_terminal("zsh")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Installing zsh...")
+
+    def wait_install():
+        try:
+            process.wait()
+            fn.log_success("zsh installed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "zsh installed — page updated")
+            fn.GLib.idle_add(self._refresh_zsh_tab)
+        except Exception as e:
+            fn.log_error(f"Error installing zsh: {e}")
+
+    fn.threading.Thread(target=wait_install, daemon=True).start()
 
 
 def _refresh_zsh_completions_lbl(self):
@@ -456,6 +473,13 @@ def _refresh_termset_sensitive(self):
     installed = fn.check_package_installed("oh-my-zsh-git")
     self.termset.set_sensitive(installed)
     self.zsh_themes.set_sensitive(installed)
+
+
+def _refresh_zsh_themes_dropdown(self):
+    if fn.check_package_installed("oh-my-zsh-git"):
+        zsh_theme.get_themes(self.zsh_themes)
+    else:
+        self.zsh_themes.set_model(fn.Gtk.StringList.new([]))
 
 
 def on_install_zsh_completions_clicked(self, _widget):
@@ -558,9 +582,7 @@ def remove_oh_my_zsh(self, _widget):
             fn.GLib.idle_add(fn.show_in_app_notification, self, "oh-my-zsh-git removed")
             fn.GLib.idle_add(_refresh_zsh_omz_lbl, self)
             fn.GLib.idle_add(_refresh_termset_sensitive, self)
-            from zsh_theme import get_themes
-            fn.GLib.idle_add(get_themes, self.zsh_themes)
-            fn.GLib.idle_add(self.zsh_themes.set_sensitive, False)
+            fn.GLib.idle_add(_refresh_zsh_themes_dropdown, self)
         except Exception as e:
             fn.log_error(f"Error: {e}")
 

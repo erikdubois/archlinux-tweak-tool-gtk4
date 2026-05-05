@@ -2132,6 +2132,9 @@ def refresh_all_cursor_dropdowns(self):
 def update_image(self, widget, image, theme_type, att_base, image_width, image_height):
     from gi.repository import Gdk, GdkPixbuf
 
+    if get_combo_text(widget) is None:
+        return
+
     sample_path = ""
     preview_path = ""
     random_option = False
