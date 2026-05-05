@@ -75,17 +75,17 @@ def _read_gtk_theme():
 
 class Main(Gtk.ApplicationWindow):
     def __init__(self, app):
-        print("-" * 75)
+        print("=" * 75)
         print("Arch Linux Tweak Tool - Error reporting: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
-        print("-" * 75)
+        print("=" * 75)
         print("Supported distributions: Arch, ArchBang, Archcraft, Archman, Artix, Axyl,")
         print("BerserkerOS, BigLinux, BlendOS, Bluestar, CachyOS, Calam-arch, Crystal Linux,")
         print("EndeavourOS, Garuda, Liya, LinuxHub Prime, Mabox, Manjaro, Nyarch, ParchLinux,")
         print("PrismLinux, RebornOS, StormOS (other Arch-based distros supported)")
-        print("-" * 75)
+        print("=" * 75)
         print("Backups: Files modified by ATT are backed up (.bak extension)")
         print("Support: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
-        print("-" * 75)
+        print("=" * 75)
 
         _gtk_theme = _read_gtk_theme()
         if _gtk_theme:
@@ -93,10 +93,10 @@ class Main(Gtk.ApplicationWindow):
             base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
             dark_str = " (dark mode)" if is_dark else ""
             print(f"[System] Distro={fn.distr} | Theme={base_theme}{dark_str} | User={fn.sudo_username}", flush=True)
-            print("-" * 75)
+            print("=" * 75)
         else:
             print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
-            print("-" * 75)
+            print("=" * 75)
         fn.log_info(
             "To unlock all features, add Chaotic-AUR and Nemesis repo to your pacman.conf.\n"
             "For terminal operations and full transparency, alacritty must be installed"
@@ -299,21 +299,23 @@ class Main(Gtk.ApplicationWindow):
 
         fn.debug_print(f"[TIMING] Background init total: {t_bg:.3f}s")
         fn.debug_print("")
-        fn.debug_print("=" * 85)
+        fn.debug_print("=" * 75)
         fn.debug_print("BACKGROUND INIT TIMING SUMMARY")
-        fn.debug_print("=" * 85)
+        fn.debug_print("=" * 75)
         fn.debug_print(f"{'Component':<40} {'Time (s)':<12}")
-        fn.debug_print("-" * 85)
+        fn.debug_print("=" * 75)
         fn.debug_print(f"{'GTK config backup':<40} {t1_end - t1:>11.3f}s")
         fn.debug_print(f"{'System config backup':<40} {t2_end - t2:>11.3f}s")
         fn.debug_print(f"{'User config backup':<40} {t3_end - t3:>11.3f}s")
         fn.debug_print(f"{'Fix permissions':<40} {t4_end - t4:>11.3f}s")
-        fn.debug_print("-" * 85)
+        fn.debug_print("=" * 75)
         fn.debug_print(f"{'TOTAL (background init)':<40} {t_bg:>11.3f}s")
         fn.debug_print(f"{'TOTAL (incl. window setup)':<40} {total_time - startup_start:>11.3f}s")
-        fn.debug_print("=" * 85)
+        fn.debug_print("=" * 75)
         fn.debug_print("")
         fn.debug_print(f"[RESPONSIVE] All init complete after {total_time - startup_start:.3f}s")
+        fn.log_info("To unlock all features, add Chaotic-AUR and Nemesis repo to your pacman.conf.")
+        fn.log_info("For terminal operations and full transparency, alacritty must be installed.")
         GLib.idle_add(lambda: setattr(self, "initializing", False) or False)
 
     def on_refresh_att_clicked(self, _widget):

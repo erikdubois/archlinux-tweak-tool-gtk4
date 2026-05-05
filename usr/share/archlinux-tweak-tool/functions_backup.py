@@ -8,8 +8,9 @@ import os
 
 def backup_gtk_config():
     fn.log_subsection("Backing up GTK config")
+    fn.log_info("  ATT runs as root; copying user GTK 3/4 config so the app respects your desktop theme")
     fn.debug_print("backup_gtk_config() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     if fn.path.isdir(fn.home + "/.config/gtk-3.0"):
         fn.debug_print(f"Found GTK-3.0 config at {fn.home}/.config/gtk-3.0")
@@ -75,15 +76,15 @@ def backup_gtk_config():
     else:
         fn.debug_print("xsettingsd config not found")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("backup_gtk_config() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
 
 def backup_system_configs():
     fn.log_subsection("Backing up system config files")
     fn.debug_print("backup_system_configs() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     if fn.path.isfile(fn.sddm_default_d1):
         if not fn.path.isfile(fn.sddm_default_d1_bak):
@@ -168,15 +169,15 @@ def backup_system_configs():
     else:
         fn.debug_print("/etc/nsswitch.conf not found")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("backup_system_configs() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
 
 def backup_user_configs():
     fn.log_subsection("Backing up user config files")
     fn.debug_print("backup_user_configs() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     # Fish shell config
     fish_config = fn.home + "/.config/fish/config.fish"
@@ -350,6 +351,6 @@ def backup_user_configs():
     else:
         fn.debug_print(f"alacritty config not found at {fn.alacritty_config}")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("backup_user_configs() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)

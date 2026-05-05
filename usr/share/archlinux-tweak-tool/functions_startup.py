@@ -61,7 +61,7 @@ def init_repos_and_sddm(self):
 def setup_icon_theme():
     fn.log_subsection("Setting up icon/cursor theme defaults")
     fn.debug_print("setup_icon_theme() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     if fn.path.isfile("/usr/share/icons/default"):
         fn.debug_print("Found /usr/share/icons/default as file, removing")
@@ -114,15 +114,15 @@ def setup_icon_theme():
     else:
         fn.debug_print("index.theme already exists, skipping")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("setup_icon_theme() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
 
 def setup_fastfetch_config():
     fn.log_subsection("Setting up fastfetch config")
     fn.debug_print("setup_fastfetch_config() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     if not fn.path.isfile(fn.fastfetch_config):
         fn.debug_print(f"fastfetch config not found at {fn.fastfetch_config}")
@@ -139,15 +139,15 @@ def setup_fastfetch_config():
     else:
         fn.debug_print(f"fastfetch config already exists at {fn.fastfetch_config}")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("setup_fastfetch_config() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
 
 def fix_permissions():
     fn.log_subsection("Checking file permissions")
     fn.debug_print("fix_permissions() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     fn.debug_print("Checking directory permissions")
     a1 = fn.stat(fn.home + "/.config/autostart")
@@ -190,6 +190,6 @@ def fix_permissions():
     else:
         fn.debug_print("archlinux-tweak-tool permissions are correct (user-owned)")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("fix_permissions() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)

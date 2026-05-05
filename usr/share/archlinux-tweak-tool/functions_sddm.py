@@ -9,7 +9,7 @@ from gi.repository import GLib
 def setup_sddm_config(self, sddm):
     fn.log_subsection("Setting up SDDM configuration")
     fn.debug_print("setup_sddm_config() START")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     if fn.path.isfile(fn.sddm_default_d2):
         fn.debug_print(f"Found SDDM config: {fn.sddm_default_d2}")
@@ -69,6 +69,6 @@ def setup_sddm_config(self, sddm):
     else:
         fn.debug_print("SDDM binary not found at /usr/bin/sddm, skipping configuration")
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print("setup_sddm_config() END")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)

@@ -130,7 +130,7 @@ def log_warn(message):
 def log_error(message, lineno=None, cmd=None):
     """Error message (RED with separators)"""
     print()
-    sep = "=" * 72
+    sep = "=" * 75
     print(f"{RED}{sep}{RESET}")
     print(f"{RED}⚠️ ERROR DETECTED{RESET}")
     if lineno:
@@ -904,32 +904,24 @@ def install_package(self, package):
 
 
 def install_local_package(self, package):
-    command = "pacman -U " + package + " --noconfirm"
-    # if more than one package - checf fails and will install
-    try:
-        log_subsection(f"Installing local package: {package}...")
-        debug_print(f"Executing: {command}")
-        debug_print(f"Verifying package file exists: {package}")
-        if not os.path.exists(package):
-            raise Exception(f"Package file not found: {package}")
-        debug_print("Package file verified")
-        result = subprocess.run(
-            command.split(" "),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        if result.returncode == 0:
-            log_success(f"{package} is now installed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now installed")
-        else:
-            error_output = result.stderr if result.stderr else result.stdout
-            log_error(f"Installation failed (exit {result.returncode}): {error_output}")
-            GLib.idle_add(show_in_app_notification, self, f"Installation failed: {error_output[:100]}")
-    except Exception as error:
-        log_error(f"Installation error: {error}")
-        GLib.idle_add(show_in_app_notification, self, f"Installation error: {error}")
+    if not os.path.exists(package):
+        log_error(f"Package file not found: {package}")
+        GLib.idle_add(show_in_app_notification, self, f"File not found: {package}")
+        return
+    log_subsection(f"Installing local package: {package}...")
+    script = f"sudo pacman -U {package} --noconfirm; read -p 'Press Enter to close...'"
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    def wait_and_notify():
+        process.wait()
+        GLib.idle_add(show_in_app_notification, self, f"{os.path.basename(package)} installed")
+
+    threading.Thread(target=wait_and_notify, daemon=True).start()
+    GLib.idle_add(show_in_app_notification, self, "Installation started...")
 
 
 def clear_skel_directory(path="/etc/skel"):
@@ -978,86 +970,6 @@ def remove_package(self, package):
     except Exception as error:
         log_error(f"Error removing {package}: {error}")
         GLib.idle_add(show_in_app_notification, self, f"Error removing {package}: {error}")
-
-
-def remove_package_s(self, package):
-    command = "pacman -Rs " + package + " --noconfirm"
-    if check_package_installed(package):
-        log_subsection(f"Removing {package}...")
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            log_success(f"{package} is now removed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now removed")
-        except Exception as error:
-            log_error(f"Error removing {package}: {error}")
-    else:
-        log_warn(f"{package} is already removed")
-        GLib.idle_add(show_in_app_notification, self, package + " is already removed")
-
-
-def remove_package_rns(self, package):
-    command = "pacman -Rns " + package + " --noconfirm"
-    if check_package_installed(package):
-        log_subsection(f"Removing {package}...")
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            log_success(f"{package} is now removed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now removed")
-        except Exception as error:
-            log_error(f"Error removing {package}: {error}")
-    else:
-        log_warn(f"{package} is already removed")
-        GLib.idle_add(show_in_app_notification, self, package + " is already removed")
-
-
-def remove_package_ss(self, package):
-    command = "pacman -Rss " + package + " --noconfirm"
-    if check_package_installed(package):
-        log_subsection(f"Removing {package}...")
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            log_success(f"{package} is now removed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now removed")
-        except Exception as error:
-            log_error(f"Error removing {package}: {error}")
-    else:
-        log_warn(f"{package} is already removed")
-        GLib.idle_add(show_in_app_notification, self, package + " is already removed")
-
-
-def remove_package_dd(self, package):
-    command = "pacman -Rdd " + package + " --noconfirm"
-    if check_package_installed(package):
-        log_subsection(f"Removing {package}...")
-        try:
-            subprocess.call(
-                command.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            log_success(f"{package} is now removed")
-            GLib.idle_add(show_in_app_notification, self, package + " is now removed")
-        except Exception as error:
-            log_error(f"Error removing {package}: {error}")
-    else:
-        log_warn(f"{package} is already removed")
-        GLib.idle_add(show_in_app_notification, self, package + " is already removed")
 
 
 def update_repos(self):
@@ -1986,133 +1898,6 @@ def hblock_get_state(self):
 def do_pulse(data, prog):
     prog.pulse()
     return True
-
-
-def set_hblock(self, toggle, state):
-    GLib.idle_add(toggle.set_sensitive, False)
-    GLib.idle_add(self.label7.set_visible, True)
-    GLib.idle_add(self.progress.set_visible, True)
-    GLib.idle_add(self.label7.set_text, "Run..")
-    GLib.idle_add(self.progress.set_fraction, 0.2)
-
-    timeout_id = None
-    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
-
-    if not path.isfile("/etc/hosts.bak"):
-        log_info_concise("  From: /etc/hosts")
-        log_info_concise("  To:   /etc/hosts.bak")
-        shutil.copy("/etc/hosts", "/etc/hosts.bak")
-
-    try:
-        install = "pacman -S edu-hblock-git --needed --noconfirm"
-        enable = "/usr/bin/hblock"
-
-        if state:
-            if path.exists("/usr/bin/hblock"):
-                GLib.idle_add(self.label7.set_text, "Database update...")
-                subprocess.call(
-                    [enable],
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-            else:
-                GLib.idle_add(self.label7.set_text, "Install Hblock......")
-                subprocess.call(
-                    install.split(" "),
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                GLib.idle_add(self.label7.set_text, "Database update...")
-                subprocess.call(
-                    [enable],
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-
-        else:
-            GLib.idle_add(self.label7.set_text, "Remove update...")
-            subprocess.run(
-                ["sh", "-c", "HBLOCK_SOURCES='' /usr/bin/hblock"],
-                check=True,
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-        GLib.idle_add(self.label7.set_text, "Complete")
-        GLib.source_remove(timeout_id)
-        timeout_id = None
-        GLib.idle_add(self.progress.set_fraction, 0)
-
-        GLib.idle_add(toggle.set_sensitive, True)
-        if state:
-            GLib.idle_add(self.label7.set_text, "HBlock Active")
-        else:
-            GLib.idle_add(self.label7.set_text, "HBlock Inactive")
-        GLib.idle_add(self.label7.set_visible, False)
-        GLib.idle_add(self.progress.set_visible, False)
-
-    except Exception as error:
-        messagebox(self, "ERROR!!", str(error))
-        debug_print(error)
-
-
-def ublock_get_state(self):
-    if path.exists("/usr/lib/firefox/browser/extensions/uBlock0@raymondhill.net.xpi"):
-        return True
-    return False
-
-
-def set_firefox_ublock(self, toggle, state):
-    GLib.idle_add(toggle.set_sensitive, False)
-    GLib.idle_add(self.label7.set_visible, True)
-    GLib.idle_add(self.progress.set_visible, True)
-    GLib.idle_add(self.label7.set_text, "Run..")
-    GLib.idle_add(self.progress.set_fraction, 0.2)
-
-    timeout_id = None
-    timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
-
-    try:
-        install_ublock = "pacman -S firefox-ublock-origin --needed --noconfirm"
-        uninstall_ublock = "pacman -Rs firefox-ublock-origin --noconfirm"
-
-        if state:
-            GLib.idle_add(self.label7.set_text, "Installing ublock Origin...")
-            subprocess.call(
-                install_ublock.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        else:
-            GLib.idle_add(self.label7.set_text, "Removing ublock Origin...")
-            subprocess.call(
-                uninstall_ublock.split(" "),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-        GLib.idle_add(self.label7.set_text, "Complete")
-        GLib.source_remove(timeout_id)
-        timeout_id = None
-        GLib.idle_add(self.progress.set_fraction, 0)
-
-        GLib.idle_add(toggle.set_sensitive, True)
-        if state:
-            GLib.idle_add(self.label7.set_text, "uBlock Origin installed")
-        else:
-            GLib.idle_add(self.label7.set_text, "uBlock Origin removed")
-        GLib.idle_add(self.label7.set_visible, False)
-        GLib.idle_add(self.progress.set_visible, False)
-
-    except Exception as error:
-        messagebox(self, "ERROR!!", str(error))
-        debug_print(error)
 
 
 # =====================================================

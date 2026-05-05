@@ -302,7 +302,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         self.get_application().quit()
         fn.debug_print("Thanks for using ArchLinux Tweak Tool")
         fn.debug_print("Report issues to make it even better")
-        fn.debug_print("---------------------------------------------------------------------------")
+        fn.debug_print("=" * 75)
 
     lbl_distro = Gtk.Label(xalign=0)
     lbl_distro.set_markup("Working on\n" + fn.change_distro_label(fn.distr))

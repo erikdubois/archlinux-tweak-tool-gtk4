@@ -388,14 +388,14 @@ def set_global_cursor(self, cursor):
     if fn.path.exists("/usr/bin/sddm"):
         apply_target("sddm", _set_sddm_cursor, cursor)
 
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
     fn.debug_print(f"[INFO] Cursor theme successfully saved: {cursor}")
     fn.debug_print("[INFO] Modified locations:")
     for target in changed:
         fn.debug_print(f"[INFO]  - {target}")
     if failed:
         fn.debug_print(f"[WARNING] Failed cursor targets: {', '.join(failed)}")
-    fn.debug_print("=" * 85)
+    fn.debug_print("=" * 75)
 
     fn.log_info_concise(f"Cursor theme '{cursor}' applied to:")
     for target in changed:

@@ -163,15 +163,19 @@ def on_click_ai_aider(self, _widget):
 
             def wait_install():
                 try:
-                    import time
                     process.wait()
-                    time.sleep(1)
-                    fn.subprocess.call(
-                        f"sudo -u {fn.sudo_username} aider-install",
-                        shell=True,
-                        stdout=fn.subprocess.PIPE,
-                        stderr=fn.subprocess.STDOUT,
+                    fn.log_subsection("Running aider-install setup...")
+                    GLib.idle_add(fn.show_in_app_notification, self, "Running aider setup...")
+                    setup_script = (
+                        f"sudo -u {fn.sudo_username} aider-install"
+                        "; read -p 'Press Enter to close...'"
                     )
+                    setup_process = fn.subprocess.Popen(
+                        ["alacritty", "-e", "bash", "-c", setup_script],
+                        stdout=fn.subprocess.PIPE,
+                        stderr=fn.subprocess.PIPE,
+                    )
+                    setup_process.wait()
                     if fn.path.exists("/usr/bin/aider") or fn.path.exists(aider_path):
                         fn.log_success("aider installed successfully")
                         GLib.idle_add(self.lbl_ai_aider.set_markup, "Aider - AI pair programming <b>installed</b>")

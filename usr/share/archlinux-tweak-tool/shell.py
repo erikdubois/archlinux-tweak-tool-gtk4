@@ -121,8 +121,8 @@ def on_install_att_fish_config_clicked(self, _widget):
             fn.log_info_concise(f"  To:   {fn.fish_config}")
             fn.shutil.copy(fn.fish_config_kiro, fn.fish_config)
             fn.debug_print("  Result : copied successfully")
-            fn.permissions(fn.fish_config)
-            fn.debug_print(f"  Perms  : permissions set on {fn.fish_config}")
+            fn.permissions(fn.os.path.dirname(fn.fish_config))
+            fn.debug_print(f"  Perms  : permissions set on {fn.os.path.dirname(fn.fish_config)}")
             fn.log_success("ATT fish configuration applied - open a new terminal to activate")
             fn.GLib.idle_add(fn.show_in_app_notification, self, "ATT config.fish applied - open new terminal")
         else:
