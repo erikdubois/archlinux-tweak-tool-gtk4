@@ -129,6 +129,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     lbl_scale.set_text("Scale:")
     self.wallpaper_scale_combo = Gtk.DropDown.new_from_strings(["Fill", "Fit", "Center", "Tile", "Stretch"])
     self.wallpaper_scale_combo.set_selected(4)
+    _on_wayland = bool(fn.os.environ.get("WAYLAND_DISPLAY"))
 
     btn_apply = Gtk.Button(label="Apply wallpaper")
     btn_apply.connect("clicked", functools.partial(wallpaper.on_apply_wallpaper, self))
@@ -150,6 +151,10 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     lbl_note.set_markup("<i>Tip: source ~/.fehbg in your WM autostart to restore wallpaper on login</i>")
     lbl_note.set_margin_top(4)
     hbox_note.append(lbl_note)
+    if _on_wayland:
+        lbl_scale.set_visible(False)
+        self.wallpaper_scale_combo.set_visible(False)
+        hbox_note.set_visible(False)
 
     # Pack
     vbox.append(hbox_section_variety)
