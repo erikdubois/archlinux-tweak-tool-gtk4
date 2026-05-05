@@ -50,9 +50,11 @@ def gui(self, Gtk, vboxstack, fn):
     vboxstack.append(hbox_notice)
     vboxstack.append(hbox_running)
 
-    # ── Default boot entry (systemd-boot only) ────────────
+    # ── Default boot entry ────────────────────────────────
     if kernel.is_systemd_boot():
         refresh_boot = _build_boot_entry_selector(self, Gtk, vboxstack, fn)
+    elif kernel.is_limine():
+        refresh_boot = _build_limine_entry_selector(self, Gtk, vboxstack, fn)
     else:
         _build_boot_entry_unavailable(Gtk, vboxstack)
         refresh_boot = None
@@ -444,6 +446,91 @@ def _build_boot_entry_selector(self, Gtk, vboxstack, fn):
     return refresh_combo
 
 
+def _build_limine_entry_selector(self, Gtk, vboxstack, fn):
+    boot_entries = kernel.get_limine_boot_entries()
+    if not boot_entries:
+        return None
+
+    current_default = kernel.get_default_limine_entry()
+
+    hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    sep.set_hexpand(True)
+    hbox_sep.append(sep)
+
+    hbox_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl = Gtk.Label(xalign=0)
+    lbl.set_markup("<b>Default Boot Entry (limine)</b>")
+    lbl.set_margin_start(10)
+    lbl.set_margin_end(10)
+    hbox_hdr.append(lbl)
+
+    vboxstack.append(hbox_sep)
+    vboxstack.append(hbox_hdr)
+
+    hbox_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_row.set_margin_start(25)
+    hbox_row.set_margin_end(10)
+
+    combo = Gtk.ComboBoxText()
+    combo.set_hexpand(True)
+    index_to_title = {}
+
+    for idx, title in boot_entries:
+        combo.append(idx, title)
+        index_to_title[idx] = title
+
+    if current_default and current_default in index_to_title:
+        combo.set_active_id(current_default)
+    elif boot_entries:
+        combo.set_active_id(boot_entries[0][0])
+
+    lbl_current = Gtk.Label(xalign=0)
+    lbl_current.set_margin_start(25)
+    if current_default:
+        current_label = index_to_title.get(current_default, current_default)
+        lbl_current.set_markup(f"<small>Current: {current_label}</small>")
+    else:
+        lbl_current.set_markup("<small>Current: unknown</small>")
+
+    def on_set_default(_widget):
+        selected_id = combo.get_active_id()
+        if selected_id:
+            label = index_to_title.get(selected_id, selected_id)
+            fn.log_info(f"Setting limine default boot entry to: {label} (index {selected_id})")
+            success = kernel.set_default_limine_entry(selected_id)
+            if success:
+                fn.log_success(f"Limine default boot entry set to: {label} — Reboot to verify")
+                _refresh_boot_entry_display(label, lbl_current)
+                fn.show_in_app_notification(self, f"Default boot entry set to: {label} — Reboot to verify")
+            else:
+                fn.log_error(f"Failed to set limine default boot entry: {label}")
+                fn.show_in_app_notification(self, f"Failed to set limine default boot entry: {label}")
+
+    btn_set = Gtk.Button(label="Set as Default")
+    btn_set.set_size_request(160, -1)
+    btn_set.connect("clicked", on_set_default)
+
+    hbox_row.append(combo)
+    hbox_row.append(btn_set)
+
+    vboxstack.append(hbox_row)
+    vboxstack.append(lbl_current)
+
+    def refresh_combo():
+        new_entries = kernel.get_limine_boot_entries()
+        combo.remove_all()
+        index_to_title.clear()
+        for idx, title in new_entries:
+            combo.append(idx, title)
+            index_to_title[idx] = title
+        new_default = kernel.get_default_limine_entry()
+        if new_default:
+            combo.set_active_id(new_default)
+
+    return refresh_combo
+
+
 def _build_boot_entry_unavailable(Gtk, vboxstack):
     hbox_sep = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
@@ -459,7 +546,7 @@ def _build_boot_entry_unavailable(Gtk, vboxstack):
 
     hbox_msg = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_msg = Gtk.Label(xalign=0)
-    lbl_msg.set_text("Setting a default boot entry is only available on systemd-boot systems.")
+    lbl_msg.set_text("Setting a default boot entry is only available on systemd-boot and limine systems.")
     lbl_msg.set_margin_start(25)
     lbl_msg.set_margin_end(10)
     lbl_msg.set_margin_top(5)

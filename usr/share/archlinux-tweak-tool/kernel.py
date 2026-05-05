@@ -2,6 +2,7 @@
 # Authors: Erik Dubois
 # ============================================================
 
+import os
 import re
 import functions as fn
 import subprocess
@@ -537,6 +538,97 @@ def set_default_boot_entry(entry_id):
         return True
     except Exception as e:
         fn.log_error(f"set_default_boot_entry error: {e}")
+        return False
+
+
+LIMINE_CONF_PATHS = [
+    "/boot/limine/limine.conf",
+    "/boot/limine.conf",
+    "/limine/limine.conf",
+    "/limine.conf",
+]
+
+
+def get_limine_conf_path():
+    """Return first found limine.conf path, or None."""
+    for path in LIMINE_CONF_PATHS:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def is_limine():
+    """Return True if a limine.conf is found on the system."""
+    return get_limine_conf_path() is not None
+
+
+def get_limine_boot_entries():
+    """Return list of (index_str, title) parsed from limine.conf.
+
+    Entries are lines starting with '/' (but not '//').
+    Index is 1-based, matching limine's default_entry numbering.
+    """
+    path = get_limine_conf_path()
+    if not path:
+        return []
+    entries = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith("/") and not stripped.startswith("//"):
+                    title = stripped[1:].strip().replace("\\/", "/")
+                    if title:
+                        entries.append((str(len(entries) + 1), title))
+    except Exception:
+        pass
+    return entries
+
+
+def get_default_limine_entry():
+    """Return current default_entry value from limine.conf, or None."""
+    path = get_limine_conf_path()
+    if not path:
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip().lower().startswith("default_entry:"):
+                    return line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def set_default_limine_entry(index):
+    """Write default_entry: <index> into limine.conf. Returns True on success."""
+    path = get_limine_conf_path()
+    if not path:
+        fn.log_error("set_default_limine_entry: limine.conf not found")
+        return False
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        new_lines = []
+        found = False
+        for line in lines:
+            if line.strip().lower().startswith("default_entry:"):
+                new_lines.append(f"default_entry: {index}\n")
+                found = True
+            else:
+                new_lines.append(line)
+        if not found:
+            insert_pos = 0
+            for i, line in enumerate(new_lines):
+                if line.strip().lower().startswith("timeout:"):
+                    insert_pos = i + 1
+                    break
+            new_lines.insert(insert_pos, f"default_entry: {index}\n")
+        with open(path, "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+        return True
+    except Exception as e:
+        fn.log_error(f"set_default_limine_entry error: {e}")
         return False
 
 
