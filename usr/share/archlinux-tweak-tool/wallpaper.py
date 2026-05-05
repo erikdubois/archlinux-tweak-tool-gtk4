@@ -463,9 +463,11 @@ def _set_feh(self, path, scale):
 def _set_xfce(self, path, scale):
     fn.log_subsection(f"Applying wallpaper — xfconf-query (XFCE): {path}")
     style = _XFCE_STYLES.get(scale, "5")
+    xfconf = shutil.which("xfconf-query") or "/usr/bin/xfconf-query"
+    fn.debug_print(f"xfconf-query resolved to: {xfconf}")
     try:
         result = fn.subprocess.run(
-            ["xfconf-query", "-c", "xfce4-desktop", "-p", "/backdrop", "-l"],
+            [xfconf, "-c", "xfce4-desktop", "-p", "/backdrop", "-l"],
             capture_output=True, text=True,
         )
         image_props = [
@@ -485,19 +487,17 @@ def _set_xfce(self, path, scale):
             for p in image_props
         ]
         for prop in image_props:
-            fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "string", "-s", path],
-                stderr=fn.subprocess.DEVNULL,
-            )
+            cmd = [xfconf, "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "string", "-s", path]
+            fn.debug_print(f"  CMD: {' '.join(cmd)}")
+            fn.subprocess.run(cmd, stderr=fn.subprocess.DEVNULL)
         for prop in style_props:
-            fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "int", "-s", style],
-                stderr=fn.subprocess.DEVNULL,
-            )
+            cmd = [xfconf, "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "int", "-s", style]
+            fn.debug_print(f"  CMD: {' '.join(cmd)}")
+            fn.subprocess.run(cmd, stderr=fn.subprocess.DEVNULL)
         fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
         fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
     except FileNotFoundError:
-        fn.log_error("xfconf-query not found — is xfce4-settings installed?")
+        fn.log_error(f"xfconf-query not found at: {xfconf}")
         fn.show_in_app_notification(self, "xfconf-query not found")
 
 
