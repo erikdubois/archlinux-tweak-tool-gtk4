@@ -451,6 +451,7 @@ def pop_gtk_cursor_names(combo):
 def _run_terminal(self, cmd, done_msg, start_msg=None):
     if start_msg:
         GLib.idle_add(fn.show_in_app_notification, self, start_msg)
+    fn.debug_print(f"Terminal cmd: {cmd}")
 
     def _wait():
         try:
@@ -546,26 +547,28 @@ def on_click_remove_pacman_lock(self, _widget):
 # Pacman Keyring Management
 def on_click_install_arch_keyring(self, _widget):
     fn.log_subsection("Installing local archlinux-keyring...")
-    GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
-    try:
+
+    def _install():
         base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
         pathway = base_dir + "/data/packages/keyring/"
-        fn.debug_print(f"Package pathway: {pathway}")
         files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
         if not files:
-            raise Exception("No package files found in pathway")
+            fn.log_error("No package files found in keyring pathway")
+            GLib.idle_add(fn.show_in_app_notification, self, "No keyring package found")
+            return
         package_file = fn.os.path.join(pathway, files[0])
         fn.debug_print(f"Found package: {package_file}")
-        if fn.os.path.exists(package_file):
-            size = fn.os.path.getsize(package_file)
-            fn.debug_print(f"Package file size: {size} bytes")
-        else:
-            raise Exception(f"Package file not found: {package_file}")
-        GLib.idle_add(fn.show_in_app_notification, self, "Installing archlinux-keyring...")
-        fn.install_local_package(self, package_file)
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
-        GLib.idle_add(fn.show_in_app_notification, self, f"Installation failed: {error}")
+        cmd = f"sudo pacman -U {package_file}; read -p 'Press Enter to close...'"
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "bash", "-c", cmd],
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.PIPE,
+        ).wait()
+        fn.log_success("archlinux-keyring installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "archlinux-keyring installed")
+
+    GLib.idle_add(fn.show_in_app_notification, self, "Starting archlinux-keyring installation...")
+    fn.threading.Thread(target=_install, daemon=True).start()
 
 
 def on_click_install_arch_keyring_online(self, _widget):
@@ -582,7 +585,7 @@ def on_click_install_arch_keyring_online(self, _widget):
                 " --content-disposition -P" + pathway
             )
             fn.subprocess.Popen(command, shell=True).wait()
-            fn.debug_print("Download completed successfully")
+            fn.log_info("archlinux-keyring download completed")
             GLib.idle_add(fn.show_in_app_notification, self, "Download completed, installing package...")
             files = [f for f in fn.listdir(pathway) if f.endswith(".pkg.tar.zst")]
             if not files:
@@ -626,11 +629,23 @@ def on_click_probe(self, _widget):
 
 def on_click_fix_mainstream(self, _widget):
     fn.log_subsection("Setting mainstream servers...")
-    cmd = (
-        "alacritty -e bash -c "
-        "'/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers; read -p \"Press Enter to close...\"'"
-    )
-    _run_terminal(self, cmd, "Mainstream servers have been saved")
+
+    def _wait():
+        fn.subprocess.Popen(
+            ["alacritty", "-e", "/usr/share/archlinux-tweak-tool/data/bin/set-mainstream-servers"]
+        ).wait()
+        fn.log_success("Mainstream servers have been saved")
+        try:
+            with open(fn.mirrorlist, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        fn.log_info_concise(f"  {line}")
+        except Exception as error:
+            fn.log_warn(f"Could not read mirrorlist: {error}")
+        GLib.idle_add(fn.show_in_app_notification, self, "Mainstream servers have been saved")
+
+    fn.threading.Thread(target=_wait, daemon=True).start()
 
 
 def on_click_reset_mirrorlist(self, _widget):
@@ -652,21 +667,13 @@ def on_click_reset_mirrorlist(self, _widget):
 
 def on_click_get_arch_mirrors(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with reflector...")
-    cmd = (
-        "alacritty -e bash -c "
-        "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector;"
-        " read -p \"Press Enter to close...\"'"
-    )
+    cmd = "alacritty -e /usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-reflector"
     _run_terminal(self, cmd, "Fastest Arch Linux servers saved - reflector")
 
 
 def on_click_get_arch_mirrors2(self, _widget):
     fn.log_subsection("Setting fastest Arch Linux mirrors with rate-mirrors...")
-    cmd = (
-        "alacritty -e bash -c "
-        "'/usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors;"
-        " read -p \"Press Enter to close...\"'"
-    )
+    cmd = "alacritty -e /usr/share/archlinux-tweak-tool/data/bin/archlinux-get-mirrors-rate-mirrors"
     _run_terminal(self, cmd, "Fastest Arch Linux servers saved - rate-mirrors")
 
 
@@ -749,33 +756,77 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
 
 def on_click_install_arch_mirrors(self, _widget):
-    fn.log_subsection("Installing reflector...")
     if fn.path.exists("/usr/bin/reflector"):
-        fn.log_info("reflector is already installed")
-        fn.show_in_app_notification(self, "reflector is already installed")
-        return
-    fn.install_package(self, "reflector")
-    self.btn_run_reflector.set_sensitive(True)
+        fn.log_subsection("Removing reflector...")
+
+        def _remove():
+            fn.subprocess.Popen(
+                "alacritty -e bash -c 'sudo pacman -Rns reflector; read -p \"Press Enter to close...\"'",
+                shell=True,
+            ).wait()
+            fn.log_success("reflector removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "reflector removed")
+            GLib.idle_add(self.btn_run_reflector.set_sensitive, False)
+            GLib.idle_add(self.btn_install_mirrors.set_label, "Install reflector")
+
+        GLib.idle_add(fn.show_in_app_notification, self, "Removing reflector...")
+        fn.threading.Thread(target=_remove, daemon=True).start()
+    else:
+        fn.log_subsection("Installing reflector...")
+
+        def _install():
+            fn.subprocess.Popen(
+                "alacritty -e bash -c 'sudo pacman -S --needed reflector; read -p \"Press Enter to close...\"'",
+                shell=True,
+            ).wait()
+            fn.log_success("reflector installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "reflector installed")
+            if fn.path.exists("/usr/bin/reflector"):
+                GLib.idle_add(self.btn_run_reflector.set_sensitive, True)
+                GLib.idle_add(self.btn_install_mirrors.set_label, "Remove reflector")
+
+        GLib.idle_add(fn.show_in_app_notification, self, "Installing reflector...")
+        fn.threading.Thread(target=_install, daemon=True).start()
 
 
 def on_click_install_arch_mirrors2(self, _widget):
-    fn.log_subsection("Installing rate-mirrors...")
     if fn.path.exists("/usr/bin/rate-mirrors"):
-        fn.log_info("rate-mirrors is already installed")
-        fn.show_in_app_notification(self, "rate-mirrors is already installed")
-        return
-    fn.install_package(self, "rate-mirrors")
-    self.btn_run_rate_mirrors.set_sensitive(True)
+        fn.log_subsection("Removing rate-mirrors...")
+
+        def _remove():
+            fn.subprocess.Popen(
+                "alacritty -e bash -c 'sudo pacman -Rns rate-mirrors; read -p \"Press Enter to close...\"'",
+                shell=True,
+            ).wait()
+            fn.log_success("rate-mirrors removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "rate-mirrors removed")
+            GLib.idle_add(self.btn_run_rate_mirrors.set_sensitive, False)
+            GLib.idle_add(self.btn_install_rate_mirrors.set_label, "Install rate-mirrors")
+
+        GLib.idle_add(fn.show_in_app_notification, self, "Removing rate-mirrors...")
+        fn.threading.Thread(target=_remove, daemon=True).start()
+    else:
+        fn.log_subsection("Installing rate-mirrors...")
+
+        def _install():
+            fn.subprocess.Popen(
+                "alacritty -e bash -c 'sudo pacman -S --needed rate-mirrors; read -p \"Press Enter to close...\"'",
+                shell=True,
+            ).wait()
+            fn.log_success("rate-mirrors installed")
+            GLib.idle_add(fn.show_in_app_notification, self, "rate-mirrors installed")
+            if fn.path.exists("/usr/bin/rate-mirrors"):
+                GLib.idle_add(self.btn_run_rate_mirrors.set_sensitive, True)
+                GLib.idle_add(self.btn_install_rate_mirrors.set_label, "Remove rate-mirrors")
+
+        GLib.idle_add(fn.show_in_app_notification, self, "Installing rate-mirrors...")
+        fn.threading.Thread(target=_install, daemon=True).start()
 
 
 def on_update_pacman_databases_clicked(self, _widget):
     fn.log_subsection("Updating pacman databases...")
-    fn.show_in_app_notification(self, "Opening terminal to update pacman databases")
-    fn.subprocess.Popen(
-        ["alacritty", "-e", "bash", "-c", "sudo pacman -Sy; read -p 'Press Enter to exit...'"],
-        stdout=fn.subprocess.PIPE,
-        stderr=fn.subprocess.PIPE,
-    )
+    cmd = "alacritty -e bash -c 'sudo pacman -Sy; read -p \"Press Enter to close...\"'"
+    _run_terminal(self, cmd, "Pacman databases updated", "Updating pacman databases...")
 
 
 def on_click_install_bibata_cursors(self, _widget):
@@ -796,6 +847,10 @@ def on_click_install_bibata_cursors(self, _widget):
 
 def on_click_remove_bibata_cursors(self, _widget):
     fn.log_subsection("Remove Bibata Cursors")
+    if not fn.check_package_installed("bibata-cursor-theme"):
+        fn.log_info("bibata-cursor-theme is not installed")
+        fn.show_in_app_notification(self, "bibata-cursor-theme is not installed")
+        return
     GLib.idle_add(fn.show_in_app_notification, self, "Removing Bibata cursors...")
 
     def _wait():

@@ -15,50 +15,6 @@ def _refresh_cursor_theme_dropdown(self):
         fn.debug_print(f"Failed to refresh cursor dropdowns: {error}")
 
 
-def ensure_sddm_config(self):
-    """Check if SDDM config files exist. If not, ask user for permission to create them."""
-    files_missing = not fn.path.isfile(fn.sddm_default_d1) or not fn.path.isfile(fn.sddm_default_d2)
-
-    if files_missing:
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            flags=0,
-            message_type=Gtk.MessageType.WARNING,
-            buttons=Gtk.ButtonsType.YES_NO,
-            text="SDDM Configuration Not Found"
-        )
-        dialog.format_secondary_text(
-            "The SDDM configuration files are missing or incomplete:\n"
-            "  • /etc/sddm.conf\n"
-            "  • /etc/sddm.conf.d/kde_settings.conf\n\n"
-            "Do you want to create them with default ATT settings?\n\n"
-            "Your current settings (if any) will be backed up."
-        )
-        response = dialog.run()
-        dialog.destroy()
-
-        if response == Gtk.ResponseType.YES:
-            try:
-                fn.create_sddm_k_dir()
-                fn.log_info_concise(f"  From: {fn.sddm_default_d1_kiro}")
-                fn.log_info_concise(f"  To:   {fn.sddm_default_d1}")
-                fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
-                fn.log_info_concise(f"  From: {fn.sddm_default_d2_kiro}")
-                fn.log_info_concise(f"  To:   {fn.sddm_default_d2}")
-                fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
-                fn.log_success("SDDM configuration files created successfully")
-                return True
-            except Exception as error:
-                fn.log_error(f"Failed to create SDDM files: {error}")
-                fn.messagebox(self, "Error", f"Failed to create SDDM files: {error}")
-                return False
-        else:
-            fn.show_in_app_notification(self, "SDDM configuration not modified")
-            return False
-
-    return True
-
-
 def check_sddmk_complete():
     """see all variabeles are there"""
     try:
@@ -413,7 +369,7 @@ def on_autologin_sddm_activated(self, widget, param_spec=None):
         fn.log_error(f"Failed to configure autologin: {error}")
 
 
-def on_browse_sddm_folder(self, widget=None):
+def on_browse_sddm_folder(self, _widget=None):
     dialog = Gtk.FileDialog()
     dialog.set_title("Choose a folder with wallpapers")
     current = self.sddm_folder_entry.get_text().strip()
@@ -433,7 +389,7 @@ def _on_sddm_folder_response(self, dialog, result):
         pass
 
 
-def on_load_sddm_folder(self, widget=None):
+def on_load_sddm_folder(self, _widget=None):
     folder_path = self.sddm_folder_entry.get_text().strip()
     if fn.path.isdir(folder_path):
         _populate_sddm_thumbs(self, folder_path)
@@ -441,7 +397,7 @@ def on_load_sddm_folder(self, widget=None):
         fn.show_in_app_notification(self, "Folder not found")
 
 
-def on_stop_sddm_loading(self, widget=None):
+def on_stop_sddm_loading(self, _widget=None):
     self._sddm_load_gen = getattr(self, "_sddm_load_gen", 0) + 1
 
 
@@ -550,28 +506,20 @@ def on_click_sddm_apply(self, _widget=None):
 
 def on_click_sddm_enable(self, _widget=None):
     """Install and enable sddm-git"""
-    try:
-        fn.log_subsection("Install and Enable SDDM")
-        fn.debug_print("Installing sddm-git...")
+    fn.log_subsection("Install and Enable SDDM")
+    fn.show_in_app_notification(self, "Opening terminal to install and enable sddm-git...")
+    cmd = "sudo pacman -S sddm-git; sudo systemctl set-default graphical.target; read -p 'Press Enter to close'"
+    process = fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", cmd],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
 
-        fn.subprocess.run(
-            ["pacman", "-S", "sddm-git", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("sddm-git installed successfully")
+    def wait_and_notify():
+        process.wait()
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "sddm-git install complete — please reboot")
 
-        fn.subprocess.run(
-            ["systemctl", "set-default", "graphical.target"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("Set graphical.target as default")
-
-        fn.messagebox(self, "Success", "SDDM-git installed and enabled.\n\nPlease reboot and login.")
-    except Exception as error:
-        fn.log_error(f"Failed to install/enable SDDM: {error}")
-        fn.messagebox(self, "Error", f"Failed to install/enable SDDM: {error}")
+    fn.threading.Thread(target=wait_and_notify, daemon=True).start()
 
 
 def on_set_sddm_wallpaper(self, _widget=None):
@@ -644,88 +592,76 @@ def on_restore_sddm_wallpaper(self, _widget=None):
         fn.show_in_app_notification(self, "Failed to restore wallpaper")
 
 
-def on_click_install_bibata_cursor(self, widget=None):
+def on_click_install_bibata_cursor(self, _widget=None):
     """Install Bibata cursor theme"""
-    try:
-        fn.log_subsection("Install Bibata Cursors")
-        if fn.check_package_installed("bibata-cursor-theme"):
-            fn.log_info("Bibata cursors already installed")
-            fn.show_in_app_notification(self, "Bibata cursors already installed")
-            return
-        fn.subprocess.run(
-            ["pacman", "-S", "bibata-cursor-theme", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("Bibata cursors installed successfully")
-        fn.show_in_app_notification(self, "Bibata cursors installed")
-        _refresh_cursor_theme_dropdown(self)
-    except Exception as error:
-        fn.log_error(f"Failed to install Bibata cursors: {error}")
-        fn.messagebox(self, "Error", f"Failed to install Bibata cursors: {error}")
+    fn.log_subsection("Install Bibata Cursors")
+    if fn.check_package_installed("bibata-cursor-theme"):
+        fn.log_info("Bibata cursors already installed")
+        fn.show_in_app_notification(self, "Bibata cursors already installed")
+        return
+    fn.show_in_app_notification(self, "Opening terminal to install Bibata cursors...")
+    process = fn.launch_pacman_install_in_terminal("bibata-cursor-theme")
+
+    def wait_and_refresh():
+        if process:
+            process.wait()
+        fn.GLib.idle_add(_refresh_cursor_theme_dropdown, self)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
-def on_click_remove_bibata_cursor(self, widget=None):
+def on_click_remove_bibata_cursor(self, _widget=None):
     """Remove Bibata cursor theme"""
-    try:
-        fn.log_subsection("Remove Bibata Cursors")
-        if not fn.check_package_installed("bibata-cursor-theme"):
-            fn.log_info("Bibata cursors already removed")
-            fn.show_in_app_notification(self, "Bibata cursors already removed")
-            return
-        fn.subprocess.run(
-            ["pacman", "-R", "bibata-cursor-theme", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("Bibata cursors removed successfully")
-        fn.show_in_app_notification(self, "Bibata cursors removed")
-        _refresh_cursor_theme_dropdown(self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove Bibata cursors: {error}")
-        fn.messagebox(self, "Error", f"Failed to remove Bibata cursors: {error}")
+    fn.log_subsection("Remove Bibata Cursors")
+    if not fn.check_package_installed("bibata-cursor-theme"):
+        fn.log_info("Bibata cursors not installed")
+        fn.show_in_app_notification(self, "Bibata cursors not installed")
+        return
+    fn.show_in_app_notification(self, "Opening terminal to remove Bibata cursors...")
+    process = fn.launch_pacman_remove_in_terminal("bibata-cursor-theme")
+
+    def wait_and_refresh():
+        if process:
+            process.wait()
+        fn.GLib.idle_add(_refresh_cursor_theme_dropdown, self)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
-def on_click_install_bibatar_cursor(self, widget=None):
+def on_click_install_bibatar_cursor(self, _widget=None):
     """Install Bibata extra cursors"""
-    try:
-        fn.log_subsection("Install Bibata Extra Cursors")
-        if fn.check_package_installed("bibata-extra-cursor-theme"):
-            fn.log_info("Bibata extra cursors already installed")
-            fn.show_in_app_notification(self, "Bibata extra cursors already installed")
-            return
-        fn.subprocess.run(
-            ["pacman", "-S", "bibata-extra-cursor-theme", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("Bibata extra cursors installed successfully")
-        fn.show_in_app_notification(self, "Bibata extra cursors installed")
-        _refresh_cursor_theme_dropdown(self)
-    except Exception as error:
-        fn.log_error(f"Failed to install Bibata extra cursors: {error}")
-        fn.messagebox(self, "Error", f"Failed to install Bibata extra cursors: {error}")
+    fn.log_subsection("Install Bibata Extra Cursors")
+    if fn.check_package_installed("bibata-extra-cursor-theme"):
+        fn.log_info("Bibata extra cursors already installed")
+        fn.show_in_app_notification(self, "Bibata extra cursors already installed")
+        return
+    fn.show_in_app_notification(self, "Opening terminal to install Bibata extra cursors...")
+    process = fn.launch_pacman_install_in_terminal("bibata-extra-cursor-theme")
+
+    def wait_and_refresh():
+        if process:
+            process.wait()
+        fn.GLib.idle_add(_refresh_cursor_theme_dropdown, self)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
-def on_click_remove_bibatar_cursor(self, widget=None):
+def on_click_remove_bibatar_cursor(self, _widget=None):
     """Remove Bibata extra cursors"""
-    try:
-        fn.log_subsection("Remove Bibata Extra Cursors")
-        if not fn.check_package_installed("bibata-extra-cursor-theme"):
-            fn.log_info("Bibata extra cursors already removed")
-            fn.show_in_app_notification(self, "Bibata extra cursors already removed")
-            return
-        fn.subprocess.run(
-            ["pacman", "-R", "bibata-extra-cursor-theme", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("Bibata extra cursors removed successfully")
-        fn.show_in_app_notification(self, "Bibata extra cursors removed")
-        _refresh_cursor_theme_dropdown(self)
-    except Exception as error:
-        fn.log_error(f"Failed to remove Bibata extra cursors: {error}")
-        fn.messagebox(self, "Error", f"Failed to remove Bibata extra cursors: {error}")
+    fn.log_subsection("Remove Bibata Extra Cursors")
+    if not fn.check_package_installed("bibata-extra-cursor-theme"):
+        fn.log_info("Bibata extra cursors not installed")
+        fn.show_in_app_notification(self, "Bibata extra cursors not installed")
+        return
+    fn.show_in_app_notification(self, "Opening terminal to remove Bibata extra cursors...")
+    process = fn.launch_pacman_remove_in_terminal("bibata-extra-cursor-theme")
+
+    def wait_and_refresh():
+        if process:
+            process.wait()
+        fn.GLib.idle_add(_refresh_cursor_theme_dropdown, self)
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
 def on_click_install_simplicity(self, _widget=None):
@@ -796,22 +732,11 @@ def on_click_remove_simplicity(self, _widget=None):
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
-def on_click_att_sddm_clicked(self, widget=None):
+def on_click_att_sddm_clicked(self, _widget=None):
     """Install SDDM package"""
-    try:
-        fn.log_subsection("Install SDDM")
-        fn.debug_print("Installing sddm...")
-
-        fn.subprocess.run(
-            ["pacman", "-S", "sddm", "--noconfirm"],
-            check=True,
-            shell=False,
-        )
-        fn.log_success("SDDM installed successfully")
-        fn.messagebox(self, "Success", "SDDM installed.\n\nPlease enable it from the settings.")
-    except Exception as error:
-        fn.log_error(f"Failed to install SDDM: {error}")
-        fn.messagebox(self, "Error", f"Failed to install SDDM: {error}")
+    fn.log_subsection("Install SDDM")
+    fn.show_in_app_notification(self, "Opening terminal to install sddm...")
+    fn.launch_pacman_install_in_terminal("sddm")
 
 
 def on_click_fix_sddm_conf(self, _widget):
@@ -825,10 +750,23 @@ def on_click_fix_sddm_conf(self, _widget):
         return
 
     fn.log_subsection("Fixing SDDM configuration...")
-    try:
-        cmd = "alacritty -e /usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"
-        fn.subprocess.call(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.STDOUT)
-        fn.log_success("SDDM configuration saved (default setup from plasma)")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "Saved the original SDDM configuration")
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    fn.show_in_app_notification(self, "Opening terminal to fix SDDM config...")
+    process = fn.subprocess.Popen(
+        ["alacritty", "-e", "/usr/share/archlinux-tweak-tool/data/bin/fix-sddm-config"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
+
+    def refresh():
+        pop_box(self, self.sessions_sddm)
+        pop_theme_box(self, self.theme_sddm)
+        pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        self.autologin_sddm.set_active(get_autologin_state())
+        fn.show_in_app_notification(self, "SDDM configuration fixed")
+
+    def wait_and_notify():
+        process.wait()
+        fn.log_success("SDDM configuration fixed")
+        fn.GLib.idle_add(refresh)
+
+    fn.threading.Thread(target=wait_and_notify, daemon=True).start()

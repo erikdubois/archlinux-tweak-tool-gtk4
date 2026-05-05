@@ -35,6 +35,8 @@ Server = https://mirror.osbeck.com/archlinux/$repo/os/$arch
 Server = http://mirror.osbeck.com/archlinux/$repo/os/$arch
 EOF
 success "Mirrorlist written to $MIRRORLIST"
-info "Use 'cat $MIRRORLIST' to inspect"
+
+header "Mirrorlist Contents"
+cat "$MIRRORLIST"
 
 read -rp "Press Enter to close..."

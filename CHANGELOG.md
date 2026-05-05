@@ -1,5 +1,24 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - SDDM: Button Compliance Fixes
+
+### What Changed
+
+- All SDDM page buttons now comply with project rules: `_widget` convention, no blocking subprocess calls, all package operations routed through alacritty terminal
+
+### Technical Details
+
+- Removed dead function `ensure_sddm_config` which was never called and contained a blocking `dialog.run()` (deprecated GTK3 pattern)
+- Renamed `widget` → `_widget` in 8 callback signatures: `on_browse_sddm_folder`, `on_load_sddm_folder`, `on_stop_sddm_loading`, `on_click_install_bibata_cursor`, `on_click_remove_bibata_cursor`, `on_click_install_bibatar_cursor`, `on_click_remove_bibatar_cursor`, `on_click_att_sddm_clicked`
+- Replaced `subprocess.call()` in `on_click_fix_sddm_conf` with `Popen` in a daemon thread so ATT stays responsive while the terminal is open
+- Converted 6 package install/remove functions from silent `subprocess.run(["pacman", ...])` to alacritty terminal via `launch_pacman_install_in_terminal` / `launch_pacman_remove_in_terminal` + `wait_and_refresh` daemon threads: bibata cursors (×4), `on_click_sddm_enable`, `on_click_att_sddm_clicked`
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/sddm.py`
+
+---
+
 ## 2026.05.04 - SDDM: Theme Dropdown Refreshes After Install/Remove
 
 ### What Changed

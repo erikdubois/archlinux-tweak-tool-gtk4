@@ -20,8 +20,8 @@ warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
 error()     { echo "${RED}  [EE]  $*${RESET}"; }
 
 header "Update Mirrorlist — reflector"
-info "Fetching top 10 fastest mirrors (scored from top 100)..."
-sudo /usr/bin/reflector --score 100 --fastest 10 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+info "Fetching top 10 fastest HTTPS mirrors synced within 12h (scored from top 100)..."
+sudo /usr/bin/reflector --score 100 --fastest 10 --number 10 --protocol https --age 12 --verbose --save /etc/pacman.d/mirrorlist
 success "Mirrorlist updated at /etc/pacman.d/mirrorlist"
 
 read -rp "Press Enter to close..."
