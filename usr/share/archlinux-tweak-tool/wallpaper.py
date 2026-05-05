@@ -4,6 +4,7 @@
 
 import pwd
 import re
+import shlex
 import shutil
 import random as _random
 
@@ -463,42 +464,51 @@ def _set_feh(self, path, scale):
 def _set_xfce(self, path, scale):
     fn.log_subsection(f"Applying wallpaper — xfconf-query (XFCE): {path}")
     style = _XFCE_STYLES.get(scale, "5")
+    uid = pwd.getpwnam(fn.sudo_username).pw_uid
+    env_prefix = (
+        f"sudo -u {fn.sudo_username}"
+        f" XDG_RUNTIME_DIR=/run/user/{uid}"
+        f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
+    )
     xfconf = shutil.which("xfconf-query") or "/usr/bin/xfconf-query"
-    fn.debug_print(f"xfconf-query resolved to: {xfconf}")
+    fn.debug_print(f"xfconf-query resolved to: {xfconf} as {fn.sudo_username}")
     try:
-        result = fn.subprocess.run(
-            [xfconf, "-c", "xfce4-desktop", "-p", "/backdrop", "-l"],
-            capture_output=True, text=True,
-        )
+        list_cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p /backdrop -l"
+        fn.debug_print(f"  CMD: {list_cmd}")
+        result = fn.subprocess.run(list_cmd, shell=True, capture_output=True, text=True)
         image_props = [
             p for p in result.stdout.splitlines()
             if re.search(r"screen.*/monitor.*(image-path|last-image)$", p)
         ]
         if not image_props:
-            xrandr = fn.subprocess.run(["xrandr", "--query"], capture_output=True, text=True)
-            outputs = re.findall(r"^(\S+) connected", xrandr.stdout, re.MULTILINE)
+            outputs = []
+            try:
+                xrandr = fn.subprocess.run(["xrandr", "--query"], capture_output=True, text=True)
+                outputs = re.findall(r"^(\S+) connected", xrandr.stdout, re.MULTILINE)
+            except FileNotFoundError:
+                fn.debug_print("xrandr not found — using fallback monitor name")
             image_props = [
                 f"/backdrop/screen0/monitor{o}/workspace0/last-image"
                 for o in outputs
             ] or ["/backdrop/screen0/monitor0/workspace0/last-image"]
-            fn.debug_print(f"Constructed backdrop props from xrandr: {image_props}")
+            fn.debug_print(f"Constructed backdrop props: {image_props}")
         style_props = [
             re.sub(r"(image-path|last-image)$", "image-style", p)
             for p in image_props
         ]
         for prop in image_props:
-            cmd = [xfconf, "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "string", "-s", path]
-            fn.debug_print(f"  CMD: {' '.join(cmd)}")
-            fn.subprocess.run(cmd, stderr=fn.subprocess.DEVNULL)
+            cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p {prop} --create -t string -s {shlex.quote(path)}"
+            fn.debug_print(f"  CMD: {cmd}")
+            fn.subprocess.run(cmd, shell=True, stderr=fn.subprocess.DEVNULL)
         for prop in style_props:
-            cmd = [xfconf, "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "int", "-s", style]
-            fn.debug_print(f"  CMD: {' '.join(cmd)}")
-            fn.subprocess.run(cmd, stderr=fn.subprocess.DEVNULL)
+            cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p {prop} --create -t int -s {style}"
+            fn.debug_print(f"  CMD: {cmd}")
+            fn.subprocess.run(cmd, shell=True, stderr=fn.subprocess.DEVNULL)
         fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
         fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-    except FileNotFoundError:
-        fn.log_error(f"xfconf-query not found at: {xfconf}")
-        fn.show_in_app_notification(self, "xfconf-query not found")
+    except Exception as e:
+        fn.log_error(f"xfconf-query failed: {e}")
+        fn.show_in_app_notification(self, "Failed to set wallpaper via xfconf-query")
 
 
 def _set_gnome(self, path, scale):
