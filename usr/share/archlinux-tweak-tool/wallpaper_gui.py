@@ -7,6 +7,7 @@ import functools
 
 def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     fn.log_section("Wallpaper")
+    fn.log_warn("Store your wallpapers in ~/Templates/wallpapers — variety picks them up automatically")
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_separator = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -46,6 +47,14 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     lbl_section_config.set_margin_top(16)
     hbox_section_config.append(lbl_section_config)
 
+    hbox_config_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_config_info = Gtk.Label(xalign=0)
+    lbl_config_info.set_markup(
+        "<i>Store your wallpapers in ~/Templates/wallpapers — variety picks them up automatically</i>"
+    )
+    lbl_config_info.set_margin_start(2)
+    hbox_config_info.append(lbl_config_info)
+
     hbox_config_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.btn_save_variety_config = Gtk.Button(label="Save ATT variety config")
     self.btn_save_variety_config.connect("clicked", functools.partial(wallpaper.on_save_variety_config, self))
@@ -72,7 +81,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
 
     self.wallpaper_folder_entry = Gtk.Entry()
     self.wallpaper_folder_entry.set_hexpand(True)
-    self.wallpaper_folder_entry.set_text("/usr/share/archlinux-tweak-tool/wallpapers")
+    self.wallpaper_folder_entry.set_text("/usr/share/archlinux-tweak-tool/walls")
 
     btn_load = Gtk.Button(label="Load")
     btn_load.connect("clicked", functools.partial(wallpaper.on_load_wallpaper_folder, self))
@@ -146,6 +155,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     vbox.append(hbox_section_variety)
     vbox.append(hbox_variety_btns)
     vbox.append(hbox_section_config)
+    vbox.append(hbox_config_info)
     vbox.append(hbox_config_btns)
     vbox.append(hbox_section_picker)
     vbox.append(hbox_folder)
@@ -159,7 +169,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     vboxstack_wallpaper.append(hbox_separator)
     vboxstack_wallpaper.append(vbox)
 
-    bundled = "/usr/share/archlinux-tweak-tool/wallpapers"
+    bundled = "/usr/share/archlinux-tweak-tool/walls"
     if fn.path.isdir(bundled):
         fn.GLib.idle_add(
             lambda: wallpaper._populate_wallpaper_thumbs(self, bundled),

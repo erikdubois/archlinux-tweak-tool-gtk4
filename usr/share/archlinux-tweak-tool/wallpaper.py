@@ -3,6 +3,7 @@
 # ============================================================
 
 import pwd
+import re
 import shutil
 import random as _random
 
@@ -38,8 +39,10 @@ def on_install_variety(self, _widget=None):
             fn.log_info("variety not found after install")
 
     def wait_and_refresh():
+        fn.debug_print("Waiting for variety install terminal to close...")
         if process:
             process.wait()
+        fn.debug_print("Terminal closed — checking install result")
         fn.GLib.idle_add(refresh)
 
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
@@ -63,8 +66,10 @@ def on_remove_variety(self, _widget=None):
             fn.log_info("variety still present after remove")
 
     def wait_and_refresh():
+        fn.debug_print("Waiting for variety remove terminal to close...")
         if process:
             process.wait()
+        fn.debug_print("Terminal closed — checking removal result")
         fn.GLib.idle_add(refresh)
 
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
@@ -73,6 +78,21 @@ def on_remove_variety(self, _widget=None):
 def _set_variety_widgets_sensitive(self, installed):
     self.btn_save_variety_config.set_sensitive(installed)
     self.btn_open_variety_settings.set_sensitive(installed)
+
+
+def _fix_variety_conf_paths():
+    conf = fn.path.join(_VARIETY_CONF_DEST, "variety.conf")
+    if not fn.path.isfile(conf):
+        return
+    fn.log_info_concise(f"  Changing username in variety.conf → {fn.sudo_username}")
+    with open(conf, "r", encoding="utf-8") as f:
+        content = f.read()
+    fixed = re.sub(r"/home/[^/]+/", fn.home + "/", content)
+    if fixed != content:
+        with open(conf, "w", encoding="utf-8") as f:
+            f.write(fixed)
+        fn.log_info_concise(f"  Paths updated to {fn.home}/")
+        fn.debug_print(f"variety.conf home paths rewritten to {fn.home}/")
 
 
 def on_save_variety_config(self, _widget=None):
@@ -103,7 +123,9 @@ def on_save_variety_config(self, _widget=None):
                 fn.log_info_concise(f"  To:   {dest}")
                 shutil.copy2(src, dest)
                 fn.log_info_concise(f"  Done: {fn.path.basename(src)}")
+        _fix_variety_conf_paths()
         fn.log_success("ATT variety config saved to ~/.config/variety/")
+        fn.log_warn("Store your wallpapers in ~/Templates/wallpapers — variety picks them up automatically")
         fn.show_in_app_notification(self, "Variety config saved")
     except Exception as error:
         fn.log_error(f"Failed to save variety config: {error}")
@@ -120,6 +142,7 @@ def on_open_variety_settings(self, _widget=None):
         " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
         " variety --preferences"
     )
+    fn.debug_print(f"Launching: {cmd}")
     fn.threading.Thread(
         target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
         daemon=True,
@@ -140,6 +163,8 @@ def _on_folder_response(self, dialog, result):
         folder = dialog.select_folder_finish(result)
         if folder:
             folder_path = folder.get_path()
+            fn.log_info_concise(f"  Folder selected: {folder_path}")
+            fn.debug_print(f"Browse selected: {folder_path}")
             self.wallpaper_folder_entry.set_text(folder_path)
             _populate_wallpaper_thumbs(self, folder_path)
     except Exception:
@@ -155,6 +180,7 @@ def on_load_wallpaper_folder(self, _widget=None):
 
 
 def on_stop_wallpaper_loading(self, _widget=None):
+    fn.debug_print("Wallpaper loading stopped by user")
     self._wp_load_gen = getattr(self, "_wp_load_gen", 0) + 1
 
 
@@ -176,6 +202,7 @@ def _populate_wallpaper_thumbs(self, folder_path):
         return
 
     image_paths = [fn.path.join(folder_path, n) for n in entries if n.lower().endswith(exts)]
+    fn.debug_print(f"Found {len(image_paths)} images in {folder_path}")
     idx = [0]
 
     def load_next():
@@ -217,6 +244,8 @@ def _populate_wallpaper_thumbs(self, folder_path):
 
 
 def _on_thumb_clicked(self, _widget, path):
+    fn.log_info_concise(f"  Selected: {path}")
+    fn.debug_print(f"Wallpaper selected: {path}")
     self.selected_wallpaper_path = path
     self.wallpaper_path_lbl.set_text(path)
     self.wallpaper_preview.set_filename(path)
