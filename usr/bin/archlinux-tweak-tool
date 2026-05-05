@@ -26,13 +26,8 @@ if [[ "$SESSION" == "x11" ]]; then
     for i in {1..5}; do
         XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
         [[ "$XAUTH_HONORED" == "yes" ]] && break
-        echo "[WARN]: Xauth changes honored = no, retrying ($i/5)..."
         sleep 1
     done
-
-    if [[ "$XAUTH_HONORED" != "yes" ]]; then
-        echo "[WARN]: Xauth changes honored still no after 5s, continuing anyway"
-    fi
 
     echo "[INFO]: XAUTHORITY = $XAUTHORITY"
 fi
