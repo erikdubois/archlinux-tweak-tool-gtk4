@@ -613,20 +613,14 @@ def on_click_install_arch_keyring_online(self, _widget):
 
 def on_click_fix_pacman_keys(self, _widget):
     fn.log_subsection("Fixing pacman keys...")
-    cmd = (
-        "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys;"
-        " read -p \"Press Enter to close...\"'"
-    )
+    cmd = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/fix-pacman-databases-and-keys'"
     _run_terminal(self, cmd, "Pacman keys fixed")
 
 
 # Mirror & System Management
 def on_click_probe(self, _widget):
     fn.log_subsection("Running hardware probe...")
-    cmd = (
-        "alacritty -e bash -c "
-        "'/usr/share/archlinux-tweak-tool/data/bin/probe; read -p \"Press Enter to close...\"'"
-    )
+    cmd = "alacritty -e bash -c '/usr/share/archlinux-tweak-tool/data/bin/probe'"
     _run_terminal(self, cmd, "Probe link has been created", "Running hardware probe...")
 
 
