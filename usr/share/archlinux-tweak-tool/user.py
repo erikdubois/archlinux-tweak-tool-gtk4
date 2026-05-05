@@ -28,12 +28,12 @@ def create_user(self):
             try:
                 fn.debug_print("Ensuring sambashare group exists")
                 command = "groupadd -r sambashare"
-                fn.subprocess.call(
+                fn.subprocess.Popen(
                     command.split(" "),
                     shell=False,
                     stdout=fn.subprocess.PIPE,
                     stderr=fn.subprocess.STDOUT,
-                )
+                ).wait()
             except Exception as error:
                 fn.log_warn(f"Sambashare group error: {error}")
 
@@ -121,8 +121,10 @@ def pop_cbt_users(self, combo):
 
 
 def on_click_user_apply(self, _widget):
-    create_user(self)
-    pop_cbt_users(self, self.cbt_users)
+    def _run():
+        create_user(self)
+        GLib.idle_add(pop_cbt_users, self, self.cbt_users)
+    fn.threading.Thread(target=_run, daemon=True).start()
 
 
 def on_click_delete_user(self, _widget):

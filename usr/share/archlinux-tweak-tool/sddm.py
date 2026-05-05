@@ -20,7 +20,6 @@ def check_sddmk_complete():
     try:
         with open(fn.sddm_default_d2, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            f.close()
         flag_a = False
         flag_s = False
         flag_u = False
@@ -59,7 +58,6 @@ def check_sddmk_session(value):
     """what session in sddm"""
     with open(fn.sddm_default_d2, "r", encoding="utf-8") as myfile:
         lines = myfile.readlines()
-        myfile.close()
 
     for line in lines:
         if value in line:
@@ -86,7 +84,6 @@ def check_sddmk_user(value):
     """check user"""
     with open(fn.sddm_default_d2, "r", encoding="utf-8") as myfile:
         lines = myfile.readlines()
-        myfile.close()
 
     for line in lines:
         if value in line:
@@ -313,7 +310,7 @@ def pop_login_managers_combo(self, combo):
     options = ["sddm"]
     for option in options:
         self.login_managers_combo.get_model().append(option)
-        if fn.check_content("sddm", "/etc/systemd/system/display-manager.service"):
+        if fn.check_content("sddm", fn.display_manager_service):
             self.login_managers_combo.set_selected(0)
 
 

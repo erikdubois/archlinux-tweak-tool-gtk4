@@ -182,6 +182,7 @@ def reset_pacman_blank(self, widget):
     fn.log_info_concise(f"  From: {fn.blank_pacman_att}")
     fn.log_info_concise(f"  To:   {fn.pacman}")
     fn.shutil.copy(fn.blank_pacman_att, fn.pacman)
+    fn.invalidate_pacman_conf_cache()
     fn.log_success("Blank pacman.conf created")
     fn.log_info("Add repositories in desired order, ATT will reboot automatically")
     fn.restart_program()
@@ -193,6 +194,7 @@ def reset_pacman_local(self, widget):
         fn.log_info_concise(f"  From: {fn.pacman}.bak")
         fn.log_info_concise(f"  To:   {fn.pacman}")
         fn.shutil.copy(fn.pacman + ".bak", fn.pacman)
+        fn.invalidate_pacman_conf_cache()
         fn.log_success("pacman.conf reset from .bak")
         fn.show_in_app_notification(
             self, "Default Settings Applied - check in a terminal"
@@ -205,6 +207,7 @@ def reset_pacman_online(self, widget):
     fn.log_info_concise(f"  From: {fn.pacman_att}")
     fn.log_info_concise(f"  To:   {fn.pacman}")
     fn.shutil.copy(fn.pacman_att, fn.pacman)
+    fn.invalidate_pacman_conf_cache()
     fn.log_success("ATT version of pacman.conf saved")
     fn.show_in_app_notification(
         self, "Default Settings Applied - check in a terminal"
@@ -274,7 +277,7 @@ def set_parallel_downloads(self, widget):
 
             with open(fn.pacman, "w", encoding="utf-8") as f:
                 f.writelines(lines)
-                f.close()
+            fn.invalidate_pacman_conf_cache()
             fn.log_success(f"ParallelDownloads = {par_downloads} saved to {fn.pacman}")
             fn.show_in_app_notification(self, "Settings Saved Successfully")
             if hasattr(self, "parallel_downloads_label"):

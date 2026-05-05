@@ -743,7 +743,7 @@ def on_click_install_packages(self, widget, packages_obj, gui_parts):
     file_chooser.present()
 
 
-def on_click_remove_debug(self, widget):
+def on_click_remove_debug(self, _widget):
     fn.log_subsection("Remove debug from /etc/makepkg.conf")
     try:
         result = fn.remove_debug_from_makepkg_conf()

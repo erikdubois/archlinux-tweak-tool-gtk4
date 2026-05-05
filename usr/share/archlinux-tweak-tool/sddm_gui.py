@@ -8,7 +8,7 @@ import functools
 def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
-    if fn.check_content("sddm", "/etc/systemd/system/display-manager.service"):
+    if fn.check_content("sddm", fn.display_manager_service):
         lbl_title.set_text("Sddm (active)")
     else:
         lbl_title.set_text("Sddm (inactive)")

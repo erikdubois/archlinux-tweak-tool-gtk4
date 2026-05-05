@@ -193,6 +193,7 @@ sddm_default_d1_kiro = "/usr/share/archlinux-tweak-tool/data/sddm/sddm.conf"
 sddm_default_d2_kiro = (
     "/usr/share/archlinux-tweak-tool/data/sddm.conf.d/kde_settings.conf"
 )
+display_manager_service = "/etc/systemd/system/display-manager.service"
 icons_default = "/usr/share/icons/default/index.theme"
 
 samba_config = "/etc/samba/smb.conf"
@@ -788,10 +789,7 @@ def restart_program():
 
 def check_nemesis_repo_active():
     nemesis = "[nemesis_repo]"
-    with open(pacman, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    for line in lines:
+    for line in get_pacman_conf_lines():
         if nemesis in line:
             if "#" + nemesis in line:
                 return False
@@ -801,11 +799,8 @@ def check_nemesis_repo_active():
 
 
 def check_chaotic_aur_active():
-    with open(pacman, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
     chaotic = "[chaotic-aur]"
-    for line in lines:
+    for line in get_pacman_conf_lines():
         if chaotic in line:
             if "#" + chaotic in line:
                 return False
@@ -815,6 +810,21 @@ def check_chaotic_aur_active():
 
 
 _nemesis_packages_cache = None
+
+_pacman_conf_cache = None
+
+
+def get_pacman_conf_lines():
+    global _pacman_conf_cache
+    if _pacman_conf_cache is None:
+        with open(pacman, "r", encoding="utf-8") as f:
+            _pacman_conf_cache = f.readlines()
+    return _pacman_conf_cache
+
+
+def invalidate_pacman_conf_cache():
+    global _pacman_conf_cache
+    _pacman_conf_cache = None
 
 
 def load_nemesis_packages():

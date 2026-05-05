@@ -11,12 +11,14 @@ def append_repo(self, text):
         with open(fn.pacman, "a", encoding="utf-8") as myfile:
             myfile.write("\n\n")
             myfile.write(text)
+        fn.invalidate_pacman_conf_cache()
         return
     fn.debug_print(f"Appending repository to {fn.pacman}")
     try:
         with open(fn.pacman, "a", encoding="utf-8") as myfile:
             myfile.write("\n\n")
             myfile.write(text)
+        fn.invalidate_pacman_conf_cache()
         fn.log_success("Repository appended successfully")
         fn.show_in_app_notification(self, "Settings Saved Successfully")
     except Exception as error:
@@ -38,7 +40,7 @@ def insert_repo(self, text):
 
         with open(fn.pacman, "w", encoding="utf-8") as f:
             f.writelines(lines)
-            f.close()
+        fn.invalidate_pacman_conf_cache()
         fn.log_success("Repository inserted successfully")
     except Exception as error:
         fn.log_error(f"Failed to insert repository: {error}")
@@ -46,10 +48,7 @@ def insert_repo(self, text):
 
 def check_repo(value):
     """check if repo is there and active"""
-    with open(fn.pacman, "r", encoding="utf-8") as myfile:
-        lines = myfile.readlines()
-
-    for line in lines:
+    for line in fn.get_pacman_conf_lines():
         if value in line:
             if "#" + value in line:
                 return False
@@ -60,11 +59,7 @@ def check_repo(value):
 
 def repo_exist(value):
     """check repo_exists"""
-    with open(fn.pacman, "r", encoding="utf-8") as myfile:
-        lines = myfile.readlines()
-        myfile.close()
-
-    for line in lines:
+    for line in fn.get_pacman_conf_lines():
         if value in line:
             return True
     return False
@@ -150,7 +145,6 @@ def toggle_test_repos(self, state, widget):
     if state is True:
         with open(fn.pacman, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            f.close()
         try:
             fn.debug_print(f"Enabling {widget} repository")
             for i in range(0, len(lines)):
@@ -176,7 +170,7 @@ def toggle_test_repos(self, state, widget):
 
             with open(fn.pacman, "w", encoding="utf-8") as f:
                 f.writelines(lines)
-                f.close()
+            fn.invalidate_pacman_conf_cache()
             fn.log_success(f"Repository {widget} enabled successfully")
         except Exception as error:
             fn.log_error(f"Failed to enable {widget}: {error}")
@@ -188,7 +182,6 @@ def toggle_test_repos(self, state, widget):
     else:
         with open(fn.pacman, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            f.close()
         try:
             fn.debug_print(f"Disabling {widget} repository")
             for i in range(0, len(lines)):
@@ -214,7 +207,7 @@ def toggle_test_repos(self, state, widget):
 
             with open(fn.pacman, "w", encoding="utf-8") as f:
                 f.writelines(lines)
-                f.close()
+            fn.invalidate_pacman_conf_cache()
             fn.log_success(f"Repository {widget} disabled successfully")
         except Exception as error:
             fn.log_error(f"Failed to disable {widget}: {error}")

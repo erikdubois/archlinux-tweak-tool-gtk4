@@ -577,21 +577,21 @@ def util_toggle(self, widget, active, utility):
         utilities.set_util_state(self, utility, False, False)
 
 
-def on_click_fastfetch_all_selection(self, widget):
+def on_click_fastfetch_all_selection(self, _widget):
     fn.log_subsection("All Fastfetch switches selected")
     set_checkboxes_all(self)
 
 
-def on_click_fastfetch_normal_selection(self, widget):
+def on_click_fastfetch_normal_selection(self, _widget):
     fn.log_subsection("Normal Fastfetch selection applied")
     set_checkboxes_normal(self)
 
 
-def on_click_fastfetch_small_selection(self, widget):
+def on_click_fastfetch_small_selection(self, _widget):
     fn.log_subsection("Small Fastfetch selection applied")
     set_checkboxes_small(self)
 
 
-def on_click_fastfetch_none_selection(self, widget):
+def on_click_fastfetch_none_selection(self, _widget):
     fn.log_subsection("No Fastfetch switches selected")
     set_checkboxes_none(self)
