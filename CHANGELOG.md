@@ -1,5 +1,32 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Shell Tab: Live ZSH UI Rebuild + Dropdown/Image Guards
+
+### What Changed
+
+- Installing oh-my-zsh now populates the theme dropdown immediately; removing it clears the dropdown — no restart required
+- Installing zsh from the "not installed" stub now rebuilds the full ZSH tab in-place — no ATT restart required
+- Fixed crash in `sddm_gui.py` where `Gtk.Button().get_child()` returned `None` on an empty button
+- Fixed crash in `update_image` when `get_combo_text` returns `None` during a dropdown model swap
+
+### Technical Details
+
+- Added `_refresh_zsh_themes_dropdown(self)` in `shell.py`: calls `zsh_theme.get_themes()` when oh-my-zsh-git is installed, sets an empty `StringList` model when it is not; wired into both `install_oh_my_zsh` and `remove_oh_my_zsh` `wait_*` threads via `GLib.idle_add`
+- Removed dead `from zsh_theme import get_themes` inline import and redundant `set_sensitive(False)` from `remove_oh_my_zsh`
+- Extracted the full "zsh installed" tab content from `gui()` into a module-level `_build_zsh_installed_content(self, vbox, ...)` function in `shell_gui.py`; added `_rebuild_zsh_tab()` which clears `self.zsh_vbox` and calls the builder — avoids circular imports by storing the rebuild as `self._refresh_zsh_tab` lambda at build time
+- `on_clicked_install_only_zsh` (which called `restart_program()`) replaced by `on_install_zsh_clicked`: installs via terminal, waits in daemon thread, calls `GLib.idle_add(self._refresh_zsh_tab)` on success
+- SDDM fix: replaced `Gtk.Button().get_child().set_markup(...)` with explicit `Gtk.Label` + `set_child()` — `get_child()` is always `None` on a button created without a label argument
+- `update_image` guard: early return when `get_combo_text(widget) is None`; the `notify::selected` signal fires transiently during model replacement with no item selected, which previously caused a `TypeError` on string concatenation
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/shell.py`
+- `usr/share/archlinux-tweak-tool/shell_gui.py`
+- `usr/share/archlinux-tweak-tool/sddm_gui.py`
+- `usr/share/archlinux-tweak-tool/functions.py`
+
+---
+
 ## 2026.05.05 - SDDM: Button Compliance Fixes
 
 ### What Changed
