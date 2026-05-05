@@ -61,11 +61,11 @@ def gui(self, Gtk, vboxstack, fn):
     vbox_kernels = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack.append(vbox_kernels)
 
-    last_chaotic = [kernel.is_chaotic_aur_enabled()]
+    last_chaotic = [fn.check_chaotic_aur_active()]
     _populate_kernel_rows(self, Gtk, vbox_kernels, fn, refresh_boot)
 
     def on_map(_widget):
-        current = kernel.is_chaotic_aur_enabled()
+        current = fn.check_chaotic_aur_active()
         if current == last_chaotic[0]:
             return
         last_chaotic[0] = current
@@ -151,7 +151,7 @@ def _clear_box(box):
 
 
 def _populate_kernel_rows(self, Gtk, vbox_kernels, fn, refresh_boot):
-    chaotic_enabled = kernel.is_chaotic_aur_enabled()
+    chaotic_enabled = fn.check_chaotic_aur_active()
     installed_pkgs = kernel.get_installed_kernels()
     cpu_info = kernel.get_cpu_info()
     running_pkg = kernel.get_running_kernel()

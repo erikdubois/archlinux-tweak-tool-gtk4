@@ -419,12 +419,8 @@ def set_global_cursor(self, cursor):
 
 def pop_gtk_cursor_names(combo):
     """populate cursor names"""
-    coms = []
     _m = combo.get_model()
     _m.splice(0, _m.get_n_items(), [])
-    for item in fn.listdir("/usr/share/icons/"):
-        if fn.path_check("/usr/share/icons/" + item + "/cursors/"):
-            coms.append(item)
     lines = fn.get_lines(fn.icons_default)
     try:
         raw = check_cursor_global(lines, "Inherits=")
@@ -432,8 +428,7 @@ def pop_gtk_cursor_names(combo):
     except (IndexError, AttributeError):
         cursor_theme = ""
 
-    coms.sort()
-    for i, item in enumerate(coms):
+    for i, item in enumerate(fn.list_cursor_themes()):
         combo.get_model().append(item)
         if cursor_theme.lower() == item.lower():
             combo.set_selected(i)

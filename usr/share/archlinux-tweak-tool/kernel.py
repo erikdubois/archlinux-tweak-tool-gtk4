@@ -419,17 +419,6 @@ def get_installed_kernels():
         return {}
 
 
-def is_chaotic_aur_enabled():
-    try:
-        with open("/etc/pacman.conf", "r", encoding="utf-8") as f:
-            for line in f:
-                if line.strip() == "[chaotic-aur]":
-                    return True
-    except Exception:
-        pass
-    return False
-
-
 def is_systemd_boot():
     """Return True if systemd-boot is the active bootloader."""
     try:

@@ -159,7 +159,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
             lbl_cursor.set_margin_start(10)
             lbl_cursor.set_hexpand(True)
             self.sddm_cursor_themes = Gtk.DropDown.new_from_strings([])
-            sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+            sddm.pop_gtk_cursor_names(self.sddm_cursor_themes)
             self.sddm_cursor_themes.set_margin_end(10)
             self.sddm_cursor_themes.connect(
                 "notify::selected",

@@ -468,31 +468,31 @@ Use this to pick the right task for the time you have available.
 
 #### Small — under 1 hour each
 
-- [ ] S1 — Install `flake8`: `sudo pacman -S python-flake8`
-- [ ] S2 — Commit all pending deletions (`git add -u`)
-- [ ] S3 — Clear arco refs in `maintenance.py` (1 ref)
-- [ ] S4 — Clear arco refs in `services_gui.py` (1 ref)
-- [ ] S5 — Clear arco refs in `desktopr_gui.py` (1 ref)
-- [ ] S6 — Clear arco refs in `support.py` (2 refs)
-- [ ] S7 — Merge `functions_sddm.py` (1 function) into `functions.py`
-- [ ] S8 — Merge `functions_makedir.py` (2 functions) into `functions.py`
-- [ ] S9 — Review all TODO/FIXME markers — decide keep or delete (~40 across codebase)
-- [ ] S10 — Run flake8 on one small module and fix all warnings
+- [x] S1 — Install `flake8`: `sudo pacman -S python-flake8`
+- [x] S2 — Commit all pending deletions (`git add -u`) — done, working tree clean
+- [x] S3 — Clear arco refs in `maintenance.py` — 0 refs confirmed
+- [x] S4 — Clear arco refs in `services_gui.py` — 0 refs confirmed
+- [x] S5 — Clear arco refs in `desktopr_gui.py` — 0 refs confirmed
+- [x] S6 — Clear arco refs in `support.py` — file deleted
+- [x] S7 — Merge `functions_sddm.py` into `functions.py` — decided to keep separate (stay separate by design)
+- [x] S8 — Merge `functions_makedir.py` into `functions.py` — decided to keep separate (stay separate by design)
+- [x] S9 — Review all TODO/FIXME markers — none found, already cleared
+- [x] S10 — Run flake8 on one small module and fix all warnings — done project-wide
 
 #### Medium — 1–4 hours each
 
-- [ ] M1 — Clear arco refs in `functions.py` (7), `network_gui.py` (6), `shell.py` (5), `pacman.py` (5), `services.py` (4), `pacman_functions.py` (4) — do in one session
-- [ ] M2 — Clear arco refs in `desktopr.py` (16 refs, 673 lines)
-- [ ] M3 — Clear arco refs in `shell_gui.py` (20 refs, 670 lines)
-- [ ] M4 — Merge `functions_backup.py` (3 fns) + `functions_startup.py` (4 fns) into `functions.py`; update all importers
-- [ ] M5 — Audit `data/kiro/` gaps vs arco — produce the gap list (research only, no code changes)
-- [ ] M6 — Populate `data/kiro/bin/` with missing Kiro-equivalent scripts
-- [ ] M7 — Full flake8 pass on `functions.py` (2418 lines, 111 functions)
-- [ ] M8 — Audit `functions.py` for duplicate helpers already in feature modules (read-only pass)
+- [x] M1 — Clear arco refs in `functions.py`, `network_gui.py`, `shell.py`, `pacman.py`, `services.py`, `pacman_functions.py` — 0 refs confirmed in all
+- [x] M2 — Clear arco refs in `desktopr.py` — only ref is `/etc/skel/.config/arco-chadwm` (real folder name on disk, protected, keep)
+- [x] M3 — Clear arco refs in `shell_gui.py` — 0 refs confirmed
+- [x] M4 — Merge `functions_backup.py` (3 fns) + `functions_startup.py` (4 fns) into `functions.py`; update all importers
+- [x] M5 — Audit `data/kiro/` gaps — moot; data migrated to flat `data/` structure, no distro subfolders
+- [x] M6 — Populate `data/kiro/bin/` — moot; flat `data/bin/` already in place
+- [x] M7 — Full flake8 pass on `functions.py` — passes clean
+- [x] M8 — Audit `functions.py` for duplicates — 2 found: `is_chaotic_aur_enabled()` (kernel.py + pacman_functions.py vs check_chaotic_aur_active in functions.py) and `pop_gtk_cursor_names()` (maintenance.py + sddm.py)
 
 #### Large — 4+ hours each
 
-- [ ] L1 — Clear arco refs in `themes_gui.py` (109 refs)
-- [ ] L2 — Clear arco refs in `themes.py` (547 refs, 657 lines) — biggest single task; use plan mode
-- [ ] L3 — Consolidate duplicate helpers found in M8 — touches every module that uses them
-- [ ] L4 — Feature test pass: every tab on Kiro (packages, sddm, shell, maintenance, services, themes, icons, desktopr, fastfetch, performance, kernel, user, ai)
+- [x] L1 — Clear arco refs in `themes_gui.py` — all 109 refs are `arcolinux-arc-*` real AUR package names, protected, keep
+- [x] L2 — Clear arco refs in `themes.py` — all 547 refs are `arcolinux-arc-*` real AUR package names, protected, keep
+- [x] L3 — Consolidate duplicate helpers found in M8 — done: chaotic-AUR/nemesis checks unified, pop_gtk_cursor_names icon-scan extracted to fn.list_cursor_themes()
+- [x] L4 — Feature test pass: every tab on Kiro — done 2026-05-03, all 20 tabs verified working

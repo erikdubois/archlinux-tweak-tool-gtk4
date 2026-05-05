@@ -48,7 +48,6 @@ def check_repo(value):
     """check if repo is there and active"""
     with open(fn.pacman, "r", encoding="utf-8") as myfile:
         lines = myfile.readlines()
-        myfile.close()
 
     for line in lines:
         if value in line:
@@ -237,11 +236,6 @@ def check_aur_helper():
     elif fn.path.exists("/usr/bin/paru"):
         return "paru"
     return None
-
-
-def is_chaotic_aur_enabled():
-    """Check if chaotic-aur repository is enabled in pacman.conf."""
-    return check_repo("[chaotic-aur]")
 
 
 def install_yay_pacman(self):

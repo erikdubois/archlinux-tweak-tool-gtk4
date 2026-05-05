@@ -290,26 +290,19 @@ def pop_theme_box(self, combo):
             combo.set_selected(i)
 
 
-def pop_gtk_cursor_names(self, combo):
+def pop_gtk_cursor_names(combo):
     """populate cursor names"""
-    coms = []
     _m = combo.get_model()
     _m.splice(0, _m.get_n_items(), [])
 
     if fn.path.isfile(fn.sddm_default_d2):
-        for item in fn.listdir("/usr/share/icons/"):
-            if fn.path_check("/usr/share/icons/" + item + "/cursors/"):
-                coms.append(item)
-                coms.sort()
-
         lines = fn.get_lines(fn.sddm_default_d2)
         try:
             cursor_theme = check_sddm(lines, "CursorTheme=").split("=")[1]
         except IndexError:
             cursor_theme = ""
 
-        coms.sort()
-        for i, item in enumerate(coms):
+        for i, item in enumerate(fn.list_cursor_themes()):
             combo.get_model().append(item)
             if cursor_theme.lower() == item.lower():
                 combo.set_selected(i)
@@ -760,7 +753,7 @@ def on_click_fix_sddm_conf(self, _widget):
     def refresh():
         pop_box(self, self.sessions_sddm)
         pop_theme_box(self, self.theme_sddm)
-        pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        pop_gtk_cursor_names(self.sddm_cursor_themes)
         self.autologin_sddm.set_active(get_autologin_state())
         fn.show_in_app_notification(self, "SDDM configuration fixed")
 

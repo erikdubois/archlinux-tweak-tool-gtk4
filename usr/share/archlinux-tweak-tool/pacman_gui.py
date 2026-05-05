@@ -335,7 +335,7 @@ def gui(self, Gtk, vboxstack1, fn):
             btn_aur_paru.disconnect(paru_handler_id[0])
             paru_handler_id[0] = None
 
-        chaotic_now = pacman_functions.is_chaotic_aur_enabled()
+        chaotic_now = fn.check_chaotic_aur_active()
         aur_status.set_text("Chaotic-Aur repo: " + ("enabled" if chaotic_now else "disabled"))
 
         nemesis_now = pacman_functions.check_repo("[nemesis_repo]")

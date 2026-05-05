@@ -787,11 +787,9 @@ def restart_program():
 
 
 def check_nemesis_repo_active():
+    nemesis = "[nemesis_repo]"
     with open(pacman, "r", encoding="utf-8") as f:
         lines = f.readlines()
-        f.close()
-
-        nemesis = "[nemesis_repo]"
 
     for line in lines:
         if nemesis in line:
@@ -799,6 +797,7 @@ def check_nemesis_repo_active():
                 return False
             else:
                 return True
+    return False
 
 
 def check_chaotic_aur_active():
@@ -2120,13 +2119,20 @@ def wait_and_notify(process, self_ref, notification):
     threading.Thread(target=_wait, daemon=True).start()
 
 
+def list_cursor_themes():
+    return sorted(
+        item for item in os.listdir("/usr/share/icons/")
+        if path_check("/usr/share/icons/" + item + "/cursors/")
+    )
+
+
 def refresh_all_cursor_dropdowns(self):
     import maintenance as _maint
     import sddm as _sddm
     if hasattr(self, 'cursor_themes'):
         _maint.pop_gtk_cursor_names(self.cursor_themes)
     if hasattr(self, 'sddm_cursor_themes'):
-        _sddm.pop_gtk_cursor_names(self, self.sddm_cursor_themes)
+        _sddm.pop_gtk_cursor_names(self.sddm_cursor_themes)
 
 
 def update_image(self, widget, image, theme_type, att_base, image_width, image_height):
