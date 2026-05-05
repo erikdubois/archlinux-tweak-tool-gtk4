@@ -566,12 +566,13 @@ def get_limine_boot_entries():
     """Return list of (index_str, title) parsed from limine.conf.
 
     All entry lines at any depth are counted for correct default_entry indexing.
-    Only levels 1 (/) and 2 (//) are returned for display in the dropdown.
+    Only level-2 (//) leaf entries are returned — containers and level-1 entries
+    (group headers, EFI fallback) are excluded from the dropdown.
     """
     path = get_limine_conf_path()
     if not path:
         return []
-    entries = []
+    raw = []
     index = 0
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -584,10 +585,16 @@ def get_limine_boot_entries():
                 if not title:
                     continue
                 index += 1
-                if level <= 2:
-                    entries.append((str(index), title))
+                raw.append((index, level, title))
     except Exception:
         pass
+    entries = []
+    for i, (idx, level, title) in enumerate(raw):
+        if level != 2:
+            continue
+        is_container = i + 1 < len(raw) and raw[i + 1][1] > level
+        if not is_container:
+            entries.append((str(idx), title))
     return entries
 
 
