@@ -32,6 +32,29 @@ _SWAYBG_MODES = {
     "Stretch": "stretch",
 }
 
+_GNOME_MODES = {
+    "Fill": "zoom",
+    "Fit": "scaled",
+    "Center": "centered",
+    "Tile": "wallpaper",
+    "Stretch": "stretched",
+}
+
+_XFCE_STYLES = {
+    "Fill": "5",       # Zoomed
+    "Fit": "4",        # Scaled
+    "Center": "1",     # Centered
+    "Tile": "2",       # Tiled
+    "Stretch": "3",    # Stretched
+}
+
+_SIMPLE_WMS = {
+    "awesome", "berry", "bspwm", "ohmychadwm", "chadwm", "cwm", "dk", "dusk",
+    "flexi", "dwm", "fvwm3", "herbstluftwm", "hypr", "i3", "i3-with-shmlog",
+    "icewm", "icewm-session", "jwm", "leftwm", "nimdow", "openbox", "qtile",
+    "spectrwm", "worm", "wmderland", "xmonad",
+}
+
 
 def _find_wayland_setter():
     for tool in ("swaybg", "hyprpaper", "swww"):
@@ -297,62 +320,225 @@ def on_random_wallpaper(self, _widget=None):
 
 
 def _apply_wallpaper(self, path, scale):
-    if fn.os.environ.get("WAYLAND_DISPLAY"):
-        tool = _find_wayland_setter()
-        if tool == "swaybg":
-            mode = _SWAYBG_MODES.get(scale, "fill")
-            fn.log_subsection(f"Applying wallpaper — swaybg -m {mode}: {path}")
-            try:
-                fn.subprocess.Popen(["pkill", "-x", "swaybg"])
-                fn.subprocess.Popen(
-                    ["swaybg", "-i", path, "-m", mode],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.PIPE,
-                )
-                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-            except FileNotFoundError:
-                fn.log_error("swaybg not found")
-                fn.show_in_app_notification(self, "swaybg not found")
-            return
-        if tool == "hyprpaper":
-            fn.log_subsection(f"Applying wallpaper — hyprpaper: {path}")
-            try:
-                fn.subprocess.Popen(["hyprctl", "hyprpaper", "preload", path])
-                fn.subprocess.Popen(["hyprctl", "hyprpaper", "wallpaper", f",{path}"])
-                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-            except FileNotFoundError:
-                fn.log_error("hyprctl not found")
-                fn.show_in_app_notification(self, "hyprctl not found")
-            return
-        if tool == "swww":
-            fn.log_subsection(f"Applying wallpaper — swww: {path}")
-            try:
-                fn.subprocess.Popen(
-                    ["swww", "img", path],
-                    stdout=fn.subprocess.PIPE,
-                    stderr=fn.subprocess.PIPE,
-                )
-                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-            except FileNotFoundError:
-                fn.log_error("swww not found")
-                fn.show_in_app_notification(self, "swww not found")
-            return
-        fn.log_error("No Wayland wallpaper setter found (swaybg / hyprpaper / swww)")
-        fn.show_in_app_notification(self, "No wallpaper setter found — install swaybg, hyprpaper, or swww")
+    if fn.os.environ.get("WAYLAND_DISPLAY") or fn.os.environ.get("XDG_SESSION_TYPE") == "wayland":
+        _apply_wayland(self, path, scale)
+    else:
+        _apply_x11(self, path, scale)
+
+
+def _apply_wayland(self, path, scale):
+    tool = _find_wayland_setter()
+    if tool == "swaybg":
+        mode = _SWAYBG_MODES.get(scale, "fill")
+        fn.log_subsection(f"Applying wallpaper — swaybg -m {mode}: {path}")
+        try:
+            fn.subprocess.Popen(["pkill", "-x", "swaybg"])
+            fn.subprocess.Popen(
+                ["swaybg", "-i", path, "-m", mode],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+        except FileNotFoundError:
+            fn.log_error("swaybg not found")
+            fn.show_in_app_notification(self, "swaybg not found")
         return
+    if tool == "hyprpaper":
+        fn.log_subsection(f"Applying wallpaper — hyprpaper: {path}")
+        try:
+            fn.subprocess.Popen(["hyprctl", "hyprpaper", "preload", path])
+            fn.subprocess.Popen(["hyprctl", "hyprpaper", "wallpaper", f",{path}"])
+            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+        except FileNotFoundError:
+            fn.log_error("hyprctl not found")
+            fn.show_in_app_notification(self, "hyprctl not found")
+        return
+    if tool == "swww":
+        fn.log_subsection(f"Applying wallpaper — swww: {path}")
+        try:
+            fn.subprocess.Popen(
+                ["swww", "img", path],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+        except FileNotFoundError:
+            fn.log_error("swww not found")
+            fn.show_in_app_notification(self, "swww not found")
+        return
+    fn.log_error("No Wayland wallpaper setter found (swaybg / hyprpaper / swww)")
+    fn.show_in_app_notification(self, "No wallpaper setter found — install swaybg, hyprpaper, or swww")
+
+
+def _apply_x11(self, path, scale):
+    desktop = fn.os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+    kde = fn.os.environ.get("KDE_FULL_SESSION", "") == "true"
+
+    fn.debug_print(f"X11 DE detection: XDG_CURRENT_DESKTOP={desktop!r} KDE_FULL_SESSION={kde}")
+
+    if kde:
+        _set_kde(self, path)
+    elif "xfce" in desktop:
+        _set_xfce(self, path, scale)
+    elif "gnome" in desktop or "unity" in desktop:
+        _set_gnome(self, path, scale)
+    elif "mate" in desktop:
+        _set_mate(self, path, scale)
+    elif "cinnamon" in desktop or "x-cinnamon" in desktop:
+        _set_cinnamon(self, path, scale)
+    else:
+        _set_feh(self, path, scale)
+
+
+def _set_feh(self, path, scale):
     flag = _FEH_FLAGS.get(scale, "--bg-fill")
-    fn.log_subsection(f"Applying wallpaper — feh {flag}: {path}")
+    if shutil.which("feh"):
+        fn.log_subsection(f"Applying wallpaper — feh {flag}: {path}")
+        try:
+            fn.subprocess.Popen(
+                ["feh", flag, path],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+        except FileNotFoundError:
+            fn.log_error("feh not found")
+            fn.show_in_app_notification(self, "feh not found — install feh or nitrogen")
+    elif shutil.which("nitrogen"):
+        fn.log_subsection(f"Applying wallpaper — nitrogen --set-zoom-fill: {path}")
+        try:
+            fn.subprocess.Popen(
+                ["nitrogen", "--set-zoom-fill", "--save", path],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+        except FileNotFoundError:
+            fn.log_error("nitrogen not found")
+            fn.show_in_app_notification(self, "nitrogen not found — install feh or nitrogen")
+    else:
+        fn.log_error("No wallpaper setter found — install feh or nitrogen")
+        fn.show_in_app_notification(self, "No wallpaper setter found — install feh or nitrogen")
+
+
+def _set_xfce(self, path, scale):
+    fn.log_subsection(f"Applying wallpaper — xfconf-query (XFCE): {path}")
+    style = _XFCE_STYLES.get(scale, "5")
     try:
-        fn.subprocess.Popen(
-            ["feh", flag, path],
-            stdout=fn.subprocess.PIPE,
-            stderr=fn.subprocess.PIPE,
+        result = fn.subprocess.run(
+            ["xfconf-query", "-c", "xfce4-desktop", "-p", "/backdrop", "-l"],
+            capture_output=True, text=True,
+        )
+        image_props = [
+            p for p in result.stdout.splitlines()
+            if re.search(r"screen.*/monitor.*(image-path|last-image)$", p)
+        ]
+        style_props = [
+            re.sub(r"(image-path|last-image)$", "image-style", p)
+            for p in image_props
+        ]
+        for prop in image_props:
+            fn.subprocess.run(
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-n", "-t", "string", "-s", ""],
+                stderr=fn.subprocess.DEVNULL,
+            )
+            fn.subprocess.run(
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-s", path],
+                stderr=fn.subprocess.DEVNULL,
+            )
+        for prop in style_props:
+            fn.subprocess.run(
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-n", "-t", "int", "-s", style],
+                stderr=fn.subprocess.DEVNULL,
+            )
+            fn.subprocess.run(
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-s", style],
+                stderr=fn.subprocess.DEVNULL,
+            )
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+    except FileNotFoundError:
+        fn.log_error("xfconf-query not found — is xfce4-settings installed?")
+        fn.show_in_app_notification(self, "xfconf-query not found")
+
+
+def _set_gnome(self, path, scale):
+    fn.log_subsection(f"Applying wallpaper — gsettings (GNOME): {path}")
+    mode = _GNOME_MODES.get(scale, "zoom")
+    uri = f"file://{path}"
+    try:
+        fn.subprocess.run(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.subprocess.run(["gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", uri],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.subprocess.run(["gsettings", "set", "org.gnome.desktop.background", "picture-options", mode],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+    except FileNotFoundError:
+        fn.log_error("gsettings not found")
+        fn.show_in_app_notification(self, "gsettings not found")
+
+
+def _set_mate(self, path, scale):
+    fn.log_subsection(f"Applying wallpaper — gsettings (MATE): {path}")
+    mode = _GNOME_MODES.get(scale, "zoom")
+    try:
+        fn.subprocess.run(["gsettings", "set", "org.mate.background", "picture-filename", path],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.subprocess.run(["gsettings", "set", "org.mate.background", "picture-options", mode],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+    except FileNotFoundError:
+        fn.log_error("gsettings not found")
+        fn.show_in_app_notification(self, "gsettings not found")
+
+
+def _set_cinnamon(self, path, scale):
+    fn.log_subsection(f"Applying wallpaper — gsettings (Cinnamon): {path}")
+    mode = _GNOME_MODES.get(scale, "zoom")
+    uri = f"file://{path}"
+    try:
+        fn.subprocess.run(["gsettings", "set", "org.cinnamon.desktop.background", "picture-uri", uri],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.subprocess.run(["gsettings", "set", "org.cinnamon.desktop.background", "picture-options", mode],
+                          stderr=fn.subprocess.DEVNULL)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+    except FileNotFoundError:
+        fn.log_error("gsettings not found")
+        fn.show_in_app_notification(self, "gsettings not found")
+
+
+def _set_kde(self, path):
+    fn.log_subsection(f"Applying wallpaper — PlasmaShell dbus (KDE): {path}")
+    script = (
+        "let allDesktops = desktops();"
+        "for (let d of allDesktops) {"
+        "  if (d.wallpaperPlugin == 'org.kde.image') {"
+        "    d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];"
+        f"   d.writeConfig('Image', 'file://{path}');"
+        "  }"
+        "}"
+    )
+    try:
+        fn.subprocess.run(
+            [
+                "dbus-send", "--type=method_call",
+                "--dest=org.kde.plasmashell", "/PlasmaShell",
+                "org.kde.PlasmaShell.evaluateScript",
+                f"string:{script}",
+            ],
+            stderr=fn.subprocess.DEVNULL,
         )
         fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
         fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
     except FileNotFoundError:
-        fn.log_error("feh not found — install feh to apply wallpapers")
-        fn.show_in_app_notification(self, "feh not found — install feh first")
+        fn.log_error("dbus-send not found")
+        fn.show_in_app_notification(self, "dbus-send not found")
