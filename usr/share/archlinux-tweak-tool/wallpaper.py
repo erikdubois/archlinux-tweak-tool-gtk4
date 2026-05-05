@@ -24,6 +24,21 @@ _FEH_FLAGS = {
     "Stretch": "--bg-scale",
 }
 
+_SWAYBG_MODES = {
+    "Fill": "fill",
+    "Fit": "fit",
+    "Center": "center",
+    "Tile": "tile",
+    "Stretch": "stretch",
+}
+
+
+def _find_wayland_setter():
+    for tool in ("swaybg", "hyprpaper", "swww"):
+        if shutil.which(tool):
+            return tool
+    return None
+
 
 def on_install_variety(self, _widget=None):
     fn.log_subsection("Install variety")
@@ -258,7 +273,7 @@ def on_apply_wallpaper(self, _widget=None):
         fn.show_in_app_notification(self, "Select a wallpaper first")
         return
     scale = fn.get_combo_text(self.wallpaper_scale_combo)
-    _apply_feh(self, path, scale)
+    _apply_wallpaper(self, path, scale)
 
 
 def on_random_wallpaper(self, _widget=None):
@@ -278,10 +293,56 @@ def on_random_wallpaper(self, _widget=None):
     self.wallpaper_path_lbl.set_text(path)
     self.wallpaper_preview.set_filename(path)
     self.wallpaper_preview.get_parent().set_visible(True)
-    _apply_feh(self, path, scale)
+    _apply_wallpaper(self, path, scale)
 
 
-def _apply_feh(self, path, scale):
+def _apply_wallpaper(self, path, scale):
+    if fn.os.environ.get("WAYLAND_DISPLAY"):
+        tool = _find_wayland_setter()
+        if tool == "swaybg":
+            mode = _SWAYBG_MODES.get(scale, "fill")
+            fn.log_subsection(f"Applying wallpaper — swaybg -m {mode}: {path}")
+            try:
+                fn.subprocess.Popen(["pkill", "-x", "swaybg"])
+                fn.subprocess.Popen(
+                    ["swaybg", "-i", path, "-m", mode],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.PIPE,
+                )
+                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+            except FileNotFoundError:
+                fn.log_error("swaybg not found")
+                fn.show_in_app_notification(self, "swaybg not found")
+            return
+        if tool == "hyprpaper":
+            fn.log_subsection(f"Applying wallpaper — hyprpaper: {path}")
+            try:
+                fn.subprocess.Popen(["hyprctl", "hyprpaper", "preload", path])
+                fn.subprocess.Popen(["hyprctl", "hyprpaper", "wallpaper", f",{path}"])
+                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+            except FileNotFoundError:
+                fn.log_error("hyprctl not found")
+                fn.show_in_app_notification(self, "hyprctl not found")
+            return
+        if tool == "swww":
+            fn.log_subsection(f"Applying wallpaper — swww: {path}")
+            try:
+                fn.subprocess.Popen(
+                    ["swww", "img", path],
+                    stdout=fn.subprocess.PIPE,
+                    stderr=fn.subprocess.PIPE,
+                )
+                fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+                fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
+            except FileNotFoundError:
+                fn.log_error("swww not found")
+                fn.show_in_app_notification(self, "swww not found")
+            return
+        fn.log_error("No Wayland wallpaper setter found (swaybg / hyprpaper / swww)")
+        fn.show_in_app_notification(self, "No wallpaper setter found — install swaybg, hyprpaper, or swww")
+        return
     flag = _FEH_FLAGS.get(scale, "--bg-fill")
     fn.log_subsection(f"Applying wallpaper — feh {flag}: {path}")
     try:

@@ -1,5 +1,25 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Shell tab: active shell indicator; Omarchy distro added
+
+### What Changed
+
+- Shell tab stack switcher now labels the currently active shell with "(active)" — e.g. "FISH (active)" — derived from `fn.get_shell()` at GUI construction time
+- Added Omarchy to the startup banner's supported distributions list (between Nyarch and ParchLinux)
+- Added Omarchy to `DISTRO_TESTING.md` (version 3.7.0-2, <https://omarchy.org>); detection was already present in `functions.py`
+
+### Technical Details
+
+- `fn.get_shell()` reads `pwd.getpwnam(sudo_username).pw_shell` — authoritative login shell regardless of how ATT was launched; `stack.add_titled()` title arg computed inline with a ternary
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/shell_gui.py`
+- `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+- `DISTRO_TESTING.md`
+
+---
+
 ## 2026.05.05 - Wallpaper: Demote verbose thumb-load message to debug-only
 
 ### What Changed

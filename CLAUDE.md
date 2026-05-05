@@ -289,6 +289,8 @@ Debug output includes D-Bus warnings, initialization steps, and custom debug mes
 
 ## Recent Work
 
+- **Shell tab: active shell indicator (2026-05-05)** — stack switcher tab for the active shell now shows "(active)"; derived from `fn.get_shell()` at GUI build time
+- **Omarchy added (2026-05-05)** — startup banner updated; `DISTRO_TESTING.md` entry added (3.7.0-2); detection was already in `functions.py`
 - **SDDM theme dropdown refresh (2026-05-04)** — `pop_theme_box` called inside `refresh()` after install/remove of edu-simplicity; dropdown now updates without restart
 - **Kernel tab: chaotic-AUR dynamic refresh (2026-05-04)** — kernel rows rebuilt on tab map signal when chaotic status changes; no restart needed
 - **Kernel tab: boot entry enrichment (2026-05-04)** — dropdown shows `title — kernel_pkg`; orphan entries filtered; `lbl_current` uses enriched string
