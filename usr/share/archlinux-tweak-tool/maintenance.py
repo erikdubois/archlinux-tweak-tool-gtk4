@@ -450,7 +450,7 @@ def _run_terminal(self, cmd, done_msg, start_msg=None):
 
     def _wait():
         try:
-            fn.subprocess.Popen(cmd, shell=True).wait()
+            fn.subprocess.Popen(cmd, shell=True, env=fn.get_terminal_env()).wait()
             fn.log_success(done_msg)
             GLib.idle_add(fn.show_in_app_notification, self, done_msg)
         except Exception as error:
@@ -592,8 +592,7 @@ def on_click_install_arch_keyring_online(self, _widget):
             script = f"sudo pacman -U {package_file} --noconfirm; read -p 'Press Enter to close...'"
             process = fn.subprocess.Popen(
                 ["alacritty", "-e", "bash", "-c", script],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.PIPE,
+                env=fn.get_terminal_env(),
             )
             GLib.idle_add(fn.show_in_app_notification, self, "Installation started...")
             process.wait()

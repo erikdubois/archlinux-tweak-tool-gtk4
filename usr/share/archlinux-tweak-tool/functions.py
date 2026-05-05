@@ -914,6 +914,29 @@ def install_package(self, package):
         GLib.idle_add(show_in_app_notification, self, f"Error installing {package}: {error}")
 
 
+def get_terminal_env():
+    """Return env dict with XDG_RUNTIME_DIR and WAYLAND_DISPLAY set for the real user.
+
+    Fixes alacritty launch under pkexec/sudo on Wayland where those vars are stripped.
+    Only sets WAYLAND_DISPLAY if a wayland socket is actually found — X11 is unaffected.
+    """
+    env = os.environ.copy()
+    try:
+        uid = pwd.getpwnam(sudo_username).pw_uid
+        xdg_runtime = f"/run/user/{uid}"
+        env["XDG_RUNTIME_DIR"] = xdg_runtime
+        if not env.get("WAYLAND_DISPLAY"):
+            sockets = [
+                f for f in os.listdir(xdg_runtime)
+                if f.startswith("wayland-") and not f.endswith(".lock")
+            ] if os.path.isdir(xdg_runtime) else []
+            if sockets:
+                env["WAYLAND_DISPLAY"] = sockets[0]
+    except Exception:
+        pass
+    return env
+
+
 def install_local_package(self, package):
     if not os.path.exists(package):
         log_error(f"Package file not found: {package}")
