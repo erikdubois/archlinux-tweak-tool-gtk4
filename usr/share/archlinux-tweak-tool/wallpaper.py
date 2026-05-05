@@ -2,6 +2,7 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import pwd
 import shutil
 import random as _random
 
@@ -11,7 +12,7 @@ from gi.repository import GdkPixbuf, Gdk, Gtk, Gio, Pango
 
 _DIR = fn.path.dirname(fn.path.abspath(__file__))
 _ATT_WALLPAPERS = fn.path.join(_DIR, "wallpapers")
-_VARIETY_CONF_SRC = fn.path.join(_DIR, "data", "kiro", "variety")
+_VARIETY_CONF_SRC = fn.path.join(_DIR, "data", "variety")
 _VARIETY_CONF_DEST = fn.path.join(fn.home, ".config", "variety")
 
 _FEH_FLAGS = {
@@ -30,8 +31,6 @@ def on_install_variety(self, _widget=None):
 
     def refresh():
         installed = fn.check_package_installed("variety")
-        self.btn_install_variety.set_visible(not installed)
-        self.btn_remove_variety.set_visible(installed)
         _set_variety_widgets_sensitive(self, installed)
         if installed:
             fn.log_success("variety installed")
@@ -57,8 +56,6 @@ def on_remove_variety(self, _widget=None):
 
     def refresh():
         installed = fn.check_package_installed("variety")
-        self.btn_install_variety.set_visible(not installed)
-        self.btn_remove_variety.set_visible(installed)
         _set_variety_widgets_sensitive(self, installed)
         if not installed:
             fn.log_success("variety removed")
@@ -89,11 +86,23 @@ def on_save_variety_config(self, _widget=None):
         for item in fn.os.listdir(_VARIETY_CONF_SRC):
             src = fn.path.join(_VARIETY_CONF_SRC, item)
             dest = fn.path.join(_VARIETY_CONF_DEST, item)
-            if fn.path.isfile(dest):
-                shutil.copy2(dest, dest + ".bak")
-                fn.debug_print(f"Backed up: {dest} → {dest}.bak")
-            shutil.copy2(src, dest)
-            fn.debug_print(f"Copied: {src} → {dest}")
+            if fn.path.isdir(src):
+                if fn.path.isdir(dest):
+                    shutil.rmtree(dest + "-bak", ignore_errors=True)
+                    shutil.copytree(dest, dest + "-bak")
+                    fn.log_info_concise(f"  Backed up: {dest} → {dest}-bak")
+                fn.log_info_concise(f"  From: {src}")
+                fn.log_info_concise(f"  To:   {dest}")
+                shutil.copytree(src, dest, dirs_exist_ok=True)
+                fn.log_info_concise(f"  Done: {fn.path.basename(src)}/")
+            else:
+                if fn.path.isfile(dest):
+                    shutil.copy2(dest, dest + "-bak")
+                    fn.log_info_concise(f"  Backed up: {dest} → {dest}-bak")
+                fn.log_info_concise(f"  From: {src}")
+                fn.log_info_concise(f"  To:   {dest}")
+                shutil.copy2(src, dest)
+                fn.log_info_concise(f"  Done: {fn.path.basename(src)}")
         fn.log_success("ATT variety config saved to ~/.config/variety/")
         fn.show_in_app_notification(self, "Variety config saved")
     except Exception as error:
@@ -103,11 +112,18 @@ def on_save_variety_config(self, _widget=None):
 
 def on_open_variety_settings(self, _widget=None):
     fn.log_subsection("Open variety settings")
-    fn.subprocess.Popen(
-        ["variety", "--preferences"],
-        stdout=fn.subprocess.PIPE,
-        stderr=fn.subprocess.PIPE,
+    uid = pwd.getpwnam(fn.sudo_username).pw_uid
+    cmd = (
+        f"sudo -u {fn.sudo_username}"
+        f" XDG_RUNTIME_DIR=/run/user/{uid}"
+        f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
+        " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+        " variety --preferences"
     )
+    fn.threading.Thread(
+        target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
+        daemon=True,
+    ).start()
 
 
 def on_browse_wallpaper_folder(self, _widget=None):

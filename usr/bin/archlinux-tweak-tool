@@ -1,124 +1,86 @@
-#!/bin/bash
-set -euo pipefail
-##################################################################################################################
-# Author    : Erik Dubois
-# Website   : https://www.erikdubois.be
-# Youtube   : https://youtube.com/erikdubois
-##################################################################################################################
+#!/usr/bin/env bash
 
-RESET=$(tput sgr0)
-CYAN=$(tput setaf 6)
-GREEN=$(tput setaf 2)
-RED=$(tput setaf 1)
-YELLOW=$(tput setaf 3)
+# this script should not be run as root
+# the polkit agent running on the desktop environment should prompt for root password
 
-separator() {
-    echo "${CYAN}===============================================================================${RESET}"
+echo "---------------------------------------------------------------------------"
+echo "[INFO]: Checking session"
+test $(whoami) == "root" && echo "[ERROR]: Do not run this script as root." && exit 1
+test -z $DISPLAY && echo "[ERROR]: DISPLAY variable is not set." && exit 1
+
+# check session is either one of X11, Wayland or TTY
+SESSION=$(loginctl show-session $(loginctl|grep $(whoami) | awk '{print $1}') -p Type | awk -F= '{print $2}' | grep "x11\|wayland\|tty")
+test -z "$SESSION" && echo "[ERROR]: Failed to verify session for user, SESSION = $SESSION" && exit 1
+
+XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ')
+test -z "$XAUTHORITY" && echo "[ERROR]: XAUTHORIY file is not set" && exit 1
+test -s "$XAUTHORITY" || touch "$XAUTHORITY"
+
+XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ')
+test $XAUTH_HONORED = "yes" || echo "[ERROR]: Xauth changes honored = no, restart X server" || exit 1
+
+echo "[INFO]: XAUTHORITY = $XAUTHORITY"
+echo "[INFO]: DBUS_SESSION_BUS_ADDRESS = $DBUS_SESSION_BUS_ADDRESS"
+echo "[INFO]: DESKTOP SESSION = $DESKTOP_SESSION"
+
+function start_in_wayland() {
+  echo "[INFO]: Starting in Wayland session"
+  xauth gen $DISPLAY &> /dev/null
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
 
-header() {
-    echo ""
-    separator
-    echo "${CYAN}  $1${RESET}"
-    separator
+function start_in_x11() {
+  echo "[INFO]: Starting in X11 session"
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
 
-success() { echo "${GREEN}  ✓ $1${RESET}"; }
-info()    { echo "    $1"; }
-warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
-error()   { echo "${RED}  ✗ $1${RESET}"; }
-
-# ── Guard: not root ────────────────────────────────────────────────────────────
-header "Checking Environment"
-
-if [[ $(whoami) == "root" ]]; then
-    error "Do not run this script as root."
-    exit 1
-fi
-
-if [[ -z "${DISPLAY:-}" ]]; then
-    error "DISPLAY variable is not set."
-    exit 1
-fi
-
-# ── Detect session ─────────────────────────────────────────────────────────────
-if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
-    SESSION="wayland"
-elif [[ -n "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
-    SESSION="x11"
-elif [[ -n "${XDG_SESSION_TYPE:-}" ]]; then
-    SESSION="${XDG_SESSION_TYPE}"
-else
-    SESSION=$(loginctl show-session "$(loginctl | grep "$(whoami)" | awk '{print $1}' | head -1)" -p Type \
-        | awk -F= '{print $2}' | grep "x11\|wayland\|tty" || true)
-fi
-
-# Plan B: DISPLAY is verified non-empty above — if all else fails, assume x11
-if [[ -z "$SESSION" ]]; then
-    warn "Could not detect session type — DISPLAY is set, assuming x11"
-    SESSION="x11"
-fi
-
-# ── Xauth setup ────────────────────────────────────────────────────────────────
-if [[ -z "${XAUTHORITY:-}" ]]; then
-    XAUTHORITY=$(xauth info | awk -F"Authority file:" '{print $2}' | tr -d ' ' || true)
-fi
-if [[ -z "$XAUTHORITY" ]]; then
-    XAUTHORITY="$HOME/.Xauthority"
-    warn "XAUTHORITY not found via xauth — defaulting to $XAUTHORITY"
-fi
-[[ -s "$XAUTHORITY" ]] || touch "$XAUTHORITY"
-export XAUTHORITY
-
-XAUTH_HONORED=$(xauth info | awk -F"Changes honored:" '{print $2}' | tr -d ' ' || true)
-if [[ "$XAUTH_HONORED" != "yes" ]]; then
-    warn "Xauth changes honored = no — restart X server if issues occur"
-fi
-
-info "XAUTHORITY       = $XAUTHORITY"
-info "DBUS_SESSION_BUS = ${DBUS_SESSION_BUS_ADDRESS:-not set}"
-info "DESKTOP_SESSION  = ${DESKTOP_SESSION:-not set}"
-
-# ── Launch helpers ─────────────────────────────────────────────────────────────
-start_in_wayland() {
-    info "Starting in Wayland session"
-    xauth gen "$DISPLAY" &>/dev/null || true
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
+function start_in_tty() {
+  echo "[INFO]: Starting in TTY session"
+  pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py'
 }
-
-start_in_x11() {
-    info "Starting in X11 session"
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
-}
-
-start_in_tty() {
-    info "Starting in TTY session"
-    pkexec '/usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py' "$@"
-}
-
-# ── Launch ─────────────────────────────────────────────────────────────────────
-header "Launching ATT — Session: $SESSION / Display: ${DISPLAY:-not set}"
 
 case "$SESSION" in
-    wayland)
-        start_in_wayland "$@"
-        ;;
-    x11)
-        start_in_x11 "$@"
-        ;;
-    tty)
-        start_in_tty "$@"
-        ;;
+    "wayland")
+      # Wayland session, generate Xauth session cookie for $DISPLAY
+      echo "[INFO]: Display = $DISPLAY"
+      echo "[INFO]: Session = $SESSION"
+      start_in_wayland
+    ;;
+    "x11")
+      # X11 session, don't do anything here
+      echo "[INFO]: Display = $DISPLAY"
+      echo "[INFO]: Session = $SESSION"
+
+      # just show msg on whether the Xauth session cookie is setup
+      start_in_x11
+    ;;
+    "tty")
+      # TTY session, as user may not use a display manager
+      echo "[INFO]: Display = $DISPLAY"
+      echo "[INFO]: Session = $SESSION"
+
+      start_in_tty
+    ;;
     *)
-        warn "Session could not be verified — falling back to XDG_SESSION_TYPE"
-        case "${XDG_SESSION_TYPE:-}" in
-            wayland) start_in_wayland "$@" ;;
-            tty)     start_in_tty "$@" ;;
-            x11)     start_in_x11 "$@" ;;
-            *)
-                error "${XDG_SESSION_TYPE:-XDG_SESSION_TYPE} is empty — cannot continue"
-                exit 1
-                ;;
-        esac
+      # anything here is an unknown session, fallback to XDG_SESSION_TYPE
+      echo "[INFO]: Display = $DISPLAY"
+      echo "[WARN]: Session could not be verified, using XDG_SESSION_TYPE"
+
+      case "$XDG_SESSION_TYPE" in
+        "wayland")
+          start_in_wayland
         ;;
-esac
+        "tty")
+          start_in_tty
+        ;;
+        "x11")
+          start_in_x11
+        ;;
+        *)
+          echo "[ERROR]: $XDG_SESSION_TYPE is empty, cannot continue"
+          exit 1
+        ;;
+      esac
+    ;;
+  esac
+echo "---------------------------------------------------------------------------"

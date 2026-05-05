@@ -32,11 +32,9 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     hbox_variety_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.btn_install_variety = Gtk.Button(label="Install variety")
     self.btn_install_variety.connect("clicked", functools.partial(wallpaper.on_install_variety, self))
-    self.btn_install_variety.set_visible(not variety_installed)
 
     self.btn_remove_variety = Gtk.Button(label="Remove variety")
     self.btn_remove_variety.connect("clicked", functools.partial(wallpaper.on_remove_variety, self))
-    self.btn_remove_variety.set_visible(variety_installed)
 
     hbox_variety_btns.append(self.btn_install_variety)
     hbox_variety_btns.append(self.btn_remove_variety)
@@ -74,7 +72,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
 
     self.wallpaper_folder_entry = Gtk.Entry()
     self.wallpaper_folder_entry.set_hexpand(True)
-    self.wallpaper_folder_entry.set_text(base_dir + "/wallpapers")
+    self.wallpaper_folder_entry.set_text("/usr/share/archlinux-tweak-tool/wallpapers")
 
     btn_load = Gtk.Button(label="Load")
     btn_load.connect("clicked", functools.partial(wallpaper.on_load_wallpaper_folder, self))
@@ -121,7 +119,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     lbl_scale = Gtk.Label(xalign=0)
     lbl_scale.set_text("Scale:")
     self.wallpaper_scale_combo = Gtk.DropDown.new_from_strings(["Fill", "Fit", "Center", "Tile", "Stretch"])
-    self.wallpaper_scale_combo.set_selected(0)
+    self.wallpaper_scale_combo.set_selected(4)
 
     btn_apply = Gtk.Button(label="Apply wallpaper")
     btn_apply.connect("clicked", functools.partial(wallpaper.on_apply_wallpaper, self))
@@ -161,7 +159,7 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     vboxstack_wallpaper.append(hbox_separator)
     vboxstack_wallpaper.append(vbox)
 
-    bundled = base_dir + "/wallpapers"
+    bundled = "/usr/share/archlinux-tweak-tool/wallpapers"
     if fn.path.isdir(bundled):
         fn.GLib.idle_add(
             lambda: wallpaper._populate_wallpaper_thumbs(self, bundled),

@@ -336,6 +336,38 @@ def backup_user_configs():
     else:
         fn.debug_print(f"alacritty config not found at {fn.alacritty_config}")
 
+    # Variety config
+    variety_conf = fn.path.join(fn.home, ".config", "variety", "variety.conf")
+    variety_conf_bak = fn.path.join(fn.home, ".config", "variety", "variety.conf-bak")
+    if fn.path.isfile(variety_conf) and not fn.path.isfile(variety_conf_bak):
+        try:
+            fn.debug_print(f"Backing up variety.conf: {variety_conf}")
+            fn.log_info_concise(f"  From: {variety_conf}")
+            fn.log_info_concise(f"  To:   {variety_conf_bak}")
+            fn.shutil.copy2(variety_conf, variety_conf_bak)
+            fn.debug_print("✓ variety.conf-bak created")
+        except Exception as error:
+            fn.debug_print(f"Error backing up variety.conf: {error}")
+            fn.log_error(str(error))
+    else:
+        fn.debug_print("variety.conf-bak already exists or variety.conf not found, skipping")
+
+    # Variety scripts folder
+    variety_scripts = fn.path.join(fn.home, ".config", "variety", "scripts")
+    variety_scripts_bak = fn.path.join(fn.home, ".config", "variety", "scripts-bak")
+    if fn.path.isdir(variety_scripts) and not fn.path.isdir(variety_scripts_bak):
+        try:
+            fn.debug_print(f"Backing up variety scripts: {variety_scripts}")
+            fn.log_info_concise(f"  From: {variety_scripts}")
+            fn.log_info_concise(f"  To:   {variety_scripts_bak}")
+            fn.shutil.copytree(variety_scripts, variety_scripts_bak)
+            fn.debug_print("✓ scripts-bak created")
+        except Exception as error:
+            fn.debug_print(f"Error backing up variety scripts: {error}")
+            fn.log_error(str(error))
+    else:
+        fn.debug_print("scripts-bak already exists or scripts folder not found, skipping")
+
     fn.debug_print("=" * 75)
     fn.debug_print("backup_user_configs() END")
     fn.debug_print("=" * 75)
