@@ -1147,6 +1147,21 @@ def remove_debug_from_makepkg_conf():
         return False
 
 
+def check_debug_status():
+    makepkg_conf = "/etc/makepkg.conf"
+    try:
+        with open(makepkg_conf, 'r') as f:
+            for line in f:
+                if line.startswith("OPTIONS="):
+                    if "!debug" in line:
+                        return True
+                    if "debug" in line:
+                        return False
+    except Exception:
+        pass
+    return None
+
+
 def launch_pacman_install_in_terminal(packages):
     import tempfile
 

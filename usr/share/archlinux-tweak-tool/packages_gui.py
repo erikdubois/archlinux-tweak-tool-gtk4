@@ -249,9 +249,25 @@ def gui(self, Gtk, vbox_stack, fn):
         label_debug = Gtk.Label(xalign=0)
         label_debug.set_text("Remove the debug in /etc/makepkg.conf")
         label_debug.set_hexpand(True)
+
+        label_debug_status = Gtk.Label(xalign=0)
+        debug_ok = fn.check_debug_status()
+        if debug_ok is True:
+            label_debug_status.set_markup("<b>Debug ok</b>")
+        else:
+            label_debug_status.set_text("Debug not ok")
+
         button_remove_debug = Gtk.Button(label="Remove")
 
+        def refresh_debug_status(_widget):
+            packages.on_click_remove_debug(self, _widget)
+            if fn.check_debug_status() is True:
+                label_debug_status.set_markup("<b>Debug ok</b>")
+            else:
+                label_debug_status.set_text("Debug not ok")
+
         hbox_debug.append(label_debug)
+        hbox_debug.append(label_debug_status)
         hbox_debug.append(button_remove_debug)
         hbox_debug.set_margin_start(10)
         hbox_debug.set_margin_end(10)
@@ -259,7 +275,7 @@ def gui(self, Gtk, vbox_stack, fn):
         hbox_debug.set_margin_bottom(10)
         vbox_build.append(hbox_debug)
 
-        button_remove_debug.connect("clicked", functools.partial(packages.on_click_remove_debug, self))
+        button_remove_debug.connect("clicked", refresh_debug_status)
 
         vbox_build.set_margin_start(10)
         vbox_build.set_margin_end(10)
