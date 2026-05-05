@@ -789,7 +789,11 @@ def uninstall_desktop(self, desktop):
 
 
 def refresh_installed_desktops(self):
-    installed = [d for d in desktops if check_desktop(d)]
+    xsessions = [f[:-8] for f in fn.listdir("/usr/share/xsessions/") if f.endswith(".desktop")] \
+        if os.path.exists("/usr/share/xsessions") else []
+    wayland = [f[:-8] for f in fn.listdir("/usr/share/wayland-sessions/") if f.endswith(".desktop")] \
+        if os.path.exists("/usr/share/wayland-sessions") else []
+    installed = sorted(set(xsessions + wayland))
     text = "Installed: " + ", ".join(installed) if installed else "No desktops installed"
     self.label_installed_desktops.set_text(text)
 
