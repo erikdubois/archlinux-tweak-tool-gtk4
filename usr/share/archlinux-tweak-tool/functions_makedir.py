@@ -6,11 +6,9 @@ import functions as fn
 
 
 def ensure_root_config_dirs():
-    """Ensure /root/.config directories exist"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF ensure_root_config_dirs() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Ensuring /root/.config directories")
+    fn.debug_print("ensure_root_config_dirs() START")
+    fn.debug_print("=" * 85)
 
     if not fn.path.isdir("/root/.config/"):
         try:
@@ -56,18 +54,15 @@ def ensure_root_config_dirs():
     else:
         fn.debug_print("/root/.config/xsettingsd already exists")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF ensure_root_config_dirs() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("ensure_root_config_dirs() END")
+    fn.debug_print("=" * 85)
 
 
 def ensure_app_dirs():
-    """Ensure application directories exist"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF ensure_app_dirs() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Ensuring application directories")
+    fn.debug_print("ensure_app_dirs() START")
+    fn.debug_print("=" * 85)
 
     if not fn.path.isdir(fn.log_dir):
         try:
@@ -130,7 +125,6 @@ def ensure_app_dirs():
     else:
         fn.debug_print(f"{att_config_dir} already exists")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF ensure_app_dirs() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("ensure_app_dirs() END")
+    fn.debug_print("=" * 85)

@@ -388,14 +388,14 @@ def set_global_cursor(self, cursor):
     if fn.path.exists("/usr/bin/sddm"):
         apply_target("sddm", _set_sddm_cursor, cursor)
 
-    fn.debug_print("=" * 70)
+    fn.debug_print("=" * 85)
     fn.debug_print(f"[INFO] Cursor theme successfully saved: {cursor}")
     fn.debug_print("[INFO] Modified locations:")
     for target in changed:
         fn.debug_print(f"[INFO]  - {target}")
     if failed:
         fn.debug_print(f"[WARNING] Failed cursor targets: {', '.join(failed)}")
-    fn.debug_print("=" * 70)
+    fn.debug_print("=" * 85)
 
     fn.log_info_concise(f"Cursor theme '{cursor}' applied to:")
     for target in changed:
@@ -637,6 +637,8 @@ def on_click_reset_mirrorlist(self, _widget):
     fn.log_subsection("Resetting mirrorlist...")
     try:
         if fn.path.isfile(fn.mirrorlist + ".bak"):
+            fn.log_info_concise(f"  From: {fn.mirrorlist}.bak")
+            fn.log_info_concise(f"  To:   {fn.mirrorlist}")
             fn.shutil.copy(fn.mirrorlist + ".bak", fn.mirrorlist)
     except Exception as error:
         fn.log_warn(f"Restore from backup failed: {error}")
@@ -682,6 +684,8 @@ def on_click_fix_pacman_gpg_conf(self, _widget):
     fn.log_info_concise(f"  From: {gpg_conf_path}")
     fn.log_info_concise(f"  To:   {fn.gpg_conf}")
     if not fn.path.isfile(fn.gpg_conf + ".bak"):
+        fn.log_info_concise(f"  From: {fn.gpg_conf}")
+        fn.log_info_concise(f"  To:   {fn.gpg_conf}.bak")
         fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
         fn.log_info(f"Backup created: {fn.gpg_conf}.bak")
     fn.debug_print(f"Restoring from: {gpg_conf_path}")
@@ -717,6 +721,8 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
         )
     elif not fn.path.isfile(fn.gpg_conf_local + ".bak"):
         try:
+            fn.log_info_concise(f"  From: {fn.gpg_conf_local}")
+            fn.log_info_concise(f"  To:   {fn.gpg_conf_local}.bak")
             fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
             fn.permissions(fn.gpg_conf_local + ".bak")
             fn.log_info(f"Backup created: {fn.gpg_conf_local}.bak")
@@ -725,8 +731,8 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
 
     base_dir = fn.os.path.dirname(fn.os.path.abspath(__file__))
     gpg_conf_local_path = base_dir + "/data/gpg.conf"
-    fn.log_info(f"From: {gpg_conf_local_path}")
-    fn.log_info(f"To:   {fn.gpg_conf_local}")
+    fn.log_info_concise(f"  From: {gpg_conf_local_path}")
+    fn.log_info_concise(f"  To:   {fn.gpg_conf_local}")
     try:
         fn.shutil.copy(gpg_conf_local_path, fn.gpg_conf_local)
         fn.os.chmod(fn.gpg_conf_local, 0o600)

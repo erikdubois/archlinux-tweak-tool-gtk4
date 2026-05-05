@@ -176,7 +176,11 @@ def custom_repo_clicked(self, widget):
 
 def reset_pacman_blank(self, widget):
     fn.log_subsection("Resetting pacman.conf to blank state...")
+    fn.log_info_concise(f"  From: {fn.pacman}")
+    fn.log_info_concise(f"  To:   {fn.pacman}.bak")
     fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
+    fn.log_info_concise(f"  From: {fn.blank_pacman_att}")
+    fn.log_info_concise(f"  To:   {fn.pacman}")
     fn.shutil.copy(fn.blank_pacman_att, fn.pacman)
     fn.log_success("Blank pacman.conf created")
     fn.log_info("Add repositories in desired order, ATT will reboot automatically")
@@ -186,6 +190,8 @@ def reset_pacman_blank(self, widget):
 def reset_pacman_local(self, widget):
     fn.log_subsection("Resetting pacman.conf from backup...")
     if fn.path.isfile(fn.pacman + ".bak"):
+        fn.log_info_concise(f"  From: {fn.pacman}.bak")
+        fn.log_info_concise(f"  To:   {fn.pacman}")
         fn.shutil.copy(fn.pacman + ".bak", fn.pacman)
         fn.log_success("pacman.conf reset from .bak")
         fn.show_in_app_notification(
@@ -196,6 +202,8 @@ def reset_pacman_local(self, widget):
 
 def reset_pacman_online(self, widget):
     fn.log_subsection("Resetting pacman.conf to ATT defaults...")
+    fn.log_info_concise(f"  From: {fn.pacman_att}")
+    fn.log_info_concise(f"  To:   {fn.pacman}")
     fn.shutil.copy(fn.pacman_att, fn.pacman)
     fn.log_success("ATT version of pacman.conf saved")
     fn.show_in_app_notification(

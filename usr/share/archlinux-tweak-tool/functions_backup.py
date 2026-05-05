@@ -7,11 +7,9 @@ import os
 
 
 def backup_gtk_config():
-    """Backup user GTK config to root directories"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_gtk_config() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Backing up GTK config")
+    fn.debug_print("backup_gtk_config() START")
+    fn.debug_print("=" * 85)
 
     if fn.path.isdir(fn.home + "/.config/gtk-3.0"):
         fn.debug_print(f"Found GTK-3.0 config at {fn.home}/.config/gtk-3.0")
@@ -19,10 +17,12 @@ def backup_gtk_config():
             if not os.path.islink("/root/.config/gtk-3.0"):
                 fn.debug_print("Removing existing /root/.config/gtk-3.0")
                 fn.shutil.rmtree("/root/.config/gtk-3.0")
-                fn.debug_print("Copying gtk-3.0 config to /root/.config/gtk-3.0")
-                fn.shutil.copytree(
-                    fn.home + "/.config/gtk-3.0", "/root/.config/gtk-3.0"
-                )
+                src = fn.home + "/.config/gtk-3.0"
+                dst = "/root/.config/gtk-3.0"
+                fn.log_info_concise(f"  From: {src}")
+                fn.log_info_concise(f"  To:   {dst}")
+                fn.debug_print(f"  copytree: {src} → {dst}")
+                fn.shutil.copytree(src, dst)
                 fn.debug_print("✓ GTK-3.0 backup completed")
             else:
                 fn.debug_print("/root/.config/gtk-3.0 is a symlink, skipping")
@@ -38,10 +38,12 @@ def backup_gtk_config():
             if not os.path.islink("/root/.config/gtk-4.0"):
                 fn.debug_print("Removing existing /root/.config/gtk-4.0")
                 fn.shutil.rmtree("/root/.config/gtk-4.0/")
-                fn.debug_print("Copying gtk-4.0 config to /root/.config/gtk-4.0")
-                fn.shutil.copytree(
-                    fn.home + "/.config/gtk-4.0/", "/root/.config/gtk-4.0/"
-                )
+                src = fn.home + "/.config/gtk-4.0/"
+                dst = "/root/.config/gtk-4.0/"
+                fn.log_info_concise(f"  From: {src}")
+                fn.log_info_concise(f"  To:   {dst}")
+                fn.debug_print(f"  copytree: {src} → {dst}")
+                fn.shutil.copytree(src, dst)
                 fn.debug_print("✓ GTK-4.0 backup completed")
             else:
                 fn.debug_print("/root/.config/gtk-4.0 is a symlink, skipping")
@@ -58,11 +60,12 @@ def backup_gtk_config():
                 fn.debug_print("Removing existing /root/.config/xsettingsd/")
                 fn.shutil.rmtree("/root/.config/xsettingsd/")
                 if fn.path.isdir(fn.home + "/.config/xsettingsd/"):
-                    fn.debug_print("Copying xsettingsd config to /root/.config/xsettingsd/")
-                    fn.shutil.copytree(
-                        fn.home + "/.config/xsettingsd/",
-                        "/root/.config/xsettingsd/",
-                    )
+                    src = fn.home + "/.config/xsettingsd/"
+                    dst = "/root/.config/xsettingsd/"
+                    fn.log_info_concise(f"  From: {src}")
+                    fn.log_info_concise(f"  To:   {dst}")
+                    fn.debug_print(f"  copytree: {src} → {dst}")
+                    fn.shutil.copytree(src, dst)
                     fn.debug_print("✓ xsettingsd backup completed")
             else:
                 fn.debug_print("/root/.config/xsettingsd/ is a symlink, skipping")
@@ -72,23 +75,22 @@ def backup_gtk_config():
     else:
         fn.debug_print("xsettingsd config not found")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_gtk_config() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("backup_gtk_config() END")
+    fn.debug_print("=" * 85)
 
 
 def backup_system_configs():
-    """Create .bak backups of important system configuration files"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_system_configs() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Backing up system config files")
+    fn.debug_print("backup_system_configs() START")
+    fn.debug_print("=" * 85)
 
     if fn.path.isfile(fn.sddm_default_d1):
         if not fn.path.isfile(fn.sddm_default_d1_bak):
             try:
                 fn.debug_print(f"Backing up {fn.sddm_default_d1} → {fn.sddm_default_d1_bak}")
+                fn.log_info_concise(f"  From: {fn.sddm_default_d1}")
+                fn.log_info_concise(f"  To:   {fn.sddm_default_d1_bak}")
                 fn.shutil.copy(fn.sddm_default_d1, fn.sddm_default_d1_bak)
                 fn.debug_print(f"✓ {fn.sddm_default_d1_bak} created")
             except Exception as error:
@@ -103,6 +105,8 @@ def backup_system_configs():
         if not fn.path.isfile(fn.sddm_default_d2_bak):
             try:
                 fn.debug_print(f"Backing up {fn.sddm_default_d2} → {fn.sddm_default_d2_bak}")
+                fn.log_info_concise(f"  From: {fn.sddm_default_d2}")
+                fn.log_info_concise(f"  To:   {fn.sddm_default_d2_bak}")
                 fn.shutil.copy(fn.sddm_default_d2, fn.sddm_default_d2_bak)
                 fn.debug_print(f"✓ {fn.sddm_default_d2_bak} created")
             except Exception as error:
@@ -117,6 +121,8 @@ def backup_system_configs():
         if not fn.path.isfile("/usr/share/icons/default/index.theme.bak"):
             try:
                 fn.debug_print("Backing up /usr/share/icons/default/index.theme")
+                fn.log_info_concise("  From: /usr/share/icons/default/index.theme")
+                fn.log_info_concise("  To:   /usr/share/icons/default/index.theme.bak")
                 fn.shutil.copy(
                     "/usr/share/icons/default/index.theme",
                     "/usr/share/icons/default/index.theme.bak",
@@ -134,6 +140,8 @@ def backup_system_configs():
         if not fn.path.isfile("/etc/samba/smb.conf.bak"):
             try:
                 fn.debug_print("Backing up /etc/samba/smb.conf")
+                fn.log_info_concise("  From: /etc/samba/smb.conf")
+                fn.log_info_concise("  To:   /etc/samba/smb.conf.bak")
                 fn.shutil.copy("/etc/samba/smb.conf", "/etc/samba/smb.conf.bak")
                 fn.debug_print("✓ smb.conf.bak created")
             except Exception as error:
@@ -148,6 +156,8 @@ def backup_system_configs():
         if not fn.path.isfile("/etc/nsswitch.conf.bak"):
             try:
                 fn.debug_print("Backing up /etc/nsswitch.conf")
+                fn.log_info_concise("  From: /etc/nsswitch.conf")
+                fn.log_info_concise("  To:   /etc/nsswitch.conf.bak")
                 fn.shutil.copy("/etc/nsswitch.conf", "/etc/nsswitch.conf.bak")
                 fn.debug_print("✓ nsswitch.conf.bak created")
             except Exception as error:
@@ -158,24 +168,23 @@ def backup_system_configs():
     else:
         fn.debug_print("/etc/nsswitch.conf not found")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_system_configs() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("backup_system_configs() END")
+    fn.debug_print("=" * 85)
 
 
 def backup_user_configs():
-    """Create .bak backups of user configuration files"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_user_configs() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Backing up user config files")
+    fn.debug_print("backup_user_configs() START")
+    fn.debug_print("=" * 85)
 
     # Fish shell config
     fish_config = fn.home + "/.config/fish/config.fish"
     if fn.path.isfile(fish_config) and not fn.path.isfile(fish_config + ".bak"):
         try:
             fn.debug_print(f"Backing up fish config: {fish_config}")
+            fn.log_info_concise(f"  From: {fish_config}")
+            fn.log_info_concise(f"  To:   {fish_config}.bak")
             fn.shutil.copy(fish_config, fish_config + ".bak")
             fn.permissions(fish_config + ".bak")
             fn.debug_print("✓ fish config.fish.bak created")
@@ -192,6 +201,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.mirrorlist + ".bak"):
             try:
                 fn.debug_print(f"Backing up mirrorlist: {fn.mirrorlist}")
+                fn.log_info_concise(f"  From: {fn.mirrorlist}")
+                fn.log_info_concise(f"  To:   {fn.mirrorlist}.bak")
                 fn.shutil.copy(fn.mirrorlist, fn.mirrorlist + ".bak")
                 fn.debug_print("✓ mirrorlist.bak created")
             except Exception as error:
@@ -207,6 +218,8 @@ def backup_user_configs():
         if not fn.path.isfile("/etc/hosts.bak"):
             try:
                 fn.debug_print("Backing up /etc/hosts")
+                fn.log_info_concise("  From: /etc/hosts")
+                fn.log_info_concise("  To:   /etc/hosts.bak")
                 fn.shutil.copy("/etc/hosts", "/etc/hosts.bak")
                 fn.debug_print("✓ hosts.bak created")
             except Exception as error:
@@ -222,6 +235,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.fastfetch_config + ".bak"):
             try:
                 fn.debug_print(f"Backing up fastfetch config: {fn.fastfetch_config}")
+                fn.log_info_concise(f"  From: {fn.fastfetch_config}")
+                fn.log_info_concise(f"  To:   {fn.fastfetch_config}.bak")
                 fn.shutil.copy(fn.fastfetch_config, fn.fastfetch_config + ".bak")
                 fn.permissions(fn.fastfetch_config + ".bak")
                 fn.debug_print("✓ fastfetch.json.bak created")
@@ -238,6 +253,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.bash_config + ".bak"):
             try:
                 fn.debug_print(f"Backing up bashrc: {fn.bash_config}")
+                fn.log_info_concise(f"  From: {fn.bash_config}")
+                fn.log_info_concise(f"  To:   {fn.bash_config}.bak")
                 fn.shutil.copy(fn.bash_config, fn.bash_config + ".bak")
                 fn.permissions(fn.home + "/.bashrc.bak")
                 fn.debug_print("✓ .bashrc.bak created")
@@ -254,6 +271,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.zsh_config + ".bak"):
             try:
                 fn.debug_print(f"Backing up zshrc: {fn.zsh_config}")
+                fn.log_info_concise(f"  From: {fn.zsh_config}")
+                fn.log_info_concise(f"  To:   {fn.zsh_config}.bak")
                 fn.shutil.copy(fn.zsh_config, fn.zsh_config + ".bak")
                 fn.permissions(fn.home + "/.zshrc.bak")
                 fn.debug_print("✓ .zshrc.bak created")
@@ -269,6 +288,8 @@ def backup_user_configs():
     if not fn.path.isfile(fn.zsh_config):
         try:
             fn.debug_print(f"zshrc missing, copying default from {fn.zshrc_kiro}")
+            fn.log_info_concise(f"  From: {fn.zshrc_kiro}")
+            fn.log_info_concise(f"  To:   {fn.home}")
             fn.shutil.copy(fn.zshrc_kiro, fn.home)
             fn.permissions(fn.home + "/.zshrc")
             fn.debug_print("✓ Default .zshrc installed")
@@ -281,6 +302,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.pacman + ".bak"):
             try:
                 fn.debug_print(f"Backing up pacman config: {fn.pacman}")
+                fn.log_info_concise(f"  From: {fn.pacman}")
+                fn.log_info_concise(f"  To:   {fn.pacman}.bak")
                 fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
                 fn.debug_print("✓ pacman.conf.bak created")
             except Exception as error:
@@ -296,6 +319,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.xfce4_terminal_config + ".bak"):
             try:
                 fn.debug_print(f"Backing up xfce4 terminal config: {fn.xfce4_terminal_config}")
+                fn.log_info_concise(f"  From: {fn.xfce4_terminal_config}")
+                fn.log_info_concise(f"  To:   {fn.xfce4_terminal_config}.bak")
                 fn.shutil.copy(fn.xfce4_terminal_config, fn.xfce4_terminal_config + ".bak")
                 fn.permissions(fn.xfce4_terminal_config + ".bak")
                 fn.debug_print("✓ terminalrc.bak created")
@@ -312,6 +337,8 @@ def backup_user_configs():
         if not fn.path.isfile(fn.alacritty_config + ".bak"):
             try:
                 fn.debug_print(f"Backing up alacritty config: {fn.alacritty_config}")
+                fn.log_info_concise(f"  From: {fn.alacritty_config}")
+                fn.log_info_concise(f"  To:   {fn.alacritty_config}.bak")
                 fn.shutil.copy(fn.alacritty_config, fn.alacritty_config + ".bak")
                 fn.permissions(fn.alacritty_config + ".bak")
                 fn.debug_print("✓ alacritty.yml.bak created")
@@ -323,7 +350,6 @@ def backup_user_configs():
     else:
         fn.debug_print(f"alacritty config not found at {fn.alacritty_config}")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF backup_user_configs() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("backup_user_configs() END")
+    fn.debug_print("=" * 85)

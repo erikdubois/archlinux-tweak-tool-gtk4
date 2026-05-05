@@ -10,7 +10,8 @@ import functions as fn
 
 
 def set_util_state(self, util, util_state, lolcat_state):
-    """set utility state for fastfetch"""
+    fn.log_subsection(f"Set utility state: {util}")
+    fn.debug_print(f"set_util_state: util={util} state={util_state} lolcat={lolcat_state}")
     import fastfetch
 
     if util == "fastfetch":

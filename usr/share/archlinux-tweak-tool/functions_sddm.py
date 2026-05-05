@@ -7,11 +7,9 @@ from gi.repository import GLib
 
 
 def setup_sddm_config(self, sddm):
-    """Setup SDDM configuration files and defaults"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_sddm_config() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Setting up SDDM configuration")
+    fn.debug_print("setup_sddm_config() START")
+    fn.debug_print("=" * 85)
 
     if fn.path.isfile(fn.sddm_default_d2):
         fn.debug_print(f"Found SDDM config: {fn.sddm_default_d2}")
@@ -50,9 +48,13 @@ def setup_sddm_config(self, sddm):
             fn.debug_print("Creating SDDM directory")
             fn.create_sddm_k_dir()
             fn.debug_print(f"Copying {fn.sddm_default_d1_kiro} → {fn.sddm_default_d1}")
+            fn.log_info_concise(f"  From: {fn.sddm_default_d1_kiro}")
+            fn.log_info_concise(f"  To:   {fn.sddm_default_d1}")
             fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
             fn.debug_print("✓ SDDM KDE settings copied")
             fn.debug_print(f"Copying {fn.sddm_default_d2_kiro} → {fn.sddm_default_d2}")
+            fn.log_info_concise(f"  From: {fn.sddm_default_d2_kiro}")
+            fn.log_info_concise(f"  To:   {fn.sddm_default_d2}")
             fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
             fn.debug_print("✓ SDDM config copied")
             fn.debug_print("Showing user notification")
@@ -67,7 +69,6 @@ def setup_sddm_config(self, sddm):
     else:
         fn.debug_print("SDDM binary not found at /usr/bin/sddm, skipping configuration")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_sddm_config() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("setup_sddm_config() END")
+    fn.debug_print("=" * 85)

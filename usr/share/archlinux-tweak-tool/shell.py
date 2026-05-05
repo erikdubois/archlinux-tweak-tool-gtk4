@@ -64,9 +64,9 @@ def on_install_att_bashrc_clicked(self, _widget):
     fn.debug_print(f"  Exists : {fn.path.isfile(fn.bashrc_kiro)}")
     try:
         if fn.path.isfile(fn.bashrc_kiro):
-            fn.shutil.copy(fn.bashrc_kiro, fn.bash_config)
             fn.log_info_concise(f"  From: {fn.bashrc_kiro}")
             fn.log_info_concise(f"  To:   {fn.bash_config}")
+            fn.shutil.copy(fn.bashrc_kiro, fn.bash_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.bashrc")
             fn.debug_print(f"  Perms  : permissions set on {fn.bash_config}")
@@ -89,9 +89,9 @@ def on_bash_reset_clicked(self, _widget):
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
     try:
         if fn.path.isfile(backup):
-            fn.shutil.copy(backup, fn.bash_config)
             fn.log_info_concise(f"  From: {backup}")
             fn.log_info_concise(f"  To:   {fn.bash_config}")
+            fn.shutil.copy(backup, fn.bash_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.bashrc")
             fn.debug_print(f"  Perms  : permissions set on {fn.bash_config}")
@@ -113,7 +113,12 @@ def on_install_att_fish_config_clicked(self, _widget):
     try:
         if fn.path.isfile(fn.fish_config_kiro):
             fn.os.makedirs(fn.os.path.dirname(fn.fish_config), exist_ok=True)
-            fn.shutil.copy(fn.fish_config, fn.fish_config + ".bak") if fn.path.isfile(fn.fish_config) else None
+            if fn.path.isfile(fn.fish_config):
+                fn.log_info_concise(f"  From: {fn.fish_config}")
+                fn.log_info_concise(f"  To:   {fn.fish_config}.bak")
+                fn.shutil.copy(fn.fish_config, fn.fish_config + ".bak")
+            fn.log_info_concise(f"  From: {fn.fish_config_kiro}")
+            fn.log_info_concise(f"  To:   {fn.fish_config}")
             fn.shutil.copy(fn.fish_config_kiro, fn.fish_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.fish_config)
@@ -138,6 +143,8 @@ def on_fish_reset_clicked(self, _widget):
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
     try:
         if fn.path.isfile(backup):
+            fn.log_info_concise(f"  From: {backup}")
+            fn.log_info_concise(f"  To:   {fn.fish_config}")
             fn.shutil.copy(backup, fn.fish_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.fish_config)
@@ -239,6 +246,8 @@ def on_install_att_zshrc_clicked(self, _widget):
     fn.debug_print(f"  Exists : {fn.path.isfile(fn.zshrc_kiro)}")
     try:
         if fn.path.isfile(fn.zshrc_kiro):
+            fn.log_info_concise(f"  From: {fn.zshrc_kiro}")
+            fn.log_info_concise(f"  To:   {fn.zsh_config}")
             fn.shutil.copy(fn.zshrc_kiro, fn.zsh_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.zshrc")
@@ -261,6 +270,8 @@ def on_zshrc_reset_clicked(self, _widget):
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
     try:
         if fn.path.isfile(backup):
+            fn.log_info_concise(f"  From: {backup}")
+            fn.log_info_concise(f"  To:   {fn.zsh_config}")
             fn.shutil.copy(backup, fn.zsh_config)
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.home + "/.zshrc")

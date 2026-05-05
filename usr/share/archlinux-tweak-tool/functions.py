@@ -1702,7 +1702,11 @@ read -p 'Press Enter to close...'
 def copy_samba(choice):
     src = f"/usr/share/archlinux-tweak-tool/data/samba/{choice}/smb.conf"
     if path.isfile(samba_config) and not path.isfile(samba_config + ".bak"):
+        log_info_concise(f"  From: {samba_config}")
+        log_info_concise(f"  To:   {samba_config}.bak")
         shutil.copy(samba_config, samba_config + ".bak")
+    log_info_concise(f"  From: {src}")
+    log_info_concise(f"  To:   {samba_config}")
     subprocess.run(["cp", src, samba_config], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     if choice == "example":
@@ -1753,6 +1757,8 @@ def save_samba_config(self):
     # create smb.conf if there is none?
     if path.isfile(samba_config):
         if not path.isfile(samba_config + ".bak"):
+            log_info_concise(f"  From: {samba_config}")
+            log_info_concise(f"  To:   {samba_config}.bak")
             shutil.copy(samba_config, samba_config + ".bak")
         try:
             with open(samba_config, "r", encoding="utf-8") as f:
@@ -1838,6 +1844,8 @@ def copy_nsswitch(new_hosts_line):
             dest_lines = f.readlines()
 
         if not path.isfile(dest_file + ".bak"):
+            log_info_concise(f"  From: {dest_file}")
+            log_info_concise(f"  To:   {dest_file}.bak")
             shutil.copy(dest_file, dest_file + ".bak")
 
         old_hosts_line = None
@@ -1991,6 +1999,8 @@ def set_hblock(self, toggle, state):
     timeout_id = GLib.timeout_add(100, do_pulse, None, self.progress)
 
     if not path.isfile("/etc/hosts.bak"):
+        log_info_concise("  From: /etc/hosts")
+        log_info_concise("  To:   /etc/hosts.bak")
         shutil.copy("/etc/hosts", "/etc/hosts.bak")
 
     try:

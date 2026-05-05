@@ -432,6 +432,8 @@ def on_reset_fast_att(self, _widget):
     fn.debug_print(f"  Source : {fn.fastfetch_kiro}")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
     if fn.path.isfile(fn.fastfetch_kiro):
+        fn.log_info_concise(f"  From: {fn.fastfetch_kiro}")
+        fn.log_info_concise(f"  To:   {fn.fastfetch_config}")
         fn.shutil.copy(fn.fastfetch_kiro, fn.fastfetch_config)
         fn.permissions(fn.fastfetch_config)
         fn.debug_print("  Result : copied and permissions set")
@@ -447,6 +449,8 @@ def on_reset_fast(self, _widget):
     fn.debug_print(f"  Source : {fn.fastfetch_config}.bak")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
     if fn.path.isfile(fn.fastfetch_config + ".bak"):
+        fn.log_info_concise(f"  From: {fn.fastfetch_config}.bak")
+        fn.log_info_concise(f"  To:   {fn.fastfetch_config}")
         fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
         fn.debug_print("  Result : restored from backup")
         get_checkboxes(self)

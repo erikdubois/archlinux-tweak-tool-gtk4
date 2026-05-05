@@ -59,11 +59,9 @@ def init_repos_and_sddm(self):
 
 
 def setup_icon_theme():
-    """Setup icon/cursor theme defaults"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_icon_theme() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Setting up icon/cursor theme defaults")
+    fn.debug_print("setup_icon_theme() START")
+    fn.debug_print("=" * 85)
 
     if fn.path.isfile("/usr/share/icons/default"):
         fn.debug_print("Found /usr/share/icons/default as file, removing")
@@ -90,6 +88,8 @@ def setup_icon_theme():
         if fn.path.isfile("/usr/share/icons/default/index.theme.bak"):
             fn.debug_print("Found index.theme.bak, restoring")
             try:
+                fn.log_info_concise("  From: /usr/share/icons/default/index.theme.bak")
+                fn.log_info_concise("  To:   /usr/share/icons/default/index.theme")
                 fn.shutil.copy(
                     "/usr/share/icons/default/index.theme.bak",
                     "/usr/share/icons/default/index.theme",
@@ -101,6 +101,8 @@ def setup_icon_theme():
         else:
             fn.debug_print("No backup found, installing default from ATT template")
             try:
+                fn.log_info_concise("  From: /usr/share/archlinux-tweak-tool/data/cursor/index.theme")
+                fn.log_info_concise("  To:   /usr/share/icons/default/index.theme")
                 fn.shutil.copy(
                     "/usr/share/archlinux-tweak-tool/data/cursor/index.theme",
                     "/usr/share/icons/default/index.theme",
@@ -112,23 +114,22 @@ def setup_icon_theme():
     else:
         fn.debug_print("index.theme already exists, skipping")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_icon_theme() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("setup_icon_theme() END")
+    fn.debug_print("=" * 85)
 
 
 def setup_fastfetch_config():
-    """Ensure fastfetch config exists"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_fastfetch_config() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Setting up fastfetch config")
+    fn.debug_print("setup_fastfetch_config() START")
+    fn.debug_print("=" * 85)
 
     if not fn.path.isfile(fn.fastfetch_config):
         fn.debug_print(f"fastfetch config not found at {fn.fastfetch_config}")
         fn.debug_print(f"Copying from template: {fn.fastfetch_kiro}")
         try:
+            fn.log_info_concise(f"  From: {fn.fastfetch_kiro}")
+            fn.log_info_concise(f"  To:   {fn.fastfetch_config}")
             fn.shutil.copy(fn.fastfetch_kiro, fn.fastfetch_config)
             fn.permissions(fn.fastfetch_config)
             fn.debug_print("✓ fastfetch config installed")
@@ -138,18 +139,15 @@ def setup_fastfetch_config():
     else:
         fn.debug_print(f"fastfetch config already exists at {fn.fastfetch_config}")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF setup_fastfetch_config() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("setup_fastfetch_config() END")
+    fn.debug_print("=" * 85)
 
 
 def fix_permissions():
-    """Fix permissions for app directories"""
-    fn.debug_print("")
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF fix_permissions() START")
-    fn.debug_print("=" * 70)
+    fn.log_subsection("Checking file permissions")
+    fn.debug_print("fix_permissions() START")
+    fn.debug_print("=" * 85)
 
     fn.debug_print("Checking directory permissions")
     a1 = fn.stat(fn.home + "/.config/autostart")
@@ -165,8 +163,10 @@ def fix_permissions():
         att_backup_uid = fn.stat(fn.home + "/.config-att").st_uid
         if att_backup_uid == 0:
             fn.debug_print("Fixing .config-att permissions (currently root-owned)")
+            fn.debug_print(f"  chown -R {fn.sudo_username} {fn.home}/.config-att")
             fn.permissions(fn.home + "/.config-att")
-            fn.debug_print("✓ .config-att permissions fixed")
+            s = fn.stat(fn.home + "/.config-att")
+            fn.debug_print(f"  result: uid={s.st_uid} gid={s.st_gid} mode={oct(s.st_mode)[-3:]}")
         else:
             fn.debug_print(".config-att permissions are correct (user-owned)")
     else:
@@ -174,19 +174,22 @@ def fix_permissions():
 
     if autostart_uid == 0:
         fn.debug_print("Fixing autostart permissions (currently root-owned)")
+        fn.debug_print(f"  chown -R {fn.sudo_username} {fn.home}/.config/autostart")
         fn.permissions(fn.home + "/.config/autostart")
-        fn.debug_print("✓ autostart permissions fixed")
+        s = fn.stat(fn.home + "/.config/autostart")
+        fn.debug_print(f"  result: uid={s.st_uid} gid={s.st_gid} mode={oct(s.st_mode)[-3:]}")
     else:
         fn.debug_print("autostart permissions are correct (user-owned)")
 
     if att_uid == 0:
         fn.debug_print("Fixing archlinux-tweak-tool permissions (currently root-owned)")
+        fn.debug_print(f"  chown -R {fn.sudo_username} {fn.home}/.config/archlinux-tweak-tool")
         fn.permissions(fn.home + "/.config/archlinux-tweak-tool")
-        fn.debug_print("✓ archlinux-tweak-tool permissions fixed")
+        s = fn.stat(fn.home + "/.config/archlinux-tweak-tool")
+        fn.debug_print(f"  result: uid={s.st_uid} gid={s.st_gid} mode={oct(s.st_mode)[-3:]}")
     else:
         fn.debug_print("archlinux-tweak-tool permissions are correct (user-owned)")
 
-    fn.debug_print("=" * 70)
-    fn.debug_print(">>> DEF fix_permissions() END")
-    fn.debug_print("=" * 70)
-    fn.debug_print("")
+    fn.debug_print("=" * 85)
+    fn.debug_print("fix_permissions() END")
+    fn.debug_print("=" * 85)

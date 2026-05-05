@@ -40,7 +40,11 @@ def ensure_sddm_config(self):
         if response == Gtk.ResponseType.YES:
             try:
                 fn.create_sddm_k_dir()
+                fn.log_info_concise(f"  From: {fn.sddm_default_d1_kiro}")
+                fn.log_info_concise(f"  To:   {fn.sddm_default_d1}")
                 fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+                fn.log_info_concise(f"  From: {fn.sddm_default_d2_kiro}")
+                fn.log_info_concise(f"  To:   {fn.sddm_default_d2}")
                 fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
                 fn.log_success("SDDM configuration files created successfully")
                 return True
@@ -369,7 +373,11 @@ def on_click_sddm_reset_original_att(self, _widget=None):
     try:
         fn.log_subsection("Apply ATT SDDM Configuration")
         fn.create_sddm_k_dir()
+        fn.log_info_concise(f"  From: {fn.sddm_default_d1_kiro}")
+        fn.log_info_concise(f"  To:   {fn.sddm_default_d1}")
         fn.shutil.copy(fn.sddm_default_d1_kiro, fn.sddm_default_d1)
+        fn.log_info_concise(f"  From: {fn.sddm_default_d2_kiro}")
+        fn.log_info_concise(f"  To:   {fn.sddm_default_d2}")
         fn.shutil.copy(fn.sddm_default_d2_kiro, fn.sddm_default_d2)
         fn.log_success("ATT SDDM configuration applied")
         fn.messagebox(self, "Success", "ATT SDDM configuration applied.\n\nRestarting ATT...")
@@ -584,14 +592,16 @@ def on_set_sddm_wallpaper(self, _widget=None):
 
     try:
         if fn.path.isfile(dest) and not fn.path.isfile(dest_bak):
+            fn.log_info_concise(f"  From: {dest}")
+            fn.log_info_concise(f"  To:   {dest_bak}")
             fn.shutil.copy(dest, dest_bak)
             fn.debug_print("[DEBUG] Backup created: " + dest_bak)
         pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
         pixbuf.savev(dest, "jpeg", [], [])
         with open(simplicity_conf, "w", encoding="utf-8") as f:
             f.write("[General]\nbackground=images/background.jpg\n")
-        fn.log_info_concise(f"  Source: {path}")
-        fn.log_info_concise(f"  Destination: {dest}")
+        fn.log_info_concise(f"  From: {path}")
+        fn.log_info_concise(f"  To:   {dest}")
         fn.log_info_concise("  Theme: edu-simplicity")
         fn.debug_print("[DEBUG] Wallpaper saved and theme config updated")
         fn.log_success("Simplicity wallpaper applied")
@@ -617,6 +627,8 @@ def on_restore_sddm_wallpaper(self, _widget=None):
         return
 
     try:
+        fn.log_info_concise(f"  From: {dest_bak}")
+        fn.log_info_concise(f"  To:   {dest}")
         fn.shutil.copy(dest_bak, dest)
         with open(simplicity_conf, "w", encoding="utf-8") as f:
             f.write("[General]\nbackground=images/background.jpg\n")
@@ -624,8 +636,6 @@ def on_restore_sddm_wallpaper(self, _widget=None):
         self.sddm_wallpaper_preview.set_filename(dest)
         self.sddm_wallpaper_preview.get_parent().set_visible(True)
         self.login_wallpaper_path = ""
-        fn.log_info_concise(f"  Restored from: {dest_bak}")
-        fn.log_info_concise(f"  Destination: {dest}")
         fn.debug_print("[DEBUG] Backup restored and theme config updated")
         fn.log_success("Default wallpaper restored")
         fn.show_in_app_notification(self, "Default wallpaper restored")
