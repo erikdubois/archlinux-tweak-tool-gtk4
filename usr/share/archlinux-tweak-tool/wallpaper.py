@@ -472,26 +472,26 @@ def _set_xfce(self, path, scale):
             p for p in result.stdout.splitlines()
             if re.search(r"screen.*/monitor.*(image-path|last-image)$", p)
         ]
+        if not image_props:
+            xrandr = fn.subprocess.run(["xrandr", "--query"], capture_output=True, text=True)
+            outputs = re.findall(r"^(\S+) connected", xrandr.stdout, re.MULTILINE)
+            image_props = [
+                f"/backdrop/screen0/monitor{o}/workspace0/last-image"
+                for o in outputs
+            ] or ["/backdrop/screen0/monitor0/workspace0/last-image"]
+            fn.debug_print(f"Constructed backdrop props from xrandr: {image_props}")
         style_props = [
             re.sub(r"(image-path|last-image)$", "image-style", p)
             for p in image_props
         ]
         for prop in image_props:
             fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-n", "-t", "string", "-s", ""],
-                stderr=fn.subprocess.DEVNULL,
-            )
-            fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-s", path],
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "string", "-s", path],
                 stderr=fn.subprocess.DEVNULL,
             )
         for prop in style_props:
             fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-n", "-t", "int", "-s", style],
-                stderr=fn.subprocess.DEVNULL,
-            )
-            fn.subprocess.run(
-                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "-s", style],
+                ["xfconf-query", "-c", "xfce4-desktop", "-p", prop, "--create", "-t", "int", "-s", style],
                 stderr=fn.subprocess.DEVNULL,
             )
         fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
