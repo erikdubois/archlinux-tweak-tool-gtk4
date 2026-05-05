@@ -209,9 +209,10 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
             self.btn_simplicity_browse.set_margin_start(10)
             self.btn_simplicity_browse.set_margin_end(10)
             self.btn_simplicity_browse.set_sensitive(simplicity_installed)
+            default_wp_folder = "/usr/share/archlinux-tweak-tool/wallpapers"
             self.sddm_folder_entry = Gtk.Entry()
             self.sddm_folder_entry.set_hexpand(True)
-            self.sddm_folder_entry.set_placeholder_text("Paste or type a folder path")
+            self.sddm_folder_entry.set_text(default_wp_folder)
             self.sddm_folder_entry.set_sensitive(simplicity_installed)
             self.btn_simplicity_load = Gtk.Button(label="Load")
             self.btn_simplicity_load.connect("clicked", functools.partial(sddm.on_load_sddm_folder, self))
@@ -308,6 +309,12 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
             vboxstack_sddm.append(hbox_wp_preview)
             vboxstack_sddm.append(hbox_wp_btns)
             vboxstack_sddm.append(hbox_wp_scroll)
+
+            if simplicity_installed and fn.path.isdir(default_wp_folder):
+                fn.GLib.idle_add(
+                    lambda: sddm._populate_sddm_thumbs(self, default_wp_folder),
+                    priority=fn.GLib.PRIORITY_LOW,
+                )
 
     else:
         hbox_not_installed = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
