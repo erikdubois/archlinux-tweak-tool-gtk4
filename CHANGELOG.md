@@ -1,5 +1,21 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.05 - Launcher: silent xauth retry loop
+
+### What Changed
+
+- Removed the `[WARN]` echo lines from the X11 xauth retry loop in the launcher script — the loop now retries silently up to 5 times without printing to the terminal
+
+### Technical Details
+
+- The loop itself is unchanged; only the `echo "[WARN]: Xauth changes honored = no, retrying..."` and the post-loop "still no after 5s" warning were removed; the retry logic and `sleep 1` remain intact
+
+### Files Modified
+
+- `usr/bin/archlinux-tweak-tool`
+
+---
+
 ## 2026.05.05 - Shell tab: active shell indicator; Omarchy distro added
 
 ### What Changed
