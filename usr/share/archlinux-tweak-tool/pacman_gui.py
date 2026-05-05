@@ -23,7 +23,7 @@ def get_parallel_downloads(fn):
 
 
 def init_repos_lazy_load(self):
-    """Lazy load and check repository status when page is visible"""
+    """Check repository status and populate switches when the pacman page is opened."""
     try:
         import time
         start = time.time()
@@ -36,6 +36,7 @@ def init_repos_lazy_load(self):
         nemesis_repo = pacman_functions.check_repo("[nemesis_repo]")
         chaotic_repo = pacman_functions.check_repo("[chaotic-aur]")
 
+        self.initializing = True
         self.checkbutton2.set_active(arch_testing)
         self.checkbutton6.set_active(arch_core)
         self.checkbutton7.set_active(arch_extra)
@@ -44,10 +45,11 @@ def init_repos_lazy_load(self):
         self.checkbutton8.set_active(arch_multilib)
         self.nemesis_switch.set_active(nemesis_repo)
         self.chaotic_switch.set_active(chaotic_repo)
+        self.initializing = False
         elapsed = time.time() - start
         fn.debug_print(f"[LAZY] Pacman repositories checked in {elapsed:.3f}s")
     except Exception:
-        pass
+        self.initializing = False
 
 
 def gui(self, Gtk, vboxstack1, fn):
@@ -455,6 +457,4 @@ def gui(self, Gtk, vboxstack1, fn):
 
     vboxstack1.append(hbox_footer_buttons)
 
-    # Lazy load repository states when page becomes visible
-    from gi.repository import GLib
-    GLib.idle_add(init_repos_lazy_load, self, priority=GLib.PRIORITY_LOW)
+    vboxstack1.connect("map", lambda _w: init_repos_lazy_load(self))

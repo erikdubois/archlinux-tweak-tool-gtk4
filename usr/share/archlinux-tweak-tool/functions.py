@@ -405,6 +405,10 @@ def check_if_process_is_running(processName):
     return False
 
 
+def check_pid_is_running(pid: int) -> bool:
+    return psutil.pid_exists(pid)
+
+
 def copytree(self, src, dst, symlinks=False, ignore=None):  # noqa
     if not path.exists(dst):
         makedirs(dst)

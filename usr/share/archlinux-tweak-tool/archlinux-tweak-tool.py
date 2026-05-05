@@ -30,7 +30,6 @@ themes = None
 desktopr = None
 autostart = None
 PackagesPromptGui = None
-call = None
 fastfetch_gui = None
 
 gi.require_version("Gtk", "4.0")
@@ -56,8 +55,22 @@ GLib.log_set_writer_func(_log_writer, None)
 
 
 base_dir = fn.path.dirname(fn.path.realpath(__file__))
-pmf = None
 DEBUG = False
+
+
+def _read_gtk_theme():
+    theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
+    if not theme:
+        try:
+            with open("/etc/environment", "r", encoding="utf-8") as _f:
+                for _line in _f:
+                    _line = _line.strip()
+                    if _line.startswith("GTK_THEME="):
+                        theme = _line.split("=", 1)[1].strip().strip("\"'")
+                        break
+        except Exception:
+            pass
+    return theme
 
 
 class Main(Gtk.ApplicationWindow):
@@ -74,17 +87,7 @@ class Main(Gtk.ApplicationWindow):
         print("Support: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
         print("-" * 75)
 
-        _gtk_theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
-        if not _gtk_theme:
-            try:
-                with open("/etc/environment", "r", encoding="utf-8") as _f:
-                    for _line in _f:
-                        _line = _line.strip()
-                        if _line.startswith("GTK_THEME="):
-                            _gtk_theme = _line.split("=", 1)[1].strip().strip("\"'")
-                            break
-            except Exception:
-                pass
+        _gtk_theme = _read_gtk_theme()
         if _gtk_theme:
             is_dark = _gtk_theme.lower().endswith("-dark")
             base_theme = _gtk_theme[:-5] if is_dark else _gtk_theme
@@ -113,21 +116,14 @@ class Main(Gtk.ApplicationWindow):
         self.desktop_status = Gtk.Label()
         self.image_DE = Gtk.Picture()
 
-        self.label7 = Gtk.Label(xalign=0)
-        self.label7.set_visible(False)
         self.progress = Gtk.ProgressBar()
         self.progress.set_pulse_step(0.2)
         self.progress.set_visible(False)
         self.login_wallpaper_path = ""
-        self.fb = Gtk.FlowBox()
-        self.flowbox_wall = Gtk.FlowBox()
 
-        # Force splash screen to stay visible until init is done.
-        # The main window will only be presented at the end of `_finish_startup_init()`.
         self._splash = splash.SplashScreen(transient_for=self)
 
         GLib.idle_add(self._finish_startup_init)
-        return
 
     def _finish_startup_init(self):
         """Deferred startup initialization.
@@ -136,14 +132,11 @@ class Main(Gtk.ApplicationWindow):
         """
         global zsh_theme, user, themer, settings, services, sddm
         global pacman_functions, fastfetch, maintenance, gui, icons, themes
-        global desktopr, autostart, PackagesPromptGui, call, fastfetch_gui, pmf
+        global desktopr, autostart, PackagesPromptGui, fastfetch_gui
         global functions_makedir, functions_backup, functions_startup
 
         startup_start = time.time()
         fn.debug_print("Startup sequence initiated")
-
-        # Lazy imports to reduce time-to-first-window.
-        from subprocess import call as _call
 
         t_zsh = time.time()
         import zsh_theme as _zsh_theme
@@ -234,8 +227,6 @@ class Main(Gtk.ApplicationWindow):
         functions_backup = _functions_backup
         functions_startup = _functions_startup
         PackagesPromptGui = _PackagesPromptGui
-        call = _call
-        pmf = pacman_functions
 
         imports_time = time.time()
         fn.debug_print(f"Imports completed in {imports_time - startup_start:.3f}s")
@@ -261,7 +252,6 @@ class Main(Gtk.ApplicationWindow):
         except Exception:
             pass
 
-        # Destroy splash immediately after window is presented
         if getattr(self, "_splash", None) is not None:
             try:
                 self._splash.destroy()
@@ -272,8 +262,11 @@ class Main(Gtk.ApplicationWindow):
         gui_time = time.time()
         fn.debug_print(f"[RESPONSIVE] Window visible after {gui_time - startup_start:.3f}s")
 
-        # Defer backups and permissions to after window is visible
-        GLib.idle_add(self._finish_background_init, startup_start, priority=GLib.PRIORITY_LOW)
+        fn.threading.Thread(
+            target=self._finish_background_init,
+            args=(startup_start,),
+            daemon=True,
+        ).start()
 
         return False
 
@@ -321,23 +314,9 @@ class Main(Gtk.ApplicationWindow):
         fn.debug_print("=" * 70)
         fn.debug_print("")
         fn.debug_print(f"[RESPONSIVE] All init complete after {total_time - startup_start:.3f}s")
-        self.initializing = False
+        GLib.idle_add(lambda: setattr(self, "initializing", False) or False)
 
-        return False
-
-    # All feature callbacks have been extracted to separate modules
-    # AI TOOLS → ai.py | AUTOSTART → autostart.py | DESKTOPR → desktopr.py
-    # FASTFETCH → fastfetch.py | ICONS → icons.py | KERNEL → kernel.py
-    # LOGGING → log_callbacks.py | MAINTENANCE → maintenance.py | PACKAGES → packages.py
-    # PRIVACY → privacy.py | SDDM → sddm.py | SERVICES → services.py
-    # SHELLS → shell.py | SYSTEM → system.py | THEMER → themer.py
-    # THEMES → themes.py | USER → user.py | ZSH THEMES → zsh_theme.py
-    # Startup initialization → functions_startup.py, functions_makedir.py, functions_backup.py
-    # Image utilities → functions.py
-
-    # Bottom buttons
-
-    def on_refresh_att_clicked(self, desktop):
+    def on_refresh_att_clicked(self, _widget):
         fn.restart_program()
 
     def on_close(self, window):
@@ -380,18 +359,7 @@ class ATTApplication(Gtk.Application):
             with open("/tmp/att.pid", "w", encoding="utf-8") as f:
                 f.write(str(fn.getpid()))
 
-            # apply GTK_THEME from /etc/environment when not in environment (e.g. pkexec)
-            gtk_theme = os.environ.get("GTK_THEME", "").strip("\"'") or None
-            if not gtk_theme:
-                try:
-                    with open("/etc/environment", "r", encoding="utf-8") as _f:
-                        for _line in _f:
-                            _line = _line.strip()
-                            if _line.startswith("GTK_THEME="):
-                                gtk_theme = _line.split("=", 1)[1].strip().strip("\"'")
-                                break
-                except Exception:
-                    pass
+            gtk_theme = _read_gtk_theme()
             if gtk_theme:
                 prefer_dark = gtk_theme.lower().endswith("-dark")
                 theme_name = gtk_theme[:-5] if prefer_dark else gtk_theme
@@ -459,7 +427,7 @@ class ATTApplication(Gtk.Application):
                 with open("/tmp/att.pid", "r", encoding="utf-8") as f:
                     pid = f.read().strip()
 
-                if fn.check_if_process_is_running(int(pid)):
+                if fn.check_pid_is_running(int(pid)):
                     md2 = Gtk.MessageDialog(
                         transient_for=None,
                         message_type=Gtk.MessageType.INFO,
