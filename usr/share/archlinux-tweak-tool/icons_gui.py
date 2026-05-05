@@ -467,7 +467,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     neocandy_info_label = Gtk.Label(xalign=0)
     neocandy_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
-Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
+Ensure that the <b>Nemesis and Chaotic-aur repository are enabled</b> — see the "Pacman" tab for details.'
     )
     neocandy_info_label.set_margin_start(10)
     neocandy_info_label.set_margin_end(10)

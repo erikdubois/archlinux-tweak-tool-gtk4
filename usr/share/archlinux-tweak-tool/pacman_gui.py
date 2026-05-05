@@ -79,7 +79,7 @@ def gui(self, Gtk, vboxstack1, fn):
 
     self.custom_repo = Gtk.Button(label="Apply custom repo")
     self.custom_repo.connect("clicked", functools.partial(pacman.custom_repo_clicked, self))
-    reset_pacman_local = Gtk.Button(label="Reset pacman local")
+    reset_pacman_local = Gtk.Button(label="Reset your pacman local")
     reset_pacman_local.connect("clicked", functools.partial(pacman.reset_pacman_local, self))
     reset_pacman_online = Gtk.Button(label="Reset pacman ATT")
     reset_pacman_online.connect("clicked", functools.partial(pacman.reset_pacman_online, self))
@@ -336,7 +336,7 @@ def gui(self, Gtk, vboxstack1, fn):
             paru_handler_id[0] = None
 
         chaotic_now = pacman_functions.is_chaotic_aur_enabled()
-        aur_status.set_text("Chaotic-AUR: " + ("enabled" if chaotic_now else "disabled"))
+        aur_status.set_text("Chaotic-Aur repo: " + ("enabled" if chaotic_now else "disabled"))
 
         nemesis_now = pacman_functions.check_repo("[nemesis_repo]")
         nemesis_status.set_text("Nemesis repo: " + ("enabled" if nemesis_now else "disabled"))

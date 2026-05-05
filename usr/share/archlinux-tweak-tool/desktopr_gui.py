@@ -37,11 +37,10 @@ def gui(self, Gtk, GdkPixbuf, vboxstack12, desktopr, fn, base_dir):
     # =======================================
     #               DROPDOWN
     # =======================================
-    label_warning = Gtk.Label(xalign=0)
+    label_warning = Gtk.Label(xalign=0.5)
     label_warning.set_markup(
-        "<b>Make sure the nemesis repo is active \
-- see Pacman tab</b>\n\nSome of the desktops can only be installed if we can access \n\
-the nemesis and/or chaotic-aur repo"
+        "<big>Make sure the chaotic-aur and nemesis repo are both enabled \
+- see Pacman tab</big>"
     )
     label = Gtk.Label(xalign=0.5)
     label.set_text("\nSelect a desktop")

@@ -257,6 +257,7 @@ if fn.distr:
         "thunar-volman",
         "ttf-hack",
         "ttf-jetbrains-mono-nerd",
+        "noto-fonts-cjk",
         "volctl",
         "xfce4-notifyd",
         "xfce4-power-manager",
