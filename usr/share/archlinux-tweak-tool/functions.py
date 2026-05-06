@@ -668,7 +668,10 @@ def copy_func(src, dst, isdir=False):
 # exceptions
 if distr == "manjaro" and check_content("biglinux", "/etc/os-release"):
     distr = "biglinux"
-if distr == "arch" and check_content("omarchy", "/etc/plymouth/plymouthd.conf"):
+if distr == "arch" and (
+    check_content("omarchy", "/etc/plymouth/plymouthd.conf")
+    or os.path.isfile("/etc/att/att-omarchy-marker")
+):
     distr = "omarchy"
 
 
@@ -1662,10 +1665,10 @@ read -p 'Press Enter to close...'
 
 def copy_samba(choice):
     src = f"/usr/share/archlinux-tweak-tool/data/samba/{choice}/smb.conf"
-    if path.isfile(samba_config) and not path.isfile(samba_config + ".bak"):
+    if path.isfile(samba_config) and not path.isfile(samba_config + "-bak"):
         log_info_concise(f"  From: {samba_config}")
-        log_info_concise(f"  To:   {samba_config}.bak")
-        shutil.copy(samba_config, samba_config + ".bak")
+        log_info_concise(f"  To:   {samba_config}-bak")
+        shutil.copy(samba_config, samba_config + "-bak")
     log_info_concise(f"  From: {src}")
     log_info_concise(f"  To:   {samba_config}")
     subprocess.run(["cp", src, samba_config], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1717,10 +1720,10 @@ def copy_samba(choice):
 def save_samba_config(self):
     # create smb.conf if there is none?
     if path.isfile(samba_config):
-        if not path.isfile(samba_config + ".bak"):
+        if not path.isfile(samba_config + "-bak"):
             log_info_concise(f"  From: {samba_config}")
-            log_info_concise(f"  To:   {samba_config}.bak")
-            shutil.copy(samba_config, samba_config + ".bak")
+            log_info_concise(f"  To:   {samba_config}-bak")
+            shutil.copy(samba_config, samba_config + "-bak")
         try:
             with open(samba_config, "r", encoding="utf-8") as f:
                 lists = f.readlines()
@@ -1804,10 +1807,10 @@ def copy_nsswitch(new_hosts_line):
         with open(dest_file, 'r') as f:
             dest_lines = f.readlines()
 
-        if not path.isfile(dest_file + ".bak"):
+        if not path.isfile(dest_file + "-bak"):
             log_info_concise(f"  From: {dest_file}")
-            log_info_concise(f"  To:   {dest_file}.bak")
-            shutil.copy(dest_file, dest_file + ".bak")
+            log_info_concise(f"  To:   {dest_file}-bak")
+            shutil.copy(dest_file, dest_file + "-bak")
 
         old_hosts_line = None
         updated_lines = []

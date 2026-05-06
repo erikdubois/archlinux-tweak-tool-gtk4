@@ -1,0 +1,65 @@
+#!/bin/bash
+set -euo pipefail
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"; }
+header()    { separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  ✔ $*${RESET}"; }
+info()      { echo "    $*"; }
+warn()      { echo "${YELLOW}  ⚠ $*${RESET}"; }
+error()     { echo "${RED}  ✘ $*${RESET}"; }
+
+SEARCH_ROOT="${1:-$HOME}"
+
+header "Remove .bak and -bak files/folders"
+info "Scanning: $SEARCH_ROOT"
+separator
+
+mapfile -t BAK_ITEMS < <(find "$SEARCH_ROOT" \( -name "*.bak" -o -name "*-bak" \) 2>/dev/null | sort)
+
+if [[ ${#BAK_ITEMS[@]} -eq 0 ]]; then
+    warn "No .bak or -bak items found under $SEARCH_ROOT"
+    exit 0
+fi
+
+info "Found ${#BAK_ITEMS[@]} item(s):"
+echo
+for item in "${BAK_ITEMS[@]}"; do
+    if [[ -d "$item" ]]; then
+        info "  [dir]  $item"
+    else
+        info "  [file] $item"
+    fi
+done
+echo
+
+read -r -p "    Delete all of the above? [y/N] " confirm
+echo
+
+if [[ "${confirm,,}" != "y" ]]; then
+    warn "Aborted — nothing deleted."
+    exit 0
+fi
+
+header "Deleting"
+
+deleted=0
+failed=0
+
+for item in "${BAK_ITEMS[@]}"; do
+    if rm -rf -- "$item"; then
+        success "Deleted: $item"
+        (( deleted++ )) || true
+    else
+        error "Failed:  $item"
+        (( failed++ )) || true
+    fi
+done
+
+separator
+success "Done — $deleted deleted, $failed failed."

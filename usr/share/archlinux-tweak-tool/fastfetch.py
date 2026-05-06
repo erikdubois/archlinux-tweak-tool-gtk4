@@ -449,12 +449,12 @@ def on_reset_fast_att(self, _widget):
 
 def on_reset_fast(self, _widget):
     fn.debug_print("Reset fastfetch from backup")
-    fn.debug_print(f"  Source : {fn.fastfetch_config}.bak")
+    fn.debug_print(f"  Source : {fn.fastfetch_config}-bak")
     fn.debug_print(f"  Target : {fn.fastfetch_config}")
-    if fn.path.isfile(fn.fastfetch_config + ".bak"):
-        fn.log_info_concise(f"  From: {fn.fastfetch_config}.bak")
+    if fn.path.isfile(fn.fastfetch_config + "-bak"):
+        fn.log_info_concise(f"  From: {fn.fastfetch_config}-bak")
         fn.log_info_concise(f"  To:   {fn.fastfetch_config}")
-        fn.shutil.copy(fn.fastfetch_config + ".bak", fn.fastfetch_config)
+        fn.shutil.copy(fn.fastfetch_config + "-bak", fn.fastfetch_config)
         fn.debug_print("  Result : restored from backup")
         get_checkboxes(self)
         fn.log_success("fastfetch default settings applied")
@@ -496,11 +496,11 @@ def on_fast_util_toggled(self, switch, gparam):
             if fn.path.exists("/usr/bin/fastfetch"):
                 fn.log_success("fastfetch installed")
                 if fn.path.isfile(fn.fastfetch_config):
-                    if not fn.path.isfile(fn.fastfetch_config + ".bak"):
+                    if not fn.path.isfile(fn.fastfetch_config + "-bak"):
                         try:
-                            fn.shutil.copy(fn.fastfetch_config, fn.fastfetch_config + ".bak")
-                            fn.permissions(fn.fastfetch_config + ".bak")
-                            fn.debug_print(f"  Backed up: {fn.fastfetch_config}.bak")
+                            fn.shutil.copy(fn.fastfetch_config, fn.fastfetch_config + "-bak")
+                            fn.permissions(fn.fastfetch_config + "-bak")
+                            fn.debug_print(f"  Backed up: {fn.fastfetch_config}-bak")
                         except Exception as error:
                             fn.log_error(str(error))
                 elif fn.path.isfile(fn.fastfetch_kiro):

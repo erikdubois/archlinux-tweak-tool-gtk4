@@ -623,12 +623,12 @@ def on_remove_discovery_clicked(self, _widget):
 
 def on_click_reset_nsswitch(self, _widget):
     fn.log_subsection("Reset Nsswitch Configuration")
-    if fn.path.isfile(fn.nsswitch_config + ".bak"):
+    if fn.path.isfile(fn.nsswitch_config + "-bak"):
         try:
-            fn.log_info_concise(f"  From: {fn.nsswitch_config}.bak")
+            fn.log_info_concise(f"  From: {fn.nsswitch_config}-bak")
             fn.log_info_concise(f"  To:   {fn.nsswitch_config}")
-            fn.shutil.copy(fn.nsswitch_config + ".bak", fn.nsswitch_config)
-            fn.debug_print(f"Restored from backup: {fn.nsswitch_config}.bak")
+            fn.shutil.copy(fn.nsswitch_config + "-bak", fn.nsswitch_config)
+            fn.debug_print(f"Restored from backup: {fn.nsswitch_config}-bak")
             fn.log_success("Nsswitch configuration reset to original")
             fn.show_in_app_notification(self, "Nsswitch config reset")
         except Exception as error:
@@ -687,19 +687,19 @@ def on_click_apply_samba(self, _widget):
 
 def on_click_reset_samba(self, _widget):
     fn.log_subsection("Reset Samba Configuration")
-    if fn.path.isfile(fn.samba_config + ".bak"):
+    if fn.path.isfile(fn.samba_config + "-bak"):
         try:
-            fn.log_info_concise(f"  From: {fn.samba_config}.bak")
+            fn.log_info_concise(f"  From: {fn.samba_config}-bak")
             fn.log_info_concise(f"  To:   {fn.samba_config}")
-            fn.shutil.copy(fn.samba_config + ".bak", fn.samba_config)
-            fn.debug_print(f"Restored from backup: {fn.samba_config}.bak")
+            fn.shutil.copy(fn.samba_config + "-bak", fn.samba_config)
+            fn.debug_print(f"Restored from backup: {fn.samba_config}-bak")
             fn.log_success("Samba configuration reset to original")
             fn.show_in_app_notification(self, "Original smb.conf is applied")
         except Exception as error:
             fn.log_error(f"Failed to reset samba configuration: {error}")
     else:
         fn.log_warn("No backup configuration file found")
-        fn.debug_print(f"Missing: {fn.samba_config}.bak")
+        fn.debug_print(f"Missing: {fn.samba_config}-bak")
         fn.show_in_app_notification(self, "No backup configuration present")
 
 

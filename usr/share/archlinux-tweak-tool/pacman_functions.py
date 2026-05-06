@@ -135,11 +135,11 @@ def toggle_test_repos(self, state, widget):
     action = "Enable" if state is True else "Disable"
     fn.log_subsection(f"{action} Repository: {widget}")
 
-    if not fn.os.path.isfile(fn.pacman + ".bak"):
-        fn.debug_print(f"Creating backup: {fn.pacman}.bak")
+    if not fn.os.path.isfile(fn.pacman + "-bak"):
+        fn.debug_print(f"Creating backup: {fn.pacman}-bak")
         fn.log_info_concise(f"  From: {fn.pacman}")
-        fn.log_info_concise(f"  To:   {fn.pacman}.bak")
-        fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
+        fn.log_info_concise(f"  To:   {fn.pacman}-bak")
+        fn.shutil.copy(fn.pacman, fn.pacman + "-bak")
 
     lines = ""
     if state is True:

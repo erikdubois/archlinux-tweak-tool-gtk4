@@ -177,6 +177,7 @@ def on_save_variety_config(self, _widget=None):
                 if fn.path.isdir(dest):
                     shutil.rmtree(dest + "-bak", ignore_errors=True)
                     shutil.copytree(dest, dest + "-bak")
+                    fn.permissions(dest + "-bak")
                     fn.log_info_concise(f"  Backed up: {dest} → {dest}-bak")
                 fn.log_info_concise(f"  From: {src}")
                 fn.log_info_concise(f"  To:   {dest}")
@@ -185,6 +186,7 @@ def on_save_variety_config(self, _widget=None):
             else:
                 if fn.path.isfile(dest):
                     shutil.copy2(dest, dest + "-bak")
+                    fn.permissions(dest + "-bak")
                     fn.log_info_concise(f"  Backed up: {dest} → {dest}-bak")
                 fn.log_info_concise(f"  From: {src}")
                 fn.log_info_concise(f"  To:   {dest}")

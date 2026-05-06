@@ -418,11 +418,12 @@ def on_polybar_toggle(self, _widget, _pspec=None):
 def awesome_apply_clicked(self, widget):
     fn.log_subsection("Apply Awesome Theme")
     try:
-        if not fn.path.isfile(fn.awesome_config + ".bak"):
-            fn.debug_print(f"Creating backup: {fn.awesome_config}.bak")
+        if not fn.path.isfile(fn.awesome_config + "-bak"):
+            fn.debug_print(f"Creating backup: {fn.awesome_config}-bak")
             fn.log_info_concise(f"  From: {fn.awesome_config}")
-            fn.log_info_concise(f"  To:   {fn.awesome_config}.bak")
-            fn.shutil.copy(fn.awesome_config, fn.awesome_config + ".bak")
+            fn.log_info_concise(f"  To:   {fn.awesome_config}-bak")
+            fn.shutil.copy(fn.awesome_config, fn.awesome_config + "-bak")
+            fn.permissions(fn.awesome_config + "-bak")
 
         tree_iter = self.awesome_combo.get_active_iter()
         if tree_iter is not None:
@@ -441,11 +442,11 @@ def awesome_apply_clicked(self, widget):
 def awesome_reset_clicked(self, widget):
     fn.log_subsection("Reset Awesome Theme")
     try:
-        if fn.path.isfile(fn.awesome_config + ".bak"):
+        if fn.path.isfile(fn.awesome_config + "-bak"):
             fn.debug_print("Restoring awesome config from backup")
-            fn.log_info_concise(f"  From: {fn.awesome_config}.bak")
+            fn.log_info_concise(f"  From: {fn.awesome_config}-bak")
             fn.log_info_concise(f"  To:   {fn.awesome_config}")
-            fn.shutil.copy(fn.awesome_config + ".bak", fn.awesome_config)
+            fn.shutil.copy(fn.awesome_config + "-bak", fn.awesome_config)
             fn.log_success("Awesome configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
 
@@ -472,10 +473,11 @@ def i3wm_apply_clicked(self, widget):
     fn.log_subsection("Apply I3WM Theme")
     try:
         if fn.path.isfile(fn.i3wm_config):
-            fn.debug_print(f"Creating backup: {fn.i3wm_config}.bak")
+            fn.debug_print(f"Creating backup: {fn.i3wm_config}-bak")
             fn.log_info_concise(f"  From: {fn.i3wm_config}")
-            fn.log_info_concise(f"  To:   {fn.i3wm_config}.bak")
-            fn.shutil.copy(fn.i3wm_config, fn.i3wm_config + ".bak")
+            fn.log_info_concise(f"  To:   {fn.i3wm_config}-bak")
+            fn.shutil.copy(fn.i3wm_config, fn.i3wm_config + "-bak")
+            fn.permissions(fn.i3wm_config + "-bak")
 
         fn.debug_print(f"Applying i3wm theme: {fn.get_combo_text(self.i3_combo)}")
         set_i3_themes(
@@ -496,11 +498,11 @@ def i3wm_apply_clicked(self, widget):
 def i3wm_reset_clicked(self, widget):
     fn.log_subsection("Reset I3WM Theme")
     try:
-        if fn.path.isfile(fn.i3wm_config + ".bak"):
+        if fn.path.isfile(fn.i3wm_config + "-bak"):
             fn.debug_print("Restoring i3wm config from backup")
-            fn.log_info_concise(f"  From: {fn.i3wm_config}.bak")
+            fn.log_info_concise(f"  From: {fn.i3wm_config}-bak")
             fn.log_info_concise(f"  To:   {fn.i3wm_config}")
-            fn.shutil.copy(fn.i3wm_config + ".bak", fn.i3wm_config)
+            fn.shutil.copy(fn.i3wm_config + "-bak", fn.i3wm_config)
             fn.log_success("I3WM configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
 
@@ -518,10 +520,11 @@ def qtile_apply_clicked(self, widget):
     fn.log_subsection("Apply Qtile Theme")
     try:
         if fn.path.isfile(fn.qtile_config):
-            fn.debug_print(f"Creating backup: {fn.qtile_config}.bak")
+            fn.debug_print(f"Creating backup: {fn.qtile_config}-bak")
             fn.log_info_concise(f"  From: {fn.qtile_config}")
-            fn.log_info_concise(f"  To:   {fn.qtile_config}.bak")
-            fn.shutil.copy(fn.qtile_config, fn.qtile_config + ".bak")
+            fn.log_info_concise(f"  To:   {fn.qtile_config}-bak")
+            fn.shutil.copy(fn.qtile_config, fn.qtile_config + "-bak")
+            fn.permissions(fn.qtile_config + "-bak")
 
         fn.debug_print(f"Applying qtile theme: {fn.get_combo_text(self.qtile_combo)}")
         set_qtile_themes(
@@ -537,11 +540,11 @@ def qtile_apply_clicked(self, widget):
 def qtile_reset_clicked(self, widget):
     fn.log_subsection("Reset Qtile Theme")
     try:
-        if fn.path.isfile(fn.qtile_config + ".bak"):
+        if fn.path.isfile(fn.qtile_config + "-bak"):
             fn.debug_print("Restoring qtile config from backup")
-            fn.log_info_concise(f"  From: {fn.qtile_config}.bak")
+            fn.log_info_concise(f"  From: {fn.qtile_config}-bak")
             fn.log_info_concise(f"  To:   {fn.qtile_config}")
-            fn.shutil.copy(fn.qtile_config + ".bak", fn.qtile_config)
+            fn.shutil.copy(fn.qtile_config + "-bak", fn.qtile_config)
             fn.log_success("Qtile configuration reset")
             fn.show_in_app_notification(self, "Config reset successfully")
 

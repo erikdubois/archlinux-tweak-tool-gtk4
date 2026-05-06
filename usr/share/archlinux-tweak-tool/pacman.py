@@ -177,8 +177,8 @@ def custom_repo_clicked(self, widget):
 def reset_pacman_blank(self, widget):
     fn.log_subsection("Resetting pacman.conf to blank state...")
     fn.log_info_concise(f"  From: {fn.pacman}")
-    fn.log_info_concise(f"  To:   {fn.pacman}.bak")
-    fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
+    fn.log_info_concise(f"  To:   {fn.pacman}-bak")
+    fn.shutil.copy(fn.pacman, fn.pacman + "-bak")
     fn.log_info_concise(f"  From: {fn.blank_pacman_att}")
     fn.log_info_concise(f"  To:   {fn.pacman}")
     fn.shutil.copy(fn.blank_pacman_att, fn.pacman)
@@ -190,12 +190,12 @@ def reset_pacman_blank(self, widget):
 
 def reset_pacman_local(self, widget):
     fn.log_subsection("Resetting pacman.conf from backup...")
-    if fn.path.isfile(fn.pacman + ".bak"):
-        fn.log_info_concise(f"  From: {fn.pacman}.bak")
+    if fn.path.isfile(fn.pacman + "-bak"):
+        fn.log_info_concise(f"  From: {fn.pacman}-bak")
         fn.log_info_concise(f"  To:   {fn.pacman}")
-        fn.shutil.copy(fn.pacman + ".bak", fn.pacman)
+        fn.shutil.copy(fn.pacman + "-bak", fn.pacman)
         fn.invalidate_pacman_conf_cache()
-        fn.log_success("pacman.conf reset from .bak")
+        fn.log_success("pacman.conf reset from -bak")
         fn.show_in_app_notification(
             self, "Default Settings Applied - check in a terminal"
         )

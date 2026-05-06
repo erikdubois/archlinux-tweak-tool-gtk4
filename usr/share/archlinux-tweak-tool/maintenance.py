@@ -648,10 +648,10 @@ def on_click_fix_mainstream(self, _widget):
 def on_click_reset_mirrorlist(self, _widget):
     fn.log_subsection("Resetting mirrorlist...")
     try:
-        if fn.path.isfile(fn.mirrorlist + ".bak"):
-            fn.log_info_concise(f"  From: {fn.mirrorlist}.bak")
+        if fn.path.isfile(fn.mirrorlist + "-bak"):
+            fn.log_info_concise(f"  From: {fn.mirrorlist}-bak")
             fn.log_info_concise(f"  To:   {fn.mirrorlist}")
-            fn.shutil.copy(fn.mirrorlist + ".bak", fn.mirrorlist)
+            fn.shutil.copy(fn.mirrorlist + "-bak", fn.mirrorlist)
     except Exception as error:
         fn.log_warn(f"Restore from backup failed: {error}")
     fn.log_success("Original mirrorlist restored")
@@ -687,11 +687,11 @@ def on_click_fix_pacman_gpg_conf(self, _widget):
     gpg_conf_path = base_dir + "/data/gpg.conf"
     fn.log_info_concise(f"  From: {gpg_conf_path}")
     fn.log_info_concise(f"  To:   {fn.gpg_conf}")
-    if not fn.path.isfile(fn.gpg_conf + ".bak"):
+    if not fn.path.isfile(fn.gpg_conf + "-bak"):
         fn.log_info_concise(f"  From: {fn.gpg_conf}")
-        fn.log_info_concise(f"  To:   {fn.gpg_conf}.bak")
-        fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + ".bak")
-        fn.log_info(f"Backup created: {fn.gpg_conf}.bak")
+        fn.log_info_concise(f"  To:   {fn.gpg_conf}-bak")
+        fn.shutil.copy(fn.gpg_conf, fn.gpg_conf + "-bak")
+        fn.log_info(f"Backup created: {fn.gpg_conf}-bak")
     fn.debug_print(f"Restoring from: {gpg_conf_path}")
     try:
         fn.shutil.copy(gpg_conf_path, fn.gpg_conf)
@@ -723,13 +723,13 @@ def on_click_fix_pacman_gpg_conf_local(self, _widget):
             self,
             "No ~/.gnupg/gpg.conf found — a fresh copy will be created",
         )
-    elif not fn.path.isfile(fn.gpg_conf_local + ".bak"):
+    elif not fn.path.isfile(fn.gpg_conf_local + "-bak"):
         try:
             fn.log_info_concise(f"  From: {fn.gpg_conf_local}")
-            fn.log_info_concise(f"  To:   {fn.gpg_conf_local}.bak")
-            fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + ".bak")
-            fn.permissions(fn.gpg_conf_local + ".bak")
-            fn.log_info(f"Backup created: {fn.gpg_conf_local}.bak")
+            fn.log_info_concise(f"  To:   {fn.gpg_conf_local}-bak")
+            fn.shutil.copy(fn.gpg_conf_local, fn.gpg_conf_local + "-bak")
+            fn.permissions(fn.gpg_conf_local + "-bak")
+            fn.log_info(f"Backup created: {fn.gpg_conf_local}-bak")
         except Exception as error:
             fn.log_error(f"Error creating backup: {error}")
 

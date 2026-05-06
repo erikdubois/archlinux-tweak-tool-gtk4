@@ -65,6 +65,13 @@ def gui(self, Gtk, vboxstack_plymouth, fn):
     )
     hbox_apply_desc.append(lbl_apply_desc)
 
+    hbox_reset = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_reset.set_margin_start(10)
+    hbox_reset.set_margin_top(6)
+    btn_reset = Gtk.Button(label="Reset to Omarchy default")
+    btn_reset.set_size_request(200, 30)
+    hbox_reset.append(btn_reset)
+
     # ── separator ──────────────────────────────────────────────────────────
 
     hbox_sep2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -156,6 +163,9 @@ def gui(self, Gtk, vboxstack_plymouth, fn):
                 stderr=fn.subprocess.PIPE,
             )
             process.wait()
+            fn.os.makedirs("/etc/att", exist_ok=True)
+            open("/etc/att/att-omarchy-marker", "w").close()
+            fn.log_info("ATT Omarchy marker written to /etc/att/att-omarchy-marker")
             fn.GLib.idle_add(refresh_after_apply)
 
         fn.threading.Thread(target=run_apply, daemon=True).start()
@@ -187,8 +197,30 @@ def gui(self, Gtk, vboxstack_plymouth, fn):
         populate_available()
         fn.log_success("Plymouth theme list refreshed")
 
+    def on_reset_clicked(_widget):
+        fn.log_subsection("Resetting Plymouth theme to Omarchy default")
+        fn.show_in_app_notification(self, "Resetting Plymouth theme to omarchy...")
+        script = (
+            "echo 'Resetting Plymouth theme to omarchy...'\n"
+            "plymouth-set-default-theme -R omarchy\n"
+            "echo ''\n"
+            "read -p 'Done. Press Enter to close...'\n"
+        )
+
+        def run_reset():
+            process = fn.subprocess.Popen(
+                ["alacritty", "-e", "bash", "-c", script],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            process.wait()
+            fn.GLib.idle_add(refresh_after_apply)
+
+        fn.threading.Thread(target=run_reset, daemon=True).start()
+
     btn_apply.connect("clicked", on_apply_clicked)
     btn_install.connect("clicked", on_install_clicked)
+    btn_reset.connect("clicked", on_reset_clicked)
 
     # ── layout ─────────────────────────────────────────────────────────────
 
@@ -199,6 +231,7 @@ def gui(self, Gtk, vboxstack_plymouth, fn):
     vboxstack_plymouth.append(hbox_select)
     vboxstack_plymouth.append(hbox_apply)
     vboxstack_plymouth.append(hbox_apply_desc)
+    vboxstack_plymouth.append(hbox_reset)
     vboxstack_plymouth.append(hbox_sep2)
     vboxstack_plymouth.append(hbox_avail_header)
     vboxstack_plymouth.append(hbox_avail_select)

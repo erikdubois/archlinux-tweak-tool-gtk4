@@ -83,7 +83,7 @@ def on_install_att_bashrc_clicked(self, _widget):
 
 def on_bash_reset_clicked(self, _widget):
     fn.log_subsection("Restore Original Bash Configuration")
-    backup = fn.bash_config + ".bak"
+    backup = fn.bash_config + "-bak"
     fn.debug_print(f"  Source : {backup}")
     fn.debug_print(f"  Target : {fn.bash_config}")
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
@@ -115,8 +115,8 @@ def on_install_att_fish_config_clicked(self, _widget):
             fn.os.makedirs(fn.os.path.dirname(fn.fish_config), exist_ok=True)
             if fn.path.isfile(fn.fish_config):
                 fn.log_info_concise(f"  From: {fn.fish_config}")
-                fn.log_info_concise(f"  To:   {fn.fish_config}.bak")
-                fn.shutil.copy(fn.fish_config, fn.fish_config + ".bak")
+                fn.log_info_concise(f"  To:   {fn.fish_config}-bak")
+                fn.shutil.copy(fn.fish_config, fn.fish_config + "-bak")
             fn.log_info_concise(f"  From: {fn.fish_config_kiro}")
             fn.log_info_concise(f"  To:   {fn.fish_config}")
             fn.shutil.copy(fn.fish_config_kiro, fn.fish_config)
@@ -137,7 +137,7 @@ def on_install_att_fish_config_clicked(self, _widget):
 
 def on_fish_reset_clicked(self, _widget):
     fn.log_subsection("Restore Original Fish Configuration")
-    backup = fn.fish_config + ".bak"
+    backup = fn.fish_config + "-bak"
     fn.debug_print(f"  Source : {backup}")
     fn.debug_print(f"  Target : {fn.fish_config}")
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")
@@ -266,7 +266,7 @@ def on_install_att_zshrc_clicked(self, _widget):
 
 def on_zshrc_reset_clicked(self, _widget):
     fn.log_subsection("Restore Original Zsh Configuration")
-    backup = fn.zsh_config + ".bak"
+    backup = fn.zsh_config + "-bak"
     fn.debug_print(f"  Source : {backup}")
     fn.debug_print(f"  Target : {fn.zsh_config}")
     fn.debug_print(f"  Exists : {fn.path.isfile(backup)}")

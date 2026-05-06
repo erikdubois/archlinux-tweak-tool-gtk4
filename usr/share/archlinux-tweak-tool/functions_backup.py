@@ -119,53 +119,53 @@ def backup_system_configs():
         fn.debug_print(f"{fn.sddm_default_d2} not found")
 
     if fn.path.exists("/usr/share/icons/default/index.theme"):
-        if not fn.path.isfile("/usr/share/icons/default/index.theme.bak"):
+        if not fn.path.isfile("/usr/share/icons/default/index.theme-bak"):
             try:
                 fn.debug_print("Backing up /usr/share/icons/default/index.theme")
                 fn.log_info_concise("  From: /usr/share/icons/default/index.theme")
-                fn.log_info_concise("  To:   /usr/share/icons/default/index.theme.bak")
+                fn.log_info_concise("  To:   /usr/share/icons/default/index.theme-bak")
                 fn.shutil.copy(
                     "/usr/share/icons/default/index.theme",
-                    "/usr/share/icons/default/index.theme.bak",
+                    "/usr/share/icons/default/index.theme-bak",
                 )
-                fn.debug_print("✓ index.theme.bak created")
+                fn.debug_print("✓ index.theme-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up index.theme: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("index.theme.bak already exists, skipping")
+            fn.debug_print("index.theme-bak already exists, skipping")
     else:
         fn.debug_print("/usr/share/icons/default/index.theme not found")
 
     if fn.path.exists("/etc/samba/smb.conf"):
-        if not fn.path.isfile("/etc/samba/smb.conf.bak"):
+        if not fn.path.isfile("/etc/samba/smb.conf-bak"):
             try:
                 fn.debug_print("Backing up /etc/samba/smb.conf")
                 fn.log_info_concise("  From: /etc/samba/smb.conf")
-                fn.log_info_concise("  To:   /etc/samba/smb.conf.bak")
-                fn.shutil.copy("/etc/samba/smb.conf", "/etc/samba/smb.conf.bak")
-                fn.debug_print("✓ smb.conf.bak created")
+                fn.log_info_concise("  To:   /etc/samba/smb.conf-bak")
+                fn.shutil.copy("/etc/samba/smb.conf", "/etc/samba/smb.conf-bak")
+                fn.debug_print("✓ smb.conf-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up smb.conf: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("smb.conf.bak already exists, skipping")
+            fn.debug_print("smb.conf-bak already exists, skipping")
     else:
         fn.debug_print("/etc/samba/smb.conf not found")
 
     if fn.path.exists("/etc/nsswitch.conf"):
-        if not fn.path.isfile("/etc/nsswitch.conf.bak"):
+        if not fn.path.isfile("/etc/nsswitch.conf-bak"):
             try:
                 fn.debug_print("Backing up /etc/nsswitch.conf")
                 fn.log_info_concise("  From: /etc/nsswitch.conf")
-                fn.log_info_concise("  To:   /etc/nsswitch.conf.bak")
-                fn.shutil.copy("/etc/nsswitch.conf", "/etc/nsswitch.conf.bak")
-                fn.debug_print("✓ nsswitch.conf.bak created")
+                fn.log_info_concise("  To:   /etc/nsswitch.conf-bak")
+                fn.shutil.copy("/etc/nsswitch.conf", "/etc/nsswitch.conf-bak")
+                fn.debug_print("✓ nsswitch.conf-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up nsswitch.conf: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("nsswitch.conf.bak already exists, skipping")
+            fn.debug_print("nsswitch.conf-bak already exists, skipping")
     else:
         fn.debug_print("/etc/nsswitch.conf not found")
 
@@ -181,158 +181,158 @@ def backup_user_configs():
 
     # Fish shell config
     fish_config = fn.home + "/.config/fish/config.fish"
-    if fn.path.isfile(fish_config) and not fn.path.isfile(fish_config + ".bak"):
+    if fn.path.isfile(fish_config) and not fn.path.isfile(fish_config + "-bak"):
         try:
             fn.debug_print(f"Backing up fish config: {fish_config}")
             fn.log_info_concise(f"  From: {fish_config}")
-            fn.log_info_concise(f"  To:   {fish_config}.bak")
-            fn.shutil.copy(fish_config, fish_config + ".bak")
-            fn.permissions(fish_config + ".bak")
-            fn.debug_print("✓ fish config.fish.bak created")
+            fn.log_info_concise(f"  To:   {fish_config}-bak")
+            fn.shutil.copy(fish_config, fish_config + "-bak")
+            fn.permissions(fish_config + "-bak")
+            fn.debug_print("✓ fish config.fish-bak created")
         except Exception as error:
             fn.debug_print(f"Error backing up fish config: {error}")
             fn.log_error(str(error))
-    elif fn.path.isfile(fish_config + ".bak"):
-        fn.debug_print("fish config.fish.bak already exists, skipping")
+    elif fn.path.isfile(fish_config + "-bak"):
+        fn.debug_print("fish config.fish-bak already exists, skipping")
     else:
         fn.debug_print(f"fish config not found at {fish_config}")
 
     # Pacman mirrorlist
     if fn.path.isfile(fn.mirrorlist):
-        if not fn.path.isfile(fn.mirrorlist + ".bak"):
+        if not fn.path.isfile(fn.mirrorlist + "-bak"):
             try:
                 fn.debug_print(f"Backing up mirrorlist: {fn.mirrorlist}")
                 fn.log_info_concise(f"  From: {fn.mirrorlist}")
-                fn.log_info_concise(f"  To:   {fn.mirrorlist}.bak")
-                fn.shutil.copy(fn.mirrorlist, fn.mirrorlist + ".bak")
-                fn.debug_print("✓ mirrorlist.bak created")
+                fn.log_info_concise(f"  To:   {fn.mirrorlist}-bak")
+                fn.shutil.copy(fn.mirrorlist, fn.mirrorlist + "-bak")
+                fn.debug_print("✓ mirrorlist-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up mirrorlist: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("mirrorlist.bak already exists, skipping")
+            fn.debug_print("mirrorlist-bak already exists, skipping")
     else:
         fn.debug_print(f"mirrorlist not found at {fn.mirrorlist}")
 
     # Hosts file
     if fn.path.isfile("/etc/hosts"):
-        if not fn.path.isfile("/etc/hosts.bak"):
+        if not fn.path.isfile("/etc/hosts-bak"):
             try:
                 fn.debug_print("Backing up /etc/hosts")
                 fn.log_info_concise("  From: /etc/hosts")
-                fn.log_info_concise("  To:   /etc/hosts.bak")
-                fn.shutil.copy("/etc/hosts", "/etc/hosts.bak")
-                fn.debug_print("✓ hosts.bak created")
+                fn.log_info_concise("  To:   /etc/hosts-bak")
+                fn.shutil.copy("/etc/hosts", "/etc/hosts-bak")
+                fn.debug_print("✓ hosts-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up hosts: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("hosts.bak already exists, skipping")
+            fn.debug_print("hosts-bak already exists, skipping")
     else:
         fn.debug_print("/etc/hosts not found")
 
     # Fastfetch config — backup only; ATT jsonc placement happens on install toggle
     if fn.path.isfile(fn.fastfetch_config):
-        if not fn.path.isfile(fn.fastfetch_config + ".bak"):
+        if not fn.path.isfile(fn.fastfetch_config + "-bak"):
             try:
                 fn.debug_print(f"Backing up fastfetch config: {fn.fastfetch_config}")
                 fn.log_info_concise(f"  From: {fn.fastfetch_config}")
-                fn.log_info_concise(f"  To:   {fn.fastfetch_config}.bak")
-                fn.shutil.copy(fn.fastfetch_config, fn.fastfetch_config + ".bak")
-                fn.permissions(fn.fastfetch_config + ".bak")
-                fn.debug_print("✓ fastfetch.json.bak created")
+                fn.log_info_concise(f"  To:   {fn.fastfetch_config}-bak")
+                fn.shutil.copy(fn.fastfetch_config, fn.fastfetch_config + "-bak")
+                fn.permissions(fn.fastfetch_config + "-bak")
+                fn.debug_print("✓ fastfetch.json-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up fastfetch config: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("fastfetch.json.bak already exists, skipping")
+            fn.debug_print("fastfetch.json-bak already exists, skipping")
 
     # Bash config
     if fn.path.isfile(fn.bash_config):
-        if not fn.path.isfile(fn.bash_config + ".bak"):
+        if not fn.path.isfile(fn.bash_config + "-bak"):
             try:
                 fn.debug_print(f"Backing up bashrc: {fn.bash_config}")
                 fn.log_info_concise(f"  From: {fn.bash_config}")
-                fn.log_info_concise(f"  To:   {fn.bash_config}.bak")
-                fn.shutil.copy(fn.bash_config, fn.bash_config + ".bak")
-                fn.permissions(fn.home + "/.bashrc.bak")
-                fn.debug_print("✓ .bashrc.bak created")
+                fn.log_info_concise(f"  To:   {fn.bash_config}-bak")
+                fn.shutil.copy(fn.bash_config, fn.bash_config + "-bak")
+                fn.permissions(fn.home + "/.bashrc-bak")
+                fn.debug_print("✓ .bashrc-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up bashrc: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print(".bashrc.bak already exists, skipping")
+            fn.debug_print(".bashrc-bak already exists, skipping")
     else:
         fn.debug_print(f"bashrc not found at {fn.bash_config}")
 
     # Zsh config
     if fn.path.isfile(fn.zsh_config):
-        if not fn.path.isfile(fn.zsh_config + ".bak"):
+        if not fn.path.isfile(fn.zsh_config + "-bak"):
             try:
                 fn.debug_print(f"Backing up zshrc: {fn.zsh_config}")
                 fn.log_info_concise(f"  From: {fn.zsh_config}")
-                fn.log_info_concise(f"  To:   {fn.zsh_config}.bak")
-                fn.shutil.copy(fn.zsh_config, fn.zsh_config + ".bak")
-                fn.permissions(fn.home + "/.zshrc.bak")
-                fn.debug_print("✓ .zshrc.bak created")
+                fn.log_info_concise(f"  To:   {fn.zsh_config}-bak")
+                fn.shutil.copy(fn.zsh_config, fn.zsh_config + "-bak")
+                fn.permissions(fn.home + "/.zshrc-bak")
+                fn.debug_print("✓ .zshrc-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up zshrc: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print(".zshrc.bak already exists, skipping")
+            fn.debug_print(".zshrc-bak already exists, skipping")
     else:
         fn.debug_print(f"zshrc not found at {fn.zsh_config}")
 
     # Pacman config
     if fn.path.isfile(fn.pacman):
-        if not fn.path.isfile(fn.pacman + ".bak"):
+        if not fn.path.isfile(fn.pacman + "-bak"):
             try:
                 fn.debug_print(f"Backing up pacman config: {fn.pacman}")
                 fn.log_info_concise(f"  From: {fn.pacman}")
-                fn.log_info_concise(f"  To:   {fn.pacman}.bak")
-                fn.shutil.copy(fn.pacman, fn.pacman + ".bak")
-                fn.debug_print("✓ pacman.conf.bak created")
+                fn.log_info_concise(f"  To:   {fn.pacman}-bak")
+                fn.shutil.copy(fn.pacman, fn.pacman + "-bak")
+                fn.debug_print("✓ pacman.conf-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up pacman config: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("pacman.conf.bak already exists, skipping")
+            fn.debug_print("pacman.conf-bak already exists, skipping")
     else:
         fn.debug_print(f"pacman config not found at {fn.pacman}")
 
     # XFCE4 terminal config
     if fn.file_check(fn.xfce4_terminal_config):
-        if not fn.path.isfile(fn.xfce4_terminal_config + ".bak"):
+        if not fn.path.isfile(fn.xfce4_terminal_config + "-bak"):
             try:
                 fn.debug_print(f"Backing up xfce4 terminal config: {fn.xfce4_terminal_config}")
                 fn.log_info_concise(f"  From: {fn.xfce4_terminal_config}")
-                fn.log_info_concise(f"  To:   {fn.xfce4_terminal_config}.bak")
-                fn.shutil.copy(fn.xfce4_terminal_config, fn.xfce4_terminal_config + ".bak")
-                fn.permissions(fn.xfce4_terminal_config + ".bak")
-                fn.debug_print("✓ terminalrc.bak created")
+                fn.log_info_concise(f"  To:   {fn.xfce4_terminal_config}-bak")
+                fn.shutil.copy(fn.xfce4_terminal_config, fn.xfce4_terminal_config + "-bak")
+                fn.permissions(fn.xfce4_terminal_config + "-bak")
+                fn.debug_print("✓ terminalrc-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up xfce4 terminal config: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("terminalrc.bak already exists, skipping")
+            fn.debug_print("terminalrc-bak already exists, skipping")
     else:
         fn.debug_print(f"xfce4 terminal config not found at {fn.xfce4_terminal_config}")
 
     # Alacritty config
     if fn.file_check(fn.alacritty_config):
-        if not fn.path.isfile(fn.alacritty_config + ".bak"):
+        if not fn.path.isfile(fn.alacritty_config + "-bak"):
             try:
                 fn.debug_print(f"Backing up alacritty config: {fn.alacritty_config}")
                 fn.log_info_concise(f"  From: {fn.alacritty_config}")
-                fn.log_info_concise(f"  To:   {fn.alacritty_config}.bak")
-                fn.shutil.copy(fn.alacritty_config, fn.alacritty_config + ".bak")
-                fn.permissions(fn.alacritty_config + ".bak")
-                fn.debug_print("✓ alacritty.yml.bak created")
+                fn.log_info_concise(f"  To:   {fn.alacritty_config}-bak")
+                fn.shutil.copy(fn.alacritty_config, fn.alacritty_config + "-bak")
+                fn.permissions(fn.alacritty_config + "-bak")
+                fn.debug_print("✓ alacritty.yml-bak created")
             except Exception as error:
                 fn.debug_print(f"Error backing up alacritty config: {error}")
                 fn.log_error(str(error))
         else:
-            fn.debug_print("alacritty.yml.bak already exists, skipping")
+            fn.debug_print("alacritty.yml-bak already exists, skipping")
     else:
         fn.debug_print(f"alacritty config not found at {fn.alacritty_config}")
 
@@ -345,6 +345,7 @@ def backup_user_configs():
             fn.log_info_concise(f"  From: {variety_conf}")
             fn.log_info_concise(f"  To:   {variety_conf_bak}")
             fn.shutil.copy2(variety_conf, variety_conf_bak)
+            fn.permissions(variety_conf_bak)
             fn.debug_print("✓ variety.conf-bak created")
         except Exception as error:
             fn.debug_print(f"Error backing up variety.conf: {error}")
@@ -361,6 +362,7 @@ def backup_user_configs():
             fn.log_info_concise(f"  From: {variety_scripts}")
             fn.log_info_concise(f"  To:   {variety_scripts_bak}")
             fn.shutil.copytree(variety_scripts, variety_scripts_bak)
+            fn.permissions(variety_scripts_bak)
             fn.debug_print("✓ scripts-bak created")
         except Exception as error:
             fn.debug_print(f"Error backing up variety scripts: {error}")

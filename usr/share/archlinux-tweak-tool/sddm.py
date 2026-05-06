@@ -516,7 +516,7 @@ def on_set_sddm_wallpaper(self, _widget=None):
     simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
     simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
     dest = simplicity_images + "/background.jpg"
-    dest_bak = simplicity_images + "/background.jpg.bak"
+    dest_bak = simplicity_images + "/background.jpg-bak"
 
     path = getattr(self, "login_wallpaper_path", None)
     if not path or not fn.path.isfile(path):
@@ -553,7 +553,7 @@ def on_restore_sddm_wallpaper(self, _widget=None):
     simplicity_images = "/usr/share/sddm/themes/edu-simplicity/images"
     simplicity_conf = "/usr/share/sddm/themes/edu-simplicity/theme.conf"
     dest = simplicity_images + "/background.jpg"
-    dest_bak = simplicity_images + "/background.jpg.bak"
+    dest_bak = simplicity_images + "/background.jpg-bak"
 
     if not fn.path.isdir(simplicity_images):
         fn.show_in_app_notification(self, "Simplicity theme not found - install it first")

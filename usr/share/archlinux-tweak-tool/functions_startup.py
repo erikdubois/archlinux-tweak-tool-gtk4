@@ -85,13 +85,13 @@ def setup_icon_theme():
 
     if not fn.path.isfile("/usr/share/icons/default/index.theme"):
         fn.debug_print("index.theme not found, checking for backup or default")
-        if fn.path.isfile("/usr/share/icons/default/index.theme.bak"):
-            fn.debug_print("Found index.theme.bak, restoring")
+        if fn.path.isfile("/usr/share/icons/default/index.theme-bak"):
+            fn.debug_print("Found index.theme-bak, restoring")
             try:
-                fn.log_info_concise("  From: /usr/share/icons/default/index.theme.bak")
+                fn.log_info_concise("  From: /usr/share/icons/default/index.theme-bak")
                 fn.log_info_concise("  To:   /usr/share/icons/default/index.theme")
                 fn.shutil.copy(
-                    "/usr/share/icons/default/index.theme.bak",
+                    "/usr/share/icons/default/index.theme-bak",
                     "/usr/share/icons/default/index.theme",
                 )
                 fn.debug_print("✓ index.theme restored from backup")
