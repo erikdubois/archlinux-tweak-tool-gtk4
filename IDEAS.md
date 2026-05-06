@@ -8,6 +8,7 @@
 ## New tabs worth adding
 
 - **Gaming Stack** — Steam, Lutris, MangoHud, vkbasalt, vm.max_map_count tweak; could live in a dedicated Gaming tab
+- **Plymouth (all distros)** — currently Omarchy-only; extend to all Arch distros: gate content on whether `plymouth` is installed, show Install button if not, warn if not in mkinitcpio HOOKS, show full theme manager if fully configured
 
 ## Already implemented this session
 

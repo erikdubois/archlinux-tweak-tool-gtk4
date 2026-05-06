@@ -22,3 +22,18 @@ def get_current_theme():
         return result.stdout.strip()
     except Exception:
         return "unknown"
+
+
+def list_available_packages():
+    try:
+        all_pkgs = set(subprocess.run(
+            ["pacman", "-Ssq", "^plymouth-theme"],
+            capture_output=True, text=True
+        ).stdout.strip().splitlines())
+        installed = set(subprocess.run(
+            ["pacman", "-Qq"],
+            capture_output=True, text=True
+        ).stdout.strip().splitlines())
+        return sorted(all_pkgs - installed)
+    except Exception:
+        return []
