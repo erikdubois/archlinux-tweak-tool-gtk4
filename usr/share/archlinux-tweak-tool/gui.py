@@ -71,6 +71,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     self.notification_revealer.set_child(overlayframe)
 
     self.notification_revealer.set_hexpand(True)
+    self.notification_revealer.set_size_request(-1, 40)
     hbox0.append(self.notification_revealer)
 
     # ==========================================================
