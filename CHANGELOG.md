@@ -1,5 +1,29 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.06 - AI tab: OpenCode + GitHub Copilot CLI added; widget rename pass
+
+### What Changed
+
+- Added **OpenCode** (`opencode-ai` npm package) to CLI Coding Assistants section — TUI AI coding assistant used by Omarchy as primary IDE alongside Claude Code
+- Added **GitHub Copilot CLI** (`@github/copilot` npm package) to CLI Coding Assistants section
+- Both follow the same install/remove/link pattern as existing Codex and Gemini rows
+- Renamed all numbered widget variables (`hbox1`–`hbox14`, `btn7`–`btn14`, `lbl7_link`–`lbl14_link`) to descriptive names in `ai_gui.py` (objective 27)
+
+### Technical Details
+
+- Detection checks four paths for each tool: `/usr/bin/`, `/usr/local/bin/`, `~/.local/bin/`, `~/.npm-global/bin/`
+- Install: `fn.launch_npm_install_in_terminal("opencode-ai")` and `fn.launch_npm_install_in_terminal("@github/copilot")`
+- Remove: `fn.launch_npm_remove_in_terminal(...)` — same daemon-thread + `wait()` + `GLib.idle_add` refresh pattern as Codex/Gemini
+- Link callbacks: `https://opencode.ai` and `https://github.com/github/gh-copilot`
+- Both files pass flake8 clean
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/ai_gui.py`
+- `usr/share/archlinux-tweak-tool/ai.py`
+
+---
+
 ## 2026.05.06 - Wallpaper: drop XFCE setter, hide picker on full DEs
 
 ### What Changed
