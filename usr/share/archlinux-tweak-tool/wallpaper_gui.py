@@ -142,16 +142,12 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     btn_apply = Gtk.Button(label="Apply wallpaper")
     btn_apply.connect("clicked", functools.partial(wallpaper.on_apply_wallpaper, self))
 
-    btn_random = Gtk.Button(label="Random")
-    btn_random.connect("clicked", functools.partial(wallpaper.on_random_wallpaper, self))
-
     hbox_apply_spacer = Gtk.Box()
     hbox_apply_spacer.set_hexpand(True)
     hbox_apply.append(lbl_scale)
     hbox_apply.append(self.wallpaper_scale_combo)
     hbox_apply.append(hbox_apply_spacer)
     hbox_apply.append(btn_apply)
-    hbox_apply.append(btn_random)
 
     # Persistence tip for WM/feh users
     hbox_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
