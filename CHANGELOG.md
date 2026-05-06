@@ -1,5 +1,54 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.06 - Wallpaper: drop XFCE setter, hide picker on full DEs
+
+### What Changed
+
+- Removed `_set_xfce()` entirely — XFCE manages its own wallpaper; ATT no longer attempts xfconf-query
+- Removed `_XFCE_STYLES` dict and the `xfce_running` pgrep check from `_apply_x11()`
+- Added `_HIDE_PICKER_DESKTOPS` frozenset: GNOME, Unity, KDE, XFCE, MATE, Cinnamon, X-Cinnamon, Budgie, Deepin, LXQt, LXDE, Pantheon
+- Added `should_show_picker()` — returns `False` for any desktop in the hide list, `True` for WMs and unknown environments
+- ATT Wallpaper Picker section (folder browser, thumbnails, preview, apply, random) is now invisible on full DEs that manage wallpaper themselves; Variety and ATT Configuration sections remain always visible
+- Replaced `pwd.getpwnam()` in `on_open_variety_settings()` with `subprocess id -u` to remove the `pwd` import dependency
+- Removed `import pwd` and `import shlex` (XFCE-only); `import re` retained for `_fix_variety_conf_paths()`
+
+### Technical Details
+
+- `should_show_picker()` reuses `_get_user_env()` for the same pkexec-safe env lookup already used by `_apply_x11()`; KDE checked via `KDE_FULL_SESSION=true` as a fallback since its `XDG_CURRENT_DESKTOP` value varies
+- `wallpaper_gui.py`: all picker widgets packed into a single `box_picker` (Gtk.Box VERTICAL); one `box_picker.set_visible()` call controls the whole section
+- Test: `sudo XDG_CURRENT_DESKTOP=GNOME python3 archlinux-tweak-tool.py` — picker hidden; `XDG_CURRENT_DESKTOP=i3` — picker visible
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/wallpaper.py`
+- `usr/share/archlinux-tweak-tool/wallpaper_gui.py`
+
+---
+
+## 2026.05.05 - Wallpaper: XFCE detection and xfconf-query fixes
+
+### What Changed
+
+- XFCE is now detected reliably when ATT runs as root (pkexec strips env vars): `_get_user_env()` reads `XDG_CURRENT_DESKTOP`, `DESKTOP_SESSION`, and `XDG_SESSION_DESKTOP` from the real user's `/proc/<pid>/environ` as fallback
+- `_set_xfce()` now runs `xfconf-query` as the real user with the correct D-Bus session env (`sudo -u <user> XDG_RUNTIME_DIR=... DBUS_SESSION_BUS_ADDRESS=...`) — same pattern as variety settings
+- `xfconf-query` calls now use `--create` flag in a single command (replaces the old two-step empty-string pre-set)
+- xrandr fallback added for fresh XFCE installs with no existing backdrop props; its `FileNotFoundError` is caught separately so it can't mask xfconf errors
+- `shutil.which("xfconf-query")` with `/usr/bin/xfconf-query` hardcoded fallback handles root's restricted PATH
+- Debug output now shows the resolved xfconf-query path and every command before execution
+- XFCE wallpaper via D-Bus not yet confirmed working — tracked as S11
+
+### Technical Details
+
+- `_get_user_env()` iterates `/proc/*/environ`, matches on `LOGNAME == sudo_username`, extracts requested keys; short-circuits if current env already has the values (non-sudo case)
+- `shlex.quote(path)` used in all shell=True xfconf-query invocations to handle spaces in paths
+- xrandr fallback constructs `/backdrop/screen0/monitor<output>/workspace0/last-image` per connected output; falls back to `monitor0` if xrandr absent
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/wallpaper.py`
+
+---
+
 ## 2026.05.05 - Launcher: silent xauth retry loop
 
 ### What Changed

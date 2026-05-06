@@ -67,7 +67,10 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     hbox_config_btns.append(self.btn_save_variety_config)
     hbox_config_btns.append(self.btn_open_variety_settings)
 
-    # ---- ATT Wallpaper Picker section ----
+    # ---- ATT Wallpaper Picker section (hidden on full DEs that manage wallpaper themselves) ----
+    box_picker = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    box_picker.set_visible(wallpaper.should_show_picker())
+
     hbox_section_picker = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_section_picker = Gtk.Label(xalign=0)
     lbl_section_picker.set_markup("<b>ATT Wallpaper Picker</b>")
@@ -156,19 +159,21 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
         self.wallpaper_scale_combo.set_visible(False)
         hbox_note.set_visible(False)
 
+    box_picker.append(hbox_section_picker)
+    box_picker.append(hbox_folder)
+    box_picker.append(wp_scroll)
+    box_picker.append(hbox_preview)
+    box_picker.append(hbox_path)
+    box_picker.append(hbox_apply)
+    box_picker.append(hbox_note)
+
     # Pack
     vbox.append(hbox_section_variety)
     vbox.append(hbox_variety_btns)
     vbox.append(hbox_section_config)
     vbox.append(hbox_config_info)
     vbox.append(hbox_config_btns)
-    vbox.append(hbox_section_picker)
-    vbox.append(hbox_folder)
-    vbox.append(wp_scroll)
-    vbox.append(hbox_preview)
-    vbox.append(hbox_path)
-    vbox.append(hbox_apply)
-    vbox.append(hbox_note)
+    vbox.append(box_picker)
 
     vboxstack_wallpaper.append(hbox_title)
     vboxstack_wallpaper.append(hbox_separator)

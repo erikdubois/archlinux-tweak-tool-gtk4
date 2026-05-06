@@ -2,9 +2,7 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
-import pwd
 import re
-import shlex
 import shutil
 import random as _random
 
@@ -41,13 +39,6 @@ _GNOME_MODES = {
     "Stretch": "stretched",
 }
 
-_XFCE_STYLES = {
-    "Fill": "5",       # Zoomed
-    "Fit": "4",        # Scaled
-    "Center": "1",     # Centered
-    "Tile": "2",       # Tiled
-    "Stretch": "3",    # Stretched
-}
 
 _SIMPLE_WMS = {
     "awesome", "berry", "bspwm", "ohmychadwm", "chadwm", "cwm", "dk", "dusk",
@@ -55,6 +46,11 @@ _SIMPLE_WMS = {
     "icewm", "icewm-session", "jwm", "leftwm", "nimdow", "openbox", "qtile",
     "spectrwm", "worm", "wmderland", "xmonad",
 }
+
+_HIDE_PICKER_DESKTOPS = frozenset([
+    "gnome", "unity", "kde", "xfce", "mate", "cinnamon", "x-cinnamon",
+    "budgie", "deepin", "lxqt", "lxde", "pantheon",
+])
 
 
 def _find_wayland_setter():
@@ -93,6 +89,14 @@ def _get_user_env(keys):
     except Exception:
         pass
     return result
+
+
+def should_show_picker():
+    env = _get_user_env(["XDG_CURRENT_DESKTOP", "DESKTOP_SESSION", "XDG_SESSION_DESKTOP", "KDE_FULL_SESSION"])
+    if env["KDE_FULL_SESSION"] == "true":
+        return False
+    desktop = (env["XDG_CURRENT_DESKTOP"] + " " + env["DESKTOP_SESSION"] + " " + env["XDG_SESSION_DESKTOP"]).lower()
+    return not any(name in desktop for name in _HIDE_PICKER_DESKTOPS)
 
 
 def on_install_variety(self, _widget=None):
@@ -204,7 +208,7 @@ def on_save_variety_config(self, _widget=None):
 
 def on_open_variety_settings(self, _widget=None):
     fn.log_subsection("Open variety settings")
-    uid = pwd.getpwnam(fn.sudo_username).pw_uid
+    uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
     cmd = (
         f"sudo -u {fn.sudo_username}"
         f" XDG_RUNTIME_DIR=/run/user/{uid}"
@@ -412,12 +416,8 @@ def _apply_x11(self, path, scale):
 
     fn.debug_print(f"X11 DE detection: {env}")
 
-    xfce_running = fn.subprocess.run(["pgrep", "-x", "xfce4-session"], capture_output=True).returncode == 0
-
     if kde:
         _set_kde(self, path)
-    elif "xfce" in desktop or xfce_running:
-        _set_xfce(self, path, scale)
     elif "gnome" in desktop or "unity" in desktop:
         _set_gnome(self, path, scale)
     elif "mate" in desktop:
@@ -459,56 +459,6 @@ def _set_feh(self, path, scale):
     else:
         fn.log_error("No wallpaper setter found — install feh or nitrogen")
         fn.show_in_app_notification(self, "No wallpaper setter found — install feh or nitrogen")
-
-
-def _set_xfce(self, path, scale):
-    fn.log_subsection(f"Applying wallpaper — xfconf-query (XFCE): {path}")
-    style = _XFCE_STYLES.get(scale, "5")
-    uid = pwd.getpwnam(fn.sudo_username).pw_uid
-    env_prefix = (
-        f"sudo -u {fn.sudo_username}"
-        f" XDG_RUNTIME_DIR=/run/user/{uid}"
-        f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
-    )
-    xfconf = shutil.which("xfconf-query") or "/usr/bin/xfconf-query"
-    fn.debug_print(f"xfconf-query resolved to: {xfconf} as {fn.sudo_username}")
-    try:
-        list_cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p /backdrop -l"
-        fn.debug_print(f"  CMD: {list_cmd}")
-        result = fn.subprocess.run(list_cmd, shell=True, capture_output=True, text=True)
-        image_props = [
-            p for p in result.stdout.splitlines()
-            if re.search(r"screen.*/monitor.*(image-path|last-image)$", p)
-        ]
-        if not image_props:
-            outputs = []
-            try:
-                xrandr = fn.subprocess.run(["xrandr", "--query"], capture_output=True, text=True)
-                outputs = re.findall(r"^(\S+) connected", xrandr.stdout, re.MULTILINE)
-            except FileNotFoundError:
-                fn.debug_print("xrandr not found — using fallback monitor name")
-            image_props = [
-                f"/backdrop/screen0/monitor{o}/workspace0/last-image"
-                for o in outputs
-            ] or ["/backdrop/screen0/monitor0/workspace0/last-image"]
-            fn.debug_print(f"Constructed backdrop props: {image_props}")
-        style_props = [
-            re.sub(r"(image-path|last-image)$", "image-style", p)
-            for p in image_props
-        ]
-        for prop in image_props:
-            cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p {prop} --create -t string -s {shlex.quote(path)}"
-            fn.debug_print(f"  CMD: {cmd}")
-            fn.subprocess.run(cmd, shell=True, stderr=fn.subprocess.DEVNULL)
-        for prop in style_props:
-            cmd = f"{env_prefix} {xfconf} -c xfce4-desktop -p {prop} --create -t int -s {style}"
-            fn.debug_print(f"  CMD: {cmd}")
-            fn.subprocess.run(cmd, shell=True, stderr=fn.subprocess.DEVNULL)
-        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-    except Exception as e:
-        fn.log_error(f"xfconf-query failed: {e}")
-        fn.show_in_app_notification(self, "Failed to set wallpaper via xfconf-query")
 
 
 def _set_gnome(self, path, scale):

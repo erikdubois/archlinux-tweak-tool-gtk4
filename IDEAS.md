@@ -21,6 +21,14 @@
 
 ## Claude's Ideashop
 
+### Wallpaper Slideshow Mode — variety-lite built into ATT
+
+Add a **Slideshow** toggle to the wallpaper page that rotates through the selected folder on a user-defined interval (5 min, 15 min, 1 h) using a `GLib.timeout_add_seconds` loop calling `on_random_wallpaper`. No variety required, no extra package — ATT already has all the pieces. A single `GLib` timer, a stop button, and an interval dropdown is the entire implementation. Pairs naturally with the existing folder browser and thumbnail grid.
+
+**Why this is worth building:** Users who don't want the full variety daemon just want their wallpaper to rotate. This delivers that in ~30 lines reusing code ATT already has.
+
+---
+
 ### System Health Score — a living pulse for your Arch install
 
 Add a persistent **Health Score** widget to the ATT sidebar (or as a dedicated tab) that computes a single 0–100 score in real time from factors ATT already knows how to read:

@@ -289,6 +289,7 @@ Debug output includes D-Bus warnings, initialization steps, and custom debug mes
 
 ## Recent Work
 
+- **Wallpaper: XFCE detection + xfconf-query D-Bus fix (2026-05-05)** — `_get_user_env()` reads session env from `/proc/<pid>/environ`; `_set_xfce()` runs xfconf-query as real user via `sudo -u` + D-Bus prefix; `--create` flag replaces two-step set; still unconfirmed working (S11)
 - **Shell tab: active shell indicator (2026-05-05)** — stack switcher tab for the active shell now shows "(active)"; derived from `fn.get_shell()` at GUI build time
 - **Omarchy added (2026-05-05)** — startup banner updated; `DISTRO_TESTING.md` entry added (3.7.0-2); detection was already in `functions.py`
 - **SDDM theme dropdown refresh (2026-05-04)** — `pop_theme_box` called inside `refresh()` after install/remove of edu-simplicity; dropdown now updates without restart
@@ -480,6 +481,7 @@ Use this to pick the right task for the time you have available.
 - [x] S8 — Merge `functions_makedir.py` into `functions.py` — decided to keep separate (stay separate by design)
 - [x] S9 — Review all TODO/FIXME markers — none found, already cleared
 - [x] S10 — Run flake8 on one small module and fix all warnings — done project-wide
+- [ ] S11 — Fix XFCE wallpaper: xfconf-query runs as real user via sudo -u + D-Bus env but still not confirmed working; D-Bus session may not be reachable from pkexec context
 
 #### Medium — 1–4 hours each
 
