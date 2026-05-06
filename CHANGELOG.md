@@ -1,5 +1,26 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.06 - Notification bar: fixed height, replaced image with CSS color
+
+### What Changed
+
+- Replaced `Gtk.Picture` + `Gtk.Overlay` panel image with a plain `Gtk.Box` styled via CSS (`background-color: #1a1a1a`)
+- Notification bar is now a fixed 30px tall regardless of window size or tiled WM layout
+- Eliminates the aspect-ratio scaling problem where `Gtk.ContentFit.CONTAIN` made the bar grow vertically with window width
+
+### Technical Details
+
+- `panel.png` image is no longer used in the notification bar layout
+- `notification_bg` box has `set_size_request(-1, 30)` and CSS class `att-notification-bar`
+- CSS provider loaded inline in `gui()` via `Gtk.StyleContext.add_provider_for_display`
+- `notification_revealer` has `set_vexpand(False)` to prevent vertical growth
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/gui.py`
+
+---
+
 ## 2026.05.06 - AI tab: OpenCode + GitHub Copilot CLI added; widget rename pass
 
 ### What Changed

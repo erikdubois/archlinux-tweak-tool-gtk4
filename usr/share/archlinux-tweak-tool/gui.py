@@ -66,7 +66,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     notification_bg.append(self.notification_label)
 
     css_notif = Gtk.CssProvider()
-    css_notif.load_from_data(b".att-notification-bar { background-color: #0d0d0d; }")
+    css_notif.load_from_data(b".att-notification-bar { background-color: #1a1a1a; }")
     Gtk.StyleContext.add_provider_for_display(
         Gdk.Display.get_default(),
         css_notif,
