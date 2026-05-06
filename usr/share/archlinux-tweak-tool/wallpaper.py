@@ -199,16 +199,23 @@ def on_save_variety_config(self, _widget=None):
         fn.show_in_app_notification(self, f"Error: {error}")
 
 
-def on_open_variety_settings(self, _widget=None):
-    fn.log_subsection("Open variety settings")
-    uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
-    cmd = (
+def _variety_cmd(fn, uid, args):
+    env = _get_user_env(["XDG_CURRENT_DESKTOP"])
+    xdg_desktop = env.get("XDG_CURRENT_DESKTOP", "")
+    return (
         f"sudo -u {fn.sudo_username}"
         f" XDG_RUNTIME_DIR=/run/user/{uid}"
         f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
+        f" XDG_CURRENT_DESKTOP={xdg_desktop}"
         " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
-        " variety --preferences"
+        f" variety {args}"
     )
+
+
+def on_open_variety_settings(self, _widget=None):
+    fn.log_subsection("Open variety settings")
+    uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
+    cmd = _variety_cmd(fn, uid, "--preferences")
     fn.debug_print(f"Launching: {cmd}")
     fn.threading.Thread(
         target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
@@ -219,13 +226,7 @@ def on_open_variety_settings(self, _widget=None):
 def on_open_variety_selector(self, _widget=None):
     fn.log_subsection("Open variety selector")
     uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
-    cmd = (
-        f"sudo -u {fn.sudo_username}"
-        f" XDG_RUNTIME_DIR=/run/user/{uid}"
-        f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
-        " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
-        " variety --selector"
-    )
+    cmd = _variety_cmd(fn, uid, "--selector")
     fn.debug_print(f"Launching: {cmd}")
     fn.threading.Thread(
         target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
