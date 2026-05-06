@@ -17,9 +17,7 @@ class SplashScreen(Gtk.Window):
     def __init__(self, transient_for=None):
         super().__init__()
         self.set_decorated(False)
-        self.set_resizable(False)
-        # Keep this reasonably large so it doesn't look like a tiny icon on HiDPI.
-        self.set_default_size(600, 400)
+        self.maximize()
 
         # GTK4 window placement is compositor-controlled. Making the splash transient
         # and modal gives the compositor a strong hint to center it.
@@ -32,7 +30,7 @@ class SplashScreen(Gtk.Window):
 
         texture = Gdk.Texture.new_from_filename(base_dir + "/images/splash.jpg")
         picture = Gtk.Picture.new_for_paintable(texture)
-        picture.set_can_shrink(False)
+        picture.set_can_shrink(True)
         picture.set_content_fit(Gtk.ContentFit.COVER)
         picture.set_hexpand(True)
         picture.set_vexpand(True)

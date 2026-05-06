@@ -948,7 +948,8 @@ def on_click_software_powermenu(self, _widget):
         if fn.path.exists("/usr/local/bin/edu-powermenu"):
             fn.log_subsection("Launching edu-powermenu...")
             fn.subprocess.Popen(
-                ["su", "-", fn.sudo_username, "-c", "edu-powermenu"],
+                ["runuser", "-u", fn.sudo_username, "--", "edu-powermenu"],
+                env=fn.get_terminal_env(),
                 stdout=fn.subprocess.PIPE,
                 stderr=fn.subprocess.STDOUT,
             )
@@ -982,7 +983,8 @@ def on_click_software_powermenu(self, _widget):
                         time.sleep(1)
                         fn.log_subsection("Launching edu-powermenu...")
                         fn.subprocess.Popen(
-                            ["su", "-", fn.sudo_username, "-c", "edu-powermenu"],
+                            ["runuser", "-u", fn.sudo_username, "--", "edu-powermenu"],
+                            env=fn.get_terminal_env(),
                             stdout=fn.subprocess.PIPE,
                             stderr=fn.subprocess.STDOUT,
                         )

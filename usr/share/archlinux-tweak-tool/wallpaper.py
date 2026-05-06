@@ -200,14 +200,16 @@ def on_save_variety_config(self, _widget=None):
 
 
 def _variety_cmd(fn, uid, args):
-    env = _get_user_env(["XDG_CURRENT_DESKTOP"])
+    env = _get_user_env(["XDG_CURRENT_DESKTOP", "WAYLAND_DISPLAY", "XDG_SESSION_TYPE"])
     xdg_desktop = env.get("XDG_CURRENT_DESKTOP", "")
+    on_wayland = bool(env.get("WAYLAND_DISPLAY")) or env.get("XDG_SESSION_TYPE") == "wayland"
+    display_env = "WAYLAND_DISPLAY=$WAYLAND_DISPLAY" if on_wayland else "DISPLAY=$DISPLAY"
     return (
         f"sudo -u {fn.sudo_username}"
         f" XDG_RUNTIME_DIR=/run/user/{uid}"
         f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
         f" XDG_CURRENT_DESKTOP={xdg_desktop}"
-        " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+        f" {display_env}"
         f" variety {args}"
     )
 
