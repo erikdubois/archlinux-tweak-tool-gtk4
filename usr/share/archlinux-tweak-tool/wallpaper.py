@@ -374,46 +374,30 @@ def _apply_wallpaper(self, path, scale):
 
 def _apply_wayland(self, path):
     tool = _find_wayland_setter()
+    uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
+    user_env = (
+        f"sudo -u {fn.sudo_username}"
+        f" XDG_RUNTIME_DIR=/run/user/{uid}"
+        " WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+    )
     if tool == "swaybg":
-        mode = "fill"
-        fn.log_subsection(f"Applying wallpaper — swaybg -i {path} -m {mode}")
-        try:
-            fn.subprocess.Popen(["pkill", "-x", "swaybg"])
-            fn.subprocess.Popen(
-                ["swaybg", "-i", path, "-m", mode],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.PIPE,
-            )
-            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-        except FileNotFoundError:
-            fn.log_error("swaybg not found")
-            fn.show_in_app_notification(self, "swaybg not found")
+        fn.log_subsection(f"Applying wallpaper — swaybg -i {path} -m fill")
+        fn.subprocess.Popen(f"pkill -x swaybg; {user_env} swaybg -i {path} -m fill", shell=True)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
         return
     if tool == "hyprpaper":
         fn.log_subsection(f"Applying wallpaper — hyprpaper: {path}")
-        try:
-            fn.subprocess.Popen(["hyprctl", "hyprpaper", "preload", path])
-            fn.subprocess.Popen(["hyprctl", "hyprpaper", "wallpaper", f",{path}"])
-            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-        except FileNotFoundError:
-            fn.log_error("hyprctl not found")
-            fn.show_in_app_notification(self, "hyprctl not found")
+        fn.subprocess.Popen(f"{user_env} hyprctl hyprpaper preload {path}", shell=True)
+        fn.subprocess.Popen(f"{user_env} hyprctl hyprpaper wallpaper ,{path}", shell=True)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
         return
     if tool == "swww":
         fn.log_subsection(f"Applying wallpaper — swww: {path}")
-        try:
-            fn.subprocess.Popen(
-                ["swww", "img", path],
-                stdout=fn.subprocess.PIPE,
-                stderr=fn.subprocess.PIPE,
-            )
-            fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
-            fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
-        except FileNotFoundError:
-            fn.log_error("swww not found")
-            fn.show_in_app_notification(self, "swww not found")
+        fn.subprocess.Popen(f"{user_env} swww img {path}", shell=True)
+        fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
+        fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
         return
     fn.log_error("No Wayland wallpaper setter found (swaybg / hyprpaper / swww)")
     fn.show_in_app_notification(self, "No wallpaper setter found — install swaybg, hyprpaper, or swww")
