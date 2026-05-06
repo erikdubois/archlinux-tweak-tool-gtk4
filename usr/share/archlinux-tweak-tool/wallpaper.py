@@ -382,8 +382,9 @@ def _apply_wayland(self, path):
         " WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
     )
     if tool == "swaybg":
-        fn.log_subsection(f"Applying wallpaper — swaybg -i {path} -m fill")
-        fn.subprocess.Popen(f"pkill -x swaybg; {user_env} swaybg -i {path} -m fill", shell=True)
+        script = "/usr/share/archlinux-tweak-tool/data/bin/att-set-wallpaper"
+        fn.log_subsection(f"Applying wallpaper — att-set-wallpaper: {path}")
+        fn.subprocess.Popen(f'{user_env} bash "{script}" "{path}"', shell=True)
         fn.log_success(f"Wallpaper set: {fn.path.basename(path)}")
         fn.show_in_app_notification(self, f"Wallpaper set: {fn.path.basename(path)}")
         return

@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' '-'; }
+header()    { separator; echo "${CYAN}[ATT]${RESET} $*"; separator; }
+success()   { echo "${GREEN}[OK]${RESET} $*"; }
+info()      { echo "${CYAN}[INFO]${RESET} $*"; }
+warn()      { echo "${YELLOW}[WARN]${RESET} $*"; }
+error()     { echo "${RED}[ERROR]${RESET} $*" >&2; exit 1; }
+
+WP="${1:-}"
+[[ -z "$WP" ]] && error "No wallpaper path provided"
+[[ ! -f "$WP" ]] && error "File not found: $WP"
+
+header "Setting wallpaper"
+info "Wallpaper: $WP"
+
+OLD_PID=$(pidof swaybg 2>/dev/null || true)
+
+setsid swaybg -i "$WP" -m fill &
+
+success "swaybg started"
+
+if [[ -n "$OLD_PID" ]]; then
+    sleep 1
+    kill "$OLD_PID" 2>/dev/null || true
+    info "Killed old swaybg (PID $OLD_PID)"
+fi
