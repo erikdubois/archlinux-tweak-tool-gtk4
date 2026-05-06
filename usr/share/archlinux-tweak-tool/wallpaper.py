@@ -23,13 +23,6 @@ _FEH_FLAGS = {
     "Stretch": "--bg-scale",
 }
 
-_SWAYBG_MODES = {
-    "Fill": "fill",
-    "Fit": "fit",
-    "Center": "center",
-    "Tile": "tile",
-    "Stretch": "stretch",
-}
 
 _GNOME_MODES = {
     "Fill": "zoom",
@@ -357,15 +350,15 @@ def on_random_wallpaper(self, _widget=None):
 
 def _apply_wallpaper(self, path, scale):
     if fn.os.environ.get("WAYLAND_DISPLAY") or fn.os.environ.get("XDG_SESSION_TYPE") == "wayland":
-        _apply_wayland(self, path, scale)
+        _apply_wayland(self, path)
     else:
         _apply_x11(self, path, scale)
 
 
-def _apply_wayland(self, path, scale):
+def _apply_wayland(self, path):
     tool = _find_wayland_setter()
     if tool == "swaybg":
-        mode = _SWAYBG_MODES.get(scale, "fill")
+        mode = "fill"
         fn.log_subsection(f"Applying wallpaper — swaybg -m {mode}: {path}")
         try:
             fn.subprocess.Popen(["pkill", "-x", "swaybg"])

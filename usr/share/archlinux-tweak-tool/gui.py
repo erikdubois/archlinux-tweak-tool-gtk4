@@ -62,7 +62,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     pb_panel = GdkPixbuf.Pixbuf.new_from_file(base_dir + "/images/panel.png")
     texture_panel = Gdk.Texture.new_for_pixbuf(pb_panel)
     panel = Gtk.Picture.new_for_paintable(texture_panel)
-    panel.set_content_fit(Gtk.ContentFit.CONTAIN)
+    panel.set_content_fit(Gtk.ContentFit.FILL)
 
     overlayframe = Gtk.Overlay()
     overlayframe.set_child(panel)
@@ -71,7 +71,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     self.notification_revealer.set_child(overlayframe)
 
     self.notification_revealer.set_hexpand(True)
-    self.notification_revealer.set_size_request(-1, 40)
+    self.notification_revealer.set_vexpand(False)
+    self.notification_revealer.set_size_request(-1, 25)
     hbox0.append(self.notification_revealer)
 
     # ==========================================================
