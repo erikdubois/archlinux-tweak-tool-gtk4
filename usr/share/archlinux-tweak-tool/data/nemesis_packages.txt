@@ -1,5 +1,6 @@
 arc-gtk-theme
 archlinux-logout-gtk4-git
+archlinux-tweak-tool-gtk4-git
 arcolinux-arc-aqua-git
 arcolinux-arc-archlinux-blue-git
 arcolinux-arc-arcolinux-blue-git
