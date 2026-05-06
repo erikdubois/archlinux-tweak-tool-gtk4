@@ -42,6 +42,7 @@ import software_gui
 import packages_gui
 import wallpaper
 import wallpaper_gui
+import plymouth_gui
 
 
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
@@ -115,6 +116,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_wallpaper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_plymouth = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 ICONS
@@ -241,6 +243,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     wallpaper_gui.gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir)
 
+    if fn.distr == "omarchy":
+        plymouth_gui.gui(self, Gtk, vboxstack_plymouth, fn)
+
     # ==========================================================
     #                   ADD TO WINDOW
     # ==========================================================
@@ -265,6 +270,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack26, "packages", "Packages")  # Packages
 
     stack.add_titled(vboxstack1, "stack6", "Pacman")  # Pacman config
+
+    if fn.distr == "omarchy":
+        stack.add_titled(vboxstack_plymouth, "stack_plymouth", "Plymouth")  # Plymouth boot theme
 
     stack.add_titled(vboxstack3, "stack2", "Privacy")  # Privacy
 

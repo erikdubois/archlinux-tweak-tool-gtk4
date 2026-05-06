@@ -299,6 +299,117 @@ def on_click_ai_gemini(self, _widget):
         fn.log_error(f"Error: {error}")
 
 
+def on_click_ai_opencode(self, _widget):
+    try:
+        opencode_paths = [
+            "/usr/bin/opencode",
+            "/usr/local/bin/opencode",
+            f"/home/{fn.sudo_username}/.local/bin/opencode",
+            f"/home/{fn.sudo_username}/.npm-global/bin/opencode",
+        ]
+        opencode_installed = any(fn.path.exists(p) for p in opencode_paths)
+
+        if opencode_installed:
+            fn.log_subsection("Removing opencode...")
+            process = fn.launch_npm_remove_in_terminal("opencode-ai")
+            if process:
+                def wait_removal():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        GLib.idle_add(self.lbl_ai_opencode.set_markup, "OpenCode - TUI AI coding assistant")
+                        GLib.idle_add(self.btn_ai_opencode.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "OpenCode removal complete")
+                    except Exception as e:
+                        fn.log_error(f"Error during opencode removal: {e}")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "OpenCode removal started")
+            else:
+                GLib.idle_add(fn.show_in_app_notification, self, "OpenCode removal failed")
+        else:
+            fn.log_subsection("Installing opencode...")
+            process = fn.launch_npm_install_in_terminal("opencode-ai")
+            if process:
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if any(fn.path.exists(p) for p in opencode_paths):
+                            fn.log_success("opencode installed successfully")
+                            GLib.idle_add(
+                                self.lbl_ai_opencode.set_markup,
+                                "OpenCode - TUI AI coding assistant <b>installed</b>",
+                            )
+                            GLib.idle_add(self.btn_ai_opencode.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "OpenCode installation complete")
+                        else:
+                            fn.log_warn(f"OpenCode binary NOT found. Checked: {opencode_paths}")
+                    except Exception as e:
+                        fn.log_error(f"Error during opencode installation: {e}")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "OpenCode installation started")
+            else:
+                GLib.idle_add(fn.show_in_app_notification, self, "OpenCode installation failed")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
+def on_click_ai_copilot(self, _widget):
+    try:
+        copilot_paths = [
+            "/usr/bin/copilot",
+            "/usr/local/bin/copilot",
+            f"/home/{fn.sudo_username}/.local/bin/copilot",
+            f"/home/{fn.sudo_username}/.npm-global/bin/copilot",
+        ]
+        copilot_installed = any(fn.path.exists(p) for p in copilot_paths)
+
+        if copilot_installed:
+            fn.log_subsection("Removing github copilot cli...")
+            process = fn.launch_npm_remove_in_terminal("@github/copilot")
+            if process:
+                def wait_removal():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        GLib.idle_add(self.lbl_ai_copilot.set_markup, "GitHub Copilot CLI")
+                        GLib.idle_add(self.btn_ai_copilot.set_label, "Install")
+                        GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI removal complete")
+                    except Exception as e:
+                        fn.log_error(f"Error during copilot removal: {e}")
+                fn.threading.Thread(target=wait_removal, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI removal started")
+            else:
+                GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI removal failed")
+        else:
+            fn.log_subsection("Installing github copilot cli...")
+            process = fn.launch_npm_install_in_terminal("@github/copilot")
+            if process:
+                def wait_install():
+                    try:
+                        import time
+                        process.wait()
+                        time.sleep(1)
+                        if any(fn.path.exists(p) for p in copilot_paths):
+                            fn.log_success("github copilot cli installed successfully")
+                            GLib.idle_add(self.lbl_ai_copilot.set_markup, "GitHub Copilot CLI <b>installed</b>")
+                            GLib.idle_add(self.btn_ai_copilot.set_label, "Remove")
+                            GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI installation complete")
+                        else:
+                            fn.log_warn(f"Copilot binary NOT found. Checked: {copilot_paths}")
+                    except Exception as e:
+                        fn.log_error(f"Error during copilot installation: {e}")
+                fn.threading.Thread(target=wait_install, daemon=True).start()
+                GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI installation started")
+            else:
+                GLib.idle_add(fn.show_in_app_notification, self, "Copilot CLI installation failed")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
 def open_url_in_browser(self, url):
     try:
         fn.subprocess.Popen(
@@ -333,6 +444,14 @@ def on_click_ai_gemini_link(self, _widget):
 
 def on_click_ai_codex_link(self, _widget):
     open_url_in_browser(self, "https://developers.openai.com/codex/cli")
+
+
+def on_click_ai_opencode_link(self, _widget):
+    open_url_in_browser(self, "https://opencode.ai")
+
+
+def on_click_ai_copilot_link(self, _widget):
+    open_url_in_browser(self, "https://github.com/github/gh-copilot")
 
 
 def on_click_ai_chatgpt(self, _widget):
