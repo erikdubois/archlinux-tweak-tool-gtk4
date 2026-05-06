@@ -216,6 +216,23 @@ def on_open_variety_settings(self, _widget=None):
     ).start()
 
 
+def on_open_variety_selector(self, _widget=None):
+    fn.log_subsection("Open variety selector")
+    uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
+    cmd = (
+        f"sudo -u {fn.sudo_username}"
+        f" XDG_RUNTIME_DIR=/run/user/{uid}"
+        f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
+        " DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+        " variety --selector"
+    )
+    fn.debug_print(f"Launching: {cmd}")
+    fn.threading.Thread(
+        target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
+        daemon=True,
+    ).start()
+
+
 def on_browse_wallpaper_folder(self, _widget=None):
     dialog = Gtk.FileDialog()
     dialog.set_title("Choose a wallpaper folder")
@@ -359,7 +376,7 @@ def _apply_wayland(self, path):
     tool = _find_wayland_setter()
     if tool == "swaybg":
         mode = "fill"
-        fn.log_subsection(f"Applying wallpaper — swaybg -m {mode}: {path}")
+        fn.log_subsection(f"Applying wallpaper — swaybg -i {path} -m {mode}")
         try:
             fn.subprocess.Popen(["pkill", "-x", "swaybg"])
             fn.subprocess.Popen(

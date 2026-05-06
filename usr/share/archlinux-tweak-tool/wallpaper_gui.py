@@ -64,8 +64,13 @@ def gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir):
     self.btn_open_variety_settings.connect("clicked", functools.partial(wallpaper.on_open_variety_settings, self))
     self.btn_open_variety_settings.set_sensitive(variety_installed)
 
+    self.btn_open_variety_selector = Gtk.Button(label="Open Selector")
+    self.btn_open_variety_selector.connect("clicked", functools.partial(wallpaper.on_open_variety_selector, self))
+    self.btn_open_variety_selector.set_sensitive(variety_installed)
+
     hbox_config_btns.append(self.btn_save_variety_config)
     hbox_config_btns.append(self.btn_open_variety_settings)
+    hbox_config_btns.append(self.btn_open_variety_selector)
 
     # ---- ATT Wallpaper Picker section (hidden on full DEs that manage wallpaper themselves) ----
     box_picker = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)

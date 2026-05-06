@@ -58,21 +58,25 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     self.notification_revealer.set_reveal_child(False)
 
     self.notification_label = Gtk.Label()
+    self.notification_label.set_hexpand(True)
 
-    pb_panel = GdkPixbuf.Pixbuf.new_from_file(base_dir + "/images/panel.png")
-    texture_panel = Gdk.Texture.new_for_pixbuf(pb_panel)
-    panel = Gtk.Picture.new_for_paintable(texture_panel)
-    panel.set_content_fit(Gtk.ContentFit.FILL)
+    notification_bg = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+    notification_bg.set_size_request(-1, 30)
+    notification_bg.add_css_class("att-notification-bar")
+    notification_bg.append(self.notification_label)
 
-    overlayframe = Gtk.Overlay()
-    overlayframe.set_child(panel)
-    overlayframe.add_overlay(self.notification_label)
+    css_notif = Gtk.CssProvider()
+    css_notif.load_from_data(b".att-notification-bar { background-color: #0d0d0d; }")
+    Gtk.StyleContext.add_provider_for_display(
+        Gdk.Display.get_default(),
+        css_notif,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+    )
 
-    self.notification_revealer.set_child(overlayframe)
+    self.notification_revealer.set_child(notification_bg)
 
     self.notification_revealer.set_hexpand(True)
     self.notification_revealer.set_vexpand(False)
-    self.notification_revealer.set_size_request(-1, 25)
     hbox0.append(self.notification_revealer)
 
     # ==========================================================
