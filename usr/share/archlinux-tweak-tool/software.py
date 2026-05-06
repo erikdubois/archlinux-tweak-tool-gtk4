@@ -968,6 +968,13 @@ def on_click_software_powermenu(self, _widget):
                     time.sleep(1)
                     if fn.path.exists("/usr/local/bin/edu-powermenu"):
                         fn.log_success("edu-powermenu-git installed successfully")
+                        skel_src = "/etc/skel/.config/powermenu"
+                        user_dst = fn.path.join(fn.home, ".config", "powermenu")
+                        if fn.path.exists(skel_src) and not fn.path.exists(user_dst):
+                            fn.log_info(f"Copying powermenu config to {user_dst}")
+                            fn.shutil.copytree(skel_src, user_dst)
+                            fn.permissions(user_dst)
+                            fn.log_success("powermenu config installed with user permissions")
                         GLib.idle_add(
                             self.lbl_software_powermenu.set_markup,
                             "powermenu - Power menu for i3/sway <b>installed</b>"
