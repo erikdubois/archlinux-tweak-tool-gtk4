@@ -289,35 +289,23 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     frmlbl = frame.get_label_widget()
     frmlbl.set_markup("<b>Preview</b>")
 
-    tree_iter = self.awesome_combo.get_active_iter()
-    if tree_iter is not None:
-        model = self.awesome_combo.get_model()
-        # row_id is used for image
-        row_id, name = model[tree_iter][:2]
-
-    if fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed(
-        "edu-awesome-git"
-    ):
-        try:
-            if tree_iter is not None:
-                pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    base_dir + "/themer_data/awesomewm/" + name + ".jpg",
-                    img_load,
-                    img_load,
-                )
-            else:
-                pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    base_dir + "/themer_data/awesomewm/multicolor.jpg",
-                    img_load,
-                    img_load,
-                )
-        except Exception:
+    try:
+        selected = self.awesome_combo.get_selected_item()
+        if selected is not None and fn.os.path.isfile(
+            base_dir + "/themer_data/awesomewm/" + fn.get_combo_text(self.awesome_combo) + ".jpg"
+        ):
+            pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                base_dir + "/themer_data/awesomewm/" + fn.get_combo_text(self.awesome_combo) + ".jpg",
+                img_load,
+                img_load,
+            )
+        else:
             pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 base_dir + "/themer_data/awesomewm/multicolor.jpg",
                 img_load,
                 img_load,
             )
-    else:
+    except Exception:
         pimage = GdkPixbuf.Pixbuf.new_from_file_at_size(
             base_dir + "/themer_data/awesomewm/multicolor.jpg",
             img_load,

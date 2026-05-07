@@ -103,6 +103,7 @@ class Main(Gtk.ApplicationWindow):
         )
 
         fn.findgroup()
+        fn.resolve_desktop()
         if DEBUG:
             fn.debug_print("[DEBUG] Debug mode enabled")
         super().__init__(application=app, title="Arch Linux Tweak Tool")

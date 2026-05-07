@@ -220,6 +220,25 @@ config = home + "/.config/archlinux-tweak-tool/settings.ini"
 config_dir = home + "/.config/archlinux-tweak-tool/"
 polybar = home + "/.config/polybar/"
 desktop = os.environ.get("XDG_CURRENT_DESKTOP", "")
+
+
+def resolve_desktop():
+    global desktop
+    script = os.path.join(os.path.dirname(__file__), "data", "bin", "detect-desktop")
+    try:
+        subprocess.run(["bash", script], check=False, timeout=5)
+    except Exception:
+        pass
+    try:
+        with open("/etc/att/current_desktop") as f:
+            val = f.read().strip()
+        if val:
+            desktop = val
+    except OSError:
+        pass
+    log_info(f"Desktop: {desktop or '(unknown)'}")
+
+
 autostart = home + "/.config/autostart/"
 pulse_default = "/etc/pulse/default.pa"
 bash_config = home + "/.bashrc"

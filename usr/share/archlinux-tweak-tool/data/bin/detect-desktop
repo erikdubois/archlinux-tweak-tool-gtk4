@@ -1,0 +1,55 @@
+#!/bin/bash
+set -euo pipefail
+##################################################################################################################
+# Author    : Erik Dubois
+# Website   : https://www.erikdubois.be
+# Youtube   : https://youtube.com/erikdubois
+##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() {
+    echo "${CYAN}===============================================================================${RESET}"
+}
+
+header() {
+    echo ""
+    separator
+    echo "${CYAN}  $1${RESET}"
+    separator
+}
+
+success() { echo "${GREEN}  ✓ $1${RESET}"; }
+info()    { echo "    $1"; }
+warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
+error()   { echo "${RED}  ✗ $1${RESET}"; }
+
+USERNAME="${SUDO_USER:-$(logname 2>/dev/null || echo '')}"
+DEST="/etc/att/current_desktop"
+
+# ── Detect desktop ─────────────────────────────────────────────────────────────
+header "Detecting desktop environment for user: $USERNAME"
+
+mkdir -p /etc/att
+
+DESKTOP=""
+for environ_file in /proc/[0-9]*/environ; do
+    owner=$(stat -c %U "$environ_file" 2>/dev/null) || continue
+    [ "$owner" = "$USERNAME" ] || continue
+    val=$(tr '\0' '\n' < "$environ_file" 2>/dev/null | grep "^XDG_CURRENT_DESKTOP=" | cut -d= -f2-) || continue
+    if [ -n "$val" ]; then
+        DESKTOP="$val"
+        break
+    fi
+done
+
+if [ -n "$DESKTOP" ]; then
+    echo "$DESKTOP" > "$DEST"
+    success "Desktop detected: $DESKTOP — written to $DEST"
+else
+    warn "XDG_CURRENT_DESKTOP not found in any user process; $DEST unchanged"
+fi
