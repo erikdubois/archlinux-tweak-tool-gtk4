@@ -75,7 +75,6 @@ def refresh_themer_dropdowns(self, fn, themer):
                 self.leftwm_combo.set_selected(i)
     else:
         self.leftwm_combo.get_model().splice(0, self.leftwm_combo.get_model().get_n_items())
-    self.leftwm_combo.set_sensitive(lft_ok)
     self.applyleftwm.set_sensitive(lft_ok)
     self.resetleftwm.set_sensitive(lft_ok)
     self.removeleftwm.set_sensitive(lft_ok)
@@ -484,8 +483,6 @@ install them in one go"
         for i, theme in enumerate(fn.leftwm_themes_list):
             if link_theme == theme:
                 self.leftwm_combo.set_selected(i)
-    self.leftwm_combo.set_sensitive(lft_ok)
-
     vbox5 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox12 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox13 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
