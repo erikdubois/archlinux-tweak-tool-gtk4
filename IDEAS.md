@@ -53,3 +53,11 @@ The score updates every time the user opens ATT (lazy, low-cost) and recomputes 
 Add a small **Backups** section (or side panel) that reads the `mtime` of each known `-bak` file ATT creates and shows a table: filename, backed-up date, size, and a **Restore** button. No extra tracking, no database — the filesystem already has all the data.
 
 **Why this is worth building:** ATT silently creates backups the user never sees. When something breaks they don't know a backup exists or where it is. Surfacing the mtime + a one-click restore turns the backup system from invisible insurance into a tool the user can actually trust and use.
+
+---
+
+### Theme Compatibility Smart Selector — warn and auto-disable incompatible themes per desktop
+
+Extend the Plasma warning pattern across all tabs: for each installer checkbox (theme, icon, cursor), detect the current desktop and disable/gray-out incompatible packages with a tooltip explaining why. Examples: GTK themes auto-disabled on Plasma (already warned), KDE icons auto-disabled on XFCE/dwm. Build a lightweight `compatibility_map` dict keyed by desktop and package name, checked at GUI build time.
+
+**Why this is worth building:** Users no longer accidentally install packages that won't work. The warning already signals "this won't work on Plasma" — extending it to prevent the selection entirely (with friendly gray-out + tooltip) prevents the support question entirely, reduces session waste, and scales to other desktops and incompatibilities ATT will discover.

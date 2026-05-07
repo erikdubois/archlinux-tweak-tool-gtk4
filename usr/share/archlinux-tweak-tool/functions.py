@@ -2106,6 +2106,7 @@ def wait_install_and_update(
                 if label_widget:
                     GLib.idle_add(label_widget.set_markup, installed_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
+                GLib.idle_add(getattr(self_ref, "refresh_aur_buttons", lambda: None))
             else:
                 log_warn(f"Binary NOT found at {binary_path}, checking for errors...")
                 if package_name:
@@ -2146,6 +2147,7 @@ def wait_remove_and_update(process, binary_path, label_widget, plain_markup, sel
                 log_success("Package removed successfully")
                 GLib.idle_add(label_widget.set_markup, plain_markup)
                 GLib.idle_add(show_in_app_notification, self_ref, notification)
+                GLib.idle_add(getattr(self_ref, "refresh_aur_buttons", lambda: None))
             else:
                 log_warn("Removal may have failed or encountered issues")
         except Exception as e:

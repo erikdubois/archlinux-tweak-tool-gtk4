@@ -1,24 +1,47 @@
 # Arch Linux Tweak Tool — Changelog
 
-## 2026.05.07 - Software page: sync AUR helper labels after Pacman page install/remove
+## 2026.05.07 - Themes page: Plasma desktop warning
 
 ### What Changed
 
-- When yay-git or paru-git is installed/removed on the Pacman page, the Software page labels now update automatically to reflect the new installed state
-- User no longer needs to restart ATT or manually navigate to see the correct label
+- Themes page now displays a warning for Plasma/KDE users: "⚠ On Plasma these themes will not work"
+- Warning appears directly under the info text, only on Plasma systems
+- Improves UX by preventing confusion when GTK themes don't apply in Plasma environments
 
 ### Technical Details
 
-- Added `refresh_aur_labels()` inner function in `software_gui.py` that re-checks `/usr/bin/yay` and `/usr/bin/paru` and updates `self.lbl_software_yay` and `self.lbl_software_paru` with the same markup pattern as initial build-time setup
-- Attached function to `self.refresh_software_aur_labels` for external invocation
-- In `pacman_gui.py`'s `wait_and_refresh()` callback, added two `GLib.idle_add(getattr(self, "refresh_software_aur_labels", lambda: None))` calls — one in the early-return path and one after the normal `process.wait()` path
-- Uses `getattr` with defensive lambda guard since Software page is lazy-loaded; in practice both pages load before any user action is possible
-- Follows the same cross-page refresh pattern as kernel tab's chaotic-AUR dynamic status
+- Added `hbox_plasma_warning` that checks `fn.desktop` environment variable (XDG_CURRENT_DESKTOP)
+- Detects "KDE" or "plasma" (case-insensitive) and conditionally builds warning hbox
+- Warning only appends if hbox has children (uses `get_first_child()` guard)
+- Uses warning markup with warning CSS class for visual distinction
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/themes_gui.py`
+
+---
+
+## 2026.05.07 - AUR helper sync: bidirectional label update between Pacman and Software pages
+
+### What Changed
+
+- **Pacman → Software**: When yay-git or paru-git is installed/removed on the Pacman page, the Software page labels automatically update
+- **Software → Pacman**: When yay-git or paru-git is installed/removed on the Software page, the Pacman page buttons automatically update
+- User no longer needs to restart ATT or manually navigate to see the correct state on either page
+
+### Technical Details
+
+- **software_gui.py**: Added `refresh_aur_labels()` inner function that re-checks `/usr/bin/yay` and `/usr/bin/paru` and updates `self.lbl_software_yay` and `self.lbl_software_paru` using the same markup pattern as initial build
+- **pacman_gui.py**: In `wait_and_refresh()` callback, added `GLib.idle_add(getattr(self, "refresh_software_aur_labels", lambda: None))` calls in both the early-return and normal-flow paths
+- **functions.py**: Modified `wait_install_and_update()` and `wait_remove_and_update()` to add `GLib.idle_add(getattr(self_ref, "refresh_aur_buttons", lambda: None))` after label updates, ensuring Pacman buttons refresh when Software page installs/removes
+- All paths use `getattr` with defensive lambda guards for safety (both pages are lazy-loaded)
+- Follows existing cross-page refresh patterns (kernel tab chaotic-AUR dynamic status)
 
 ### Files Modified
 
 - `usr/share/archlinux-tweak-tool/software_gui.py`
 - `usr/share/archlinux-tweak-tool/pacman_gui.py`
+- `usr/share/archlinux-tweak-tool/functions.py`
 
 ---
 

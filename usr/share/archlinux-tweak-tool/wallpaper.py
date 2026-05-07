@@ -208,12 +208,14 @@ def _variety_cmd(fn, uid, args):
     xdg_desktop = env.get("XDG_CURRENT_DESKTOP", "")
     on_wayland = bool(env.get("WAYLAND_DISPLAY")) or env.get("XDG_SESSION_TYPE") == "wayland"
     display_env = "WAYLAND_DISPLAY=$WAYLAND_DISPLAY" if on_wayland else "DISPLAY=$DISPLAY"
+    wayland_backend = "GDK_BACKEND=wayland" if on_wayland else ""
     return (
         f"sudo -u {fn.sudo_username}"
         f" XDG_RUNTIME_DIR=/run/user/{uid}"
         f" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{uid}/bus"
         f" XDG_CURRENT_DESKTOP={xdg_desktop}"
         f" {display_env}"
+        f" {wayland_backend}"
         f" variety {args}"
     )
 
@@ -223,10 +225,8 @@ def on_open_variety_settings(self, _widget=None):
     uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
     cmd = _variety_cmd(fn, uid, "--preferences")
     fn.debug_print(f"Launching: {cmd}")
-    fn.threading.Thread(
-        target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
-        daemon=True,
-    ).start()
+    fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE)
+    fn.log_success("Variety settings launched")
 
 
 def on_open_variety_selector(self, _widget=None):
@@ -234,10 +234,8 @@ def on_open_variety_selector(self, _widget=None):
     uid = fn.subprocess.run(["id", "-u", fn.sudo_username], capture_output=True, text=True).stdout.strip()
     cmd = _variety_cmd(fn, uid, "--selector")
     fn.debug_print(f"Launching: {cmd}")
-    fn.threading.Thread(
-        target=lambda: fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE),
-        daemon=True,
-    ).start()
+    fn.subprocess.Popen(cmd, shell=True, stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE)
+    fn.log_success("Variety selector launched")
 
 
 def on_browse_wallpaper_folder(self, _widget=None):

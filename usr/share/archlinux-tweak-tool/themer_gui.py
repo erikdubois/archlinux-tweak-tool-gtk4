@@ -44,13 +44,13 @@ def refresh_themer_dropdowns(self, fn, themer):
         try:
             awesome_list = themer.get_list(fn.awesome_config)
             awesome_lines = themer.get_awesome_themes(awesome_list)
-            self.store.clear()
-            for x, theme in enumerate(awesome_lines):
-                self.store.append([x, theme])
+            aw_model = self.awesome_combo.get_model()
+            aw_model.splice(0, aw_model.get_n_items(), awesome_lines)
         except Exception:
             pass
     else:
-        self.store.clear()
+        aw_model = self.awesome_combo.get_model()
+        aw_model.splice(0, aw_model.get_n_items())
     self.awesome_combo.set_sensitive(aw_ok)
     self.applyawesome.set_sensitive(aw_ok)
     self.resetawesome.set_sensitive(aw_ok)
@@ -248,38 +248,24 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     )
 
     label2 = Gtk.Label(label="Select theme")
-    self.store = Gtk.ListStore(int, str)
+    awesome_model = Gtk.StringList()
+    self.awesome_combo = Gtk.DropDown(model=awesome_model)
+    self.awesome_combo.set_size_request(280, 0)
+
     if fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed(
         "edu-awesome-git"
     ):
         try:
             awesome_lines = themer.get_awesome_themes(awesome_list)
-            for x, theme in enumerate(awesome_lines):
-                self.store.append([x, theme])
-        except Exception:
-            pass
-
-    self.awesome_combo = Gtk.ComboBox.new_with_model(self.store)
-    self.awesome_combo.set_size_request(180, 0)
-    renderer_text = Gtk.CellRendererText()
-
-    if fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed(
-        "edu-awesome-git"
-    ):
-        try:
+            awesome_model.splice(0, 0, awesome_lines)
             val = int(
                 themer.get_value(awesome_list, "local chosen_theme =")
                 .replace("themes[", "")
                 .replace("]", "")
             )
-            self.awesome_combo.set_active(val - 1)
+            self.awesome_combo.set_selected(val - 1)
         except Exception:
             pass
-
-    self.awesome_combo.pack_start(renderer_text, False)
-    self.awesome_combo.add_attribute(renderer_text, "text", 1)
-    # self.awesome_combo.connect("changed", self.on_awesome_change)
-    self.awesome_combo.set_entry_text_column(1)
 
     vbox3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -348,8 +334,8 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     self.image.set_vexpand(False)
 
     self.awesome_combo.connect(
-        "changed",
-        functools.partial(fn.update_image, self),
+        "notify::selected",
+        lambda w, _p, img, tt, ab, iw, ih: fn.update_image(self, w, img, tt, ab, iw, ih),
         self.image,
         "awesome",
         base_dir,
