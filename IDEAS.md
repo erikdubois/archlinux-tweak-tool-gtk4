@@ -45,3 +45,11 @@ Add a persistent **Health Score** widget to the ATT sidebar (or as a dedicated t
 The score updates every time the user opens ATT (lazy, low-cost) and recomputes live when the Maintenance tab runs a cleanup. Each factor shows its contribution inline so the user knows exactly what is dragging the score down. Tapping a factor jumps to the relevant ATT tab — failed services → Services tab, orphans → Maintenance tab.
 
 **Why this is worth building:** Most users never notice their system degrading because every problem lives in a separate tab. A single number gives an immediate "is my system happy?" answer and turns ATT from a collection of manual tools into something that proactively surfaces problems — without adding any new system knowledge to the codebase.
+
+---
+
+### Backup Timeline Viewer — make ATT's silent backups visible
+
+Add a small **Backups** section (or side panel) that reads the `mtime` of each known `-bak` file ATT creates and shows a table: filename, backed-up date, size, and a **Restore** button. No extra tracking, no database — the filesystem already has all the data.
+
+**Why this is worth building:** ATT silently creates backups the user never sees. When something breaks they don't know a backup exists or where it is. Surfacing the mtime + a one-click restore turns the backup system from invisible insurance into a tool the user can actually trust and use.

@@ -79,6 +79,15 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     hbox_info_label.set_margin_end(10)
     hbox_info.append(hbox_info_label)
 
+    hbox_plasma_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    if "KDE" in fn.desktop or "plasma" in fn.desktop.lower():
+        lbl_plasma_warning = Gtk.Label(xalign=0)
+        lbl_plasma_warning.set_markup("<b>⚠ On Plasma these themes will not work</b>")
+        lbl_plasma_warning.set_margin_start(10)
+        lbl_plasma_warning.set_margin_end(10)
+        hbox_plasma_warning.append(lbl_plasma_warning)
+        hbox_plasma_warning.add_css_class("warning")
+
     hbox_checkboxes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
     self.arcolinux_arc_aqua = Gtk.CheckButton(label="arcolinux-arc-aqua")
@@ -278,6 +287,10 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
     hbox_info.set_margin_start(10)
     hbox_info.set_margin_end(10)
     vboxstack_themes.append(hbox_info)
+    if hbox_plasma_warning.get_first_child() is not None:
+        hbox_plasma_warning.set_margin_start(10)
+        hbox_plasma_warning.set_margin_end(10)
+        vboxstack_themes.append(hbox_plasma_warning)
     hbox_checkboxes.set_margin_start(10)
     hbox_checkboxes.set_margin_end(10)
     vboxstack_themes.append(hbox_checkboxes)

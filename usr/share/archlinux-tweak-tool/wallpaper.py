@@ -182,6 +182,7 @@ def on_save_variety_config(self, _widget=None):
                 fn.log_info_concise(f"  From: {src}")
                 fn.log_info_concise(f"  To:   {dest}")
                 shutil.copytree(src, dest, dirs_exist_ok=True)
+                fn.permissions(dest)
                 fn.log_info_concise(f"  Done: {fn.path.basename(src)}/")
             else:
                 if fn.path.isfile(dest):
@@ -191,6 +192,7 @@ def on_save_variety_config(self, _widget=None):
                 fn.log_info_concise(f"  From: {src}")
                 fn.log_info_concise(f"  To:   {dest}")
                 shutil.copy2(src, dest)
+                fn.permissions(dest)
                 fn.log_info_concise(f"  Done: {fn.path.basename(src)}")
         _fix_variety_conf_paths()
         fn.log_success("ATT variety config saved to ~/.config/variety/")

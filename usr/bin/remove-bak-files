@@ -14,27 +14,48 @@ info()      { echo "    $*"; }
 warn()      { echo "${YELLOW}  ⚠ $*${RESET}"; }
 error()     { echo "${RED}  ✘ $*${RESET}"; }
 
-SEARCH_ROOT="${1:-$HOME}"
+# Resolve the real user's home (works whether run as root via sudo or directly)
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 
-header "Remove .bak and -bak files/folders"
-info "Scanning: $SEARCH_ROOT"
-separator
+# Every -bak and .bak variant of files ATT creates — derived from functions_backup.py + services.py
+ATT_BACKUPS=(
+    "/etc/hosts-bak"
+    "/etc/hosts.bak"
+    "/etc/nsswitch.conf-bak"
+    "/etc/nsswitch.conf.bak"
+    "/etc/pacman.d/mirrorlist-bak"
+    "/etc/pacman.d/mirrorlist.bak"
+    "/etc/samba/smb.conf-bak"
+    "/etc/samba/smb.conf.bak"
+    "/usr/share/icons/default/index.theme-bak"
+    "/usr/share/icons/default/index.theme.bak"
+    "${REAL_HOME}/.bashrc-bak"
+    "${REAL_HOME}/.bashrc.bak"
+    "${REAL_HOME}/.zshrc-bak"
+    "${REAL_HOME}/.zshrc.bak"
+    "${REAL_HOME}/.config/fish/config.fish-bak"
+    "${REAL_HOME}/.config/fish/config.fish.bak"
+    "${REAL_HOME}/.config/fastfetch/config.jsonc-bak"
+    "${REAL_HOME}/.config/fastfetch/config.jsonc.bak"
+)
 
-mapfile -t BAK_ITEMS < <(find "$SEARCH_ROOT" \( -name "*.bak" -o -name "*-bak" \) 2>/dev/null | sort)
+header "Remove ATT backup files"
 
-if [[ ${#BAK_ITEMS[@]} -eq 0 ]]; then
-    warn "No .bak or -bak items found under $SEARCH_ROOT"
+found=()
+for f in "${ATT_BACKUPS[@]}"; do
+    [[ -e "$f" ]] && found+=("$f")
+done
+
+if [[ ${#found[@]} -eq 0 ]]; then
+    warn "No ATT backup files found."
     exit 0
 fi
 
-info "Found ${#BAK_ITEMS[@]} item(s):"
+info "Found ${#found[@]} backup file(s):"
 echo
-for item in "${BAK_ITEMS[@]}"; do
-    if [[ -d "$item" ]]; then
-        info "  [dir]  $item"
-    else
-        info "  [file] $item"
-    fi
+for f in "${found[@]}"; do
+    info "  $f"
 done
 echo
 
@@ -51,12 +72,12 @@ header "Deleting"
 deleted=0
 failed=0
 
-for item in "${BAK_ITEMS[@]}"; do
-    if rm -rf -- "$item"; then
-        success "Deleted: $item"
+for f in "${found[@]}"; do
+    if rm -f -- "$f"; then
+        success "Deleted: $f"
         (( deleted++ )) || true
     else
-        error "Failed:  $item"
+        error "Failed:  $f"
         (( failed++ )) || true
     fi
 done

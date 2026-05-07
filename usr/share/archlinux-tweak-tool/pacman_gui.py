@@ -344,6 +344,7 @@ def gui(self, Gtk, vboxstack1, fn):
         def wait_and_refresh(process, success_msg):
             if process is None:
                 fn.GLib.idle_add(refresh_aur_buttons)
+                fn.GLib.idle_add(getattr(self, "refresh_software_aur_labels", lambda: None))
                 return
             fn.debug_print("Waiting for terminal to close...")
             process.wait()
@@ -351,6 +352,7 @@ def gui(self, Gtk, vboxstack1, fn):
             fn.log_success(success_msg)
             fn.GLib.idle_add(lambda: fn.show_in_app_notification(self, success_msg))
             fn.GLib.idle_add(refresh_aur_buttons)
+            fn.GLib.idle_add(getattr(self, "refresh_software_aur_labels", lambda: None))
 
         if fn.path.exists("/usr/bin/yay"):
             btn_aur_yay.set_label("Remove yay-git")

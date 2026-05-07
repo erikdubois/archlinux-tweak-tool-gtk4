@@ -32,6 +32,8 @@ def refresh_themer_dropdowns(self, fn, themer):
     if i3_ok:
         i3_list = themer.get_list(fn.i3wm_config)
         themer.get_i3_themes(self.i3_combo, i3_list)
+    else:
+        self.i3_combo.get_model().splice(0, self.i3_combo.get_model().get_n_items())
     self.i3_combo.set_sensitive(i3_ok)
     self.applyi3.set_sensitive(i3_ok)
     self.reseti3.set_sensitive(i3_ok)
@@ -47,6 +49,8 @@ def refresh_themer_dropdowns(self, fn, themer):
                 self.store.append([x, theme])
         except Exception:
             pass
+    else:
+        self.store.clear()
     self.awesome_combo.set_sensitive(aw_ok)
     self.applyawesome.set_sensitive(aw_ok)
     self.resetawesome.set_sensitive(aw_ok)
@@ -55,11 +59,22 @@ def refresh_themer_dropdowns(self, fn, themer):
     if qt_ok:
         qtile_list = themer.get_list(fn.qtile_config)
         themer.get_qtile_themes(self.qtile_combo, qtile_list)
+    else:
+        self.qtile_combo.get_model().splice(0, self.qtile_combo.get_model().get_n_items())
     self.qtile_combo.set_sensitive(qt_ok)
     self.applyqtile.set_sensitive(qt_ok)
     self.resetqtile.set_sensitive(qt_ok)
 
     lft_ok = fn.os.path.isfile(fn.leftwm_config) and fn.check_package_installed("edu-leftwm-git")
+    if lft_ok and fn.path_check(fn.leftwm_config_theme_current):
+        lft_model = self.leftwm_combo.get_model()
+        lft_model.splice(0, lft_model.get_n_items(), list(fn.leftwm_themes_list))
+        link_theme = fn.os.path.basename(fn.os.readlink(fn.leftwm_config_theme_current))
+        for i, theme in enumerate(fn.leftwm_themes_list):
+            if link_theme == theme:
+                self.leftwm_combo.set_selected(i)
+    else:
+        self.leftwm_combo.get_model().splice(0, self.leftwm_combo.get_model().get_n_items())
     self.leftwm_combo.set_sensitive(lft_ok)
     self.applyleftwm.set_sensitive(lft_ok)
     self.resetleftwm.set_sensitive(lft_ok)
@@ -486,16 +501,17 @@ install them in one go"
     )
 
     labellft = Gtk.Label(label="Select theme - candy is the default theme")
-    self.leftwm_combo = Gtk.DropDown.new_from_strings(list(fn.leftwm_themes_list))
+    self.leftwm_combo = Gtk.DropDown.new_from_strings([])
     self.leftwm_combo.set_size_request(280, 0)
     self.leftwm_combo.connect("notify::selected", functools.partial(themer.on_leftwm_combo_changed, self))
-    if fn.path_check(fn.leftwm_config_theme_current):
+    lft_ok = fn.os.path.isfile(fn.leftwm_config) and fn.check_package_installed("edu-leftwm-git")
+    if lft_ok and fn.path_check(fn.leftwm_config_theme_current):
+        self.leftwm_combo.get_model().splice(0, 0, list(fn.leftwm_themes_list))
         link_theme = fn.os.path.basename(fn.os.readlink(fn.leftwm_config_theme_current))
         for i, theme in enumerate(fn.leftwm_themes_list):
             if link_theme == theme:
                 self.leftwm_combo.set_selected(i)
-    else:
-        self.leftwm_combo.set_sensitive(False)
+    self.leftwm_combo.set_sensitive(lft_ok)
 
     vbox5 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox12 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)

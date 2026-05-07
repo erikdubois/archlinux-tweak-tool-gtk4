@@ -237,6 +237,19 @@ def gui(self, Gtk, vboxstack_software, fn):
     self.btn_software_paru_remove.set_margin_end(10)
     hbox_paru.append(self.btn_software_paru_remove)
 
+    def refresh_aur_labels():
+        self.lbl_software_yay.set_markup(
+            "Yay-git - AUR helper (Go-based)"
+            + (" <b>installed</b>" if fn.path.exists("/usr/bin/yay") else "")
+        )
+        self.lbl_software_paru.set_markup(
+            "Paru-git - AUR helper (Rust-based)"
+            + (" <b>installed</b>" if fn.path.exists("/usr/bin/paru") else "")
+        )
+        fn.log_info("Software page: AUR helper labels refreshed")
+
+    self.refresh_software_aur_labels = refresh_aur_labels
+
     # Trizen
     hbox_trizen = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.lbl_software_trizen = Gtk.Label(xalign=0)

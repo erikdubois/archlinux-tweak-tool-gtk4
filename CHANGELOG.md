@@ -1,5 +1,51 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.05.07 - Software page: sync AUR helper labels after Pacman page install/remove
+
+### What Changed
+
+- When yay-git or paru-git is installed/removed on the Pacman page, the Software page labels now update automatically to reflect the new installed state
+- User no longer needs to restart ATT or manually navigate to see the correct label
+
+### Technical Details
+
+- Added `refresh_aur_labels()` inner function in `software_gui.py` that re-checks `/usr/bin/yay` and `/usr/bin/paru` and updates `self.lbl_software_yay` and `self.lbl_software_paru` with the same markup pattern as initial build-time setup
+- Attached function to `self.refresh_software_aur_labels` for external invocation
+- In `pacman_gui.py`'s `wait_and_refresh()` callback, added two `GLib.idle_add(getattr(self, "refresh_software_aur_labels", lambda: None))` calls — one in the early-return path and one after the normal `process.wait()` path
+- Uses `getattr` with defensive lambda guard since Software page is lazy-loaded; in practice both pages load before any user action is possible
+- Follows the same cross-page refresh pattern as kernel tab's chaotic-AUR dynamic status
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/software_gui.py`
+- `usr/share/archlinux-tweak-tool/pacman_gui.py`
+
+---
+
+## 2026.05.06 - Plymouth: Omarchy detection hardened + Reset to default button
+
+### What Changed
+
+- Omarchy detection now uses `/etc/att/att-omarchy-marker` as a stable fallback so the Plymouth tab remains visible even after Plymouth theme changes overwrite `plymouthd.conf`
+- Plymouth tab and GUI initialisation guards updated to check `plymouthd.conf` OR the marker file
+- Applying any Plymouth theme via ATT automatically writes the marker to `/etc/att/att-omarchy-marker`
+- New "Reset to Omarchy default" button runs `plymouth-set-default-theme -R omarchy` and refreshes the active theme label
+
+### Technical Details
+
+- `functions.py` detection extended: `distr = "omarchy"` is set when `plymouthd.conf` contains "omarchy" **or** `/etc/att/att-omarchy-marker` exists
+- Both Plymouth guards in `gui.py` use `fn.check_content(...) or fn.os.path.isfile("/etc/att/att-omarchy-marker")`
+- Marker written in `run_apply()` thread via `fn.os.makedirs("/etc/att", exist_ok=True)` + `open(...).close()`
+- Reset button reuses `refresh_after_apply()` to update `lbl_current` and repopulate the installed-themes dropdown
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/plymouth_gui.py`
+
+---
+
 ## 2026.05.06 - Notification bar: fixed height, replaced image with CSS color
 
 ### What Changed
@@ -42,6 +88,25 @@
 
 - `usr/share/archlinux-tweak-tool/ai_gui.py`
 - `usr/share/archlinux-tweak-tool/ai.py`
+
+---
+
+## 2026.05.06 - Dev tool: remove-bak-files script
+
+### What Changed
+
+- Added `usr/bin/remove-bak-files` — a developer-only bash script that removes exactly the backup files ATT creates, nothing else
+
+### Technical Details
+
+- Checks 18 specific paths (9 files × both `-bak` and `.bak` variants): `/etc/hosts`, `/etc/nsswitch.conf`, `/etc/pacman.d/mirrorlist`, `/etc/samba/smb.conf`, `/usr/share/icons/default/index.theme`, `~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`, `~/.config/fastfetch/config.jsonc`
+- Uses `SUDO_USER` → `getent passwd` to resolve the real user's home when run as root
+- Lists all found files with confirmation prompt before deleting
+- Follows ATT Script Standard (tput colors, header/success/warn/error helpers, `set -euo pipefail`)
+
+### Files Modified
+
+- `usr/bin/remove-bak-files` (new)
 
 ---
 
