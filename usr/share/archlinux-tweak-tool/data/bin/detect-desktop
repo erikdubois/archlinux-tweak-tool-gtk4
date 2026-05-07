@@ -28,28 +28,43 @@ info()    { echo "    $1"; }
 warn()    { echo "${YELLOW}  ⚠ $1${RESET}"; }
 error()   { echo "${RED}  ✗ $1${RESET}"; }
 
+DEBUG=false
+for arg in "$@"; do [[ "$arg" == "--debug" ]] && DEBUG=true; done
+
 USERNAME="${SUDO_USER:-$(logname 2>/dev/null || echo '')}"
 DEST="/etc/att/current_desktop"
 
 # ── Detect desktop ─────────────────────────────────────────────────────────────
 header "Detecting desktop environment for user: $USERNAME"
 
+if [ -z "$USERNAME" ]; then
+    error "Cannot determine real username (SUDO_USER unset and logname failed)"
+    exit 1
+fi
+
 mkdir -p /etc/att
 
 DESKTOP=""
+SOURCE_VAR=""
 for environ_file in /proc/[0-9]*/environ; do
     owner=$(stat -c %U "$environ_file" 2>/dev/null) || continue
     [ "$owner" = "$USERNAME" ] || continue
-    val=$(tr '\0' '\n' < "$environ_file" 2>/dev/null | grep "^XDG_CURRENT_DESKTOP=" | cut -d= -f2-) || continue
-    if [ -n "$val" ]; then
-        DESKTOP="$val"
-        break
-    fi
+    env_block=$(tr '\0' '\n' < "$environ_file" 2>/dev/null) || continue
+    for var in XDG_CURRENT_DESKTOP DESKTOP_SESSION XDG_SESSION_DESKTOP; do
+        val=$(echo "$env_block" | grep "^${var}=" | cut -d= -f2-) || continue
+        if [ -n "$val" ]; then
+            DESKTOP="${val,,}"
+            SOURCE_VAR="$var"
+            break
+        fi
+    done
+    [ -n "$DESKTOP" ] && break
 done
 
 if [ -n "$DESKTOP" ]; then
     echo "$DESKTOP" > "$DEST"
-    success "Desktop detected: $DESKTOP — written to $DEST"
+    $DEBUG && info "Source: $SOURCE_VAR"
+    $DEBUG && success "Desktop detected: $DESKTOP — written to $DEST"
 else
-    warn "XDG_CURRENT_DESKTOP not found in any user process; $DEST unchanged"
+    warn "No desktop variable found in any process owned by $USERNAME; $DEST unchanged"
 fi

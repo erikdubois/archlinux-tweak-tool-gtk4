@@ -463,7 +463,6 @@ def gui(self, Gtk, GdkPixbuf, vboxstack10, themer, fn, base_dir):
     # ==================================================================
 
     self.status_leftwm = Gtk.Label()
-    # self.status_leftwm.set_markup("<b>Theme is installed and applied</b>")
 
     label6 = Gtk.Label()
     label6.set_markup(
@@ -474,7 +473,7 @@ Be patient if it is the first time you install the theme or use the scripts to \
 install them in one go"
     )
 
-    labellft = Gtk.Label(label="Select theme - candy is the default theme")
+    labellft = Gtk.Label(label="Select theme")
     self.leftwm_combo = Gtk.DropDown.new_from_strings([])
     self.leftwm_combo.set_size_request(280, 0)
     self.leftwm_combo.connect("notify::selected", functools.partial(themer.on_leftwm_combo_changed, self))
@@ -558,9 +557,6 @@ install them in one go"
     vboxstack4.append(hbox11)
     vboxstack4.append(hbox13)
     vboxstack4.append(leftwm_image)
-    self.status_leftwm.set_hexpand(True)
-    self.status_leftwm.set_vexpand(True)
-    vboxstack4.append(self.status_leftwm)
     label6.set_hexpand(True)
     label6.set_vexpand(True)
     vboxstack4.append(label6)
