@@ -205,9 +205,15 @@ Remove it yourself if no longer needed\n"
     lbl_install_all.set_markup('<span foreground="#FFD700">Install all desktops</span>')
     btn_install_all.set_child(lbl_install_all)
     btn_install_all.connect("clicked", lambda _w: desktopr.install_all_desktops(self))
+    btn_install_all_twms = Gtk.Button()
+    lbl_install_all_twms = Gtk.Label()
+    lbl_install_all_twms.set_markup('<span foreground="#FFD700">Install all twms</span>')
+    btn_install_all_twms.set_child(lbl_install_all_twms)
+    btn_install_all_twms.connect("clicked", lambda _w: desktopr.install_all_twms(self))
     btn_remove_all = Gtk.Button(label="Remove all desktops")
     btn_remove_all.connect("clicked", lambda _w: desktopr.remove_all_desktops(self))
     hbox_dev_test.append(btn_install_all)
+    hbox_dev_test.append(btn_install_all_twms)
     hbox_dev_test.append(btn_remove_all)
 
     # =======================================

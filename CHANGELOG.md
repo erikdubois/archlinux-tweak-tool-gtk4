@@ -1,5 +1,22 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.01 — Desktop page: dev-mode "Install all twms" button
+
+### What Changed
+
+Added an **Install all twms** button to the Desktop page's `--dev` test row, placed between the existing yellow "Install all desktops" button and "Remove all desktops", and styled the same yellow (`#FFD700`). It installs only the 7 tiling WMs (awesome, bspwm, i3, qtile, leftwm, chadwm, ohmychadwm) in the same shared-package-first order, skipping any already installed — a faster path for dev testing when the full-DE set isn't needed.
+
+### Technical Details
+
+- **`desktopr.py`:** new `TWM_INSTALL_ORDER` list (the 7 TWMs, same relative order as `INSTALL_ORDER`) and `install_all_twms(self)` — mirrors `install_all_desktops()` (daemon thread, per-WM `threading.Event` gated on `install_desktop`, `check_desktop` skip, in-app notifications).
+- **`desktopr_gui.py`:** new `btn_install_all_twms` built with a `Gtk.Label` + `set_markup('<span foreground="#FFD700">…</span>')` (matching the install-all button) and appended after `btn_install_all`. Whole dev row stays gated behind `fn.DEV`.
+- `ruff check` clean on both files.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/desktopr.py`
+- `usr/share/archlinux-tweak-tool/desktopr_gui.py`
+
 ## 2026.06.01 — Desktop install: scoped `~/.config` backup (kiro-skell parity)
 
 ### What Changed

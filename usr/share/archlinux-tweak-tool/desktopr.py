@@ -996,6 +996,17 @@ INSTALL_ORDER = [
     "plasma",
 ]
 
+# Tiling WMs only (shared packages installed via --needed); same relative order as INSTALL_ORDER.
+TWM_INSTALL_ORDER = [
+    "awesome",
+    "bspwm",
+    "i3",
+    "qtile",
+    "leftwm",
+    "chadwm",
+    "ohmychadwm",
+]
+
 # Remove most exclusive/large DEs first; tiling WMs last (heavily shared packages, protected until final removal).
 REMOVE_ORDER = [
     "plasma",
@@ -1029,6 +1040,25 @@ def install_all_desktops(self):
             done.wait()
         fn.log_success("Install-all sequence complete")
         GLib.idle_add(fn.show_in_app_notification, self, "All desktops install sequence complete")
+
+    fn.threading.Thread(target=_run, daemon=True).start()
+
+
+def install_all_twms(self):
+    fn.log_section("Install All TWMs — dev test")
+
+    def _run():
+        for desktop in TWM_INSTALL_ORDER:
+            if check_desktop(desktop):
+                fn.log_info(f"{desktop} already installed, skipping")
+                continue
+            fn.log_subsection(f"Installing {desktop}")
+            GLib.idle_add(fn.show_in_app_notification, self, f"Starting {desktop} installation...")
+            done = fn.threading.Event()
+            GLib.idle_add(install_desktop, self, desktop, done.set)
+            done.wait()
+        fn.log_success("Install-all-TWMs sequence complete")
+        GLib.idle_add(fn.show_in_app_notification, self, "All TWMs install sequence complete")
 
     fn.threading.Thread(target=_run, daemon=True).start()
 
