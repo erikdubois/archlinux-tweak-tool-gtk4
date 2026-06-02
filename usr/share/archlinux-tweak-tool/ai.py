@@ -530,16 +530,7 @@ def on_click_ai_copilot(self, _widget):
 
 
 def open_url_in_browser(self, url):
-    fn.log_info(f"Opening URL: {url}")
-    try:
-        fn.subprocess.Popen(
-            f"sudo -u {fn.sudo_username} DISPLAY=:0 xdg-open '{url}'",
-            shell=True,
-            stdout=fn.subprocess.DEVNULL,
-            stderr=fn.subprocess.DEVNULL,
-        )
-    except Exception as error:
-        fn.log_error(f"Error: {error}")
+    fn.open_url_as_user(url)
 
 
 def on_click_ai_ollama_link(self, _widget):

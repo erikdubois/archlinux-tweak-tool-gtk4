@@ -1,5 +1,39 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.02 — Fix: links don't open on Plasma/Wayland (AI tools, funding, kernel)
+
+### What Changed
+
+Clickable links in ATT did nothing on a **KDE Plasma (Wayland)** session — no browser, no error, on either left- or right-click. The AI Tools page links, the funding links, and the kernel "more info" links all opened URLs with a hardcoded `DISPLAY=:0`, an X11-only assumption. On Wayland there is no usable X server at `:0`, so `xdg-open` (and the right-click "Open with <browser>" path) silently failed. Links now open correctly on both X11 and Wayland.
+
+### Technical Details
+
+- **`functions.py`:** new `user_session_env_assignments()` helper reads the real user's live session env via the existing `get_terminal_env()` (`DISPLAY`, `WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS` from `/proc/<pid>/environ`) and returns them as inline `VAR=val` args — passed to `sudo` this way they survive its env sanitizing, unlike `Popen(env=)`. New `open_url_as_user(url)` (left-click, via `xdg-open`) and a rewrite of `open_url_with_browser(url, binary)` (right-click "Open with" popover) both use it; the latter also moves from a `shell=True` string to list form. Mirrors the proven X11/Wayland pattern already used by the wallpaper code.
+- **`ai.py`, `funding.py`, `kernel_gui.py`:** the three link openers now delegate to `fn.open_url_as_user()`; removed the duplicated `sudo -u … DISPLAY=:0 xdg-open` calls.
+- `ruff check` clean on all touched files; all compile clean.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/ai.py`
+- `usr/share/archlinux-tweak-tool/funding.py`
+- `usr/share/archlinux-tweak-tool/kernel_gui.py`
+
+## 2026.06.02 — Dev page: VM-aware microcode check (no false FAIL on a VM)
+
+### What Changed
+
+The Dev page's "System integrity (kiro-audit mirror) → Microcode" check no longer shows a red **FAIL** when running inside a virtual machine. A VM has no real CPU to patch, so a missing `/boot/*-ucode.img` is expected, not a fault. On a VM the row now reports **PASS** with the explanation "image not in /boot — expected in a VM (no real CPU to patch)". On real metal the original FAIL ("installed but image MISSING in /boot (archiso stripped it?)") is unchanged. This mirrors the stance kiro-audit already takes.
+
+### Technical Details
+
+- **`dev_gui.py`:** added a module-private `_is_vm(fn)` helper that runs `systemd-detect-virt --vm --quiet` (returncode 0 → VM), matching the existing private-helper pattern (`_failed_units`, `_zram_state`, …) and the kiro-audit detection. The microcode loop now branches three ways: image present → PASS; image missing **and** in a VM → PASS with VM explanation; image missing on metal → FAIL (original message). The "(none installed)" WARN case is unchanged.
+- `ruff check` clean.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/dev_gui.py`
+
 ## 2026.06.02 — Desktop page: GNOME is now a one-way install (Plasma parity)
 
 ### What Changed

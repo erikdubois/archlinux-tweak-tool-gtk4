@@ -1194,6 +1194,34 @@ def is_wayland_session():
     return False
 
 
+def user_session_env_assignments():
+    """Return inline `VAR=val` args that carry the real user's session env through sudo.
+
+    Passed as arguments to `sudo` they survive its env sanitizing (unlike Popen env=).
+    Covers both X11 and Wayland — `DISPLAY=:0` was hardcoded before and broke on Wayland.
+    """
+    env = get_terminal_env()
+    assignments = [f"XDG_RUNTIME_DIR={env['XDG_RUNTIME_DIR']}"]
+    for key in ("DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS"):
+        val = env.get(key)
+        if val:
+            assignments.append(f"{key}={val}")
+    return assignments
+
+
+def open_url_as_user(url):
+    """Open a URL in the real user's default browser; correct on both X11 and Wayland."""
+    log_info(f"Opening URL: {url}")
+    try:
+        subprocess.Popen(
+            ["sudo", "-u", sudo_username, *user_session_env_assignments(), "xdg-open", url],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as error:
+        log_error(f"Error opening {url}: {error}")
+
+
 def install_local_package(self, package):
     if not os.path.exists(package):
         log_error(f"Package file not found: {package}")
@@ -2660,8 +2688,7 @@ def get_installed_browsers():
 def open_url_with_browser(url, binary):
     try:
         subprocess.Popen(
-            f"sudo -u {sudo_username} DISPLAY=:0 '{binary}' '{url}'",
-            shell=True,
+            ["sudo", "-u", sudo_username, *user_session_env_assignments(), binary, url],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

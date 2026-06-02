@@ -256,6 +256,16 @@ def _installer_leftovers(fn):
     return [p for p in _INSTALLER_LEFTOVERS if fn.path.exists(p)]
 
 
+def _is_vm(fn):
+    """True when running inside a virtual machine (systemd-detect-virt --vm)."""
+    try:
+        res = fn.subprocess.run(["systemd-detect-virt", "--vm", "--quiet"],
+                                capture_output=True, text=True, timeout=3)
+        return res.returncode == 0
+    except Exception:
+        return False
+
+
 def _oomd_state(fn):
     """Return (enabled, active) for systemd-oomd.service."""
     enabled = active = False
@@ -936,17 +946,23 @@ def gui(self, Gtk, vboxstack_dev, fn):
         # catch a specific bug: archiso can strip /boot/*-ucode.img while pacman
         # still records the package installed. So for each installed ucode
         # package, verify its /boot image is actually there.
+        # In a VM there is no real CPU to patch, so a missing image is expected,
+        # not a fault — mirror kiro-audit and report it benignly (PASS), don't
+        # scare the user with a red FAIL.
         _header("Microcode")
+        _vm = _is_vm(fn)
         _ucode_found = False
         for _vendor in ("intel", "amd"):
             if fn.check_package_installed(f"{_vendor}-ucode"):
                 _ucode_found = True
                 _img = fn.path.exists(f"/boot/{_vendor}-ucode.img")
-                _row(
-                    f"{_vendor}-ucode",
-                    f"/boot/{_vendor}-ucode.img" if _img else "installed but image MISSING in /boot (archiso stripped it?)",
-                    _state("pass" if _img else "fail"),
-                )
+                if _img:
+                    _value, _status = f"/boot/{_vendor}-ucode.img", "pass"
+                elif _vm:
+                    _value, _status = "image not in /boot — expected in a VM (no real CPU to patch)", "pass"
+                else:
+                    _value, _status = "installed but image MISSING in /boot (archiso stripped it?)", "fail"
+                _row(f"{_vendor}-ucode", _value, _state(_status))
         if not _ucode_found:
             _row("microcode package", "(none installed)", _state("warn"))
 

@@ -19,5 +19,4 @@ SOURCES = [
 
 def on_click_open(self, url, _widget):
     """Open a funding URL in the real user's default browser (drop root via sudo -u)."""
-    fn.log_info(f"Opening funding link: {url}")
-    fn.subprocess.Popen(["sudo", "-u", fn.sudo_username, "xdg-open", url])
+    fn.open_url_as_user(url)

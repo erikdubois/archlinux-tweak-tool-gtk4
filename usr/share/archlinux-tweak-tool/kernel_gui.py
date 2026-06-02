@@ -517,7 +517,7 @@ def _build_kernel_row(self, Gtk, vboxstack, fn, k, running_pkg, installed_pkgs, 
         btn_link.set_margin_start(10)
         btn_link.connect(
             "clicked",
-            lambda _b, u=url: fn.subprocess.Popen(["sudo", "-u", fn.sudo_username, "xdg-open", u]),
+            lambda _b, u=url: fn.open_url_as_user(u),
         )
         hbox_label.append(btn_link)
         fn.attach_link_context_menu(self, btn_link, url)
