@@ -1151,7 +1151,13 @@ def get_terminal_env():
         env["XDG_RUNTIME_DIR"] = xdg_runtime
         env["HOME"] = home
 
-        session_keys = {b"DISPLAY", b"WAYLAND_DISPLAY", b"DBUS_SESSION_BUS_ADDRESS", b"XDG_SESSION_TYPE"}
+        session_keys = {
+            b"DISPLAY",
+            b"WAYLAND_DISPLAY",
+            b"DBUS_SESSION_BUS_ADDRESS",
+            b"XDG_SESSION_TYPE",
+            b"XDG_CURRENT_DESKTOP",
+        }
         for pid in os.listdir("/proc"):
             env_file = f"/proc/{pid}/environ"
             if not os.path.isfile(env_file):
@@ -1199,22 +1205,103 @@ def user_session_env_assignments():
 
     Passed as arguments to `sudo` they survive its env sanitizing (unlike Popen env=).
     Covers both X11 and Wayland — `DISPLAY=:0` was hardcoded before and broke on Wayland.
+    XDG_CURRENT_DESKTOP is essential: without it xdg-open falls back to its generic
+    opener (which reads mimeapps.list / a hardcoded browser list and tends to open
+    Firefox) instead of the desktop-native opener (kde-open/gio) that honours the
+    user's real default browser.
     """
     env = get_terminal_env()
-    assignments = [f"XDG_RUNTIME_DIR={env['XDG_RUNTIME_DIR']}"]
-    for key in ("DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS"):
+    assignments = [
+        f"HOME={env['HOME']}",
+        f"XDG_RUNTIME_DIR={env['XDG_RUNTIME_DIR']}",
+    ]
+    for key in ("DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP"):
         val = env.get(key)
         if val:
             assignments.append(f"{key}={val}")
     return assignments
 
 
+def get_default_browser_desktop():
+    """Return the user's default browser .desktop id (e.g. 'brave-browser.desktop'), or ''.
+
+    Queried as the real user so it reads their config, not root's.
+    """
+    for query in (
+        ["xdg-settings", "get", "default-web-browser"],
+        ["xdg-mime", "query", "default", "x-scheme-handler/https"],
+    ):
+        try:
+            result = subprocess.run(
+                ["sudo", "-u", sudo_username, "-H", *user_session_env_assignments(), *query],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            value = result.stdout.strip().split(";")[0].strip()
+            if value.endswith(".desktop"):
+                return value
+        except Exception as error:
+            log_error(f"Error querying default browser ({query[0]}): {error}")
+    return ""
+
+
+def _desktop_exec_binary(desktop_id):
+    """Resolve a .desktop id to an executable (absolute path when possible), or ''."""
+    search_dirs = [
+        home + "/.local/share/applications",
+        "/usr/local/share/applications",
+        "/usr/share/applications",
+    ]
+    for d in search_dirs:
+        desktop_path = os.path.join(d, desktop_id)
+        if not os.path.isfile(desktop_path):
+            continue
+        try:
+            with open(desktop_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("Exec="):
+                        # Drop field codes (%u %U %f ...) and keep the program itself.
+                        tokens = [t for t in line[len("Exec="):].strip().split() if not t.startswith("%")]
+                        if tokens:
+                            prog = tokens[0]
+                            return prog if os.path.isabs(prog) else (shutil.which(prog) or prog)
+        except OSError:
+            continue
+    return ""
+
+
+def get_default_browser_binary():
+    """Best-effort executable for the user's default browser, else first installed browser."""
+    desktop_id = get_default_browser_desktop()
+    if desktop_id:
+        binary = _desktop_exec_binary(desktop_id)
+        if binary:
+            return binary
+    installed = get_installed_browsers()
+    if installed:
+        return installed[0][1]
+    return ""
+
+
 def open_url_as_user(url):
-    """Open a URL in the real user's default browser; correct on both X11 and Wayland."""
+    """Open a URL in the real user's default browser; correct on X11 and Wayland.
+
+    ATT runs as root, so the browser is launched as the real user. xdg-open is
+    unreliable across that privilege drop — on KDE it hands off to kde-open, whose
+    KIO/portal activation fails when spawned from a root process, so nothing opens.
+    Launching the resolved browser executable directly is reliable (it's the same
+    mechanism the right-click "Open with ..." menu uses), so we do that and only
+    fall back to xdg-open if no browser could be resolved.
+    """
     log_info(f"Opening URL: {url}")
+    binary = get_default_browser_binary()
+    if binary:
+        open_url_with_browser(url, binary)
+        return
     try:
         subprocess.Popen(
-            ["sudo", "-u", sudo_username, *user_session_env_assignments(), "xdg-open", url],
+            ["sudo", "-u", sudo_username, "-H", *user_session_env_assignments(), "xdg-open", url],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -2688,7 +2775,7 @@ def get_installed_browsers():
 def open_url_with_browser(url, binary):
     try:
         subprocess.Popen(
-            ["sudo", "-u", sudo_username, *user_session_env_assignments(), binary, url],
+            ["sudo", "-u", sudo_username, "-H", *user_session_env_assignments(), binary, url],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
