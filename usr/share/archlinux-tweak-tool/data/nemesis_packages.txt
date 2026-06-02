@@ -65,7 +65,7 @@ edu-arc-dawn-git
 edu-arc-kde
 kiro-awesome
 kiro-bspwm
-edu-chadwm-git
+kiro-chadwm
 edu-dot-files-git
 hblock
 edu-i3-git
