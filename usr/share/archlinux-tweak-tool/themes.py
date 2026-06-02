@@ -38,7 +38,7 @@ def install_themes(self):
     if self.arcolinux_arc_crimson.get_active():
         themes_to_install.append("arcolinux-arc-crimson-git")
     if self.arcolinux_arc_dawn.get_active():
-        themes_to_install.append("edu-arc-dawn-git")
+        themes_to_install.append("kiro-arc-dawn")
     if self.arcolinux_arc_dodger_blue.get_active():
         themes_to_install.append("arcolinux-arc-dodger-blue-git")
     if self.arcolinux_arc_dracul.get_active():
@@ -155,7 +155,7 @@ def remove_themes(self):
     if self.arcolinux_arc_crimson.get_active():
         themes_to_remove.append("arcolinux-arc-crimson-git")
     if self.arcolinux_arc_dawn.get_active():
-        themes_to_remove.append("edu-arc-dawn-git")
+        themes_to_remove.append("kiro-arc-dawn")
     if self.arcolinux_arc_dodger_blue.get_active():
         themes_to_remove.append("arcolinux-arc-dodger-blue-git")
     if self.arcolinux_arc_dracul.get_active():
@@ -320,7 +320,7 @@ def find_themes(self):
         self.arcolinux_arc_casablanca.set_active(True)
     if fn.check_package_installed("arcolinux-arc-crimson-git"):
         self.arcolinux_arc_crimson.set_active(True)
-    if fn.check_package_installed("edu-arc-dawn-git"):
+    if fn.check_package_installed("kiro-arc-dawn"):
         self.arcolinux_arc_dawn.set_active(True)
     if fn.check_package_installed("arcolinux-arc-dodger-blue-git"):
         self.arcolinux_arc_dodger_blue.set_active(True)

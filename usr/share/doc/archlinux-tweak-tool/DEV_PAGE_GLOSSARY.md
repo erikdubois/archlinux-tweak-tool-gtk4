@@ -220,7 +220,7 @@
 
 ## 5. Userspace tuning
 
-*Small tweaks shipped by `edu-system-files`. For any missing file, the fix is the same: `sudo pacman -S edu-system-files-git`.*
+*Small tweaks shipped by `kiro-system-files`. For any missing file, the fix is the same: `sudo pacman -S kiro-system-files`.*
 
 ### systemd-oomd (kills a runaway app before the desktop freezes)
 
@@ -233,27 +233,27 @@
 
 | Check                    | What it means                          | If it's red / ⚠                          |
 |--------------------------|----------------------------------------|------------------------------------------|
-| blacklist-intel-me.conf  | the blacklist file is in place         | reinstall `edu-system-files-git`         |
+| blacklist-intel-me.conf  | the blacklist file is in place         | reinstall `kiro-system-files`         |
 | mei/mei_me not loaded    | drivers actually unloaded              | rebuild initramfs (`sudo mkinitcpio -P`) + reboot |
 
 ### Bluetooth USB reset (fixes "BT dead after suspend")
 
 | Check                | What it means                          | If it's red                          |
 |----------------------|----------------------------------------|--------------------------------------|
-| bluetooth-usb.conf   | sets `btusb reset=1`                   | reinstall `edu-system-files-git`     |
+| bluetooth-usb.conf   | sets `btusb reset=1`                   | reinstall `kiro-system-files`     |
 
 ### Kernel zswap (off, so pages aren't compressed twice)
 
 | Check                | What it means                          | If it's red / Y                          |
 |----------------------|----------------------------------------|------------------------------------------|
-| disable-zswap.conf   | the tmpfile that turns zswap off       | reinstall `edu-system-files-git`         |
+| disable-zswap.conf   | the tmpfile that turns zswap off       | reinstall `kiro-system-files`         |
 | runtime state N/0    | zswap is off right now                 | `sudo systemd-tmpfiles --create /etc/tmpfiles.d/disable-zswap.conf` |
 
 ### NetworkManager loopback (silences a benign boot warning)
 
 | Check                | What it means                          | If it's red                          |
 |----------------------|----------------------------------------|--------------------------------------|
-| unmanaged-lo.conf    | stops NM managing `lo`                 | reinstall `edu-system-files-git`     |
+| unmanaged-lo.conf    | stops NM managing `lo`                 | reinstall `kiro-system-files`     |
 
 ---
 

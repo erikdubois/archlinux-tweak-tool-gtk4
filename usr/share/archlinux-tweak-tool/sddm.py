@@ -871,14 +871,14 @@ def on_click_remove_bibatar_cursor(self, _widget=None):
 
 
 def on_click_install_simplicity(self, _widget=None):
-    """Install the edu-sddm-simplicity-git theme and enable wallpaper widgets."""
-    fn.log_subsection("Install edu-sddm-simplicity-git")
-    fn.debug_print("Launching terminal to install edu-sddm-simplicity-git...")
+    """Install the kiro-sddm-simplicity theme and enable wallpaper widgets."""
+    fn.log_subsection("Install kiro-sddm-simplicity")
+    fn.debug_print("Launching terminal to install kiro-sddm-simplicity...")
     fn.show_in_app_notification(self, "Opening terminal to install Simplicity theme...")
-    process = fn.launch_pacman_install_in_terminal("edu-sddm-simplicity-git")
+    process = fn.launch_pacman_install_in_terminal("kiro-sddm-simplicity")
 
     def refresh():
-        if fn.check_package_installed("edu-sddm-simplicity-git"):
+        if fn.check_package_installed("kiro-sddm-simplicity"):
             fn.debug_print("Simplicity theme installed — enabling wallpaper widgets")
             for btn in (
                 self.btn_simplicity_browse,
@@ -908,14 +908,14 @@ def on_click_install_simplicity(self, _widget=None):
 
 
 def on_click_remove_simplicity(self, _widget=None):
-    """Remove the edu-sddm-simplicity-git theme and disable wallpaper widgets."""
-    fn.log_subsection("Remove edu-sddm-simplicity-git")
-    fn.debug_print("Launching terminal to remove edu-sddm-simplicity-git...")
+    """Remove the kiro-sddm-simplicity theme and disable wallpaper widgets."""
+    fn.log_subsection("Remove kiro-sddm-simplicity")
+    fn.debug_print("Launching terminal to remove kiro-sddm-simplicity...")
     fn.show_in_app_notification(self, "Opening terminal to remove Simplicity theme...")
-    process = fn.launch_pacman_remove_in_terminal("edu-sddm-simplicity-git")
+    process = fn.launch_pacman_remove_in_terminal("kiro-sddm-simplicity")
 
     def refresh():
-        if not fn.check_package_installed("edu-sddm-simplicity-git"):
+        if not fn.check_package_installed("kiro-sddm-simplicity"):
             theme_dir = "/usr/share/sddm/themes/edu-simplicity"
             if fn.path.isdir(theme_dir):
                 fn.shutil.rmtree(theme_dir, ignore_errors=True)

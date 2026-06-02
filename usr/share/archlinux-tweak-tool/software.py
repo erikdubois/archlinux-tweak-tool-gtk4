@@ -1115,27 +1115,27 @@ def on_click_software_archlinux_logout_remove(self, _widget):
 
 
 def on_click_software_powermenu(self, _widget):
-    """Install edu-powermenu-git and copy the skel config if missing."""
+    """Install kiro-powermenu and copy the skel config if missing."""
     try:
         if fn.path.exists("/usr/local/bin/edu-powermenu"):
             fn.log_info("edu-powermenu is already installed")
             fn.show_in_app_notification(self, "edu-powermenu is already installed")
             return
-        fn.log_subsection("Installing edu-powermenu-git...")
-        process = fn.launch_pacman_install_in_terminal("edu-powermenu-git")
-        GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installation started")
+        fn.log_subsection("Installing kiro-powermenu...")
+        process = fn.launch_pacman_install_in_terminal("kiro-powermenu")
+        GLib.idle_add(fn.show_in_app_notification, self, "kiro-powermenu installation started")
 
         def wait_install():
             try:
                 import time
 
-                fn.debug_print("Waiting for edu-powermenu-git installation to complete...")
+                fn.debug_print("Waiting for kiro-powermenu installation to complete...")
                 process.wait()
                 fn.invalidate_pkg_cache()
                 fn.debug_print("Installation process completed")
                 time.sleep(1)
                 if fn.path.exists("/usr/local/bin/edu-powermenu"):
-                    fn.log_success("edu-powermenu-git installed successfully")
+                    fn.log_success("kiro-powermenu installed successfully")
                     skel_src = "/etc/skel/.config/powermenu"
                     user_dst = fn.path.join(fn.home, ".config", "powermenu")
                     if fn.path.exists(skel_src) and not fn.path.exists(user_dst):
@@ -1146,10 +1146,10 @@ def on_click_software_powermenu(self, _widget):
                     GLib.idle_add(
                         self.lbl_software_powermenu.set_markup, "powermenu - Power menu for twms <b>installed</b>"
                     )
-                    GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git installed")
+                    GLib.idle_add(fn.show_in_app_notification, self, "kiro-powermenu installed")
                 else:
                     fn.log_warn("edu-powermenu binary NOT found, installation may have failed")
-                    fn.check_missing_repo_error(self, "", "edu-powermenu-git")
+                    fn.check_missing_repo_error(self, "", "kiro-powermenu")
             except Exception as e:
                 fn.log_error(f"Error during installation: {e}")
 
@@ -1159,18 +1159,18 @@ def on_click_software_powermenu(self, _widget):
 
 
 def on_click_software_powermenu_remove(self, _widget):
-    """Remove the edu-powermenu-git package."""
+    """Remove the kiro-powermenu package."""
     try:
-        fn.log_subsection("Removing edu-powermenu-git...")
-        process = fn.launch_pacman_remove_in_terminal("edu-powermenu-git")
-        GLib.idle_add(fn.show_in_app_notification, self, "edu-powermenu-git removal started")
+        fn.log_subsection("Removing kiro-powermenu...")
+        process = fn.launch_pacman_remove_in_terminal("kiro-powermenu")
+        GLib.idle_add(fn.show_in_app_notification, self, "kiro-powermenu removal started")
         fn.wait_remove_and_update(
             process,
             "/usr/local/bin/edu-powermenu",
             self.lbl_software_powermenu,
             "powermenu - Power menu for twms",
             self,
-            "edu-powermenu-git removal complete",
+            "kiro-powermenu removal complete",
         )
     except Exception as error:
         fn.log_error(f"Error with edu-powermenu removal: {error}")

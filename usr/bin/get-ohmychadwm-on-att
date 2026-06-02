@@ -25,9 +25,9 @@ packages=(
     alacritty
     archlinux-logout-gtk4-git
     dmenu
-    edu-rofi-git
-    edu-rofi-themes-git
-    edu-xfce-git
+    kiro-rofi
+    kiro-rofi-themes
+    kiro-xfce
     feh
     lxappearance
     noto-fonts-cjk

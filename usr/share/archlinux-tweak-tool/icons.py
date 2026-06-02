@@ -699,14 +699,14 @@ def set_att_checkboxes_neocandy_none(self):
 def _collect_neocandy_packages(self):
     pairs = [
         (self.att_candy_beauty, "neo-candy-icons-git"),
-        (self.edu_candy_beauty_arc, "edu-neo-candy-arc-git"),
-        (self.edu_candy_beauty_arc_mint_grey, "edu-neo-candy-arc-mint-grey-git"),
-        (self.edu_candy_beauty_arc_mint_red, "edu-neo-candy-arc-mint-red-git"),
-        (self.edu_candy_beauty_tela, "edu-neo-candy-tela-git"),
-        (self.edu_papirus_dark_tela, "edu-papirus-dark-tela-git"),
-        (self.edu_papirus_dark_tela_grey, "edu-papirus-dark-tela-grey-git"),
-        (self.edu_vimix_dark_tela, "edu-vimix-dark-tela-git"),
-        (self.edu_neo_candy_qogir, "edu-neo-candy-qogir-git"),
+        (self.edu_candy_beauty_arc, "kiro-neo-candy-arc"),
+        (self.edu_candy_beauty_arc_mint_grey, "kiro-neo-candy-arc-mint-grey"),
+        (self.edu_candy_beauty_arc_mint_red, "kiro-neo-candy-arc-mint-red"),
+        (self.edu_candy_beauty_tela, "kiro-neo-candy-tela"),
+        (self.edu_papirus_dark_tela, "kiro-papirus-dark-tela"),
+        (self.edu_papirus_dark_tela_grey, "kiro-papirus-dark-tela-grey"),
+        (self.edu_vimix_dark_tela, "kiro-vimix-dark-tela"),
+        (self.edu_neo_candy_qogir, "kiro-neo-candy-qogir"),
     ]
     return [pkg for cb, pkg in pairs if cb.get_active()]
 
@@ -744,21 +744,21 @@ def find_att_neocandy(self):
 
     if fn.check_package_installed("neo-candy-icons-git"):
         self.att_candy_beauty.set_active(True)
-    if fn.check_package_installed("edu-neo-candy-arc-git"):
+    if fn.check_package_installed("kiro-neo-candy-arc"):
         self.edu_candy_beauty_arc.set_active(True)
-    if fn.check_package_installed("edu-neo-candy-arc-mint-grey-git"):
+    if fn.check_package_installed("kiro-neo-candy-arc-mint-grey"):
         self.edu_candy_beauty_arc_mint_grey.set_active(True)
-    if fn.check_package_installed("edu-neo-candy-arc-mint-red-git"):
+    if fn.check_package_installed("kiro-neo-candy-arc-mint-red"):
         self.edu_candy_beauty_arc_mint_red.set_active(True)
-    if fn.check_package_installed("edu-neo-candy-tela-git"):
+    if fn.check_package_installed("kiro-neo-candy-tela"):
         self.edu_candy_beauty_tela.set_active(True)
-    if fn.check_package_installed("edu-papirus-dark-tela-git"):
+    if fn.check_package_installed("kiro-papirus-dark-tela"):
         self.edu_papirus_dark_tela.set_active(True)
-    if fn.check_package_installed("edu-papirus-dark-tela-grey-git"):
+    if fn.check_package_installed("kiro-papirus-dark-tela-grey"):
         self.edu_papirus_dark_tela_grey.set_active(True)
-    if fn.check_package_installed("edu-vimix-dark-tela-git"):
+    if fn.check_package_installed("kiro-vimix-dark-tela"):
         self.edu_vimix_dark_tela.set_active(True)
-    if fn.check_package_installed("edu-neo-candy-qogir-git"):
+    if fn.check_package_installed("kiro-neo-candy-qogir"):
         self.edu_neo_candy_qogir.set_active(True)
 
     installed = _collect_neocandy_packages(self)

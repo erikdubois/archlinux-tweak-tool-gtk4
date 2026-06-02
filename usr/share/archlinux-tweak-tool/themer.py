@@ -193,7 +193,7 @@ def set_awesome_theme(lines, val):
 
 def get_qtile_themes(combo, lines):
     """Populate combo with qtile theme names and select the active one."""
-    if fn.check_package_installed("edu-qtile-git"):
+    if fn.check_package_installed("kiro-qtile"):
         try:
             menu = [x for x in fn.os.listdir(fn.home + "/.config/qtile/themes/") if ".theme" in x]
             sorted_menu = sorted(menu)
@@ -214,7 +214,7 @@ def get_qtile_themes(combo, lines):
 
 def set_qtile_themes(lines, theme):
     """Write the selected qtile color block into the qtile config."""
-    if fn.check_package_installed("edu-qtile-git"):
+    if fn.check_package_installed("kiro-qtile"):
         try:
             pos1 = fn.get_position(lines, "# COLORS FOR THE BAR")
             pos2 = fn.get_position(lines, "colors = init_colors()")
@@ -245,7 +245,7 @@ def set_qtile_themes(lines, theme):
 
 def get_leftwm_themes(combo, lines):
     """Populate combo with leftwm theme names and select the active one."""
-    if fn.check_package_installed("edu-leftwm-git"):
+    if fn.check_package_installed("kiro-leftwm"):
         try:
             menu = [x for x in fn.os.listdir(fn.home + "/.config/leftwm/themes/") if ".theme" in x]
             sorted_menu = sorted(menu)

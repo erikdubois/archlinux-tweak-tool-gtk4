@@ -15,7 +15,7 @@ def init_themer_lazy_load(self, fn):
 
         start = time.time()
         if hasattr(self, "poly"):
-            if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed("edu-i3-git"):
+            if fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed("kiro-i3"):
                 if themer.check_polybar(themer.get_list(fn.i3wm_config)):
                     self.poly.set_active(True)
         elapsed = time.time() - start
@@ -28,7 +28,7 @@ def refresh_themer_dropdowns(self, fn, themer):
     """Repopulate all WM theme combos and update their sensitivity."""
     fn.log_info("Refreshing themer dropdowns after desktop change...")
 
-    i3_ok = fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed("edu-i3-git")
+    i3_ok = fn.os.path.isfile(fn.i3wm_config) and fn.check_package_installed("kiro-i3")
     if i3_ok:
         i3_list = themer.get_list(fn.i3wm_config)
         themer.get_i3_themes(self.i3_combo, i3_list)
@@ -62,7 +62,7 @@ def refresh_themer_dropdowns(self, fn, themer):
     self.applyawesome.set_sensitive(aw_ok)
     self.resetawesome.set_sensitive(aw_ok)
 
-    qt_ok = fn.path_check(fn.qtile_config_theme) and fn.check_package_installed("edu-qtile-git")
+    qt_ok = fn.path_check(fn.qtile_config_theme) and fn.check_package_installed("kiro-qtile")
     if qt_ok:
         qtile_list = themer.get_list(fn.qtile_config)
         themer.get_qtile_themes(self.qtile_combo, qtile_list)
@@ -72,7 +72,7 @@ def refresh_themer_dropdowns(self, fn, themer):
     self.applyqtile.set_sensitive(qt_ok)
     self.resetqtile.set_sensitive(qt_ok)
 
-    lft_ok = fn.os.path.isfile(fn.leftwm_config) and fn.check_package_installed("edu-leftwm-git")
+    lft_ok = fn.os.path.isfile(fn.leftwm_config) and fn.check_package_installed("kiro-leftwm")
     if lft_ok and fn.path_check(fn.leftwm_config_theme_current):
         lft_model = self.leftwm_combo.get_model()
         lft_model.splice(0, lft_model.get_n_items(), list(fn.leftwm_themes_list))

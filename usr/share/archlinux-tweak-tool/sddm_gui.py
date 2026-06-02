@@ -7,7 +7,7 @@ import functools
 
 def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
     """Create the SDDM login manager configuration GUI."""
-    _pkg = fn.check_packages_installed(["sddm", "sddm-git", "edu-sddm-simplicity-git"])
+    _pkg = fn.check_packages_installed(["sddm", "sddm-git", "kiro-sddm-simplicity"])
 
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
@@ -63,7 +63,7 @@ def gui(self, Gtk, Pango, vboxstack_sddm, sddm, fn):
         vboxstack_sddm.append(hbox_sep_config)
 
         if fn.path.isfile(fn.sddm_default_d2):
-            simplicity_installed = _pkg["edu-sddm-simplicity-git"]
+            simplicity_installed = _pkg["kiro-sddm-simplicity"]
 
             hbox_section_login = _build_section_title(Gtk, "Login Settings")
 

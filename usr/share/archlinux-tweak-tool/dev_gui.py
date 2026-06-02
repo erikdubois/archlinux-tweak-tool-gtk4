@@ -839,16 +839,16 @@ def gui(self, Gtk, vboxstack_dev, fn):
 
         # ── Themer ───────────────────────────────────────────────────
         _header("Themer")
-        for _t in ("kiro-awesome", "edu-i3-git", "edu-leftwm-git", "edu-qtile-git"):
+        for _t in ("kiro-awesome", "kiro-i3", "kiro-leftwm", "kiro-qtile"):
             _pkg(_t)
 
         # ── Themes ───────────────────────────────────────────────────
-        # ArcoLinux is obsolete — themes ship as edu-arc-* now (per HQ
+        # ArcoLinux is obsolete — themes ship as kiro-arc-* now (per HQ
         # project memory). Don't reintroduce an arcolinux-arc-* check.
         _header("Themes")
-        _n_edu = _count_pkgs_matching(fn, "edu-arc-") + _count_pkgs_matching(fn, "edu-neo-candy-") \
-                 + _count_pkgs_matching(fn, "edu-papirus-") + _count_pkgs_matching(fn, "edu-vimix-")
-        _row("edu-* GTK themes", _n_edu, _yes(_n_edu > 0))
+        _n_kiro = _count_pkgs_matching(fn, "kiro-arc-") + _count_pkgs_matching(fn, "kiro-neo-candy-") \
+                  + _count_pkgs_matching(fn, "kiro-papirus-") + _count_pkgs_matching(fn, "kiro-vimix-")
+        _row("kiro-* GTK themes", _n_kiro, _yes(_n_kiro > 0))
 
         # ── User ─────────────────────────────────────────────────────
         _header("User")
@@ -1011,7 +1011,7 @@ def gui(self, Gtk, vboxstack_dev, fn):
             _row("failed units", "0", _state("pass"))
 
         # ════════════════════════════════════════════════════════════════
-        # 5. Userspace tuning — 5 items shipped by edu-system-files that
+        # 5. Userspace tuning — 5 items shipped by kiro-system-files that
         #    influence behaviour without depending on a specific kernel.
         # ════════════════════════════════════════════════════════════════
         _group("Userspace tuning")
