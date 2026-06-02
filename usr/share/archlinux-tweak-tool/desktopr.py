@@ -39,7 +39,7 @@ copy = ["cp", "-Rv"]
 if fn.distr:
     awesome = [
         "alacritty",
-        "edu-awesome-git",
+        "kiro-awesome",
         "awesome",
         "dmenu",
         "edu-xfce-git",

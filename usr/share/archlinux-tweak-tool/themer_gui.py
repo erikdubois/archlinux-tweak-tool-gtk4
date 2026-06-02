@@ -39,7 +39,7 @@ def refresh_themer_dropdowns(self, fn, themer):
     self.reseti3.set_sensitive(i3_ok)
     self.poly.set_sensitive(i3_ok)
 
-    aw_ok = fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed("edu-awesome-git")
+    aw_ok = fn.os.path.isfile(fn.awesome_config) and fn.check_package_installed("kiro-awesome")
     if aw_ok:
         try:
             awesome_list = themer.get_list(fn.awesome_config)

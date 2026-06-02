@@ -839,7 +839,7 @@ def gui(self, Gtk, vboxstack_dev, fn):
 
         # ── Themer ───────────────────────────────────────────────────
         _header("Themer")
-        for _t in ("edu-awesome-git", "edu-i3-git", "edu-leftwm-git", "edu-qtile-git"):
+        for _t in ("kiro-awesome", "edu-i3-git", "edu-leftwm-git", "edu-qtile-git"):
             _pkg(_t)
 
         # ── Themes ───────────────────────────────────────────────────
