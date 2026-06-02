@@ -18,6 +18,30 @@ def desktop_display_name(desktop):
     """Return the human-friendly name for a desktop identifier."""
     return _DESKTOP_DISPLAY_NAMES.get(desktop, desktop.capitalize())
 
+
+# /etc/environment vars that override Plasma's own theming: the QT_* pair forces a
+# non-Breeze platform theme/style (triggering Plasma's yellow "unable to apply" warning
+# popup), and GTK_THEME forces GTK apps dark regardless of Plasma's settings.
+_PLASMA_CONFLICTING_ENV_VARS = ("QT_QPA_PLATFORMTHEME", "QT_STYLE_OVERRIDE", "GTK_THEME")
+
+
+def conflicting_plasma_env_lines():
+    """Return uncommented /etc/environment lines that clash with Plasma theming."""
+    found = []
+    try:
+        with open("/etc/environment", encoding="utf-8") as env_file:
+            for line in env_file:
+                stripped = line.strip()
+                if stripped.startswith("#") or "=" not in stripped:
+                    continue
+                key = stripped.split("=", 1)[0].strip()
+                if key in _PLASMA_CONFLICTING_ENV_VARS:
+                    found.append(stripped)
+    except OSError as error:
+        fn.log_warn(f"Could not read /etc/environment to check for Plasma theming conflicts: {error}")
+    return found
+
+
 # =================================================================
 # =                         Desktops                             =
 # =================================================================
@@ -276,6 +300,7 @@ if fn.distr:
     plasma = [
         "plasma",
         "kde-system-meta",
+        "konsole",
     ]
     qtile = [
         "alacritty",
@@ -485,9 +510,7 @@ def install_desktop(self, desktop, on_complete=None):
     # dirs in `src` (TWMs only); pacman never touches the user's home. Backing
     # those up covers everything at risk — no need for a full ~/.config copy,
     # which got slow as caches grew (mirrors the kiro-skell scoped approach).
-    to_backup = [
-        fn.path.basename(p) for p in src if fn.path.exists(fn.home + "/.config/" + fn.path.basename(p))
-    ]
+    to_backup = [fn.path.basename(p) for p in src if fn.path.exists(fn.home + "/.config/" + fn.path.basename(p))]
     if to_backup:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         backup_dir = fn.home + "/.config-att/config-att-" + timestamp
@@ -932,11 +955,31 @@ def on_install_clicked(self, _widget):
             buttons=Gtk.ButtonsType.YES_NO,
             text=f"Installing {de_name} is a one-way operation",
         )
-        dialog.props.secondary_text = (
+        secondary_text = (
             f"{de_name} cannot be removed through ATT once installed.\n"
             "A fresh system reinstall is required to completely remove it.\n\n"
-            "Do you want to continue?"
         )
+        if desktop == "plasma":
+            conflicting_lines = conflicting_plasma_env_lines()
+            if conflicting_lines:
+                lines_block = "\n".join(f"    {line}" for line in conflicting_lines)
+                secondary_text += (
+                    "IMPORTANT — Plasma theming:\n"
+                    "Your /etc/environment sets variables that override Plasma's own theme. "
+                    "Left active, Plasma shows dark elements and a yellow warning notification/popup. "
+                    "After installing, edit /etc/environment, put a '#' in front of these lines, "
+                    "then log out and back in:\n"
+                    f"{lines_block}\n\n"
+                )
+                fn.log_warn(
+                    "Plasma: /etc/environment has theme-override variables that should be commented out — "
+                    + ", ".join(conflicting_lines)
+                )
+                fn.show_in_app_notification(
+                    self, "Plasma: comment out the QT_*/GTK_THEME lines in /etc/environment to avoid theming issues"
+                )
+        secondary_text += "Do you want to continue?"
+        dialog.props.secondary_text = secondary_text
         result_holder = [None]
         loop = GLib.MainLoop()
 
