@@ -64,7 +64,7 @@ cpuid
 edu-arc-dawn-git
 edu-arc-kde
 kiro-awesome
-edu-bspwm-git
+kiro-bspwm
 edu-chadwm-git
 edu-dot-files-git
 hblock

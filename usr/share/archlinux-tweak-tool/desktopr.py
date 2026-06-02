@@ -59,7 +59,7 @@ if fn.distr:
     ]
     bspwm = [
         "alacritty",
-        "edu-bspwm-git",
+        "kiro-bspwm",
         "edu-xfce-git",
         "edu-polybar-git",
         "archlinux-logout-gtk4-git",
