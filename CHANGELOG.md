@@ -1,5 +1,20 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.02 — Desktop page: warn about /etc/environment theme overrides on Plasma install
+
+### What Changed
+
+Installing **Plasma** through the Desktop page now warns the user about `/etc/environment` variables that override Plasma's own theming. Variables like `QT_QPA_PLATFORMTHEME`, `QT_STYLE_OVERRIDE` (force a non-Breeze platform theme/style → Plasma's yellow "unable to apply" warning notification/popup) and `GTK_THEME` (forces GTK apps dark regardless of Plasma's settings → dark elements) make for a frustrating first Plasma experience if the user doesn't know to disable them. Two places now surface this: (1) the existing pre-install one-way-install warning dialog lists the **actual** offending lines and tells the user to comment them out (put `#` in front) and log out/in; (2) a dedicated **post-install** message box pops up once the Plasma install finishes, repeating the same instruction so it isn't missed in the pre-install confirmation. Inform-only — ATT does not edit the file. Shown only when those lines are genuinely present, and only for Plasma (not GNOME); the post-install box is suppressed during "install all desktops".
+
+### Technical Details
+
+- **`desktopr.py`:** new `conflicting_plasma_env_lines()` helper reads `/etc/environment` and returns the uncommented lines whose key is in `_PLASMA_CONFLICTING_ENV_VARS` (`QT_QPA_PLATFORMTHEME`, `QT_STYLE_OVERRIDE`, `GTK_THEME`); skips commented/blank lines and `log_warn`s on an unreadable file. `on_install_clicked` builds its dialog `secondary_text` incrementally: for Plasma it appends an "IMPORTANT — Plasma theming" block listing the found lines, plus a `log_warn` and an in-app notification. New `show_plasma_env_dialog(self)` builds a standalone WARNING message box (non-blocking — `response` → `destroy`, no nested `MainLoop`) listing the lines; `_after_install` schedules it via `GLib.idle_add` in the success branch, gated on `on_complete is None and desktop == "plasma"` so it fires only for an interactive single Plasma install, never during bulk "install all". No false claims for users who don't have those lines set. Complements the existing Plasma path that already removes the `qt5ct` *package* (which does not clear the matching `/etc/environment` line).
+- `ruff check` clean; syntax validated.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/desktopr.py`
+
 ## 2026.06.02 — Fix: links don't open on Plasma/Wayland (AI tools, funding, kernel)
 
 ### What Changed

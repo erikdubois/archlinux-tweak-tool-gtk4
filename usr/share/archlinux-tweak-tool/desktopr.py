@@ -392,6 +392,33 @@ def check_desktop(desktop):
     return False
 
 
+def show_plasma_env_dialog(self):
+    """Post-install dialog telling the user to comment out Plasma-conflicting /etc/environment vars."""
+    conflicting_lines = conflicting_plasma_env_lines()
+    if not conflicting_lines:
+        return False
+    lines_block = "\n".join(f"    {line}" for line in conflicting_lines)
+    dialog = Gtk.MessageDialog(
+        transient_for=self,
+        message_type=Gtk.MessageType.WARNING,
+        buttons=Gtk.ButtonsType.OK,
+        text="Plasma installed — one more step for correct theming",
+    )
+    dialog.props.secondary_text = (
+        "Your /etc/environment sets variables that override Plasma's own theme. "
+        "Left active, Plasma shows dark elements and a yellow warning notification/popup.\n\n"
+        "Edit /etc/environment, put a '#' in front of these lines, then log out and back in:\n"
+        f"{lines_block}"
+    )
+    dialog.connect("response", lambda d, _r: d.destroy())
+    dialog.show()
+    fn.log_warn(
+        "Plasma installed — reminder shown to comment out /etc/environment theme overrides: "
+        + ", ".join(conflicting_lines)
+    )
+    return False
+
+
 def check_lock(self, desktop):
     if fn.path.isfile("/var/lib/pacman/db.lck"):
         mess_dialog = Gtk.MessageDialog(
@@ -609,6 +636,8 @@ def install_desktop(self, desktop, on_complete=None):
                 self,
                 f"{desktop} has been installed",
             )
+            if on_complete is None and desktop == "plasma":
+                GLib.idle_add(show_plasma_env_dialog, self)
             fn.debug_print("Installation complete — config backed up to ~/.config-att/")
         else:
             not_found = []
