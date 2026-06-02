@@ -145,20 +145,16 @@ Remove it yourself if no longer needed\n"
     frame.set_child(self.image_DE)
 
     # =======================================
-    #           PLASMA WARNING LABEL
+    #        ONE-WAY INSTALL WARNING LABEL
     # =======================================
 
-    self.hbox_plasma_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    self.hbox_plasma_warning.set_halign(Gtk.Align.CENTER)
-    self.hbox_plasma_warning.set_margin_top(4)
-    self.lbl_plasma_warning = Gtk.Label()
-    self.lbl_plasma_warning.set_markup(
-        '<span foreground="#FFA500"><b>WARNING: Installing Plasma is a one-way operation'
-        " — removal requires a system reinstall</b></span>"
-    )
-    self.lbl_plasma_warning.set_halign(Gtk.Align.CENTER)
-    self.hbox_plasma_warning.append(self.lbl_plasma_warning)
-    self.hbox_plasma_warning.set_visible(False)
+    self.hbox_oneway_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.hbox_oneway_warning.set_halign(Gtk.Align.CENTER)
+    self.hbox_oneway_warning.set_margin_top(4)
+    self.lbl_oneway_warning = Gtk.Label()
+    self.lbl_oneway_warning.set_halign(Gtk.Align.CENTER)
+    self.hbox_oneway_warning.append(self.lbl_oneway_warning)
+    self.hbox_oneway_warning.set_visible(False)
 
     # =======================================
     #           BACKUP NOTICE LABEL
@@ -186,7 +182,7 @@ Remove it yourself if no longer needed\n"
     frame.set_margin_end(0)
     vbox.append(frame)
     vbox.append(checkbox)
-    vbox.append(self.hbox_plasma_warning)
+    vbox.append(self.hbox_oneway_warning)
     vbox.append(buttonbox)
     vbox.append(uninstall_hbox)
     vbox.append(vboxprog)
@@ -250,19 +246,25 @@ def update_button_state(self, fn):
         )
 
     if hasattr(self, "button_uninstall"):
-        if selected == "plasma":
+        if selected in desktopr.ONE_WAY_DESKTOPS:
+            de_name = desktopr.desktop_display_name(selected)
             self.button_uninstall.set_sensitive(False)
             self.button_uninstall.set_tooltip_text(
-                "Plasma cannot be safely removed — reinstall the system to switch desktop environments"
+                f"{de_name} cannot be safely removed — reinstall the system to switch desktop environments"
             )
         else:
             self.button_uninstall.set_sensitive(True)
             self.button_uninstall.set_tooltip_text("")
 
-    if hasattr(self, "hbox_plasma_warning"):
-        if selected == "plasma":
-            self.hbox_plasma_warning.set_visible(True)
-            fn.log_warn("Plasma selected — installing is a one-way operation; removal requires a full system reinstall")
-            fn.show_in_app_notification(self, "WARNING: Installing Plasma is a one-way operation — removal requires a system reinstall")
+    if hasattr(self, "hbox_oneway_warning"):
+        if selected in desktopr.ONE_WAY_DESKTOPS:
+            de_name = desktopr.desktop_display_name(selected)
+            self.lbl_oneway_warning.set_markup(
+                f'<span foreground="#FFA500"><b>WARNING: Installing {de_name} is a one-way operation'
+                " — removal requires a system reinstall</b></span>"
+            )
+            self.hbox_oneway_warning.set_visible(True)
+            fn.log_warn(f"{de_name} selected — installing is a one-way operation; removal requires a full system reinstall")
+            fn.show_in_app_notification(self, f"WARNING: Installing {de_name} is a one-way operation — removal requires a system reinstall")
         else:
-            self.hbox_plasma_warning.set_visible(False)
+            self.hbox_oneway_warning.set_visible(False)

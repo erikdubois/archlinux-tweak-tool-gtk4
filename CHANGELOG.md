@@ -1,5 +1,23 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.02 — Desktop page: GNOME is now a one-way install (Plasma parity)
+
+### What Changed
+
+Selecting **GNOME** on the Desktop page now carries the same one-way-install safeguard Plasma already had: an orange warning label + in-app notification on select, the **Remove** button greyed out with an explanatory tooltip, a WARNING Yes/No confirmation dialog before installing, and removal through ATT blocked entirely. Installing GNOME (like Plasma) requires a full system reinstall to undo.
+
+### Technical Details
+
+- **`desktopr.py`:** introduced `ONE_WAY_DESKTOPS = ("plasma", "gnome")`, a `_DESKTOP_DISPLAY_NAMES` map, and a `desktop_display_name()` helper (so GNOME renders as "GNOME", not "Gnome"). Both `on_install_clicked` (confirmation dialog) and `on_uninstall_clicked` (removal block) now test `desktop in ONE_WAY_DESKTOPS` and build all user-facing text from `desktop_display_name(desktop)`. The install dialog's response callback renamed `on_plasma_warn_response` → `on_oneway_warn_response`. Removal mechanics (`-Rdd` force-flag, dev-only "remove all") left unchanged — matching prior Plasma behaviour.
+- **`desktopr_gui.py`:** generalised the Plasma-only warning widget — `hbox_plasma_warning`/`lbl_plasma_warning` renamed to `hbox_oneway_warning`/`lbl_oneway_warning`; its markup is now set dynamically in `update_button_state` from `desktopr.desktop_display_name(selected)`. Both `selected == "plasma"` checks (Remove-button sensitivity/tooltip and warning-label visibility) changed to `selected in desktopr.ONE_WAY_DESKTOPS`.
+- The unrelated `themes_gui.py` "On Plasma these themes will not work" warning is a separate widget and was left untouched.
+- `ruff check` clean on both files; both compile clean.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/desktopr.py`
+- `usr/share/archlinux-tweak-tool/desktopr_gui.py`
+
 ## 2026.06.01 — Desktop page: dev-mode "Install all twms" button
 
 ### What Changed

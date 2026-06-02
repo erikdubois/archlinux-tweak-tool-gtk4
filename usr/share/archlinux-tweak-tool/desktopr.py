@@ -9,6 +9,15 @@ import functions as fn
 
 default_app = ["nano", "ttf-hack"]
 
+# Desktops whose install is one-way — removal requires a full system reinstall.
+ONE_WAY_DESKTOPS = ("plasma", "gnome")
+_DESKTOP_DISPLAY_NAMES = {"plasma": "Plasma", "gnome": "GNOME"}
+
+
+def desktop_display_name(desktop):
+    """Return the human-friendly name for a desktop identifier."""
+    return _DESKTOP_DISPLAY_NAMES.get(desktop, desktop.capitalize())
+
 # =================================================================
 # =                         Desktops                             =
 # =================================================================
@@ -914,33 +923,34 @@ def on_install_clicked(self, _widget):
     desktop = fn.get_combo_text(self.d_combo)
     fn.debug_print("installing " + desktop)
 
-    if desktop == "plasma":
-        fn.log_warn("Plasma is a one-way install — removal requires a full system reinstall")
+    if desktop in ONE_WAY_DESKTOPS:
+        de_name = desktop_display_name(desktop)
+        fn.log_warn(f"{de_name} is a one-way install — removal requires a full system reinstall")
         dialog = Gtk.MessageDialog(
             transient_for=self,
             message_type=Gtk.MessageType.WARNING,
             buttons=Gtk.ButtonsType.YES_NO,
-            text="Installing Plasma is a one-way operation",
+            text=f"Installing {de_name} is a one-way operation",
         )
         dialog.props.secondary_text = (
-            "Plasma cannot be removed through ATT once installed.\n"
+            f"{de_name} cannot be removed through ATT once installed.\n"
             "A fresh system reinstall is required to completely remove it.\n\n"
             "Do you want to continue?"
         )
         result_holder = [None]
         loop = GLib.MainLoop()
 
-        def on_plasma_warn_response(d, response_id):
+        def on_oneway_warn_response(d, response_id):
             result_holder[0] = response_id
             loop.quit()
             d.destroy()
 
-        dialog.connect("response", on_plasma_warn_response)
+        dialog.connect("response", on_oneway_warn_response)
         dialog.show()
         loop.run()
 
         if result_holder[0] != Gtk.ResponseType.YES:
-            fn.log_warn("Plasma install cancelled by user")
+            fn.log_warn(f"{de_name} install cancelled by user")
             return
 
     check_lock(self, desktop)
@@ -951,9 +961,10 @@ def on_uninstall_clicked(self, _widget):
     desktop = fn.get_combo_text(self.d_combo)
     fn.log_subsection(f"Uninstall Desktop: {desktop}")
 
-    if desktop == "plasma":
-        fn.log_warn("Plasma removal is not supported — a fresh system reinstall is required to remove Plasma")
-        fn.show_in_app_notification(self, "Plasma cannot be removed — reinstall system to switch DEs")
+    if desktop in ONE_WAY_DESKTOPS:
+        de_name = desktop_display_name(desktop)
+        fn.log_warn(f"{de_name} removal is not supported — a fresh system reinstall is required to remove {de_name}")
+        fn.show_in_app_notification(self, f"{de_name} cannot be removed — reinstall system to switch DEs")
         return
 
     if not check_desktop(desktop):
