@@ -297,6 +297,7 @@
         "daemon",
         "deepin",
         "default",
+        "detect",
         "dev",
         "diagnostics",
         "discover",
@@ -374,6 +375,7 @@
         "uname",
         "unknown",
         "variety",
+        "virt",
         "warn",
         "webui",
         "wireplumber",
@@ -658,7 +660,6 @@
         "x64v4",
         "x86",
         "xanmod",
-        "xdg",
         "zen",
         "znver2",
         "znver3",
@@ -1740,7 +1741,6 @@
         "recurring",
         "sponsors",
         "tiers",
-        "xdg",
         "youtube"
       ]
     },
