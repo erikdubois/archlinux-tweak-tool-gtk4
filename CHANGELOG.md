@@ -1,5 +1,27 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.03 — New Btrfs page: one-click snapshot setup (btrfs roots only)
+
+### What Changed
+
+A new **Btrfs** page installs and configures the snapshot stack on a btrfs system, opt-in and in one step. It is visible **only when the root filesystem is btrfs** (or with `--dev`, so it can be worked on from a non-btrfs dev box) — on every other system the page is not added to the sidebar, so the btrfs check replaces a pure `--dev` gate with an honest capability check (today a btrfs root is effectively just the Kiro dev/test installs). The page mirrors Garuda's snapper-based stack (`snapper` + `snap-pac` + `btrfs-assistant` + `btrfsmaintenance`) but applies Kiro's policy: a snapshot pair on every `pacman` action via snap-pac, **no** hourly timeline snapshots, with cleanup pruning old pairs. Kiro pre-stages the `@`-prefixed subvolume layout (incl. `@snapshots` → `/.snapshots`) at install time, so the disk is snapshot-ready and the page only has to install + configure on top. True to ATT's no-black-boxes rule, the whole install+configure sequence runs in a **visible Alacritty window** — the user watches every command. A status panel shows live state (tools installed, snapper root config, cleanup timer, btrfsmaintenance) and a "Launch Btrfs Assistant" button opens the GUI front-end. The configure path (`snapper -c root create-config /`) was validated on a real btrfs + LUKS-encryption VM install.
+
+### Technical Details
+
+- **New `btrfs.py`:** detection (`is_btrfs_root`, `snapper_root_configured`, `all_packages_installed`) + callbacks. `on_click_enable_snapshots` launches the visible setup terminal and waits on the process in a daemon thread, then `invalidate_pkg_cache()` + refresh (the documented `wait_and_refresh` pattern). `on_click_launch_assistant` gates on the package being installed before `Popen(["btrfs-assistant"])`.
+- **New `btrfs_gui.py`:** the page UI (title + intro + status panel + actions + systemd-boot rollback caveat) and a `refresh()` that re-renders each status row green/orange from live state; called at build time and after setup.
+- **`functions.py`:** new `get_root_filesystem_type()` (reads `/proc/mounts`; used by the visibility gate without importing `performance`, whose construction path carries subprocess calls) and `launch_btrfs_setup_in_terminal()` — modelled on `launch_pacman_install_in_terminal`, builds the echoed install+configure script (idempotent: skips `create-config` if `/etc/snapper/configs/root` exists; enables `btrfsmaintenance-refresh.path` only if present) and `Popen`s Alacritty with a `read -p` close prompt.
+- **`gui.py`:** imports `btrfs` + `btrfs_gui`, adds `vboxstack_btrfs` + a lazy `_defer_tab`, and guards `add_titled(..., "Btrfs")` with `if fn.DEV or btrfs.is_btrfs_root()`, placed alphabetically between Autostart and Desktop.
+- The setup script is idempotent: skips `create-config` and the "Kiro baseline" snapshot when they already exist, and runs `btrfsmaintenance-refresh.service` once after enabling the `.path` so the scrub/balance timers are installed immediately (the `.path` alone only refreshes on a later config change).
+- `ruff check` clean on all touched files; all compile clean. **Not yet runtime-verified on a live btrfs install** — Erik's pending test must confirm the status rows flip to green after setup and that the btrfsmaintenance timers land active.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/btrfs.py` (new)
+- `usr/share/archlinux-tweak-tool/btrfs_gui.py` (new)
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+
 ## 2026.06.02 — Desktop page: warn about /etc/environment theme overrides on Plasma install
 
 ### What Changed

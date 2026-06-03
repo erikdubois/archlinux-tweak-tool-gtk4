@@ -5,6 +5,7 @@
 # ============Functions============
 import functions as fn
 
+import btrfs
 import desktopr
 import maintenance
 import fastfetch
@@ -17,6 +18,7 @@ import user
 import zsh_theme
 
 # =============GUI=================
+import btrfs_gui
 import icons_gui
 import themes_gui
 import autostart
@@ -131,6 +133,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_plymouth = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_locale = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_dev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_btrfs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 LAZY TAB BUILDER
@@ -169,6 +172,12 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     # ==========================================================
 
     _defer_tab(vboxstack_autostart, lambda: autostart.gui(self, Gtk, vboxstack_autostart, fn))
+
+    # ==========================================================
+    #                BTRFS
+    # ==========================================================
+
+    _defer_tab(vboxstack_btrfs, lambda: btrfs_gui.gui(self, Gtk, vboxstack_btrfs, btrfs, fn))
 
     # ==========================================================
     #                DESKTOP
@@ -342,6 +351,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
 
     stack.add_titled(vboxstack_autostart, "stack13", "Autostart")  # Autostart
+
+    if fn.DEV or btrfs.is_btrfs_root():
+        stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)
 
     stack.add_titled(vboxstack_desktop, "stack12", "Desktop")  # Desktop installer
 

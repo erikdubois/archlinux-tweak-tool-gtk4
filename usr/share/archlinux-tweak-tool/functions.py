@@ -1650,6 +1650,95 @@ read -p 'Press Enter to close...'
     return process
 
 
+def get_root_filesystem_type():
+    """Return the filesystem type of the root mount (empty string if unknown)."""
+    try:
+        with open("/proc/mounts", "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 3 and parts[1] == "/":
+                    return parts[2]
+    except Exception as error:
+        debug_print(error)
+    return ""
+
+
+def launch_btrfs_setup_in_terminal():
+    """Install + configure the Kiro btrfs snapshot stack visibly in Alacritty.
+
+    Mirrors the Garuda stack (snapper + snap-pac + btrfs-assistant +
+    btrfsmaintenance) with Kiro's policy: snap-pac + cleanup, NO timeline. Every
+    step is echoed so the user watches what gets installed and run (no black
+    boxes). Idempotent — safe to re-run.
+    """
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"], capture_output=True, text=True
+        )
+        if install_proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {install_proc.stderr}")
+            return None
+
+    script = r"""
+set -o pipefail
+
+echo '━━━ 1/5  Installing snapshot tools ━━━'
+pacman -S --noconfirm --needed snapper snap-pac btrfs-assistant btrfsmaintenance
+
+echo ''
+echo '━━━ 2/5  Creating snapper root config ━━━'
+if [ -f /etc/snapper/configs/root ]; then
+    echo 'root config already exists — skipping create-config'
+else
+    snapper -c root create-config /
+fi
+
+echo ''
+echo '━━━ 3/5  Applying Kiro policy (no hourly timeline) ━━━'
+snapper -c root set-config TIMELINE_CREATE=no
+echo 'TIMELINE_CREATE=no  — snapshots happen on pacman actions via snap-pac'
+
+echo ''
+echo '━━━ 4/5  Enabling timers ━━━'
+systemctl enable --now snapper-cleanup.timer
+if systemctl list-unit-files btrfsmaintenance-refresh.path >/dev/null 2>&1; then
+    systemctl enable --now btrfsmaintenance-refresh.path
+    # The .path unit only refreshes on a config change; run the service once so the
+    # scrub/balance timers are installed immediately from the current conf defaults.
+    systemctl start btrfsmaintenance-refresh.service
+    echo 'btrfsmaintenance enabled — timers installed from /etc/conf.d/btrfsmaintenance:'
+    systemctl list-timers 'btrfs-*' --no-pager || true
+else
+    echo 'btrfsmaintenance-refresh.path not found — review btrfsmaintenance units manually'
+fi
+
+echo ''
+echo '━━━ 5/5  Baseline snapshot ━━━'
+if snapper -c root list | grep -q 'Kiro baseline'; then
+    echo 'Kiro baseline snapshot already exists — skipping'
+else
+    snapper -c root create --description 'Kiro baseline'
+fi
+snapper -c root list
+
+echo ''
+echo 'snap-pac now creates a pre/post snapshot pair on every pacman action.'
+echo 'Note: Kiro uses systemd-boot — rollback is from the running system or the'
+echo 'live ISO (snapper rollback); there is no boot-menu snapshot picker.'
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return process
+
+
 def launch_pacman_remove_recursive_in_terminal(packages):
     import tempfile
 
