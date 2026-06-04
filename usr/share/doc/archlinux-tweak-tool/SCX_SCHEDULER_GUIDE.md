@@ -1,42 +1,37 @@
 # CPU Scheduler (scx) — Plain-English Guide
 
 The **CPU scheduler** is the part of Linux that decides which program gets the
-CPU next. This block lets you swap in a different scheduler to make the system
-feel snappier for a certain task — **games, audio work, battery life** — and
-swap back, all **without rebooting**.
+CPU next. You can swap in a different one to make the system feel snappier for a
+certain task — **games, audio work, battery life** — and swap back, all
+**without rebooting**. On Kiro you do this with **scx-manager**, CachyOS's small
+GUI for sched-ext schedulers.
 
-> **Short version:** if you're not sure, leave it **OFF**. Your kernel's default
+> **Short version:** if you're not sure, do nothing. Your kernel's default
 > (EEVDF / BORE on Kiro) is already very good. This is for experimenting.
 
 ---
 
-## Is it safe?
+## Start from what you want
 
-Yes.
+Don't think about schedulers — think about what you want your computer to feel
+like, then pick the matching row in scx-manager.
 
-- **Nothing happens until you click Apply.** Default is OFF.
-- **No reboot** — changes are live, and reversible the same second.
-- **"Back to default"** instantly returns you to the normal kernel scheduler.
-- Worst case if a scheduler misbehaves: click Back to default (or reboot —
-  nothing persists unless you chose to keep it).
+- **If you want a snappy gaming computer** → scheduler **scx_lavd**, profile
+  **Gaming**.
+- **If you want glitch-free audio or music production** → **scx_flash**,
+  **LowLatency**.
+- **If you want the fastest possible compile / ISO build** → **scx_rusty**,
+  **Server**.
+- **If you want to build *and* keep using the PC at the same time** →
+  **scx_lavd**, **LowLatency**.
+- **If you want a laptop that lasts longer on battery** → any scheduler,
+  **PowerSave**.
+- **If you want lots of apps open without stutter** → **scx_bpfland**, **Auto**.
+- **If you want a rock-solid, no-surprises computer** → do nothing; the kernel
+  default is already excellent.
+- **If you want to undo it all** → click **Disable**.
 
----
-
-## What should I do? (pick one)
-
-| You want…                    | Scheduler   | Mode            |
-|------------------------------|-------------|-----------------|
-| A stable system (do nothing) | —           | **OFF**         |
-| Snappier desktop / gaming    | scx_lavd    | Gaming          |
-| Smoother audio / multimedia  | scx_flash   | LowLatency      |
-| Fastest ISO build / compile  | scx_rusty   | Server          |
-| Build, keep using the PC     | scx_lavd    | LowLatency      |
-| Mouse stutters under load    | scx_lavd    | LowLatency      |
-| Many apps open at once       | scx_bpfland | Auto            |
-| Longer laptop battery        | any         | PowerSave       |
-| Undo everything              | —           | Back to default |
-
-*Not sure? Leave it **OFF** — the default is already good.*
+*Not sure what you want? Do nothing — the default is already good.*
 
 *Building but want a usable desktop?* Also keep cores free for the build itself:
 the **Performance → Build** tab has a "Keep 2 cores free" button (or run
@@ -45,17 +40,73 @@ a LowLatency one keeps the mouse smooth while you work.
 
 ---
 
-## First time: install the tools
+## Is it safe?
 
-The schedulers aren't installed by default. Click **Install scx-tools** once —
-it pulls the needed package. After that the button becomes **Remove scx-tools**
-if you ever want it gone again. Nothing turns on just from installing.
+Yes.
+
+- **Nothing changes until you click Apply** in scx-manager.
+- **No reboot** — changes are live, and reversible the same second.
+- **Disable** instantly returns you to the normal kernel scheduler.
+- Worst case if a scheduler misbehaves: click Disable (or reboot — nothing
+  persists unless you applied a choice you want to keep).
 
 ---
 
-## The two dropdowns
+## Opening scx-manager
 
-**Scheduler** — *which* scheduler runs. Each is tuned for a job:
+On Kiro it's **already installed** — just launch **scx-manager** from your
+application menu (or run `scx-manager`). On other Arch-based systems, install it
+first with `sudo pacman -S scx-manager`.
+
+It drives the `scx_loader` service under the hood — the same mechanism CachyOS's
+own tools use — so your choice is remembered across reboots until you Disable it.
+
+---
+
+## Using scx-manager
+
+The dialog has a few fields:
+
+- **Select sched-ext scheduler** — *which* scheduler runs. Each is tuned for a
+  job (see the cheat-sheet at the end).
+- **Select scheduler profile** — *how* that scheduler leans. **Auto** is the
+  safe middle; **Gaming** favours responsiveness, **PowerSave** favours battery,
+  **Server** favours throughput, **LowLatency** keeps things smooth under load.
+- **Extra scheduler flags** — leave blank unless you know you need one. This is
+  for advanced tuning and most people never touch it.
+
+Pick a scheduler and a profile, then click **Apply**. To go back to the stock
+kernel scheduler, click **Disable**.
+
+---
+
+## How do I know it worked?
+
+scx-manager shows a **Running sched-ext scheduler** line — that's the real
+status. Before you Apply anything it reflects the kernel default; after Apply it
+names the scheduler you chose. After Disable it goes back to the default.
+
+---
+
+## Does my choice survive a reboot?
+
+Yes — once you Apply, `scx_loader` remembers it and brings it back at the next
+boot. **Disable** removes that, so you're back to the stock scheduler on every
+boot.
+
+---
+
+## "It won't switch, or nothing happens"
+
+This is built around Kiro's default **linux-cachyos**, which supports sched-ext
+out of the box. If scx-manager's controls do nothing, check that you're booted
+into **linux-cachyos** — the Kernels page shows your running kernel at the top.
+
+---
+
+## Scheduler cheat-sheet
+
+For when you want the detail behind the picks above:
 
 | Scheduler     | Best for                          |
 |---------------|-----------------------------------|
@@ -65,37 +116,3 @@ if you ever want it gone again. Nothing turns on just from installing.
 | scx_flash     | Audio and multimedia (low jitter) |
 | scx_p2dq      | General, scales to many cores     |
 | scx_tickless  | Servers and power saving          |
-
-**Mode** — *how* that scheduler leans. Auto is the safe middle; Gaming favours
-responsiveness, PowerSave favours battery, Server favours throughput.
-
-If you don't care which scheduler, just pick a **Mode** and Apply — it defaults
-to scx_lavd.
-
----
-
-## How do I know it worked?
-
-Watch the **Active scheduler** line at the top of the block:
-
-- Before: `default (EEVDF / BORE)`
-- After Apply: the scheduler you chose, e.g. `running Lavd in Gaming mode`
-- After Back to default: `default (EEVDF / BORE)` again
-
-The dropdowns stay on your last pick — that's normal, they just remember what
-you'd apply next. The **Active scheduler** line is the real status.
-
----
-
-## Does my choice survive a reboot?
-
-Yes — once you Apply, it's remembered and comes back at the next boot. **Back to
-default** removes that, so you're back to the stock scheduler on every boot.
-
----
-
-## "The whole block is greyed out"
-
-Your running kernel doesn't support sched-ext. On Kiro, boot **linux-cachyos**
-(default) or **linux-zen** (fallback) — both support it. Other kernels
-(linux-hardened, LTS) don't, and the block correctly stays disabled.

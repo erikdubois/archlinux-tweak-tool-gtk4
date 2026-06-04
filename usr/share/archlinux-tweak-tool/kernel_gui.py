@@ -5,6 +5,8 @@
 import kernel
 import kernel_distros
 
+_SCX_GUIDE_PATH = "/usr/share/doc/archlinux-tweak-tool/SCX_SCHEDULER_GUIDE.md"
+
 
 def gui(self, Gtk, vboxstack, fn):
     """Create the kernel manager GUI."""
@@ -41,6 +43,47 @@ def gui(self, Gtk, vboxstack, fn):
     vboxstack.append(hbox_sep)
     vboxstack.append(hbox_notice)
     vboxstack.append(hbox_running)
+
+    # ── CPU Scheduler pointer (sched-ext / scx) ───────────────
+    # Live scheduler swapping is handled by CachyOS's scx-manager (ships on the
+    # Kiro ISO), not by ATT — this is just a signpost to it plus the guide.
+    _build_section_title(Gtk, vboxstack, "CPU Scheduler for CachyOS", subtitle="sched-ext / scx")
+    fn.log_info("Kernels page: CPU Scheduler (scx-manager) pointer shown")
+
+    hbox_scx = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_scx.set_margin_start(25)
+    hbox_scx.set_margin_end(10)
+
+    lbl_scx = Gtk.Label(xalign=0)
+    lbl_scx.set_markup(
+        "Switch the live CPU scheduler (lavd, bpfland, rusty…) without a reboot using "
+        "<b>scx-manager</b> — already installed. Pick a scheduler and profile, then Apply."
+    )
+    lbl_scx.set_wrap(True)
+    lbl_scx.set_hexpand(True)
+    hbox_scx.append(lbl_scx)
+
+    btn_scx_guide = Gtk.Button()
+    lbl_scx_guide = Gtk.Label()
+    lbl_scx_guide.set_markup("<i>read the guide</i>")
+    btn_scx_guide.set_child(lbl_scx_guide)
+    btn_scx_guide.set_css_classes(["flat"])
+    btn_scx_guide.set_margin_start(10)
+    btn_scx_guide.connect("clicked", lambda _b: fn.open_doc_in_editor(_SCX_GUIDE_PATH))
+    hbox_scx.append(btn_scx_guide)
+    vboxstack.append(hbox_scx)
+
+    hbox_scx_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_scx_note.set_margin_start(25)
+    hbox_scx_note.set_margin_end(10)
+    lbl_scx_note = Gtk.Label(xalign=0)
+    lbl_scx_note.set_markup(
+        "<small>Both of Kiro's kernels — <b>CachyOS</b> (default) and <b>Zen</b> "
+        "— support scx-manager's settings.</small>"
+    )
+    lbl_scx_note.set_wrap(True)
+    hbox_scx_note.append(lbl_scx_note)
+    vboxstack.append(hbox_scx_note)
 
     total = len(kernel.KERNELS)
     standard = sum(1 for k in kernel.KERNELS if not k.get("requires_chaotic"))

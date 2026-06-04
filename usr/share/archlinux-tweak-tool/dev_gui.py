@@ -15,8 +15,6 @@
 import os
 import shutil
 
-import scx_gui
-
 
 # ── module-level helpers ────────────────────────────────────────────
 
@@ -304,58 +302,11 @@ def _zswap_runtime(fn):
         return "?"
 
 
-# Priority order for finding an installed GUI text editor to open the glossary.
-# mousepad first (Kiro's default XFCE editor), then common DE editors,
-# then VSCode / Sublime as power-user fallbacks.
-_GLOSSARY_EDITORS = (
-    "mousepad", "gedit", "gnome-text-editor", "kate", "kwrite",
-    "geany", "featherpad", "xed", "pluma", "leafpad", "code", "subl",
-)
 _GLOSSARY_PATH = "/usr/share/doc/archlinux-tweak-tool/DEV_PAGE_GLOSSARY.md"
-_SCX_GUIDE_PATH = "/usr/share/doc/archlinux-tweak-tool/SCX_SCHEDULER_GUIDE.md"
-
-
-def _find_editor():
-    """Return the first installed editor from the priority list, or None."""
-    for ed in _GLOSSARY_EDITORS:
-        if shutil.which(ed):
-            return ed
-    return None
-
-
-def _open_doc(fn, path):
-    """Open a local doc in a detected editor, as the real user (not root).
-
-    ATT runs as root; launching a browser as root is rejected by Firefox and
-    similar (XAUTHORITY owned by the session user). Editors don't have that
-    self-protection, but we still drop privileges via `sudo -u` so the editor
-    inherits the user's session env — mirrors the pattern in funding.py.
-    """
-    doc = os.path.basename(path)
-    if not fn.path.exists(path):
-        # Repo-tree fallback when running ATT from source (uninstalled).
-        repo_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "share", "doc", "archlinux-tweak-tool", doc,
-        )
-        if fn.path.exists(repo_path):
-            path = repo_path
-        else:
-            fn.log_warn(f"{doc} not found at {path} — package may need reinstall")
-            return
-    editor = _find_editor()
-    if editor is None:
-        fn.log_warn(
-            f"No GUI text editor found (tried: {', '.join(_GLOSSARY_EDITORS)}). "
-            f"Read it manually: {path}"
-        )
-        return
-    fn.log_info(f"Opening {doc} in {editor}")
-    fn.subprocess.Popen(["sudo", "-u", fn.sudo_username, editor, path])
 
 
 def _open_glossary(fn):
-    _open_doc(fn, _GLOSSARY_PATH)
+    fn.open_doc_in_editor(_GLOSSARY_PATH)
 
 
 # ── main GUI builder ────────────────────────────────────────────────
@@ -1071,9 +1022,5 @@ def gui(self, Gtk, vboxstack_dev, fn):
 
     vboxstack_dev.append(hbox_title)
     vboxstack_dev.append(hbox_sep)
-    # Interactive scx scheduler selector — sits at the top, above the read-only
-    # diagnostics grid (which _populate() clears on every revisit; this block is
-    # built once and refreshes itself on map).
-    scx_gui.build(self, Gtk, vboxstack_dev, fn, lambda: _open_doc(fn, _SCX_GUIDE_PATH))
     vboxstack_dev.append(hbox_help)
     vboxstack_dev.append(grid)

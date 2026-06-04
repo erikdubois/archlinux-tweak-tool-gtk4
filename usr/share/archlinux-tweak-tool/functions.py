@@ -1309,6 +1309,54 @@ def open_url_as_user(url):
         log_error(f"Error opening {url}: {error}")
 
 
+# Priority order for finding an installed GUI text editor to open local docs.
+# mousepad first (Kiro's default XFCE editor), then common DE editors,
+# then VSCode / Sublime as power-user fallbacks.
+_DOC_EDITORS = (
+    "mousepad", "gedit", "gnome-text-editor", "kate", "kwrite",
+    "geany", "featherpad", "xed", "pluma", "leafpad", "code", "subl",
+)
+
+
+def _find_doc_editor():
+    """Return the first installed editor from the priority list, or None."""
+    for ed in _DOC_EDITORS:
+        if shutil.which(ed):
+            return ed
+    return None
+
+
+def open_doc_in_editor(path):
+    """Open a local doc in a detected GUI editor, as the real user (not root).
+
+    ATT runs as root; launching a browser as root is rejected by Firefox and
+    similar (XAUTHORITY owned by the session user). Editors don't have that
+    self-protection, but we still drop privileges via `sudo -u` so the editor
+    inherits the user's session env.
+    """
+    doc = os.path.basename(path)
+    if not os.path.exists(path):
+        # Repo-tree fallback when running ATT from source (uninstalled).
+        repo_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "share", "doc", "archlinux-tweak-tool", doc,
+        )
+        if os.path.exists(repo_path):
+            path = repo_path
+        else:
+            log_warn(f"{doc} not found at {path} — package may need reinstall")
+            return
+    editor = _find_doc_editor()
+    if editor is None:
+        log_warn(
+            f"No GUI text editor found (tried: {', '.join(_DOC_EDITORS)}). "
+            f"Read it manually: {path}"
+        )
+        return
+    log_info(f"Opening {doc} in {editor}")
+    subprocess.Popen(["sudo", "-u", sudo_username, editor, path])
+
+
 def install_local_package(self, package):
     if not os.path.exists(package):
         log_error(f"Package file not found: {package}")
