@@ -65,16 +65,62 @@ def gui(self, Gtk, GdkPixbuf, vboxstack_themes, _themes_module, fn, base_dir):
     hbox_info_label = Gtk.Label(xalign=0)
     hbox_info_label.set_markup(
         'Select the packages you want to install or remove, then click the appropriate button.\n\
-Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.\n\
-Check if /etc/environment sets your GTK_THEME, and if so, change it there'
+Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
     )
 
     hbox_info_label.set_margin_start(10)
     hbox_info_label.set_margin_end(10)
     hbox_info.append(hbox_info_label)
 
+    is_plasma = "kde" in fn.desktop.lower() or "plasma" in fn.desktop.lower()
+    is_kiro = fn.get_distro_label() == "Kiro"
+
+    hbox_gtk_theme = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_gtk_theme.set_halign(Gtk.Align.CENTER)
+    button_toggle_gtk_theme = Gtk.Button()
+    themes.style_toggle_button(button_toggle_gtk_theme, themes.GTK_TOGGLE_LABEL)
+    button_toggle_gtk_theme.connect("clicked", functools.partial(themes.on_click_toggle_gtk_theme, self))
+    button_toggle_gtk_theme.set_margin_start(10)
+    button_toggle_gtk_theme.set_margin_end(10)
+    hbox_gtk_theme.append(button_toggle_gtk_theme)
+
+    hbox_plasma_qt = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_plasma_qt.set_halign(Gtk.Align.CENTER)
+    button_toggle_plasma_qt = Gtk.Button()
+    themes.style_toggle_button(button_toggle_plasma_qt, themes.PLASMA_QT_TOGGLE_LABEL)
+    button_toggle_plasma_qt.connect("clicked", functools.partial(themes.on_click_toggle_plasma_qt, self))
+    button_toggle_plasma_qt.set_margin_start(10)
+    button_toggle_plasma_qt.set_margin_end(10)
+    hbox_plasma_qt.append(button_toggle_plasma_qt)
+
+    hbox_gtk_theme_hint = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_gtk_theme_hint.set_halign(Gtk.Align.CENTER)
+    lbl_gtk_theme_hint = Gtk.Label()
+    lbl_gtk_theme_hint.set_markup(
+        '<span size="large">Use the button below to switch the system-wide dark theme on or off.</span>'
+    )
+    lbl_gtk_theme_hint.set_justify(Gtk.Justification.CENTER)
+    hbox_gtk_theme_hint.append(lbl_gtk_theme_hint)
+
+    hbox_env_reminder = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_env_reminder.set_halign(Gtk.Align.CENTER)
+    lbl_env_reminder = Gtk.Label()
+    lbl_env_reminder.set_markup(
+        '<span size="large">Remember to check /etc/environment — themes are sometimes set there.</span>'
+    )
+    lbl_env_reminder.set_justify(Gtk.Justification.CENTER)
+    hbox_env_reminder.append(lbl_env_reminder)
+
+    hbox_env_edit = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_env_edit.set_halign(Gtk.Align.CENTER)
+    button_edit_env = Gtk.Button(label="Edit /etc/environment in terminal")
+    button_edit_env.connect("clicked", functools.partial(themes.on_click_edit_environment, self))
+    button_edit_env.set_margin_start(10)
+    button_edit_env.set_margin_end(10)
+    hbox_env_edit.append(button_edit_env)
+
     hbox_plasma_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    if "kde" in fn.desktop.lower() or "plasma" in fn.desktop.lower():
+    if is_plasma:
         lbl_plasma_warning = Gtk.Label(xalign=0)
         lbl_plasma_warning.set_markup("<b>⚠ On Plasma these themes will not work</b>")
         lbl_plasma_warning.set_margin_start(10)
@@ -253,6 +299,34 @@ Check if /etc/environment sets your GTK_THEME, and if so, change it there'
 
     vboxstack_themes.append(hbox_title)
     vboxstack_themes.append(hbox_separator)
+
+    if is_kiro:
+        hbox_gtk_theme_hint.set_margin_start(10)
+        hbox_gtk_theme_hint.set_margin_end(10)
+        hbox_gtk_theme_hint.set_margin_top(10)
+        hbox_gtk_theme_hint.set_margin_bottom(10)
+        vboxstack_themes.append(hbox_gtk_theme_hint)
+
+        hbox_gtk_theme.set_margin_start(10)
+        hbox_gtk_theme.set_margin_end(10)
+        hbox_gtk_theme.set_margin_bottom(10)
+        vboxstack_themes.append(hbox_gtk_theme)
+
+        hbox_plasma_qt.set_margin_start(10)
+        hbox_plasma_qt.set_margin_end(10)
+        hbox_plasma_qt.set_margin_bottom(10)
+        vboxstack_themes.append(hbox_plasma_qt)
+    else:
+        hbox_env_reminder.set_margin_start(10)
+        hbox_env_reminder.set_margin_end(10)
+        hbox_env_reminder.set_margin_top(10)
+        hbox_env_reminder.set_margin_bottom(10)
+        vboxstack_themes.append(hbox_env_reminder)
+
+        hbox_env_edit.set_margin_start(10)
+        hbox_env_edit.set_margin_end(10)
+        hbox_env_edit.set_margin_bottom(10)
+        vboxstack_themes.append(hbox_env_edit)
 
     hbox_info.set_margin_start(10)
     hbox_info.set_margin_end(10)

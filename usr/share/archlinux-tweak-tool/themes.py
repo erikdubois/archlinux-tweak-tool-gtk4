@@ -665,3 +665,220 @@ def on_click_att_theming_none_selection(self, _widget):
     fn.debug_print("Deselecting all Arc themes")
     set_att_checkboxes_theming_none(self)
     fn.log_success("All themes deselected")
+
+
+# ── System-wide dark theme toggle (/etc/environment) ───────────────
+
+ENV_FILE = "/etc/environment"
+_ARC_DAWN_GTK_LINE = 'GTK_THEME="Arc-Dawn-Dark"'
+
+
+def _is_arc_dawn_active(stripped):
+    return stripped == _ARC_DAWN_GTK_LINE
+
+
+def _is_arc_dawn_commented(stripped):
+    return stripped.startswith("#") and stripped.lstrip("#").strip() == _ARC_DAWN_GTK_LINE
+
+
+def arc_dawn_gtk_state():
+    """Return 'active', 'commented' or 'absent' for the Arc-Dawn-Dark GTK_THEME line in /etc/environment."""
+    try:
+        with open(ENV_FILE, encoding="utf-8") as env_file:
+            for line in env_file:
+                stripped = line.strip()
+                if _is_arc_dawn_active(stripped):
+                    return "active"
+                if _is_arc_dawn_commented(stripped):
+                    return "commented"
+    except OSError as error:
+        fn.log_warn(f"Could not read {ENV_FILE}: {error}")
+    return "absent"
+
+
+def _log_gtk_theme_outcome(new_state):
+    """Explain in the terminal what the toggle changed and how to make it take effect."""
+    if new_state == "commented":
+        fn.log_success(f'Commented out GTK_THEME="Arc-Dawn-Dark" in {ENV_FILE}')
+        fn.log_info("The system-wide dark GTK theme override is now OFF.")
+        fn.log_info("Switch to the light Arc theme (or any other), then LOG OUT and LOG BACK IN to apply it.")
+        fn.log_info("Heads-up: your icons may no longer match — pick an icon set that suits the new theme.")
+    else:
+        fn.log_success(f'Re-enabled GTK_THEME="Arc-Dawn-Dark" in {ENV_FILE}')
+        fn.log_info("The system-wide dark GTK theme is back ON (Kiro's default look).")
+        fn.log_info("LOG OUT and LOG BACK IN for the dark theme to apply across the whole desktop.")
+
+
+# Plasma reads its own Qt theme; these /etc/environment keys override it and trigger
+# the yellow "could not apply theme" popup — line 1 and 2 of a stock Kiro environment.
+_PLASMA_QT_KEYS = ("QT_QPA_PLATFORMTHEME", "QT_STYLE_OVERRIDE")
+
+
+def _env_key(stripped):
+    body = stripped.lstrip("#").strip()
+    if "=" not in body:
+        return None
+    return body.split("=", 1)[0].strip()
+
+
+def _is_qt_override_active(stripped):
+    return not stripped.startswith("#") and _env_key(stripped) in _PLASMA_QT_KEYS
+
+
+def _is_qt_override_commented(stripped):
+    return stripped.startswith("#") and _env_key(stripped) in _PLASMA_QT_KEYS
+
+
+def _log_plasma_qt_outcome(new_state):
+    """Explain the Plasma Qt-override toggle in the terminal."""
+    if new_state == "commented":
+        fn.log_success(f"Commented the Qt overrides (QT_QPA_PLATFORMTHEME, QT_STYLE_OVERRIDE) in {ENV_FILE}")
+        fn.log_info("Plasma now controls its own Qt theme — the yellow 'could not apply theme' popup should stop.")
+        fn.log_info("LOG OUT and LOG BACK IN for Plasma to take over the theming.")
+    else:
+        fn.log_success(f"Restored the Qt overrides (qt5ct / Kvantum) in {ENV_FILE}")
+        fn.log_info("qt5ct and Kvantum drive the Qt theme again (the non-Plasma default).")
+        fn.log_info("LOG OUT and LOG BACK IN for the change to take effect.")
+
+
+def _toggle_env(self, is_active, is_commented, subsection):
+    """Comment every active matching line, or else uncomment every commented one; return {state, changes}."""
+    fn.log_subsection(subsection)
+    try:
+        with open(ENV_FILE, encoding="utf-8") as env_file:
+            lines = env_file.readlines()
+    except OSError as error:
+        fn.log_error(f"Could not read {ENV_FILE}: {error}")
+        fn.show_in_app_notification(self, f"Could not read {ENV_FILE}")
+        return {"state": "absent", "changes": []}
+
+    active = [i for i, line in enumerate(lines) if is_active(line.strip())]
+    commented = [i for i, line in enumerate(lines) if is_commented(line.strip())]
+    if not active and not commented:
+        fn.log_warn(f"No matching line found in {ENV_FILE} — nothing to toggle")
+        fn.show_in_app_notification(self, f"No matching line in {ENV_FILE}")
+        return {"state": "absent", "changes": []}
+
+    changes = []
+    if active:
+        new_state = "commented"
+        for index in active:
+            from_line = lines[index].strip()
+            lines[index] = "#" + lines[index].lstrip()
+            changes.append((from_line, lines[index].strip()))
+    else:
+        new_state = "active"
+        for index in commented:
+            from_line = lines[index].strip()
+            lines[index] = lines[index].lstrip().lstrip("#").lstrip(" \t")
+            changes.append((from_line, lines[index].strip()))
+
+    try:
+        fn.shutil.copy(ENV_FILE, ENV_FILE + ".bak")
+        with open(ENV_FILE, "w", encoding="utf-8") as env_file:
+            env_file.writelines(lines)
+    except OSError as error:
+        fn.log_error(f"Could not write {ENV_FILE}: {error}")
+        fn.show_in_app_notification(self, f"Could not write {ENV_FILE}")
+        return {"state": "absent", "changes": []}
+
+    for from_line, to_line in changes:
+        fn.log_info(f"Changed:  {from_line}  ->  {to_line}")
+    return {"state": new_state, "changes": changes}
+
+
+def toggle_arc_dawn_gtk_theme(self):
+    """Comment/uncomment GTK_THEME="Arc-Dawn-Dark" in /etc/environment; return {state, changes}."""
+    result = _toggle_env(self, _is_arc_dawn_active, _is_arc_dawn_commented, "Toggle the system-wide dark GTK theme")
+    if result["state"] in ("active", "commented"):
+        _log_gtk_theme_outcome(result["state"])
+    return result
+
+
+def toggle_plasma_qt_overrides(self):
+    """Comment/uncomment the Plasma-conflicting Qt override lines in /etc/environment; return {state, changes}."""
+    result = _toggle_env(self, _is_qt_override_active, _is_qt_override_commented, "Toggle the Plasma Qt overrides")
+    if result["state"] in ("active", "commented"):
+        _log_plasma_qt_outcome(result["state"])
+    return result
+
+
+# Static brand-orange labels — same on every state, on every distro.
+GTK_TOGGLE_LABEL = "Enable or Disable the system-wide dark theme (/etc/environment)"
+PLASMA_QT_TOGGLE_LABEL = "Enable or Disable the Plasma Qt theme overrides (/etc/environment)"
+
+
+def style_toggle_button(button, text):
+    """Give an /etc/environment toggle button its standing brand-orange label."""
+    label = button.get_child()
+    if not isinstance(label, fn.Gtk.Label):
+        label = fn.Gtk.Label()
+        button.set_child(label)
+    label.set_markup(f'<span foreground="#FFA500">{text}</span>')
+
+
+def _show_change_dialog(self, changes):
+    """Pop up the before→after line(s) we changed in /etc/environment."""
+    dialog = fn.Gtk.MessageDialog(
+        transient_for=self,
+        message_type=fn.Gtk.MessageType.INFO,
+        buttons=fn.Gtk.ButtonsType.OK,
+        text="Updated /etc/environment",
+    )
+    dialog.props.secondary_text = "\n".join(f"{from_line}  →  {to_line}" for from_line, to_line in changes)
+    dialog.connect("response", lambda d, _r: d.destroy())
+    dialog.show()
+
+
+def open_env_in_terminal(self):
+    """Open /etc/environment in a terminal editor so the user can edit it directly (non-Kiro systems)."""
+    fn.log_subsection("Open /etc/environment in a terminal editor")
+    if not fn.shutil.which("alacritty"):
+        fn.log_warn("alacritty not found — cannot open a terminal editor")
+        fn.show_in_app_notification(self, "alacritty not found — open /etc/environment manually")
+        return
+    script = (
+        'echo "Editing /etc/environment — save and close when done, then log out and back in."; '
+        "${EDITOR:-nano} /etc/environment"
+    )
+    fn.threading.Thread(
+        target=lambda: fn.subprocess.Popen(["alacritty", "-e", "bash", "-c", script]).wait(),
+        daemon=True,
+    ).start()
+    fn.log_info("Opened /etc/environment in a terminal editor")
+    fn.show_in_app_notification(self, "Editing /etc/environment in a terminal — log out and back in after saving")
+
+
+def on_click_edit_environment(self, _widget):
+    """Open /etc/environment in a terminal editor (non-Kiro Themes-page reminder button)."""
+    open_env_in_terminal(self)
+
+
+def on_click_toggle_gtk_theme(self, _widget):
+    """On Kiro: toggle the dark GTK_THEME line and pop up the change. Elsewhere: open the file to edit."""
+    if fn.get_distro_label() != "Kiro":
+        open_env_in_terminal(self)
+        return
+    result = toggle_arc_dawn_gtk_theme(self)
+    if result["state"] not in ("commented", "active"):
+        return
+    _show_change_dialog(self, result["changes"])
+    if result["state"] == "commented":
+        fn.show_in_app_notification(self, "Dark theme OFF — switch theme, then log out and back in to apply")
+    else:
+        fn.show_in_app_notification(self, "Dark theme restored — log out and back in to apply it everywhere")
+
+
+def on_click_toggle_plasma_qt(self, _widget):
+    """On Kiro: comment/uncomment the Plasma-conflicting Qt overrides and pop up the change. Elsewhere: open the file."""
+    if fn.get_distro_label() != "Kiro":
+        open_env_in_terminal(self)
+        return
+    result = toggle_plasma_qt_overrides(self)
+    if result["state"] not in ("commented", "active"):
+        return
+    _show_change_dialog(self, result["changes"])
+    if result["state"] == "commented":
+        fn.show_in_app_notification(self, "Qt overrides OFF — Plasma controls its theme; log out and back in")
+    else:
+        fn.show_in_app_notification(self, "Qt overrides restored (qt5ct/Kvantum) — log out and back in")
