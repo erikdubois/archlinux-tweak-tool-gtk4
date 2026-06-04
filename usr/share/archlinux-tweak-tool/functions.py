@@ -1688,8 +1688,24 @@ pacman -S --noconfirm --needed snapper snap-pac btrfs-assistant btrfsmaintenance
 
 echo ''
 echo '━━━ 2/5  Creating snapper root config ━━━'
+# Kiro pre-stages @snapshots mounted at /.snapshots (Calamares). snapper
+# create-config insists on creating that subvolume itself and aborts because it
+# already exists. Detach our subvolume, let snapper build the config, then delete
+# snapper's subvolume and remount ours as the snapshot store.
 if [ -f /etc/snapper/configs/root ]; then
     echo 'root config already exists — skipping create-config'
+elif mountpoint -q /.snapshots; then
+    echo '/.snapshots is pre-staged — detaching it so snapper can create its config'
+    if umount /.snapshots && rmdir /.snapshots; then
+        snapper -c root create-config /
+        btrfs subvolume delete /.snapshots
+        mkdir -p /.snapshots
+        mount /.snapshots && chmod 750 /.snapshots
+        echo 'snapper root config created; @snapshots remounted as the store'
+    else
+        mountpoint -q /.snapshots || mount /.snapshots 2>/dev/null
+        echo 'ERROR: could not detach /.snapshots — left untouched, no config created'
+    fi
 else
     snapper -c root create-config /
 fi
