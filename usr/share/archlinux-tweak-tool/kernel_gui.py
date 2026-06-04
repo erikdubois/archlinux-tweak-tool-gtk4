@@ -47,7 +47,7 @@ def gui(self, Gtk, vboxstack, fn):
     # ── CPU Scheduler pointer (sched-ext / scx) ───────────────
     # Live scheduler swapping is handled by CachyOS's scx-manager (ships on the
     # Kiro ISO), not by ATT — this is just a signpost to it plus the guide.
-    _build_section_title(Gtk, vboxstack, "CPU Scheduler for CachyOS", subtitle="sched-ext / scx")
+    _build_section_title(Gtk, vboxstack, "CPU Scheduler", subtitle="sched-ext / scx")
     fn.log_info("Kernels page: CPU Scheduler (scx-manager) pointer shown")
 
     hbox_scx = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)

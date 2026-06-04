@@ -98,9 +98,10 @@ boot.
 
 ## "It won't switch, or nothing happens"
 
-This is built around Kiro's default **linux-cachyos**, which supports sched-ext
-out of the box. If scx-manager's controls do nothing, check that you're booted
-into **linux-cachyos** — the Kernels page shows your running kernel at the top.
+Both of Kiro's kernels — **linux-cachyos** (default) and **linux-zen** — support
+sched-ext out of the box, so scx-manager works on either. If its controls do
+nothing, check that you're booted into one of them — the Kernels page shows your
+running kernel at the top.
 
 ---
 
