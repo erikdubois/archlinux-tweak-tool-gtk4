@@ -126,8 +126,13 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
         '<span foreground="#FFA500">Set the system-wide GTK theme in /etc/environment</span>'
     )
     self._env_gtk_theme_names = themes.list_system_gtk_themes()
-    self.env_theme_dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + self._env_gtk_theme_names)
     current_env_theme = themes.current_env_gtk_theme()
+    # If a GTK_THEME is already set but isn't an installed /usr/share/themes folder (e.g. a
+    # ~/.themes name or a typo), still list it so "None" can't be preselected over a real value —
+    # Apply on an unchanged dropdown would otherwise silently clear that theme.
+    if current_env_theme and current_env_theme not in self._env_gtk_theme_names:
+        self._env_gtk_theme_names = [current_env_theme] + self._env_gtk_theme_names
+    self.env_theme_dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + self._env_gtk_theme_names)
     if current_env_theme and current_env_theme in self._env_gtk_theme_names:
         self.env_theme_dropdown.set_selected(self._env_gtk_theme_names.index(current_env_theme) + 1)
     else:
