@@ -271,7 +271,7 @@ if fn.distr:
     ohmychadwm = [
         "alacritty",
         "archlinux-logout-gtk4-git",
-        "ohmychadwm-git",
+        "ohmychadwm",
         "kiro-rofi",
         "kiro-rofi-themes",
         "kiro-xfce",
