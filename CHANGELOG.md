@@ -1,5 +1,18 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.04 — Btrfs page: fix snapper create-config on the pre-staged @snapshots layout
+
+### What Changed
+
+The "Enable Kiro snapshots" setup failed on a real install once Calamares started pre-staging the `@snapshots → /.snapshots` subvolume. `snapper create-config` insists on creating the `/.snapshots` subvolume itself and aborts when it already exists (*"creating btrfs subvolume .snapshots failed since it already exists"*), so **no `root` config was written** — and steps 3/5 (set TIMELINE_CREATE) and 5/5 (baseline snapshot) then failed with "config 'root' does not exist". The timer-enable step (4/5) was unaffected. The setup now detects the pre-staged `/.snapshots` mount and applies the blessed workaround so the config is created correctly while keeping Kiro's separate `@snapshots` subvolume.
+
+### Technical Details
+
+- **`functions.py` → `launch_btrfs_setup_in_terminal()`:** the 2/5 block now branches on `mountpoint -q /.snapshots`. When pre-staged, it `umount`s + `rmdir`s `/.snapshots`, runs `snapper -c root create-config /` (which now succeeds, creating its own subvolume), then `btrfs subvolume delete`s snapper's subvolume and remounts our `@snapshots` (`mount /.snapshots` via the Calamares-written fstab entry) with `chmod 750`. If the detach fails it restores the mount and reports an error instead of creating a half-config. The pre-existing-config skip and the non-pre-staged plain `create-config` paths are preserved.
+- **Step 4/5 now disables `snapper-timeline.timer`.** `snapper create-config` silently enables the timeline timer (confirmed on the VM: its enable-symlink ctime preceded the config file's by ~0.2s), which contradicts Kiro's no-hourly-timeline policy and would FAIL the `kiro-audit` btrfs check. The setup now runs `systemctl disable --now snapper-timeline.timer` right after enabling `snapper-cleanup.timer`. `TIMELINE_CREATE=no` already prevented the snapshots; this makes the timer state match the policy. Step 4/5 runs unconditionally, so a re-click self-heals an already-set-up box.
+- No `set -e` in the embedded script, so the failure branch echoes its error and still reaches the final `read -p` prompt (terminal stays open). `bash -n` of the extracted script passes; ruff clean. **Verified end-to-end on a real btrfs + LUKS VM:** snapper root config created, `TIMELINE_CREATE=no`, `@snapshots` remounted as the store (perms 750), cleanup timer on / timeline timer off, and the "Kiro baseline" snapshot present (confirmed in Btrfs Assistant).
+- The earlier "validated on a real VM" note (2026.06.03 entry) predated the `@snapshots` pre-staging landing on the test ISO, which is why the conflict surfaced only now.
+
 ## 2026.06.03 — New Btrfs page: one-click snapshot setup (btrfs roots only)
 
 ### What Changed

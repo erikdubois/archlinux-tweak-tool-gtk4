@@ -18,8 +18,10 @@ def _state(ok, yes, no):
 
 def refresh(self, fn):
     """Update every status row + tool button to reflect the live system state."""
+    any_installed = False
     for pkg in btrfs.PACKAGES:
         installed = fn.check_package_installed(pkg)
+        any_installed = any_installed or installed
         self.btrfs_tool_labels[pkg].set_markup(f"<b>{pkg}</b> — " + _state(installed, "installed", "not installed"))
         self.btrfs_tool_buttons[pkg].set_sensitive(not installed)
 
@@ -41,6 +43,7 @@ def refresh(self, fn):
     active = btrfs.all_packages_installed() and config_ok and cleanup_ok
     self.btrfs_summary_label.set_markup(_state(active, "Snapshots are active", "Snapshots are not set up yet"))
     self.btn_btrfs_assistant.set_sensitive(fn.check_package_installed("btrfs-assistant"))
+    self.btn_btrfs_disable.set_sensitive(any_installed or config_ok)
 
 
 def _build_tool_row(self, Gtk, btrfs, fn, package):
@@ -129,10 +132,15 @@ def gui(self, Gtk, vboxstack_btrfs, btrfs, fn):
     btn_enable.connect("clicked", functools.partial(btrfs.on_click_enable_snapshots, self))
     btn_enable.set_margin_start(20)
     btn_enable.set_margin_end(10)
+    self.btn_btrfs_disable = Gtk.Button(label="Disable Kiro snapshots")
+    self.btn_btrfs_disable.set_tooltip_text("Remove the snapshot tools and config — snapshots already taken are kept")
+    self.btn_btrfs_disable.connect("clicked", functools.partial(btrfs.on_click_disable_snapshots, self))
+    self.btn_btrfs_disable.set_margin_end(10)
     self.btn_btrfs_assistant = Gtk.Button(label="Launch Btrfs Assistant")
     self.btn_btrfs_assistant.connect("clicked", functools.partial(btrfs.on_click_launch_assistant, self))
     self.btn_btrfs_assistant.set_margin_end(10)
     hbox_actions.append(btn_enable)
+    hbox_actions.append(self.btn_btrfs_disable)
     hbox_actions.append(self.btn_btrfs_assistant)
 
     # ── Rollback caveat ──────────────────────────────────────────────

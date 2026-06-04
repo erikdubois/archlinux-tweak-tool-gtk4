@@ -70,6 +70,35 @@ def on_click_enable_snapshots(self, _widget):
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
+def on_click_disable_snapshots(self, _widget):
+    """Remove the snapshot stack after confirmation; snapshots on disk are kept."""
+    message = (
+        "This removes the btrfs snapshot stack:\n"
+        "• disables the snapshot timers\n"
+        "• removes the snapper <b>root</b> config\n"
+        "• removes snapper, snap-pac, btrfs-assistant and btrfsmaintenance\n\n"
+        "Your <b>snapshots are kept</b> on disk — the @snapshots subvolume is untouched. "
+        "Use Btrfs Assistant to view or delete them. Re-running <b>Enable Kiro snapshots</b> "
+        "sets everything up again."
+    )
+    if not fn.confirm_dialog(self, "Remove snapshot stack?", message):
+        fn.log_info("Btrfs snapshot teardown cancelled")
+        return
+
+    fn.log_subsection("Removing Kiro btrfs snapshot stack")
+    fn.show_in_app_notification(self, "Opening terminal to remove the snapshot stack...")
+    process = fn.launch_btrfs_teardown_in_terminal()
+
+    def wait_and_refresh():
+        if process is not None:
+            process.wait()
+        fn.log_success("Btrfs snapshot teardown finished")
+        fn.GLib.idle_add(_refresh_page, self)
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "Snapshot stack removed")
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
+
+
 def on_click_launch_assistant(self, _widget):
     """Launch Btrfs Assistant (the Garuda GUI front-end)."""
     if not fn.check_package_installed("btrfs-assistant"):

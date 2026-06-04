@@ -1718,6 +1718,10 @@ echo 'TIMELINE_CREATE=no  — snapshots happen on pacman actions via snap-pac'
 echo ''
 echo '━━━ 4/5  Enabling timers ━━━'
 systemctl enable --now snapper-cleanup.timer
+# snapper create-config silently enables snapper-timeline.timer; Kiro policy is
+# no hourly timeline (TIMELINE_CREATE=no already blocks the snapshots), so disable it.
+systemctl disable --now snapper-timeline.timer 2>/dev/null || true
+echo 'snapper-timeline.timer disabled (Kiro policy: no hourly timeline)'
 if systemctl list-unit-files btrfsmaintenance-refresh.path >/dev/null 2>&1; then
     systemctl enable --now btrfsmaintenance-refresh.path
     # The .path unit only refreshes on a config change; run the service once so the
@@ -1742,6 +1746,76 @@ echo ''
 echo 'snap-pac now creates a pre/post snapshot pair on every pacman action.'
 echo 'Note: Kiro uses systemd-boot — rollback is from the running system or the'
 echo 'live ISO (snapper rollback); there is no boot-menu snapshot picker.'
+
+echo ''
+echo '=== Operation Finished ==='
+read -p 'Press Enter to close...'
+"""
+    process = subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return process
+
+
+def launch_btrfs_teardown_in_terminal():
+    """Remove the Kiro btrfs snapshot stack visibly in Alacritty — safe & reversible.
+
+    Disables the snapshot timers, removes the snapper 'root' config file, and removes
+    the four packages with a plain `pacman -R` (no dependency cascade). It performs NO
+    btrfs subvolume or mount operations: the @snapshots subvolume and every snapshot
+    already taken are left on disk, untouched. Re-running the setup restores everything.
+    """
+    if not shutil.which("alacritty"):
+        log_info("alacritty not found, installing...")
+        install_proc = subprocess.run(
+            ["pacman", "-S", "--noconfirm", "--needed", "alacritty"], capture_output=True, text=True
+        )
+        if install_proc.returncode != 0:
+            log_error(f"Failed to install alacritty: {install_proc.stderr}")
+            return None
+
+    script = r"""
+set -o pipefail
+
+echo '━━━ 1/3  Disabling snapshot timers ━━━'
+for unit in snapper-cleanup.timer snapper-timeline.timer btrfsmaintenance-refresh.path \
+            btrfs-scrub.timer btrfs-balance.timer btrfs-trim.timer; do
+    if systemctl is-enabled "$unit" >/dev/null 2>&1 || systemctl is-active "$unit" >/dev/null 2>&1; then
+        systemctl disable --now "$unit" >/dev/null 2>&1 && echo "disabled $unit" || echo "could not disable $unit"
+    else
+        echo "$unit already off"
+    fi
+done
+
+echo ''
+echo '━━━ 2/3  Removing snapper root config ━━━'
+if [ -f /etc/snapper/configs/root ]; then
+    rm -f /etc/snapper/configs/root
+    echo 'removed /etc/snapper/configs/root'
+else
+    echo 'no snapper root config present'
+fi
+echo 'Snapshots already taken are KEPT in the @snapshots subvolume (not deleted).'
+echo 'Use Btrfs Assistant if you ever want to view or remove them.'
+
+echo ''
+echo '━━━ 3/3  Removing snapshot packages ━━━'
+to_remove=''
+for p in snapper snap-pac btrfs-assistant btrfsmaintenance; do
+    pacman -Q "$p" >/dev/null 2>&1 && to_remove="$to_remove $p"
+done
+if [ -n "$to_remove" ]; then
+    echo "removing:$to_remove"
+    pacman -R --noconfirm $to_remove
+else
+    echo 'none of the snapshot packages are installed'
+fi
+
+echo ''
+echo 'The disk layout (@snapshots subvolume, /.snapshots mount) is unchanged.'
+echo 'Re-run "Enable Kiro snapshots" to set it all up again.'
 
 echo ''
 echo '=== Operation Finished ==='
