@@ -10,6 +10,14 @@ import btrfs
 _GREEN = "#4e9a06"
 _ORANGE = "#FFA500"
 
+# Short "what it's for" blurbs (4–5 words) shown beside each tool name.
+_TOOL_BLURBS = {
+    "snapper": "creates and manages snapshots",
+    "snap-pac": "snapshots on every pacman action",
+    "btrfs-assistant": "GUI to browse and restore",
+    "btrfsmaintenance": "scheduled scrub, balance and trim",
+}
+
 
 def _state(ok, yes, no):
     color = _GREEN if ok else _ORANGE
@@ -22,7 +30,10 @@ def refresh(self, fn):
     for pkg in btrfs.PACKAGES:
         installed = fn.check_package_installed(pkg)
         any_installed = any_installed or installed
-        self.btrfs_tool_labels[pkg].set_markup(f"<b>{pkg}</b> — " + _state(installed, "installed", "not installed"))
+        self.btrfs_tool_labels[pkg].set_markup(
+            f"<b>{pkg}</b> <small>— {_TOOL_BLURBS[pkg]}</small> — "
+            + _state(installed, "installed", "not installed")
+        )
         self.btrfs_tool_buttons[pkg].set_sensitive(not installed)
 
     config_ok = btrfs.snapper_root_configured()

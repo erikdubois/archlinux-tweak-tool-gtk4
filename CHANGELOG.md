@@ -30,6 +30,20 @@ Dropped the **Launch Btrfs Assistant** button (button + `on_click_launch_assista
 
 `functions_backup.py` (`backup_gtk_config()`) now also copies the user's `~/.config/Kvantum` and `~/.config/qt5ct` into `/root/.config`, mirroring the existing GTK 3/4 copy. ATT runs as root and already bridged the user's *GTK* theme to `/root` so ATT itself respects the desktop theme — but **Qt** apps theme through a different path (`QT_STYLE_OVERRIDE=kvantum` + `~/.config/Kvantum`), so any Qt app run as root fell back to Kvantum's default theme instead of the user's ArcDark. The new block closes that gap for any current/future root-launched Qt app. Looped over both dirs with the GTK-4.0 pattern (`os.makedirs` + `copytree(dirs_exist_ok=True)` + chmod 755/644); skips symlinked targets; missing source dirs are a silent debug-only skip. Validated manually (Kvantum in `/root` → Btrfs Assistant renders ArcDark). ruff clean; module parses.
 
+### Btrfs page: short "what it's for" tool labels
+
+Each snapshot tool row now carries a 4–5 word blurb beside its name so users don't have to guess what they're installing — `snapper` "creates and manages snapshots", `snap-pac` "snapshots on every pacman action", `btrfs-assistant` "GUI to browse and restore", `btrfsmaintenance` "scheduled scrub, balance and trim". `btrfs_gui.py`: `_TOOL_BLURBS` dict folded into the existing tool-row label markup (small text between name and install state); refresh() rebuilds it each revisit. ruff clean.
+
+### Retired: in-app CPU scheduler (scx) block → point at scx-manager
+
+The Dev page's interactive sched-ext / scx scheduler selector was removed and retired. It duplicated CachyOS's own **scx-manager** (a Qt6 GUI driving the same `scx_loader` backend), which now ships on the Kiro ISO — so maintaining a parallel UI in ATT was redundant. In its place, the **Kernels page gains a "CPU Scheduler" pointer section at the top**: a one-line signpost to scx-manager (`pacman -S scx-manager` on non-Kiro systems; already installed on Kiro) plus a "read the guide" link, and a note that both Kiro kernels support it.
+
+- **Deleted `scx.py` and `scx_gui.py`** (backend + Dev-page block builder); removed the `import scx_gui`, `_SCX_GUIDE_PATH`, and `scx_gui.build(...)` call site from `dev_gui.py`.
+- **`functions.py`:** extracted the Dev page's private `_open_doc`/`_find_editor`/editor-list into a shared `open_doc_in_editor(path)` (plus `_find_doc_editor` / `_DOC_EDITORS`) — there are now two callers (the Dev glossary and the new scx-guide link), so it belongs in `functions.py`. Keeps the repo-tree fallback so links work when ATT runs from source, and drops privileges via `sudo -u` (ATT runs as root). `dev_gui.py`'s `_open_glossary` now calls `fn.open_doc_in_editor`.
+- **`kernel_gui.py`:** new "CPU Scheduler" (`sched-ext / scx`) section built at the top of the Kernels page — label + flat "read the guide" link button (→ `fn.open_doc_in_editor`) + a small note naming CachyOS and Zen.
+- **`SCX_SCHEDULER_GUIDE.md` rewritten** for scx-manager (was written around the now-deleted ATT block, which would have shipped instructions for buttons that no longer exist): goal-first ("if you want a ___ computer → scheduler + profile"), cheat-sheet moved to the bottom, no false "install the schedulers" step (scx-manager's `depends` pull in `scx-scheds` + `scx-tools` automatically). Both kernels named as supported.
+- **Kernel facts verified, not assumed:** `linux-cachyos` has `CONFIG_SCHED_CLASS_EXT=y` (local); `linux-zen` confirmed on a real box (running `scx_bpfland` in LowLatency via `scx_loader`, persisted in `/etc/scx_loader.toml`). ruff clean on all three modules; all parse.
+
 ## 2026.06.03 — New Btrfs page: one-click snapshot setup (btrfs roots only)
 
 ### What Changed
