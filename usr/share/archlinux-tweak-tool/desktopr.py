@@ -95,7 +95,7 @@ if fn.distr:
         "kiro-bspwm",
         "kiro-xfce",
         "kiro-polybar",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "kiro-rofi",
         "kiro-rofi-themes",
         "awesome-terminal-fonts",
@@ -132,7 +132,7 @@ if fn.distr:
     ]
     chadwm = [
         "alacritty",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "kiro-chadwm",
         "kiro-rofi",
         "kiro-rofi-themes",
@@ -212,7 +212,7 @@ if fn.distr:
     i3 = [
         "alacritty",
         "kiro-i3",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "kiro-rofi",
         "kiro-rofi-themes",
         "kiro-xfce",
@@ -235,7 +235,7 @@ if fn.distr:
     ]
     leftwm = [
         "alacritty",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "kiro-leftwm",
         "kiro-polybar",
         "kiro-rofi",
@@ -270,7 +270,7 @@ if fn.distr:
     ]
     ohmychadwm = [
         "alacritty",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "ohmychadwm",
         "kiro-rofi",
         "kiro-rofi-themes",
@@ -304,7 +304,7 @@ if fn.distr:
     ]
     qtile = [
         "alacritty",
-        "archlinux-logout-gtk4-git",
+        "archlinux-logout-gtk4",
         "kiro-qtile",
         "kiro-rofi",
         "kiro-rofi-themes",

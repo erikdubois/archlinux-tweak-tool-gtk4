@@ -696,9 +696,9 @@ Activate the necessary repos"
 
     hbox_att_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_att_btns.set_margin_start(10)
-    btn_install_att = Gtk.Button(label="Install alacritty-tweak-tool-git")
+    btn_install_att = Gtk.Button(label="Install alacritty-tweak-tool")
     btn_install_att.connect("clicked", functools.partial(shell.on_install_alacritty_tweak_tool_clicked, self))
-    btn_remove_att = Gtk.Button(label="Remove alacritty-tweak-tool-git")
+    btn_remove_att = Gtk.Button(label="Remove alacritty-tweak-tool")
     btn_remove_att.connect("clicked", functools.partial(shell.on_remove_alacritty_tweak_tool_clicked, self))
     hbox_att_btns.append(btn_install_att)
     hbox_att_btns.append(btn_remove_att)
@@ -706,7 +706,7 @@ Activate the necessary repos"
     hbox_att_repo_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     if not fn.check_nemesis_repo_active():
         att_repo_note_lbl = Gtk.Label(xalign=0)
-        att_repo_note_lbl.set_markup("<i>Enable the Nemesis repo (Pacman page) to install alacritty-tweak-tool-git</i>")
+        att_repo_note_lbl.set_markup("<i>Enable the Nemesis repo (Pacman page) to install alacritty-tweak-tool</i>")
         att_repo_note_lbl.set_margin_start(10)
         att_repo_note_lbl.set_margin_end(10)
         hbox_att_repo_note.append(att_repo_note_lbl)
@@ -771,7 +771,7 @@ Activate the necessary repos"
     hbox_alacritty_launch = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox_alacritty_launch.set_margin_start(10)
     self.btn_launch_att = Gtk.Button(label="Launch Alacritty Tweak Tool")
-    self.btn_launch_att.set_sensitive(fn.check_package_installed("alacritty-tweak-tool-git"))
+    self.btn_launch_att.set_sensitive(fn.check_package_installed("alacritty-tweak-tool"))
     self.btn_launch_att.connect("clicked", functools.partial(shell.on_click_launch_att_from_shells, self))
     hbox_alacritty_launch.append(self.btn_launch_att)
 

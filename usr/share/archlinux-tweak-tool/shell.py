@@ -684,14 +684,14 @@ def _refresh_alacritty_lbl(self):
 
 
 def _refresh_att_lbl(self):
-    if fn.check_package_installed("alacritty-tweak-tool-git"):
-        self.att_status_lbl.set_markup("alacritty-tweak-tool-git is <b>installed</b>")
+    if fn.check_package_installed("alacritty-tweak-tool"):
+        self.att_status_lbl.set_markup("alacritty-tweak-tool is <b>installed</b>")
     else:
-        self.att_status_lbl.set_markup("alacritty-tweak-tool-git is <b>not installed</b>")
+        self.att_status_lbl.set_markup("alacritty-tweak-tool is <b>not installed</b>")
 
 
 def _refresh_att_launch_btn(self):
-    self.btn_launch_att.set_sensitive(fn.check_package_installed("alacritty-tweak-tool-git"))
+    self.btn_launch_att.set_sensitive(fn.check_package_installed("alacritty-tweak-tool"))
 
 
 def on_install_alacritty_clicked(self, _widget):
@@ -741,56 +741,56 @@ def on_remove_alacritty_clicked(self, _widget):
 
 
 def on_install_alacritty_tweak_tool_clicked(self, _widget):
-    """Install alacritty-tweak-tool-git from nemesis repo via terminal."""
-    if fn.check_package_installed("alacritty-tweak-tool-git"):
-        fn.log_info("alacritty-tweak-tool-git is already installed")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool-git is already installed")
+    """Install alacritty-tweak-tool from nemesis repo via terminal."""
+    if fn.check_package_installed("alacritty-tweak-tool"):
+        fn.log_info("alacritty-tweak-tool is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool is already installed")
         return
-    fn.log_subsection("Installing alacritty-tweak-tool-git...")
-    process = fn.launch_pacman_install_in_terminal("alacritty-tweak-tool-git")
-    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to install alacritty-tweak-tool-git")
+    fn.log_subsection("Installing alacritty-tweak-tool...")
+    process = fn.launch_pacman_install_in_terminal("alacritty-tweak-tool")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to install alacritty-tweak-tool")
 
     def wait_install():
         try:
             process.wait()
             fn.invalidate_pkg_cache()
-            fn.log_success("alacritty-tweak-tool-git installed")
+            fn.log_success("alacritty-tweak-tool installed")
             fn.GLib.idle_add(_refresh_att_lbl, self)
             fn.GLib.idle_add(_refresh_att_launch_btn, self)
-            fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool-git installed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool installed")
         except Exception as e:
-            fn.log_error(f"Error installing alacritty-tweak-tool-git: {e}")
+            fn.log_error(f"Error installing alacritty-tweak-tool: {e}")
 
     fn.threading.Thread(target=wait_install, daemon=True).start()
 
 
 def on_remove_alacritty_tweak_tool_clicked(self, _widget):
-    """Remove alacritty-tweak-tool-git via terminal."""
-    if not fn.check_package_installed("alacritty-tweak-tool-git"):
-        fn.log_info("alacritty-tweak-tool-git is not installed — nothing to remove")
-        fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool-git is not installed")
+    """Remove alacritty-tweak-tool via terminal."""
+    if not fn.check_package_installed("alacritty-tweak-tool"):
+        fn.log_info("alacritty-tweak-tool is not installed — nothing to remove")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool is not installed")
         return
-    fn.log_subsection("Removing alacritty-tweak-tool-git...")
-    process = fn.launch_pacman_remove_in_terminal("alacritty-tweak-tool-git")
-    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to remove alacritty-tweak-tool-git")
+    fn.log_subsection("Removing alacritty-tweak-tool...")
+    process = fn.launch_pacman_remove_in_terminal("alacritty-tweak-tool")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to remove alacritty-tweak-tool")
 
     def wait_remove():
         try:
             process.wait()
             fn.invalidate_pkg_cache()
-            fn.log_success("alacritty-tweak-tool-git removed")
+            fn.log_success("alacritty-tweak-tool removed")
             fn.GLib.idle_add(_refresh_att_lbl, self)
             fn.GLib.idle_add(_refresh_att_launch_btn, self)
-            fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool-git removed")
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool removed")
         except Exception as e:
-            fn.log_error(f"Error removing alacritty-tweak-tool-git: {e}")
+            fn.log_error(f"Error removing alacritty-tweak-tool: {e}")
 
     fn.threading.Thread(target=wait_remove, daemon=True).start()
 
 
 def on_click_launch_att_from_shells(self, _widget):
     """Launch Alacritty Tweak Tool as real user from the Shells page."""
-    if fn.check_package_installed("alacritty-tweak-tool-git"):
+    if fn.check_package_installed("alacritty-tweak-tool"):
         fn.log_subsection("Launching Alacritty Tweak Tool...")
         fn.subprocess.Popen(
             "sudo -E -u " + fn.sudo_username + " env HOME=" + fn.home + " alacritty-tweak-tool &",
@@ -800,5 +800,5 @@ def on_click_launch_att_from_shells(self, _widget):
         )
         GLib.idle_add(fn.show_in_app_notification, self, "Alacritty Tweak Tool launched")
     else:
-        fn.log_info("alacritty-tweak-tool-git not installed")
-        GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool-git not installed")
+        fn.log_info("alacritty-tweak-tool not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool not installed")

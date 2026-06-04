@@ -773,7 +773,7 @@ def gui(self, Gtk, vboxstack_dev, fn):
         # ── Shells ───────────────────────────────────────────────────
         _header("Shells")
         for _s in ("bash", "bash-completion", "zsh", "zsh-completions", "zsh-syntax-highlighting",
-                   "oh-my-zsh-git", "fish", "alacritty", "alacritty-tweak-tool-git"):
+                   "oh-my-zsh-git", "fish", "alacritty", "alacritty-tweak-tool"):
             _pkg(_s)
 
         # ── Software ─────────────────────────────────────────────────
