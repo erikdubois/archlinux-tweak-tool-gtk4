@@ -13,6 +13,23 @@ The "Enable Kiro snapshots" setup failed on a real install once Calamares starte
 - No `set -e` in the embedded script, so the failure branch echoes its error and still reaches the final `read -p` prompt (terminal stays open). `bash -n` of the extracted script passes; ruff clean. **Verified end-to-end on a real btrfs + LUKS VM:** snapper root config created, `TIMELINE_CREATE=no`, `@snapshots` remounted as the store (perms 750), cleanup timer on / timeline timer off, and the "Kiro baseline" snapshot present (confirmed in Btrfs Assistant).
 - The earlier "validated on a real VM" note (2026.06.03 entry) predated the `@snapshots` pre-staging landing on the test ISO, which is why the conflict surfaced only now.
 
+### Also: "Disable Kiro snapshots" — safe, reversible teardown
+
+A new **Disable Kiro snapshots** button gives the Btrfs page a symmetric undo for everything Enable does, designed safe-at-all-times: it **never deletes snapshots** and performs **no btrfs subvolume or mount operations**. A confirmation dialog (`fn.confirm_dialog`) states exactly what happens before anything runs, then a visible Alacritty teardown: (1) disables + stops the snapshot timers (`snapper-cleanup`, `snapper-timeline`, `btrfsmaintenance-refresh.path`, `btrfs-scrub/balance/trim`); (2) removes the snapper `root` config *file* (`rm -f /etc/snapper/configs/root` — snapshots on disk are preserved in the untouched `@snapshots` subvolume); (3) removes the installed subset of the four packages with plain `pacman -R` (no `-s`, so no dependency cascade). The disk layout (`@snapshots` subvolume, `/.snapshots` mount) is left exactly as a fresh install, and re-running Enable restores the stack — so the post-teardown state is the clean opt-in default that `kiro-audit` reports as PASS.
+
+- **`functions.py`:** new `launch_btrfs_teardown_in_terminal()`, modelled on the setup launcher (alacritty guard, echoed steps, `read -p` close). `/etc/conf.d/snapper` needs no manual edit — `pacman -R` turns it into a `.pacsave`, so `SNAPPER_CONFIGS` is not left active.
+- **`btrfs.py`:** new `on_click_disable_snapshots()` — `fn.confirm_dialog` gate (returns early + logs on No), then the `wait_and_refresh` daemon-thread pattern.
+- **`btrfs_gui.py`:** "Disable Kiro snapshots" button added to the Setup row between Enable and Launch Assistant; `refresh()` now tracks `any_installed` and sets the button sensitive only when something is actually set up (`any_installed or config_ok`), greyed on a clean system.
+- ruff clean; all three modules parse; extracted teardown script passes `bash -n`. Full run needs a btrfs root + root — Erik to test the button post-rebuild.
+
+### Removed: in-app "Launch Btrfs Assistant" button
+
+Dropped the **Launch Btrfs Assistant** button (button + `on_click_launch_assistant` callback + its `refresh()` sensitivity line). Decision: Btrfs Assistant is a **third-party app**, not ATT's — ATT installs the snapshot stack and configures it, but launching someone else's GUI isn't ATT's job; users open it from the application menu like any other app. (What first surfaced the question was theming: it's a Qt6 app and rendered un-themed as root — see the Qt-theming entry below — but the deciding reason is simply "not our app.") Functionality was never affected — purely cosmetic.
+
+### Root Qt theming: copy Kvantum + qt5ct into /root
+
+`functions_backup.py` (`backup_gtk_config()`) now also copies the user's `~/.config/Kvantum` and `~/.config/qt5ct` into `/root/.config`, mirroring the existing GTK 3/4 copy. ATT runs as root and already bridged the user's *GTK* theme to `/root` so ATT itself respects the desktop theme — but **Qt** apps theme through a different path (`QT_STYLE_OVERRIDE=kvantum` + `~/.config/Kvantum`), so any Qt app run as root fell back to Kvantum's default theme instead of the user's ArcDark. The new block closes that gap for any current/future root-launched Qt app. Looped over both dirs with the GTK-4.0 pattern (`os.makedirs` + `copytree(dirs_exist_ok=True)` + chmod 755/644); skips symlinked targets; missing source dirs are a silent debug-only skip. Validated manually (Kvantum in `/root` → Btrfs Assistant renders ArcDark). ruff clean; module parses.
+
 ## 2026.06.03 — New Btrfs page: one-click snapshot setup (btrfs roots only)
 
 ### What Changed

@@ -7,8 +7,8 @@ import os
 
 
 def backup_gtk_config():
-    fn.log_subsection("Backing up GTK config")
-    fn.log_info("  ATT runs as root; copying user GTK 3/4 config so the app respects your desktop theme")
+    fn.log_subsection("Backing up GTK + Qt theme config")
+    fn.log_info("  ATT runs as root; copying user GTK 3/4 + Qt (Kvantum/qt5ct) config so apps respect your desktop theme")
     fn.debug_print("backup_gtk_config() START")
     fn.debug_print("=" * 75)
 
@@ -76,6 +76,33 @@ def backup_gtk_config():
             fn.log_error(str(error))
     else:
         fn.debug_print("xsettingsd config not found")
+
+    # Qt theming — Kvantum + qt5ct, so root-launched Qt apps follow the desktop theme.
+    # Qt apps (e.g. Btrfs Assistant) theme via Kvantum, not GTK; root has no Qt config
+    # of its own, so without this they fall back to the default Kvantum theme instead of
+    # the user's ArcDark. Mirrors the GTK-4.0 copy above.
+    for qt_dir in ("Kvantum", "qt5ct"):
+        qt_src = fn.home + "/.config/" + qt_dir
+        qt_dst = "/root/.config/" + qt_dir
+        if fn.path.isdir(qt_src) and not os.path.islink(qt_dst):
+            fn.debug_print(f"Found Qt config at {qt_src}")
+            try:
+                os.makedirs(qt_dst, exist_ok=True)
+                fn.debug_print(f"  From: {qt_src}")
+                fn.debug_print(f"  To:   {qt_dst}")
+                fn.shutil.copytree(qt_src, qt_dst, dirs_exist_ok=True)
+                for dirpath, dirnames, filenames in os.walk(qt_dst):
+                    os.chmod(dirpath, 0o755)
+                    for fname in filenames:
+                        os.chmod(os.path.join(dirpath, fname), 0o644)
+                fn.debug_print(f"✓ {qt_dir} backup completed")
+            except Exception as error:
+                fn.debug_print(f"Error backing up {qt_dir}: {error}")
+                fn.log_error(str(error))
+        elif os.path.islink(qt_dst):
+            fn.debug_print(f"/root/.config/{qt_dir} is a symlink, skipping")
+        else:
+            fn.debug_print(f"Qt config not found at {qt_src}")
 
     fn.debug_print("=" * 75)
     fn.debug_print("backup_gtk_config() END")

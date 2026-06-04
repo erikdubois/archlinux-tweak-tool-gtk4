@@ -42,7 +42,6 @@ def refresh(self, fn):
 
     active = btrfs.all_packages_installed() and config_ok and cleanup_ok
     self.btrfs_summary_label.set_markup(_state(active, "Snapshots are active", "Snapshots are not set up yet"))
-    self.btn_btrfs_assistant.set_sensitive(fn.check_package_installed("btrfs-assistant"))
     self.btn_btrfs_disable.set_sensitive(any_installed or config_ok)
 
 
@@ -136,12 +135,8 @@ def gui(self, Gtk, vboxstack_btrfs, btrfs, fn):
     self.btn_btrfs_disable.set_tooltip_text("Remove the snapshot tools and config — snapshots already taken are kept")
     self.btn_btrfs_disable.connect("clicked", functools.partial(btrfs.on_click_disable_snapshots, self))
     self.btn_btrfs_disable.set_margin_end(10)
-    self.btn_btrfs_assistant = Gtk.Button(label="Launch Btrfs Assistant")
-    self.btn_btrfs_assistant.connect("clicked", functools.partial(btrfs.on_click_launch_assistant, self))
-    self.btn_btrfs_assistant.set_margin_end(10)
     hbox_actions.append(btn_enable)
     hbox_actions.append(self.btn_btrfs_disable)
-    hbox_actions.append(self.btn_btrfs_assistant)
 
     # ── Rollback caveat ──────────────────────────────────────────────
     hbox_caveat = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)

@@ -97,13 +97,3 @@ def on_click_disable_snapshots(self, _widget):
         fn.GLib.idle_add(fn.show_in_app_notification, self, "Snapshot stack removed")
 
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
-
-
-def on_click_launch_assistant(self, _widget):
-    """Launch Btrfs Assistant (the Garuda GUI front-end)."""
-    if not fn.check_package_installed("btrfs-assistant"):
-        fn.log_warn("btrfs-assistant is not installed yet")
-        fn.show_in_app_notification(self, "Install btrfs-assistant first")
-        return
-    fn.log_subsection("Launching Btrfs Assistant")
-    fn.subprocess.Popen(["btrfs-assistant"], stdout=fn.subprocess.PIPE, stderr=fn.subprocess.PIPE)
