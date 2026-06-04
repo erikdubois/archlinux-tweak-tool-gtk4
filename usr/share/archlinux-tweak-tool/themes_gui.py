@@ -119,6 +119,31 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_edit_env.set_margin_end(10)
     hbox_env_edit.append(button_edit_env)
 
+    hbox_env_dropdown = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_env_dropdown.set_halign(Gtk.Align.CENTER)
+    lbl_env_dropdown = Gtk.Label()
+    lbl_env_dropdown.set_markup(
+        '<span foreground="#FFA500">Set the system-wide GTK theme in /etc/environment</span>'
+    )
+    self._env_gtk_theme_names = themes.list_system_gtk_themes()
+    self.env_theme_dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + self._env_gtk_theme_names)
+    current_env_theme = themes.current_env_gtk_theme()
+    if current_env_theme and current_env_theme in self._env_gtk_theme_names:
+        self.env_theme_dropdown.set_selected(self._env_gtk_theme_names.index(current_env_theme) + 1)
+    else:
+        self.env_theme_dropdown.set_selected(0)
+    button_apply_env_theme = Gtk.Button(label="Apply")
+    button_apply_env_theme.connect("clicked", functools.partial(themes.on_click_apply_env_theme, self))
+    lbl_env_dropdown.set_margin_start(10)
+    lbl_env_dropdown.set_margin_end(10)
+    hbox_env_dropdown.append(lbl_env_dropdown)
+    self.env_theme_dropdown.set_margin_start(10)
+    self.env_theme_dropdown.set_margin_end(10)
+    hbox_env_dropdown.append(self.env_theme_dropdown)
+    button_apply_env_theme.set_margin_start(10)
+    button_apply_env_theme.set_margin_end(10)
+    hbox_env_dropdown.append(button_apply_env_theme)
+
     hbox_plasma_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     if is_plasma:
         lbl_plasma_warning = Gtk.Label(xalign=0)
@@ -323,10 +348,16 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
         hbox_env_reminder.set_margin_bottom(10)
         vboxstack_themes.append(hbox_env_reminder)
 
-        hbox_env_edit.set_margin_start(10)
-        hbox_env_edit.set_margin_end(10)
-        hbox_env_edit.set_margin_bottom(10)
-        vboxstack_themes.append(hbox_env_edit)
+    hbox_env_dropdown.set_margin_start(10)
+    hbox_env_dropdown.set_margin_end(10)
+    hbox_env_dropdown.set_margin_bottom(10)
+    vboxstack_themes.append(hbox_env_dropdown)
+
+    # Manual escape hatch on every distro — if the automated write misbehaves, edit the file by hand.
+    hbox_env_edit.set_margin_start(10)
+    hbox_env_edit.set_margin_end(10)
+    hbox_env_edit.set_margin_bottom(10)
+    vboxstack_themes.append(hbox_env_edit)
 
     hbox_info.set_margin_start(10)
     hbox_info.set_margin_end(10)

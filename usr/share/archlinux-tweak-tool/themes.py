@@ -817,15 +817,34 @@ def style_toggle_button(button, text):
     label.set_markup(f'<span foreground="#FFA500">{text}</span>')
 
 
-def _show_change_dialog(self, changes):
-    """Pop up the before→after line(s) we changed in /etc/environment."""
+def _read_env_content():
+    """Return the full text of /etc/environment, or None when it does not exist / cannot be read."""
+    try:
+        with open(ENV_FILE, encoding="utf-8") as env_file:
+            return env_file.read()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        fn.log_warn(f"Could not read {ENV_FILE}: {error}")
+        return None
+
+
+def _show_env_content_dialog(self, header):
+    """Pop up the full current content of /etc/environment so the user sees the real file state."""
+    content = _read_env_content()
+    if content is None:
+        body = f"{ENV_FILE} does not exist."
+    elif not content.strip():
+        body = f"{ENV_FILE} is empty."
+    else:
+        body = content.rstrip("\n")
     dialog = fn.Gtk.MessageDialog(
         transient_for=self,
         message_type=fn.Gtk.MessageType.INFO,
         buttons=fn.Gtk.ButtonsType.OK,
-        text="Updated /etc/environment",
+        text=header,
     )
-    dialog.props.secondary_text = "\n".join(f"{from_line}  →  {to_line}" for from_line, to_line in changes)
+    dialog.props.secondary_text = body
     dialog.connect("response", lambda d, _r: d.destroy())
     dialog.show()
 
@@ -862,7 +881,7 @@ def on_click_toggle_gtk_theme(self, _widget):
     result = toggle_arc_dawn_gtk_theme(self)
     if result["state"] not in ("commented", "active"):
         return
-    _show_change_dialog(self, result["changes"])
+    _show_env_content_dialog(self, "Updated /etc/environment")
     if result["state"] == "commented":
         fn.show_in_app_notification(self, "Dark theme OFF — switch theme, then log out and back in to apply")
     else:
@@ -877,8 +896,142 @@ def on_click_toggle_plasma_qt(self, _widget):
     result = toggle_plasma_qt_overrides(self)
     if result["state"] not in ("commented", "active"):
         return
-    _show_change_dialog(self, result["changes"])
+    _show_env_content_dialog(self, "Updated /etc/environment")
     if result["state"] == "commented":
         fn.show_in_app_notification(self, "Qt overrides OFF — Plasma controls its theme; log out and back in")
     else:
         fn.show_in_app_notification(self, "Qt overrides restored (qt5ct/Kvantum) — log out and back in")
+
+
+# ── Set any system GTK theme via a dropdown (/etc/environment) ─────────
+
+THEMES_ROOT = "/usr/share/themes"
+
+
+def list_system_gtk_themes():
+    """Return GTK theme folders in /usr/share/themes that ship a gtk-3.0 or gtk-4.0 directory."""
+    found = []
+    try:
+        for name in fn.os.listdir(THEMES_ROOT):
+            theme_dir = fn.os.path.join(THEMES_ROOT, name)
+            if not fn.os.path.isdir(theme_dir):
+                continue
+            has_gtk = fn.os.path.isdir(fn.os.path.join(theme_dir, "gtk-3.0")) or fn.os.path.isdir(
+                fn.os.path.join(theme_dir, "gtk-4.0")
+            )
+            if has_gtk:
+                found.append(name)
+    except OSError as error:
+        fn.log_warn(f"Could not read {THEMES_ROOT}: {error}")
+    return sorted(found, key=str.lower)
+
+
+def _is_gtk_theme_key(stripped):
+    return _env_key(stripped) == "GTK_THEME"
+
+
+def current_env_gtk_theme():
+    """Return the active GTK_THEME value in /etc/environment, or None when none is set."""
+    try:
+        with open(ENV_FILE, encoding="utf-8") as env_file:
+            for line in env_file:
+                stripped = line.strip()
+                if not stripped.startswith("#") and _is_gtk_theme_key(stripped):
+                    return stripped.split("=", 1)[1].strip().strip('"').strip("'")
+    except OSError as error:
+        fn.log_warn(f"Could not read {ENV_FILE}: {error}")
+    return None
+
+
+def set_env_gtk_theme(self, theme):
+    """Set GTK_THEME in /etc/environment to theme, or clear it when theme is None; return {state, changes}."""
+    fn.log_subsection("Set the system-wide GTK theme (/etc/environment)")
+    # The file may be empty or missing on a non-Kiro box; treat both as "no lines yet".
+    file_exists = fn.os.path.exists(ENV_FILE)
+    lines = []
+    if file_exists:
+        try:
+            with open(ENV_FILE, encoding="utf-8") as env_file:
+                lines = env_file.readlines()
+        except OSError as error:
+            fn.log_error(f"Could not read {ENV_FILE}: {error}")
+            fn.show_in_app_notification(self, f"Could not read {ENV_FILE}")
+            return {"state": "absent", "changes": []}
+
+    gtk_indices = [i for i, line in enumerate(lines) if _is_gtk_theme_key(line.strip())]
+    changes = []
+
+    if theme is None:
+        # Comment out every active GTK_THEME line so the per-user theme takes over.
+        for index in gtk_indices:
+            stripped = lines[index].strip()
+            if not stripped.startswith("#"):
+                from_line = stripped
+                lines[index] = "#" + lines[index].lstrip()
+                changes.append((from_line, lines[index].strip()))
+        new_state = "commented"
+    else:
+        new_line = f'GTK_THEME="{theme}"\n'
+        if gtk_indices:
+            # Reuse the first GTK_THEME line (active or commented) as the single source of truth.
+            first = gtk_indices[0]
+            from_line = lines[first].strip()
+            lines[first] = new_line
+            if from_line != new_line.strip():
+                changes.append((from_line, new_line.strip()))
+            # Comment any further active GTK_THEME lines so only one stays live.
+            for index in gtk_indices[1:]:
+                stripped = lines[index].strip()
+                if not stripped.startswith("#"):
+                    lines[index] = "#" + lines[index].lstrip()
+                    changes.append((stripped, lines[index].strip()))
+        else:
+            if lines and not lines[-1].endswith("\n"):
+                lines[-1] = lines[-1] + "\n"
+            lines.append(new_line)
+            changes.append(("(none)", new_line.strip()))
+        new_state = "active"
+
+    if not changes:
+        fn.log_info("GTK_THEME already in the requested state — nothing to change")
+        return {"state": new_state, "changes": []}
+
+    try:
+        if file_exists:
+            fn.shutil.copy(ENV_FILE, ENV_FILE + ".bak")
+        with open(ENV_FILE, "w", encoding="utf-8") as env_file:
+            env_file.writelines(lines)
+    except OSError as error:
+        fn.log_error(f"Could not write {ENV_FILE}: {error}")
+        fn.show_in_app_notification(self, f"Could not write {ENV_FILE}")
+        return {"state": "absent", "changes": []}
+
+    if not file_exists:
+        fn.log_info(f"Created {ENV_FILE} (it did not exist)")
+    for from_line, to_line in changes:
+        fn.log_info(f"Changed:  {from_line}  ->  {to_line}")
+    return {"state": new_state, "changes": changes}
+
+
+def on_click_apply_env_theme(self, _widget):
+    """Apply the dropdown-selected GTK theme to /etc/environment, or clear it when 'None' is chosen."""
+    selected = self.env_theme_dropdown.get_selected()
+    theme = None if selected == 0 else self._env_gtk_theme_names[selected - 1]
+    result = set_env_gtk_theme(self, theme)
+    if result["state"] == "absent":
+        return
+    if not result["changes"]:
+        if theme:
+            fn.show_in_app_notification(self, f"GTK theme already set to {theme}")
+        else:
+            fn.show_in_app_notification(self, "No system-wide GTK theme was set")
+        return
+    _show_env_content_dialog(self, "Updated /etc/environment")
+    if theme:
+        fn.log_success(f'Set GTK_THEME="{theme}" in {ENV_FILE}')
+        fn.log_info("LOG OUT and LOG BACK IN for the system-wide theme to apply.")
+        fn.show_in_app_notification(self, f"GTK theme set to {theme} — log out and back in to apply")
+    else:
+        fn.log_success(f"Cleared the system-wide GTK_THEME in {ENV_FILE}")
+        fn.log_info("Your per-user theme takes over again. LOG OUT and LOG BACK IN to apply.")
+        fn.show_in_app_notification(self, "System-wide GTK theme cleared — log out and back in")
