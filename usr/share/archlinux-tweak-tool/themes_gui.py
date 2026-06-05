@@ -280,10 +280,11 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
         hbox_gtk_theme.set_margin_bottom(10)
         vboxstack_themes.append(hbox_gtk_theme)
 
-        hbox_plasma_qt.set_margin_start(10)
-        hbox_plasma_qt.set_margin_end(10)
-        hbox_plasma_qt.set_margin_bottom(10)
-        vboxstack_themes.append(hbox_plasma_qt)
+        if is_plasma:
+            hbox_plasma_qt.set_margin_start(10)
+            hbox_plasma_qt.set_margin_end(10)
+            hbox_plasma_qt.set_margin_bottom(10)
+            vboxstack_themes.append(hbox_plasma_qt)
     else:
         hbox_env_reminder.set_margin_start(10)
         hbox_env_reminder.set_margin_end(10)
