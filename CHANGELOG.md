@@ -21,6 +21,10 @@ The page is now driven by a **single colour table** and refreshed visually: them
 - usr/share/archlinux-tweak-tool/themes_gui.py
 - CHANGELOG.md
 
+### Follow-up fix — Plasma Qt-override button leaked onto non-Plasma Kiro desktops
+
+The "Enable or Disable the Plasma Qt theme overrides" button was appended inside the `if is_kiro:` block, so it showed on **every** Kiro system regardless of desktop — including XFCE/chadwm, where the toggle is meaningless (it only matters under Plasma, which reads its own Qt theme). The `is_plasma` flag was already computed but only guarded the warning label, not the button. Wrapped the button's append in `if is_plasma:` (nested inside `is_kiro`) so it surfaces only on Kiro **and** Plasma.
+
 ## 2026.06.04 — Btrfs page: fix snapper create-config on the pre-staged @snapshots layout
 
 ### What Changed
