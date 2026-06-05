@@ -1,5 +1,26 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.05 — Themes page: data-driven rewrite, kiro-arc packages, family grouping + swatches
+
+### What Changed
+
+The Arc theme collection was rebuilt from source as **55 `kiro-arc-<colour>` packages** (plus the separate `kiro-arc-dawn`), replacing the old `arcolinux-arc-<colour>-git` AUR packages. The ATT **Themes page** still pointed at the old package names and was missing 6 of the new colours (`blueberry`, `cornflower-blue`, `darkish`, `purpley`, `red-violet`, `twilight`). The page hand-listed every colour in **10 places** (~1150 lines, 300 `set_active` calls), which is why those 6 were missed and why renaming was error-prone.
+
+The page is now driven by a **single colour table** and refreshed visually: themes are grouped into their 8 colour families (Blues, Indigos, Purples, Greens, Reds, Oranges, Pinks, Greys) with a small accent **swatch** next to each checkbox, and a per-family selector button row.
+
+### Technical Details
+
+- **`themes.py`:** new `THEME_FAMILIES` constant — one ordered `(family_label, [(token, accent_hex, is_dark), …])` table that is the only place colours are listed. It mirrors the generator's `COLORS`/`BATCHES` tables (`kiro-arc-themes-generator/2-make-all-themes-for-arcolinux.sh`). All 56 hexes verified identical to the generator; the 56 tokens verified to exactly match the built package set (no phantom/uncovered). Helpers `_pkg(token)` (uniform `kiro-arc-<token>` — dawn is no longer a special case) and `_all_tokens()`.
+- **`themes.py`:** `install_themes` / `remove_themes` / `find_themes` and the presets rewritten as loops over `self.arc_checkboxes` (a `{token: CheckButton}` dict). `find_themes` now uses one bulk `fn.check_packages_installed()` call instead of 50 separate `pacman -Qi` calls. The single curated **Blue** preset is replaced by 8 per-family selectors (`select_family` + `on_click_att_family_selection`); **All / Dark / None** kept. `is_dark` preserves the previous Dark preset (dawn, dodger-blue, dracul, pale-grey, slate-grey, smoke, vampire) plus the new `darkish`, `twilight`.
+- **`themes_gui.py`:** the 50 hand-written `CheckButton`s + flowbox appends are generated from `themes.THEME_FAMILIES` — a bold family header + a `Gtk.FlowBox` per family, each theme a swatch + checkbox row. New `_make_swatch()` helper paints a 16×16 `Gtk.DrawingArea` with the accent hex via Cairo (no image assets). Family-button row wired to `themes.on_click_att_family_selection`. Header count derived from `len(themes._all_tokens())`.
+- The dawn `/etc/environment` GTK-toggle, plasma-qt toggle, env dropdown, `arcthemes.jpg` preview, and install/remove/find buttons are unchanged. No other file references the old `self.arcolinux_arc_*` attributes (verified). Both files pass `ruff check` and compile.
+
+### Files Modified
+
+- usr/share/archlinux-tweak-tool/themes.py
+- usr/share/archlinux-tweak-tool/themes_gui.py
+- CHANGELOG.md
+
 ## 2026.06.04 — Btrfs page: fix snapper create-config on the pre-staged @snapshots layout
 
 ### What Changed
