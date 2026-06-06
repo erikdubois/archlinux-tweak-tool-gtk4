@@ -22,6 +22,13 @@ if not status --is-interactive
   exit
 end
 
+# Add user-local bins to PATH (mirrors .zshrc)
+for dir in $HOME/.bin $HOME/.local/bin
+    if test -d $dir; and not contains $dir $PATH
+        set -gx PATH $dir $PATH
+    end
+end
+
 # Load private config
 if [ -f $HOME/.config/fish/private.fish ]
     source $HOME/.config/fish/private.fish

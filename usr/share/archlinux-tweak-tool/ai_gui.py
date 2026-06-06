@@ -170,7 +170,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     hbox_antigravity_cli_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
     self.lbl_ai_antigravity_cli = Gtk.Label(xalign=0)
     antigravity_cli_installed = any(fn.path.exists(p) for p in ai.ANTIGRAVITY_CLI_PATHS)
-    self.lbl_ai_antigravity_cli.set_markup("antigravity-cli" + (" <b>installed</b>" if antigravity_cli_installed else ""))
+    self.lbl_ai_antigravity_cli.set_markup("Antigravity-cli" + (" <b>installed</b>" if antigravity_cli_installed else ""))
     hbox_antigravity_cli_label.append(self.lbl_ai_antigravity_cli)
     self.btn_ai_antigravity_cli_link = Gtk.Button()
     lbl_ai_antigravity_cli_link = Gtk.Label()
@@ -196,7 +196,7 @@ def gui(self, Gtk, vboxstack_ai, fn):
     self.lbl_ai_antigravity = Gtk.Label(xalign=0)
     antigravity_installed = any(fn.path.exists(p) for p in ai.ANTIGRAVITY_PATHS)
     self.lbl_ai_antigravity.set_markup(
-        "antigravity (previous gemini)" + (" <b>installed</b>" if antigravity_installed else "")
+        "Antigravity (previous gemini)" + (" <b>installed</b>" if antigravity_installed else "")
     )
     hbox_antigravity_label.append(self.lbl_ai_antigravity)
     self.btn_ai_antigravity_link = Gtk.Button()

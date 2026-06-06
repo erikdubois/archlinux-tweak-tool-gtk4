@@ -379,7 +379,7 @@ def on_click_ai_antigravity_cli(self, _widget):
                 process.wait()
                 fn.invalidate_pkg_cache()
                 fn.log_success("antigravity-cli removed successfully")
-                GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "antigravity-cli")
+                GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "Antigravity-cli")
                 GLib.idle_add(self.btn_ai_antigravity_cli.set_label, "Install")
                 GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli removal complete")
 
@@ -402,7 +402,7 @@ def on_click_ai_antigravity_cli(self, _widget):
                     fn.invalidate_pkg_cache()
                     if any(fn.path.exists(p) for p in ANTIGRAVITY_CLI_PATHS):
                         fn.log_success("antigravity-cli installed successfully")
-                        GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "antigravity-cli <b>installed</b>")
+                        GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "Antigravity-cli <b>installed</b>")
                         GLib.idle_add(self.btn_ai_antigravity_cli.set_label, "Remove")
                         GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli installation complete")
                     else:
@@ -428,7 +428,7 @@ def on_click_ai_antigravity(self, _widget):
                 process.wait()
                 fn.invalidate_pkg_cache()
                 fn.log_success("antigravity removed successfully")
-                GLib.idle_add(self.lbl_ai_antigravity.set_markup, "antigravity (previous gemini)")
+                GLib.idle_add(self.lbl_ai_antigravity.set_markup, "Antigravity (previous gemini)")
                 GLib.idle_add(self.btn_ai_antigravity.set_label, "Install")
                 GLib.idle_add(fn.show_in_app_notification, self, "antigravity removal complete")
 
@@ -452,7 +452,7 @@ def on_click_ai_antigravity(self, _widget):
                     if any(fn.path.exists(p) for p in ANTIGRAVITY_PATHS):
                         fn.log_success("antigravity installed successfully")
                         GLib.idle_add(
-                            self.lbl_ai_antigravity.set_markup, "antigravity (previous gemini) <b>installed</b>"
+                            self.lbl_ai_antigravity.set_markup, "Antigravity (previous gemini) <b>installed</b>"
                         )
                         GLib.idle_add(self.btn_ai_antigravity.set_label, "Remove")
                         GLib.idle_add(fn.show_in_app_notification, self, "antigravity installation complete")
