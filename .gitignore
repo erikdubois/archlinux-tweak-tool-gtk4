@@ -1,6 +1,4 @@
 __pycache__
 arcolinux-tweak-tool-debug
-.claude/*
-!.claude/memory/
-!.claude/memory/**
+.claude/
 .codex/
