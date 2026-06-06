@@ -12,6 +12,7 @@ URL_ANTIGRAVITY_CLI = "https://antigravity.google/"
 URL_ANTIGRAVITY = "https://antigravity.google/product/antigravity-2"
 URL_OPENCODE = "https://opencode.ai"
 URL_COPILOT = "https://github.com/github/gh-copilot"
+URL_OPENCLAW = "https://github.com/openclaw/openclaw"
 URL_CHATGPT_DOCS = "https://academy.openai.com/"
 URL_CLAUDE_WEB_DOCS = "https://claude.com/resources/tutorials?open_in_browser=1"
 URL_GEMINI_WEB_DOCS = "https://gemini.google.com/"
@@ -49,6 +50,7 @@ COPILOT_PATHS = [
     f"/home/{fn.sudo_username}/.local/bin/copilot",
     f"/home/{fn.sudo_username}/.npm-global/bin/copilot",
 ]
+OPENCLAW_PATHS = ["/usr/bin/openclaw"]
 
 
 def _read_temp_file(process):
@@ -574,6 +576,57 @@ def on_click_ai_copilot(self, _widget):
         fn.log_error(f"Error: {error}")
 
 
+def on_click_ai_openclaw(self, _widget):
+    try:
+        if any(fn.path.exists(p) for p in OPENCLAW_PATHS):
+            fn.log_subsection("Removing openclaw...")
+            process = fn.launch_pacman_remove_in_terminal("openclaw")
+
+            def wait_removal():
+                if process is None:
+                    return
+                process.wait()
+                fn.invalidate_pkg_cache()
+                fn.log_success("openclaw removed successfully")
+                GLib.idle_add(self.lbl_ai_openclaw.set_markup, "OpenClaw - Multi-channel AI gateway")
+                GLib.idle_add(self.btn_ai_openclaw.set_label, "Install")
+                GLib.idle_add(fn.show_in_app_notification, self, "openclaw removal complete")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "openclaw removal started")
+        else:
+            aur_helper = fn.get_aur_helper()
+            if aur_helper is None:
+                fn.log_warn("No AUR helper found — install yay or paru first")
+                GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                return
+            fn.log_subsection("Installing openclaw...")
+            process = fn.launch_aur_install_in_terminal(aur_helper, "openclaw")
+
+            def wait_install():
+                try:
+                    if process is None:
+                        return
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    if any(fn.path.exists(p) for p in OPENCLAW_PATHS):
+                        fn.log_success("openclaw installed successfully")
+                        GLib.idle_add(
+                            self.lbl_ai_openclaw.set_markup, "OpenClaw - Multi-channel AI gateway <b>installed</b>"
+                        )
+                        GLib.idle_add(self.btn_ai_openclaw.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "openclaw installation complete")
+                    else:
+                        fn.log_warn(f"openclaw binary NOT found. Checked: {OPENCLAW_PATHS}")
+                except Exception as e:
+                    fn.log_error(f"Error during openclaw installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "openclaw installation started")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
 def open_url_in_browser(self, url):
     fn.open_url_as_user(url)
 
@@ -612,6 +665,10 @@ def on_click_ai_opencode_link(self, _widget):
 
 def on_click_ai_copilot_link(self, _widget):
     open_url_in_browser(self, URL_COPILOT)
+
+
+def on_click_ai_openclaw_link(self, _widget):
+    open_url_in_browser(self, URL_OPENCLAW)
 
 
 def on_click_ai_chatgpt(self, _widget):
