@@ -1,5 +1,29 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.06 — AI page: Gemini CLI → antigravity-cli, add antigravity (AUR)
+
+### What Changed
+
+Google rebranded its Gemini CLI line as **Antigravity**. The AI Tools page **CLI Assistants** section now reflects that:
+
+- The old **"Google Gemini CLI"** row (installed the npm package `@google/gemini-cli`) is replaced by an **`antigravity-cli`** row.
+- A new **`antigravity (previous gemini)`** row is added directly underneath it.
+
+Both are now AUR packages installed via the user's AUR helper (yay/paru), not npm — matching how Erik installed them on his own system. The separate web-app **"Google Gemini"** row (Web Apps section) is unchanged.
+
+### Technical Details
+
+- **`ai.py`:** `URL_GEMINI_CLI` → `URL_ANTIGRAVITY_CLI` (`https://antigravity.google/`); added `URL_ANTIGRAVITY` (`https://antigravity.google/product/antigravity-2`). `GEMINI_PATHS` (npm install locations) replaced by `ANTIGRAVITY_CLI_PATHS = ["/usr/bin/agy"]` and `ANTIGRAVITY_PATHS = ["/usr/bin/antigravity"]` — the actual binaries shipped by the `antigravity-cli` and `antigravity` AUR packages.
+- **`ai.py`:** `on_click_ai_gemini` (npm) rewritten as `on_click_ai_antigravity_cli`; new `on_click_ai_antigravity`. Both mirror the `claude-code`/`aider` AUR pattern — `get_aur_helper()` guard, `launch_aur_install_in_terminal()` to install, `launch_pacman_remove_in_terminal()` to remove, `wait_install`/`wait_removal` daemon threads, `invalidate_pkg_cache()`, label/button refresh via `GLib.idle_add`. Link handler `on_click_ai_gemini_link` → `on_click_ai_antigravity_cli_link`; added `on_click_ai_antigravity_link`.
+- **`ai_gui.py`:** the Gemini CLI block renamed to the `antigravity-cli` block (widgets `hbox_antigravity_cli`, `self.lbl_ai_antigravity_cli`, `self.btn_ai_antigravity_cli*`); new `antigravity (previous gemini)` block (`hbox_antigravity`, `self.lbl_ai_antigravity`, `self.btn_ai_antigravity*`) appended directly below it (before OpenCode).
+- Both files pass `ruff check` and compile.
+
+### Files Modified
+
+- usr/share/archlinux-tweak-tool/ai.py
+- usr/share/archlinux-tweak-tool/ai_gui.py
+- CHANGELOG.md
+
 ## 2026.06.05 — Themes page: data-driven rewrite, kiro-arc packages, family grouping + swatches
 
 ### What Changed

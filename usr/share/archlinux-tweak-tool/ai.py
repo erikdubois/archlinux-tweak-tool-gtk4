@@ -8,7 +8,8 @@ URL_WEBUI = "https://openwebui.com/"
 URL_CLAUDE_CLI = "https://code.claude.com/docs/en/cli-reference"
 URL_AIDER = "https://aider.chat/"
 URL_CODEX = "https://developers.openai.com/codex/cli"
-URL_GEMINI_CLI = "https://geminicli.com/"
+URL_ANTIGRAVITY_CLI = "https://antigravity.google/"
+URL_ANTIGRAVITY = "https://antigravity.google/product/antigravity-2"
 URL_OPENCODE = "https://opencode.ai"
 URL_COPILOT = "https://github.com/github/gh-copilot"
 URL_CHATGPT_DOCS = "https://academy.openai.com/"
@@ -34,12 +35,8 @@ CODEX_PATHS = [
     f"/home/{fn.sudo_username}/.local/bin/codex",
     f"/home/{fn.sudo_username}/.npm-global/bin/codex",
 ]
-GEMINI_PATHS = [
-    "/usr/bin/gemini",
-    "/usr/local/bin/gemini",
-    f"/home/{fn.sudo_username}/.local/bin/gemini",
-    f"/home/{fn.sudo_username}/.npm-global/bin/gemini",
-]
+ANTIGRAVITY_CLI_PATHS = ["/usr/bin/agy"]
+ANTIGRAVITY_PATHS = ["/usr/bin/antigravity"]
 OPENCODE_PATHS = [
     "/usr/bin/opencode",
     "/usr/local/bin/opencode",
@@ -370,54 +367,102 @@ def on_click_ai_codex(self, _widget):
         fn.log_error(f"Error: {error}")
 
 
-def on_click_ai_gemini(self, _widget):
+def on_click_ai_antigravity_cli(self, _widget):
     try:
-        gemini_installed = any(fn.path.exists(p) for p in GEMINI_PATHS)
+        if any(fn.path.exists(p) for p in ANTIGRAVITY_CLI_PATHS):
+            fn.log_subsection("Removing antigravity-cli...")
+            process = fn.launch_pacman_remove_in_terminal("antigravity-cli")
 
-        if gemini_installed:
-            fn.log_subsection("Removing gemini...")
-            process = fn.launch_npm_remove_in_terminal("@google/gemini-cli")
-            if process:
+            def wait_removal():
+                if process is None:
+                    return
+                process.wait()
+                fn.invalidate_pkg_cache()
+                fn.log_success("antigravity-cli removed successfully")
+                GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "antigravity-cli")
+                GLib.idle_add(self.btn_ai_antigravity_cli.set_label, "Install")
+                GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli removal complete")
 
-                def wait_removal():
-                    try:
-                        process.wait()
-                        fn.invalidate_pkg_cache()
-                        time.sleep(_FS_SETTLE_DELAY)
-                        GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI")
-                        GLib.idle_add(self.btn_ai_gemini.set_label, "Install")
-                        GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal complete")
-                    except Exception as e:
-                        fn.log_error(f"Error during gemini removal: {e}")
-
-                fn.threading.Thread(target=wait_removal, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal started")
-            else:
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini removal failed")
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli removal started")
         else:
-            fn.log_subsection("Installing gemini...")
-            process = fn.launch_npm_install_in_terminal("@google/gemini-cli")
-            if process:
+            aur_helper = fn.get_aur_helper()
+            if aur_helper is None:
+                fn.log_warn("No AUR helper found — install yay or paru first")
+                GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                return
+            fn.log_subsection("Installing antigravity-cli...")
+            process = fn.launch_aur_install_in_terminal(aur_helper, "antigravity-cli")
 
-                def wait_install():
-                    try:
-                        process.wait()
-                        fn.invalidate_pkg_cache()
-                        time.sleep(_FS_SETTLE_DELAY)
-                        if any(fn.path.exists(p) for p in GEMINI_PATHS):
-                            fn.log_success("gemini installed successfully")
-                            GLib.idle_add(self.lbl_ai_gemini.set_markup, "Google Gemini CLI <b>installed</b>")
-                            GLib.idle_add(self.btn_ai_gemini.set_label, "Remove")
-                            GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation complete")
-                        else:
-                            fn.log_warn(f"Gemini binary NOT found. Checked: {GEMINI_PATHS}")
-                    except Exception as e:
-                        fn.log_error(f"Error during gemini installation: {e}")
+            def wait_install():
+                try:
+                    if process is None:
+                        return
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    if any(fn.path.exists(p) for p in ANTIGRAVITY_CLI_PATHS):
+                        fn.log_success("antigravity-cli installed successfully")
+                        GLib.idle_add(self.lbl_ai_antigravity_cli.set_markup, "antigravity-cli <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_antigravity_cli.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli installation complete")
+                    else:
+                        fn.log_warn(f"antigravity-cli binary NOT found. Checked: {ANTIGRAVITY_CLI_PATHS}")
+                except Exception as e:
+                    fn.log_error(f"Error during antigravity-cli installation: {e}")
 
-                fn.threading.Thread(target=wait_install, daemon=True).start()
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation started")
-            else:
-                GLib.idle_add(fn.show_in_app_notification, self, "Gemini installation failed")
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "antigravity-cli installation started")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
+def on_click_ai_antigravity(self, _widget):
+    try:
+        if any(fn.path.exists(p) for p in ANTIGRAVITY_PATHS):
+            fn.log_subsection("Removing antigravity...")
+            process = fn.launch_pacman_remove_in_terminal("antigravity")
+
+            def wait_removal():
+                if process is None:
+                    return
+                process.wait()
+                fn.invalidate_pkg_cache()
+                fn.log_success("antigravity removed successfully")
+                GLib.idle_add(self.lbl_ai_antigravity.set_markup, "antigravity (previous gemini)")
+                GLib.idle_add(self.btn_ai_antigravity.set_label, "Install")
+                GLib.idle_add(fn.show_in_app_notification, self, "antigravity removal complete")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "antigravity removal started")
+        else:
+            aur_helper = fn.get_aur_helper()
+            if aur_helper is None:
+                fn.log_warn("No AUR helper found — install yay or paru first")
+                GLib.idle_add(fn.show_in_app_notification, self, "No AUR helper found. Install yay or paru first.")
+                return
+            fn.log_subsection("Installing antigravity...")
+            process = fn.launch_aur_install_in_terminal(aur_helper, "antigravity")
+
+            def wait_install():
+                try:
+                    if process is None:
+                        return
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    if any(fn.path.exists(p) for p in ANTIGRAVITY_PATHS):
+                        fn.log_success("antigravity installed successfully")
+                        GLib.idle_add(
+                            self.lbl_ai_antigravity.set_markup, "antigravity (previous gemini) <b>installed</b>"
+                        )
+                        GLib.idle_add(self.btn_ai_antigravity.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "antigravity installation complete")
+                    else:
+                        fn.log_warn(f"antigravity binary NOT found. Checked: {ANTIGRAVITY_PATHS}")
+                except Exception as e:
+                    fn.log_error(f"Error during antigravity installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "antigravity installation started")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
@@ -549,8 +594,12 @@ def on_click_ai_aider_link(self, _widget):
     open_url_in_browser(self, URL_AIDER)
 
 
-def on_click_ai_gemini_link(self, _widget):
-    open_url_in_browser(self, URL_GEMINI_CLI)
+def on_click_ai_antigravity_cli_link(self, _widget):
+    open_url_in_browser(self, URL_ANTIGRAVITY_CLI)
+
+
+def on_click_ai_antigravity_link(self, _widget):
+    open_url_in_browser(self, URL_ANTIGRAVITY)
 
 
 def on_click_ai_codex_link(self, _widget):
