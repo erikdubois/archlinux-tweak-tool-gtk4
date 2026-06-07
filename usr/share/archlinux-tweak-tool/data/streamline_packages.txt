@@ -65,7 +65,6 @@ resources
 
 ###  PACKAGE / SYSTEM TOOLS
 appstream
-archlinux-tools
 devtools
 downgrade
 expac
