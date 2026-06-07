@@ -27,7 +27,7 @@ def gui(self, Gtk, vbox_stack, fn):
     lbl_desc = Gtk.Label(xalign=0)
     lbl_desc.set_markup(
         " Remove optional apps that shipped on this system, grouped by category.\n"
-        " Each section shows apps <b>still installed</b> (left, tick to remove) next to those <b>already removed</b> (right).\n"
+        " Each section shows apps <b>still installed</b> (left, tick to remove) next to those <b>already removed</b> (right, tick to reinstall).\n"
         " Tick a <b>category</b> to select all its apps, then untick the ones you want to keep.\n"
         " <b>Save profile</b> stores your current selection. <b>Save removed list</b> records what's actually\n"
         " gone now (the full list minus what's still installed). Import either on a future install to re-remove."
@@ -108,6 +108,7 @@ def gui(self, Gtk, vbox_stack, fn):
             child = nxt
 
         self.streamline_checks = []
+        self.streamline_reinstall_checks = []
         self.streamline_groups = []
         self.streamline_sections = []
         all_pkgs = [pkg for pkgs in categories.values() for pkg in pkgs]
@@ -162,12 +163,21 @@ def gui(self, Gtk, vbox_stack, fn):
                 left_widget = left_header
             right_header = Gtk.Label(xalign=0)
             right_header.set_markup(f"<b>{GLib.markup_escape_text(category)}</b>")
-            _attach(right_header, 1, grid_row, top=10)
+            if present_removed:
+                reinstall_check = Gtk.CheckButton()
+                reinstall_check.set_child(right_header)
+                _attach(reinstall_check, 1, grid_row, top=10)
+                right_widget = reinstall_check
+            else:
+                reinstall_check = None
+                _attach(right_header, 1, grid_row, top=10)
+                right_widget = right_header
             grid_row += 1
 
             removed_to_show = present_removed if present_removed else ["—"]
             placeholder = not present_removed
             child_checks = []
+            reinstall_child_checks = []
             section_items = []
             for i in range(max(len(present_installed), len(removed_to_show))):
                 if i < len(present_installed):
@@ -179,18 +189,29 @@ def gui(self, Gtk, vbox_stack, fn):
                     _attach(row_check, 0, grid_row, start=25)
                     section_items.append((pkg.lower(), row_check))
                 if i < len(removed_to_show):
-                    removed_label = Gtk.Label(xalign=0)
-                    removed_label.set_text(removed_to_show[i])
-                    removed_label.add_css_class("dim-label")
-                    _attach(removed_label, 1, grid_row, start=15)
-                    section_items.append(("" if placeholder else removed_to_show[i].lower(), removed_label))
+                    if placeholder:
+                        cell = Gtk.Label(xalign=0)
+                        cell.set_text("—")
+                        cell.add_css_class("dim-label")
+                        _attach(cell, 1, grid_row, start=15)
+                        section_items.append(("", cell))
+                    else:
+                        pkg_removed = removed_to_show[i]
+                        reinstall_row = Gtk.CheckButton(label=pkg_removed)
+                        self.streamline_reinstall_checks.append((pkg_removed, reinstall_row))
+                        reinstall_child_checks.append(reinstall_row)
+                        reinstall_row.connect("toggled", on_child_toggled, reinstall_check, reinstall_child_checks)
+                        _attach(reinstall_row, 1, grid_row, start=15)
+                        section_items.append((pkg_removed.lower(), reinstall_row))
                 grid_row += 1
 
             if category_check is not None:
                 category_check.connect("toggled", on_category_toggled, child_checks)
                 self.streamline_groups.append((category_check, child_checks))
+            if reinstall_check is not None:
+                reinstall_check.connect("toggled", on_category_toggled, reinstall_child_checks)
 
-            self.streamline_sections.append(([left_widget, right_header], section_items))
+            self.streamline_sections.append(([left_widget, right_widget], section_items))
 
         if not shown:
             lbl_empty = Gtk.Label(xalign=0)
@@ -228,6 +249,30 @@ def gui(self, Gtk, vbox_stack, fn):
             _dialog.destroy()
             if response == Gtk.ResponseType.YES:
                 streamline.do_remove(self, packages, recursive, populate)
+
+        dialog.connect("response", on_response)
+        dialog.present()
+
+    def on_reinstall(_widget):
+        packages = streamline.selected_reinstall(self)
+        if not packages:
+            fn.log_warn("Streamline: reinstall clicked with no packages selected")
+            fn.show_in_app_notification(self, "No removed packages selected")
+            return
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            modal=True,
+            message_type=Gtk.MessageType.QUESTION,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text=f"Reinstall {len(packages)} selected package(s)?",
+        )
+        dialog.props.secondary_text = "This will install:\n\n" + "\n".join(packages)
+        dialog.set_default_response(Gtk.ResponseType.NO)
+
+        def on_response(_dialog, response):
+            _dialog.destroy()
+            if response == Gtk.ResponseType.YES:
+                streamline.do_reinstall(self, packages, populate)
 
         dialog.connect("response", on_response)
         dialog.present()
@@ -304,22 +349,42 @@ def gui(self, Gtk, vbox_stack, fn):
     populate()
 
     # ── Action bar ─────────────────────────────────────────
-    hbox_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_actions.set_margin_start(10)
-    hbox_actions.set_margin_top(10)
-    hbox_actions.set_margin_bottom(10)
+    # Column-aligned: left actions sit under "Still installed", right actions
+    # under "Already removed", matching the two grid columns above.
     btn_remove = Gtk.Button(label="Remove selected")
     btn_remove.connect("clicked", on_remove)
     btn_save = Gtk.Button(label="Save profile")
     btn_save.connect("clicked", on_save)
+    btn_reinstall = Gtk.Button(label="Reinstall selected")
+    btn_reinstall.connect("clicked", on_reinstall)
     btn_save_removed = Gtk.Button(label="Save removed list")
     btn_save_removed.connect("clicked", on_save_removed)
     btn_import = Gtk.Button(label="Import profile")
     btn_import.connect("clicked", on_import)
-    hbox_actions.append(btn_remove)
-    hbox_actions.append(btn_save)
-    hbox_actions.append(btn_save_removed)
-    hbox_actions.append(btn_import)
+
+    hbox_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_actions.set_homogeneous(True)
+    hbox_actions.set_margin_start(10)
+    hbox_actions.set_margin_end(10)
+    hbox_actions.set_margin_top(10)
+    hbox_actions.set_margin_bottom(5)
+    left_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    left_actions.set_halign(Gtk.Align.START)
+    left_actions.append(btn_remove)
+    right_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    right_actions.set_halign(Gtk.Align.START)
+    right_actions.append(btn_reinstall)
+    right_actions.append(btn_save_removed)
+    hbox_actions.append(left_actions)
+    hbox_actions.append(right_actions)
+
+    # Page-level row (applies to the whole list, not one column) — left-aligned.
+    hbox_profile = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_profile.set_halign(Gtk.Align.START)
+    hbox_profile.set_margin_start(10)
+    hbox_profile.set_margin_bottom(10)
+    hbox_profile.append(btn_import)
+    hbox_profile.append(btn_save)
 
     vbox_stack.append(hbox_title)
     vbox_stack.append(hbox_sep)
@@ -328,3 +393,4 @@ def gui(self, Gtk, vbox_stack, fn):
     vbox_stack.append(search_entry)
     vbox_stack.append(scrolled)
     vbox_stack.append(hbox_actions)
+    vbox_stack.append(hbox_profile)

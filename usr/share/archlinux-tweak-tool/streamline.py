@@ -7,8 +7,13 @@ from gi.repository import GLib
 
 
 def selected_packages(self):
-    """Return the package names whose row checkbutton is ticked."""
+    """Return the installed package names whose left-column checkbutton is ticked."""
     return [pkg for pkg, check in getattr(self, "streamline_checks", []) if check.get_active()]
+
+
+def selected_reinstall(self):
+    """Return the already-removed package names whose right-column checkbutton is ticked."""
+    return [pkg for pkg, check in getattr(self, "streamline_reinstall_checks", []) if check.get_active()]
 
 
 def removal_preview(packages, recursive):
@@ -57,6 +62,28 @@ def removed_packages(self):
     all_pkgs = [pkg for pkgs in categories.values() for pkg in pkgs]
     installed = fn.check_packages_installed(all_pkgs)
     return [pkg for pkg in all_pkgs if not installed.get(pkg)]
+
+
+def do_reinstall(self, packages, refresh_cb):
+    """Reinstall the given packages in a popup terminal and refresh once it closes."""
+    fn.log_subsection("Streamline — reinstalling selected packages")
+    fn.debug_print(f"Reinstalling: {' '.join(packages)}")
+    pkg_string = " ".join(packages)
+    helper = fn.get_aur_helper()
+    if helper:
+        process = fn.launch_aur_install_in_terminal(helper, pkg_string)
+    else:
+        process = fn.launch_pacman_install_in_terminal(pkg_string)
+    fn.show_in_app_notification(self, "Install terminal opened")
+
+    def wait_and_refresh():
+        if process is not None:
+            process.wait()
+        fn.invalidate_pkg_cache()
+        GLib.idle_add(refresh_cb)
+        GLib.idle_add(fn.show_in_app_notification, self, "Streamline reinstall finished")
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
 def save_profile(self, packages, kind="profile"):

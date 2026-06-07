@@ -78,9 +78,12 @@ def _make_fake_functions():
     fn.permissions = lambda *_a: None
     for name in ("log_section", "log_subsection", "log_info", "log_success", "log_warn", "log_error", "debug_print"):
         setattr(fn, name, lambda msg, *_a, **_k: _log(msg))
-    # Removal is stubbed — preview never actually removes anything.
+    # Removal/install are stubbed — preview never actually changes the system.
     fn.launch_pacman_remove_in_terminal = lambda pkgs: _log(f"[stub] would run: pacman -R {pkgs}") or None
     fn.launch_pacman_remove_recursive_in_terminal = lambda pkgs: _log(f"[stub] would run: pacman -Rns {pkgs}") or None
+    fn.get_aur_helper = lambda: "yay"
+    fn.launch_aur_install_in_terminal = lambda helper, pkgs: _log(f"[stub] would run: {helper} -S {pkgs}") or None
+    fn.launch_pacman_install_in_terminal = lambda pkgs: _log(f"[stub] would run: pacman -S {pkgs}") or None
     return fn
 
 
