@@ -46,22 +46,61 @@ def do_remove(self, packages, recursive, refresh_cb):
     fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
 
 
-def save_profile(self, packages):
-    """Write the selected package names to a timestamped profile file, return its path."""
-    fn.log_subsection("Streamline — saving profile")
+def removed_packages(self):
+    """Return optional packages from the Streamline list that are no longer installed.
+
+    This is the after-the-fact view: the full TIER 3 list minus what's still
+    installed on this system — i.e. what has actually been removed (or was never
+    present). Importing it on a fresh full install re-removes the same apps.
+    """
+    categories = fn.load_streamline_categories()
+    all_pkgs = [pkg for pkgs in categories.values() for pkg in pkgs]
+    installed = fn.check_packages_installed(all_pkgs)
+    return [pkg for pkg in all_pkgs if not installed.get(pkg)]
+
+
+def save_profile(self, packages, kind="profile"):
+    """Write the package names to a timestamped Streamline file, return its path."""
+    fn.log_subsection(f"Streamline — saving {kind} list")
     if not fn.path.isdir(fn.att_streamline_dir):
         fn.makedirs(fn.att_streamline_dir, 0o766)
         fn.permissions(fn.att_streamline_dir)
-    filename = "streamline-profile-%s-%s.txt" % (
+    filename = "streamline-%s-%s-%s.txt" % (
+        kind,
         fn.datetime.datetime.today().date(),
         fn.datetime.datetime.today().time().strftime("%H-%M-%S"),
     )
     file_path = fn.path.join(fn.att_streamline_dir, filename)
+    header = (
+        "# ============================================================================\n"
+        "# Streamline package list  —  archlinux-tweak-tool (ATT)\n"
+        "# ============================================================================\n"
+        "# WHAT THIS IS\n"
+        "#   A plain list of package names, one per line. These are packages to be\n"
+        "#   REMOVED from the system — not packages to install.\n"
+        "#\n"
+        "# HOW TO USE IT\n"
+        "#   1. Open ATT -> Streamline page.\n"
+        '#   2. Click "Import profile" and choose this file; matching installed apps\n'
+        "#      get ticked automatically.\n"
+        '#   3. Click "Remove selected" to uninstall them (review the confirmation).\n'
+        "#\n"
+        "# WHY KEEP IT\n"
+        "#   Save it off the machine before a reinstall. On a fresh Kiro install every\n"
+        "#   optional app is present again — importing this file re-removes the same\n"
+        "#   set in one pass, so you don't redo it by hand.\n"
+        "#\n"
+        f'# Kind: {kind}   ("profile" = your current selection; "removed" = what was already gone)\n'
+        f"# Saved: {fn.datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        "# Lines starting with # are ignored. Edit freely.\n"
+        "# ============================================================================\n"
+        "\n"
+    )
     with open(file_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(packages) + "\n")
+        f.write(header + "\n".join(packages) + "\n")
     fn.permissions(file_path)
-    fn.log_success(f"Streamline profile saved to {file_path}")
-    fn.show_in_app_notification(self, f"Profile saved: {filename}")
+    fn.log_success(f"Streamline {kind} list saved to {file_path}")
+    fn.show_in_app_notification(self, f"Saved: {filename}")
     return file_path
 
 

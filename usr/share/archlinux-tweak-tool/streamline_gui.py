@@ -27,8 +27,10 @@ def gui(self, Gtk, vbox_stack, fn):
     lbl_desc = Gtk.Label(xalign=0)
     lbl_desc.set_markup(
         " Remove optional apps that shipped on this system, grouped by category.\n"
+        " Each section shows apps <b>still installed</b> (left, tick to remove) next to those <b>already removed</b> (right).\n"
         " Tick a <b>category</b> to select all its apps, then untick the ones you want to keep.\n"
-        " <b>Save profile</b> stores your selection so you can re-apply it after a future reinstall."
+        " <b>Save profile</b> stores your current selection. <b>Save removed list</b> records what's actually\n"
+        " gone now (the full list minus what's still installed). Import either on a future install to re-remove."
     )
     lbl_desc.set_margin_start(10)
     lbl_desc.set_margin_top(5)
@@ -80,6 +82,24 @@ def gui(self, Gtk, vbox_stack, fn):
             return
         sync_header(category_check, child_checks)
 
+    def apply_filter(query):
+        q = query.strip().lower()
+        for headers, items in getattr(self, "streamline_sections", []):
+            any_visible = False
+            for name, widget in items:
+                match = (not q) or (q in name)
+                widget.set_visible(match)
+                if match and name:
+                    any_visible = True
+            for header_widget in headers:
+                header_widget.set_visible(any_visible)
+
+    search_entry = Gtk.SearchEntry()
+    search_entry.set_placeholder_text("Search packages…")
+    search_entry.set_margin_start(10)
+    search_entry.set_margin_end(10)
+    search_entry.connect("search-changed", lambda entry: apply_filter(entry.get_text()))
+
     def populate():
         child = container.get_first_child()
         while child is not None:
@@ -89,40 +109,96 @@ def gui(self, Gtk, vbox_stack, fn):
 
         self.streamline_checks = []
         self.streamline_groups = []
+        self.streamline_sections = []
         all_pkgs = [pkg for pkgs in categories.values() for pkg in pkgs]
         installed = fn.check_packages_installed(all_pkgs)
 
+        # One grid for the whole list so left/right cells share rows and line up
+        # vertically — installed (col 0) beside removed (col 1), row by row.
+        grid = Gtk.Grid()
+        grid.set_column_homogeneous(True)
+        grid.set_column_spacing(15)
+        grid.set_row_spacing(2)
+        container.append(grid)
+
+        def _attach(widget, col, row, top=0, start=0):
+            widget.set_valign(Gtk.Align.CENTER)
+            if top:
+                widget.set_margin_top(top)
+            if start:
+                widget.set_margin_start(start)
+            grid.attach(widget, col, row, 1, 1)
+
+        # Column captions.
+        left_caption = Gtk.Label(xalign=0)
+        left_caption.set_markup("<b>Still installed</b>")
+        right_caption = Gtk.Label(xalign=0)
+        right_caption.set_markup("<b>Already removed</b>")
+        _attach(left_caption, 0, 0)
+        _attach(right_caption, 1, 0)
+        rule = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        grid.attach(rule, 0, 1, 2, 1)
+        grid_row = 2
+
         shown = False
         for category, pkgs in categories.items():
-            present = [pkg for pkg in pkgs if installed.get(pkg)]
-            if not present:
+            present_installed = [pkg for pkg in pkgs if installed.get(pkg)]
+            present_removed = [pkg for pkg in pkgs if not installed.get(pkg)]
+            if not present_installed and not present_removed:
                 continue
             shown = True
 
-            category_check = Gtk.CheckButton()
-            category_label = Gtk.Label(xalign=0)
-            category_label.set_markup(f"<b>{GLib.markup_escape_text(category)}</b>")
-            category_check.set_child(category_label)
-            category_check.set_margin_top(8)
-            container.append(category_check)
+            # Section title in BOTH columns, on the same grid row → aligned.
+            left_header = Gtk.Label(xalign=0)
+            left_header.set_markup(f"<b>{GLib.markup_escape_text(category)}</b>")
+            if present_installed:
+                category_check = Gtk.CheckButton()
+                category_check.set_child(left_header)
+                _attach(category_check, 0, grid_row, top=10)
+                left_widget = category_check
+            else:
+                category_check = None
+                _attach(left_header, 0, grid_row, top=10)
+                left_widget = left_header
+            right_header = Gtk.Label(xalign=0)
+            right_header.set_markup(f"<b>{GLib.markup_escape_text(category)}</b>")
+            _attach(right_header, 1, grid_row, top=10)
+            grid_row += 1
 
+            removed_to_show = present_removed if present_removed else ["—"]
+            placeholder = not present_removed
             child_checks = []
-            for pkg in present:
-                row_check = Gtk.CheckButton(label=pkg)
-                row_check.set_margin_start(25)
-                container.append(row_check)
-                self.streamline_checks.append((pkg, row_check))
-                child_checks.append(row_check)
-                row_check.connect("toggled", on_child_toggled, category_check, child_checks)
+            section_items = []
+            for i in range(max(len(present_installed), len(removed_to_show))):
+                if i < len(present_installed):
+                    pkg = present_installed[i]
+                    row_check = Gtk.CheckButton(label=pkg)
+                    self.streamline_checks.append((pkg, row_check))
+                    child_checks.append(row_check)
+                    row_check.connect("toggled", on_child_toggled, category_check, child_checks)
+                    _attach(row_check, 0, grid_row, start=25)
+                    section_items.append((pkg.lower(), row_check))
+                if i < len(removed_to_show):
+                    removed_label = Gtk.Label(xalign=0)
+                    removed_label.set_text(removed_to_show[i])
+                    removed_label.add_css_class("dim-label")
+                    _attach(removed_label, 1, grid_row, start=15)
+                    section_items.append(("" if placeholder else removed_to_show[i].lower(), removed_label))
+                grid_row += 1
 
-            category_check.connect("toggled", on_category_toggled, child_checks)
-            self.streamline_groups.append((category_check, child_checks))
+            if category_check is not None:
+                category_check.connect("toggled", on_category_toggled, child_checks)
+                self.streamline_groups.append((category_check, child_checks))
+
+            self.streamline_sections.append(([left_widget, right_header], section_items))
 
         if not shown:
             lbl_empty = Gtk.Label(xalign=0)
             lbl_empty.set_text("No optional apps from the Kiro package list are installed on this system.")
             lbl_empty.set_margin_top(10)
             container.append(lbl_empty)
+
+        apply_filter(search_entry.get_text())
 
     def on_remove(_widget):
         packages = streamline.selected_packages(self)
@@ -163,6 +239,14 @@ def gui(self, Gtk, vbox_stack, fn):
             fn.show_in_app_notification(self, "No packages selected")
             return
         streamline.save_profile(self, packages)
+
+    def on_save_removed(_widget):
+        removed = streamline.removed_packages(self)
+        if not removed:
+            fn.log_warn("Streamline: save-removed clicked but nothing is removed")
+            fn.show_in_app_notification(self, "Nothing removed yet — every optional app is still installed")
+            return
+        streamline.save_profile(self, removed, kind="removed")
 
     def apply_imported(packages):
         wanted = set(packages)
@@ -228,15 +312,19 @@ def gui(self, Gtk, vbox_stack, fn):
     btn_remove.connect("clicked", on_remove)
     btn_save = Gtk.Button(label="Save profile")
     btn_save.connect("clicked", on_save)
+    btn_save_removed = Gtk.Button(label="Save removed list")
+    btn_save_removed.connect("clicked", on_save_removed)
     btn_import = Gtk.Button(label="Import profile")
     btn_import.connect("clicked", on_import)
     hbox_actions.append(btn_remove)
     hbox_actions.append(btn_save)
+    hbox_actions.append(btn_save_removed)
     hbox_actions.append(btn_import)
 
     vbox_stack.append(hbox_title)
     vbox_stack.append(hbox_sep)
     vbox_stack.append(lbl_desc)
     vbox_stack.append(self.streamline_recursive)
+    vbox_stack.append(search_entry)
     vbox_stack.append(scrolled)
     vbox_stack.append(hbox_actions)
