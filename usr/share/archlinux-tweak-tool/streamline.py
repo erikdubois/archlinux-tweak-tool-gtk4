@@ -13,7 +13,9 @@ def selected_packages(self):
 
 def removal_preview(packages, recursive):
     """Return (returncode, text) of a dry-run pacman removal — what would be removed."""
-    flag = "-Rns" if recursive else "-R"
+    # Use -Rs (not -Rns) for the dry run: pacman rejects --print together with -n
+    # (--nosave), and -n only affects config-file saving, not which packages go.
+    flag = "-Rs" if recursive else "-R"
     result = fn.subprocess.run(
         ["pacman", flag, "--print"] + packages,
         capture_output=True,
