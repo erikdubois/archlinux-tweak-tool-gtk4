@@ -11,7 +11,6 @@ vivaldi-ffmpeg-codecs
 gcolor3
 gimp
 gpick
-imagemagick
 inkscape
 nomacs
 obs-studio
@@ -43,11 +42,8 @@ fd
 glances
 most
 ncdu
-ripgrep
-ripgrep-all
 speedtest-cli
 the_silver_searcher
-tldr
 tree
 wttr
 yt-dlp
@@ -75,12 +71,10 @@ pacquery
 pamac-aur
 paru-git
 pkgfile
-python-pylint
 python-pyparted
 python-pywal
 rate-mirrors
 time
-yay-git
 
 ###  ARCHIVE TOOLS
 7zip
@@ -93,11 +87,8 @@ arandr
 claude-code
 dconf-editor
 font-manager
-git
 gittyup
-inetutils
 laptop-detect
-libgepub
 lsb-release
 menulibre
 mintstick
