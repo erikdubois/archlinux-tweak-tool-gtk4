@@ -398,8 +398,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     stack.add_titled(vboxstack_software, "stack_software", "Software")  # software installers
 
-    if fn.DEV and fn.get_distro_label() == "Kiro":
-        # Kiro-only: the category list is sourced from the Kiro ISO package set. (WIP — also --dev gated.)
+    if fn.get_distro_label() == "Kiro":
+        # Kiro-only: the category list is sourced from the Kiro ISO package set.
         stack.add_titled(vboxstack_streamline, "stack_streamline", "Streamline")  # remove optional apps by category
 
     stack.add_titled(vboxstack_funding, "stack_funding", "Support")  # funding / support the project

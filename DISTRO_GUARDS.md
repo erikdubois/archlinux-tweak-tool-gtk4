@@ -36,7 +36,7 @@ These are not guards — they are identity corrections. `fn.distr` is normalized
 | Plymouth | `artix`      | artix has no systemd init                                                            |
 | SDDM     | `prismlinux` | `fn.distr not in _SDDM_HIDDEN_DISTROS` (set at top of `gui.py`)                      |
 | SDDM     | any distro   | also hidden if `plasma-login` or `plasmalogin` service is enabled (not distro-keyed) |
-| Streamline | all non-Kiro | shown ONLY on Kiro: `fn.DEV and fn.get_distro_label() == "Kiro"` (also `--dev` gated while WIP; Kiro = `IMAGE_ID=kiro` in `/etc/os-release`) |
+| Streamline | all non-Kiro | shown ONLY on Kiro: `fn.get_distro_label() == "Kiro"` (Kiro = `IMAGE_ID=kiro` in `/etc/os-release`) |
 
 ---
 
