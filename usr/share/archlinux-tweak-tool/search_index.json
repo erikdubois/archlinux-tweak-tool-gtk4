@@ -1785,6 +1785,41 @@
       ]
     },
     {
+      "title": "Streamline",
+      "child": "stack_streamline",
+      "keywords": [],
+      "labels": [
+        "after",
+        "also",
+        "apps",
+        "can",
+        "category",
+        "dependencies",
+        "future",
+        "grouped",
+        "import",
+        "keep",
+        "kiro",
+        "list",
+        "ones",
+        "optional",
+        "package",
+        "profile",
+        "reinstall",
+        "rns",
+        "selection",
+        "shipped",
+        "stores",
+        "streamline",
+        "system",
+        "then",
+        "tick",
+        "untick",
+        "unused",
+        "want"
+      ]
+    },
+    {
       "title": "Support",
       "child": "stack_funding",
       "keywords": [

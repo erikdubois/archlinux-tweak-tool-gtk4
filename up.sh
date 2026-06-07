@@ -165,6 +165,12 @@ main() {
         python3 "${SCRIPT_DIR}/gen-search-index.py" || log_warn "search index generation failed — continuing"
     fi
 
+    if [[ -f "${SCRIPT_DIR}/gen-streamline-list.py" ]]; then
+        log_section "Regenerating Streamline package list"
+        # Non-fatal: a stale list must not block the commit/push.
+        python3 "${SCRIPT_DIR}/gen-streamline-list.py" || log_warn "streamline list generation failed — continuing"
+    fi
+
     git_commit_and_push
 
     log_success "$(basename "$0") done"

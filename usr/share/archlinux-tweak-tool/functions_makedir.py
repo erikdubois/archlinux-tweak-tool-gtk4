@@ -139,6 +139,18 @@ def ensure_app_dirs():
     else:
         fn.debug_print(f"{fn.att_sessions_dir} already exists")
 
+    if not fn.path.isdir(fn.att_streamline_dir):
+        try:
+            fn.debug_print(f"Creating ATT streamline directory: {fn.att_streamline_dir}")
+            fn.makedirs(fn.att_streamline_dir, 0o766)
+            fn.permissions(fn.att_streamline_dir)
+            fn.debug_print(f"✓ {fn.att_streamline_dir} created")
+        except Exception as error:
+            fn.debug_print(f"Error creating ATT streamline directory: {error}")
+            fn.log_error(str(error))
+    else:
+        fn.debug_print(f"{fn.att_streamline_dir} already exists")
+
     fn.debug_print("=" * 75)
     fn.debug_print("ensure_app_dirs() END")
     fn.debug_print("=" * 75)

@@ -40,6 +40,7 @@ import network_gui
 import office_gui
 import system_gui
 import software_gui
+import streamline_gui
 import funding_gui
 import packages_gui
 import wallpaper
@@ -127,6 +128,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_system = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_office = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_streamline = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_funding = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_wallpaper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -328,6 +330,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     _defer_tab(vboxstack_software, lambda: software_gui.gui(self, Gtk, vboxstack_software, fn))
 
+    _defer_tab(vboxstack_streamline, lambda: streamline_gui.gui(self, Gtk, vboxstack_streamline, fn))
+
     _defer_tab(vboxstack_funding, lambda: funding_gui.gui(self, Gtk, vboxstack_funding, fn))
 
     def _build_wallpaper():
@@ -393,6 +397,10 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_shells, "stack23", "Shells")  # shell
 
     stack.add_titled(vboxstack_software, "stack_software", "Software")  # software installers
+
+    if fn.DEV and fn.get_distro_label() == "Kiro":
+        # Kiro-only: the category list is sourced from the Kiro ISO package set. (WIP — also --dev gated.)
+        stack.add_titled(vboxstack_streamline, "stack_streamline", "Streamline")  # remove optional apps by category
 
     stack.add_titled(vboxstack_funding, "stack_funding", "Support")  # funding / support the project
 

@@ -10,7 +10,7 @@ ArchLinux Tweak Tool (ATT) is a GTK4-based Python application for managing Arch-
 - **GUI Framework**: GTK4 (4.6+)
 - **Entry Point**: `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
 - **Desktop Launcher**: `usr/share/applications/archlinux-tweak-tool.desktop`
-- **Tab count**: 26 active tabs (AI Tools, Autostart, Desktop, Fastfetch, Icons, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, Support, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Autostart and Desktop)
+- **Tab count**: 26 active tabs (AI Tools, Autostart, Desktop, Fastfetch, Icons, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, Support, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 dev-gated Kiro-only Streamline page (shown only with `--dev` on Kiro, alphabetically between Software and Support) + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Autostart and Desktop)
 
 ## Requirements
 
@@ -271,6 +271,7 @@ ATT writes all user-facing data under `~/.config/archlinux-tweak-tool/` using th
 | `desktop_history/`  | `fn.att_log_dir`      | Package snapshots (`pacman -Q`) written on every Desktop page action (install/remove/set default) |
 | `packages/`         | `fn.att_packages_dir` | Exported package lists and install-status logs from the Packages page                             |
 | `logging_sessions/` | `fn.att_sessions_dir` | ATT console session logs written at startup by `init_session_log()`                               |
+| `streamline/`       | `fn.att_streamline_dir` | Saved Streamline debloat profiles (newline package lists) exported from the Streamline page    |
 
 **Rules:**
 

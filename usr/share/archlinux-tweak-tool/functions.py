@@ -406,6 +406,7 @@ pacman_lockfile = "/var/lib/pacman/db.lck"
 att_log_dir = home + "/.config/archlinux-tweak-tool/desktop_history/"
 att_packages_dir = home + "/.config/archlinux-tweak-tool/packages/"
 att_sessions_dir = home + "/.config/archlinux-tweak-tool/logging_sessions/"
+att_streamline_dir = home + "/.config/archlinux-tweak-tool/streamline/"
 
 # logging setup
 logger = logging.getLogger("logger")
@@ -1033,6 +1034,8 @@ def check_cachyos_repo_active():
 
 _nemesis_packages_cache = None
 
+_streamline_categories_cache = None
+
 _pacman_conf_cache = None
 
 _pkg_cache: dict = {}
@@ -1078,6 +1081,40 @@ def load_nemesis_packages():
         debug_print(f"[ERROR] Failed to load nemesis packages: {e}")
 
     return _nemesis_packages_cache
+
+
+def load_streamline_categories():
+    """Load the Streamline category->packages map from the generated data file.
+
+    Returns an ordered dict {category: [pkg, ...]} parsed from
+    data/streamline_packages.txt (TIER 3 of the Kiro ISO list). Missing file
+    yields an empty map so the page degrades gracefully on non-Kiro systems.
+    """
+    global _streamline_categories_cache
+    if _streamline_categories_cache is not None:
+        return _streamline_categories_cache
+
+    streamline_file = "/usr/share/archlinux-tweak-tool/data/streamline_packages.txt"
+    categories: dict = {}
+    current = None
+    try:
+        if path.exists(streamline_file):
+            with open(streamline_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    stripped = line.strip()
+                    if stripped.startswith("###"):
+                        current = stripped.lstrip("#").strip()
+                        categories[current] = []
+                    elif stripped and not stripped.startswith("#") and current is not None:
+                        categories[current].append(stripped)
+            debug_print(f"[INFO] Loaded {len(categories)} streamline categories from {streamline_file}")
+        else:
+            debug_print(f"[INFO] streamline_packages.txt not found at {streamline_file}")
+    except Exception as e:
+        debug_print(f"[ERROR] Failed to load streamline categories: {e}")
+
+    _streamline_categories_cache = categories
+    return _streamline_categories_cache
 
 
 def find_package_repo(package_name):

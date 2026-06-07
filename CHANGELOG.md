@@ -1,6 +1,42 @@
 # Arch Linux Tweak Tool — Changelog
 
-## 2026.06.06 — AI page: Gemini CLI → antigravity-cli, add antigravity (AUR)
+## 2026.06.07 — New Streamline page: remove optional apps by category + save/import debloat profiles
+
+### What Changed
+
+Added a new **Streamline** page (sidebar, alphabetically between Software and Support; **Kiro-only** and currently **dev-gated** — shown only with `--dev` on Kiro while it stabilizes) that lets a user slim down an installed system by removing the **optional** apps that shipped on it, grouped by category (Web Browsers, Media / Graphics, Productivity / Editors, CLI Utilities, System Info / Diagnostics, Package / System Tools, Archive Tools, Desktop / Misc Extras).
+
+- Tick a **category** to select all its apps, then untick the ones to keep.
+- **Remove selected** shows a confirmation dialog with a `pacman -Rns --print` dry-run (the full removal cascade) before anything runs, then performs the removal in the standard ATT popup terminal.
+- A **`-Rns` / `-R` toggle** (default `-Rns`) controls whether unused dependencies are removed too.
+- **Save profile** writes the selection to `~/.config/archlinux-tweak-tool/streamline/`; **Import profile** sets the checkboxes to exactly match the profile (ticks its packages, unticks the rest) so the user can re-debloat in one pass after reinstalling.
+
+The category list is sourced from **TIER 3** of the Kiro ISO `packages.x86_64` — the section explicitly marked "USER-CHANGEABLE / OPTIONAL". TIER 1 (frozen) and TIER 2 (core) are never offered, so base/kernel/desktop/installer packages can't be selected. The page only lists packages actually installed on the running system, so it degrades gracefully on non-Kiro Arch systems.
+
+### Technical Details
+
+- **`gen-streamline-list.py`** (new, repo root): build-time generator, wired into `up.sh` next to `gen-search-index.py`. Reads the local `~/KIRO-ISO-CALAMARES/kiro-iso/archiso/packages.x86_64` (env override `KIRO_ISO_PACKAGES`, GitHub raw fallback), parses **TIER 3 only**, and writes `data/streamline_packages.txt` preserving the `###  CATEGORY` headers. TIER 3 is located by anchoring on the banner line directly under a full-width `#` rule (not the first textual "TIER 3" mention, which appears in the file's prose intro — that bug initially leaked TIER 1/2). Parsing stops at the `PERSONAL_REPO` banner; commented-out `#pkg` lines are skipped. Output: 8 categories, 91 packages.
+- **`functions.py`:** added `att_streamline_dir` constant and `load_streamline_categories()` (cached, graceful file-not-found → empty map), modeled on `load_nemesis_packages()`. Installed-filtering reuses the existing single-call `check_packages_installed()`.
+- **`functions_makedir.py`:** create `att_streamline_dir` at startup with `fn.permissions()` (real user owns it).
+- **`streamline.py`** (new): logic helpers — `selected_packages()`, `removal_preview()` (`pacman -R/-Rns --print`), `do_remove()` (reuses `launch_pacman_remove_in_terminal` / `launch_pacman_remove_recursive_in_terminal` + `wait_and_refresh` daemon-thread pattern + `invalidate_pkg_cache()`), `save_profile()`, `read_profile_file()`.
+- **`streamline_gui.py`** (new): page UI — title (`set_name("title")`), bold category select-all checkbuttons (`set_markup` + `GLib.markup_escape_text`), scrollable rows, confirm `Gtk.MessageDialog` with the dry-run cascade as secondary text, file-chooser import (`.connect("response") + .present()`).
+- **`gui.py`:** import `streamline_gui`, `vboxstack_streamline`, `_defer_tab(...)`, `stack.add_titled(..., "stack_streamline", "Streamline")` between Software and Support, gated behind `if fn.DEV and fn.get_distro_label() == "Kiro":` (visibility only — construction/defer still run; Kiro detected via `IMAGE_ID=kiro` in `/etc/os-release`).
+- **`data/streamline_packages.txt`** (new, generated, committed).
+- **`CLAUDE.md`:** tab count 26 → 27 + Streamline in the list; new User Config Directory Layout row for `streamline/`.
+
+### Files Modified
+
+- `gen-streamline-list.py` (new)
+- `usr/share/archlinux-tweak-tool/streamline.py` (new)
+- `usr/share/archlinux-tweak-tool/streamline_gui.py` (new)
+- `usr/share/archlinux-tweak-tool/data/streamline_packages.txt` (new, generated)
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/functions_makedir.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `up.sh`
+- `CLAUDE.md`
+
+## 2026.06.06 — AI page: Gemini CLI → antigravity-cli, add antigravity + OpenClaw (AUR)
 
 ### What Changed
 
@@ -11,11 +47,15 @@ Google rebranded its Gemini CLI line as **Antigravity**. The AI Tools page **CLI
 
 Both are now AUR packages installed via the user's AUR helper (yay/paru), not npm — matching how Erik installed them on his own system. The separate web-app **"Google Gemini"** row (Web Apps section) is unchanged.
 
+Also added a new **OpenClaw** row at the end of the **CLI Coding Assistants** section — the AUR package `openclaw` ("Multi-channel AI gateway with extensible messaging integrations", nodejs-based, MIT).
+
 ### Technical Details
 
 - **`ai.py`:** `URL_GEMINI_CLI` → `URL_ANTIGRAVITY_CLI` (`https://antigravity.google/`); added `URL_ANTIGRAVITY` (`https://antigravity.google/product/antigravity-2`). `GEMINI_PATHS` (npm install locations) replaced by `ANTIGRAVITY_CLI_PATHS = ["/usr/bin/agy"]` and `ANTIGRAVITY_PATHS = ["/usr/bin/antigravity"]` — the actual binaries shipped by the `antigravity-cli` and `antigravity` AUR packages.
 - **`ai.py`:** `on_click_ai_gemini` (npm) rewritten as `on_click_ai_antigravity_cli`; new `on_click_ai_antigravity`. Both mirror the `claude-code`/`aider` AUR pattern — `get_aur_helper()` guard, `launch_aur_install_in_terminal()` to install, `launch_pacman_remove_in_terminal()` to remove, `wait_install`/`wait_removal` daemon threads, `invalidate_pkg_cache()`, label/button refresh via `GLib.idle_add`. Link handler `on_click_ai_gemini_link` → `on_click_ai_antigravity_cli_link`; added `on_click_ai_antigravity_link`.
 - **`ai_gui.py`:** the Gemini CLI block renamed to the `antigravity-cli` block (widgets `hbox_antigravity_cli`, `self.lbl_ai_antigravity_cli`, `self.btn_ai_antigravity_cli*`); new `antigravity (previous gemini)` block (`hbox_antigravity`, `self.lbl_ai_antigravity`, `self.btn_ai_antigravity*`) appended directly below it (before OpenCode).
+- **OpenClaw (`ai.py`):** added `URL_OPENCLAW` (`https://github.com/openclaw/openclaw`), `OPENCLAW_PATHS = ["/usr/bin/openclaw"]`, `on_click_ai_openclaw`, and `on_click_ai_openclaw_link`. Modeled on the `antigravity-cli` AUR pattern — `get_aur_helper()` guard, `launch_aur_install_in_terminal()` install, `launch_pacman_remove_in_terminal()` remove, `wait_install`/`wait_removal` daemon threads, `invalidate_pkg_cache()`, label/button refresh via `GLib.idle_add`.
+- **OpenClaw (`ai_gui.py`):** new `hbox_openclaw` block (`self.lbl_ai_openclaw`, `self.btn_ai_openclaw*`) appended at the end of the CLI Coding Assistants section, after GitHub Copilot CLI and before the Web Apps header.
 - Both files pass `ruff check` and compile.
 
 ### Files Modified
