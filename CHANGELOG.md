@@ -6,7 +6,7 @@
 
 Added a new **Streamline** page (sidebar, alphabetically between Software and Support; **Kiro-only** and currently **dev-gated** — shown only with `--dev` on Kiro while it stabilizes) that lets a user slim down an installed system by removing the **optional** apps that shipped on it, grouped by category (Web Browsers, Media / Graphics, Productivity / Editors, CLI Utilities, System Info / Diagnostics, Package / System Tools, Archive Tools, Desktop / Misc Extras).
 
-- Tick a **category** to select all its apps, then untick the ones to keep.
+- Tick a **category** to select all its apps, then untick the ones to keep. The category header is a tri-state reflection of its children — filled when all are ticked, a dash when some are, empty when none — and only the individual app ticks drive removal.
 - **Remove selected** shows a confirmation dialog with a `pacman -Rns --print` dry-run (the full removal cascade) before anything runs, then performs the removal in the standard ATT popup terminal.
 - A **`-Rns` / `-R` toggle** (default `-Rns`) controls whether unused dependencies are removed too.
 - **Save profile** writes the selection to `~/.config/archlinux-tweak-tool/streamline/`; **Import profile** sets the checkboxes to exactly match the profile (ticks its packages, unticks the rest) so the user can re-debloat in one pass after reinstalling.

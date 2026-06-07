@@ -47,10 +47,38 @@ def gui(self, Gtk, vbox_stack, fn):
     container.set_margin_end(10)
     scrolled.set_child(container)
 
+    # Guard so programmatic state changes don't trigger each other's handlers.
+    syncing = {"on": False}
+
+    def sync_header(category_check, child_checks):
+        """Make the category header reflect its children: all/none/some (indeterminate)."""
+        states = [c.get_active() for c in child_checks]
+        syncing["on"] = True
+        if all(states):
+            category_check.set_inconsistent(False)
+            category_check.set_active(True)
+        elif not any(states):
+            category_check.set_inconsistent(False)
+            category_check.set_active(False)
+        else:
+            category_check.set_active(False)
+            category_check.set_inconsistent(True)
+        syncing["on"] = False
+
     def on_category_toggled(category_check, child_checks):
+        if syncing["on"]:
+            return
         active = category_check.get_active()
+        syncing["on"] = True
         for child_check in child_checks:
             child_check.set_active(active)
+        category_check.set_inconsistent(False)
+        syncing["on"] = False
+
+    def on_child_toggled(_child_check, category_check, child_checks):
+        if syncing["on"]:
+            return
+        sync_header(category_check, child_checks)
 
     def populate():
         child = container.get_first_child()
@@ -60,6 +88,7 @@ def gui(self, Gtk, vbox_stack, fn):
             child = nxt
 
         self.streamline_checks = []
+        self.streamline_groups = []
         all_pkgs = [pkg for pkgs in categories.values() for pkg in pkgs]
         installed = fn.check_packages_installed(all_pkgs)
 
@@ -84,8 +113,10 @@ def gui(self, Gtk, vbox_stack, fn):
                 container.append(row_check)
                 self.streamline_checks.append((pkg, row_check))
                 child_checks.append(row_check)
+                row_check.connect("toggled", on_child_toggled, category_check, child_checks)
 
             category_check.connect("toggled", on_category_toggled, child_checks)
+            self.streamline_groups.append((category_check, child_checks))
 
         if not shown:
             lbl_empty = Gtk.Label(xalign=0)
@@ -110,9 +141,9 @@ def gui(self, Gtk, vbox_stack, fn):
             text=f"Remove {len(packages)} selected package(s)?",
         )
         if returncode == 0:
-            dialog.format_secondary_text("This will remove:\n\n" + preview)
+            dialog.props.secondary_text = "This will remove:\n\n" + preview
         else:
-            dialog.format_secondary_text("pacman reported a problem with this selection:\n\n" + preview)
+            dialog.props.secondary_text = "pacman reported a problem with this selection:\n\n" + preview
             # Removal would fail (e.g. a dependency is required elsewhere) — block confirming it.
             dialog.set_response_sensitive(Gtk.ResponseType.YES, False)
         dialog.set_default_response(Gtk.ResponseType.NO)
@@ -136,11 +167,15 @@ def gui(self, Gtk, vbox_stack, fn):
     def apply_imported(packages):
         wanted = set(packages)
         matched = 0
+        syncing["on"] = True
         for pkg, check in self.streamline_checks:
             in_profile = pkg in wanted
             check.set_active(in_profile)
             if in_profile:
                 matched += 1
+        syncing["on"] = False
+        for category_check, child_checks in self.streamline_groups:
+            sync_header(category_check, child_checks)
         fn.log_info(f"Streamline: imported profile selected {matched} installed package(s)")
         fn.show_in_app_notification(self, f"Profile imported — {matched} installed app(s) selected")
 
