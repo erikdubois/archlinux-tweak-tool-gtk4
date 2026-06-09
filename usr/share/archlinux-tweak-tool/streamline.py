@@ -17,8 +17,8 @@ def selected_reinstall(self):
 
 
 def removal_preview(packages, recursive):
-    """Return (returncode, text) of a dry-run pacman removal — what would be removed."""
-    # Use -Rs (not -Rns) for the dry run: pacman rejects --print together with -n
+    """Return (returncode, text) listing the packages a removal would take out, removing nothing."""
+    # Use -Rs (not -Rns) with --print: pacman rejects --print together with -n
     # (--nosave), and -n only affects config-file saving, not which packages go.
     flag = "-Rs" if recursive else "-R"
     result = fn.subprocess.run(

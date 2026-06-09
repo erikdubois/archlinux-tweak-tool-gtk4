@@ -129,6 +129,7 @@ if fn.distr:
         "gnome-system-monitor",
         "gnome-terminal",
         "nemo-fileroller",
+        "kiro-cinnamon",
     ]
     chadwm = [
         "alacritty",
@@ -267,6 +268,7 @@ if fn.distr:
     mate = [
         "mate",
         "mate-extra",
+        "kiro-mate",
     ]
     ohmychadwm = [
         "alacritty",

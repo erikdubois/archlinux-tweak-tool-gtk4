@@ -8,6 +8,7 @@ vivaldi
 vivaldi-ffmpeg-codecs
 
 ###  MEDIA / GRAPHICS
+flameshot-git
 gcolor3
 gimp
 gpick
@@ -19,6 +20,7 @@ shortwave
 variety
 vlc
 vlc-plugins-all
+xcolor
 
 ###  PRODUCTIVITY / EDITORS
 baobab
@@ -57,7 +59,11 @@ inxi
 lm_sensors
 lshw
 pciutils
+redshift
 resources
+
+###  BACKUP / SNAPSHOTS
+timeshift
 
 ###  PACKAGE / SYSTEM TOOLS
 appstream
