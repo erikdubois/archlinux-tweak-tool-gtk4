@@ -515,6 +515,49 @@
       ]
     },
     {
+      "title": "ISO",
+      "child": "stack_iso",
+      "keywords": [
+        "iso",
+        "kiro iso builder",
+        "kib",
+        "build iso",
+        "image",
+        "live",
+        "installer",
+        "archiso",
+        "spin",
+        "distro"
+      ],
+      "labels": [
+        "add",
+        "apps",
+        "arch",
+        "based",
+        "build",
+        "builder",
+        "desktops",
+        "done",
+        "end",
+        "fixes",
+        "flight",
+        "front",
+        "gtk4",
+        "host",
+        "kernel",
+        "kiro",
+        "launch",
+        "nemesis",
+        "one",
+        "own",
+        "packages",
+        "personalised",
+        "pre",
+        "preflight",
+        "repo"
+      ]
+    },
+    {
       "title": "Icons",
       "child": "stack25",
       "keywords": [

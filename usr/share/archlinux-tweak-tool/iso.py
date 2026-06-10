@@ -1,0 +1,82 @@
+# ============================================================
+# Authors: Erik Dubois
+# ============================================================
+
+import functions as fn
+
+PACKAGE = "kiro-iso-builder"
+
+
+def _refresh_kib_lbl(self):
+    if fn.check_package_installed(PACKAGE):
+        self.kib_status_lbl.set_markup(f"{PACKAGE} is <b>installed</b>")
+    else:
+        self.kib_status_lbl.set_markup(f"{PACKAGE} is <b>not installed</b>")
+
+
+def _refresh_launch_btn(self):
+    self.btn_launch_kib.set_sensitive(fn.check_package_installed(PACKAGE))
+
+
+def on_install_kib_clicked(self, _widget):
+    """Install kiro-iso-builder from the Nemesis repo via terminal."""
+    if fn.check_package_installed(PACKAGE):
+        fn.log_info(f"{PACKAGE} is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{PACKAGE} is already installed")
+        return
+    fn.log_subsection(f"Installing {PACKAGE}...")
+    process = fn.launch_pacman_install_in_terminal(PACKAGE)
+    fn.GLib.idle_add(fn.show_in_app_notification, self, f"Opening terminal to install {PACKAGE}")
+
+    def wait_install():
+        try:
+            process.wait()
+            fn.invalidate_pkg_cache()
+            fn.log_success(f"{PACKAGE} installed")
+            fn.GLib.idle_add(_refresh_kib_lbl, self)
+            fn.GLib.idle_add(_refresh_launch_btn, self)
+            fn.GLib.idle_add(fn.show_in_app_notification, self, f"{PACKAGE} installed")
+        except Exception as e:
+            fn.log_error(f"Error installing {PACKAGE}: {e}")
+
+    fn.threading.Thread(target=wait_install, daemon=True).start()
+
+
+def on_remove_kib_clicked(self, _widget):
+    """Remove kiro-iso-builder via terminal."""
+    if not fn.check_package_installed(PACKAGE):
+        fn.log_info(f"{PACKAGE} is not installed — nothing to remove")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{PACKAGE} is not installed")
+        return
+    fn.log_subsection(f"Removing {PACKAGE}...")
+    process = fn.launch_pacman_remove_in_terminal(PACKAGE)
+    fn.GLib.idle_add(fn.show_in_app_notification, self, f"Opening terminal to remove {PACKAGE}")
+
+    def wait_remove():
+        try:
+            process.wait()
+            fn.invalidate_pkg_cache()
+            fn.log_success(f"{PACKAGE} removed")
+            fn.GLib.idle_add(_refresh_kib_lbl, self)
+            fn.GLib.idle_add(_refresh_launch_btn, self)
+            fn.GLib.idle_add(fn.show_in_app_notification, self, f"{PACKAGE} removed")
+        except Exception as e:
+            fn.log_error(f"Error removing {PACKAGE}: {e}")
+
+    fn.threading.Thread(target=wait_remove, daemon=True).start()
+
+
+def on_launch_kib_clicked(self, _widget):
+    """Launch Kiro ISO Builder as the real user (it elevates internally)."""
+    if not fn.check_package_installed(PACKAGE):
+        fn.log_info(f"{PACKAGE} not installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, f"{PACKAGE} not installed")
+        return
+    fn.log_subsection("Launching Kiro ISO Builder...")
+    fn.subprocess.Popen(
+        "sudo -E -u " + fn.sudo_username + " env HOME=" + fn.home + " " + PACKAGE + " &",
+        shell=True,
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.STDOUT,
+    )
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Kiro ISO Builder launched")

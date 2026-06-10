@@ -5,6 +5,8 @@ from gi.repository import GLib
 
 URL_OLLAMA = "https://ollama.com/"
 URL_WEBUI = "https://openwebui.com/"
+URL_JAN = "https://jan.ai/"
+URL_AICHAT = "https://github.com/sigoden/aichat"
 URL_CLAUDE_CLI = "https://code.claude.com/docs/en/cli-reference"
 URL_AIDER = "https://aider.chat/"
 URL_CODEX = "https://developers.openai.com/codex/cli"
@@ -108,6 +110,98 @@ def on_click_ai_ollama(self, _widget):
 
             fn.threading.Thread(target=wait_install, daemon=True).start()
             GLib.idle_add(fn.show_in_app_notification, self, "ollama installation started")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
+def on_click_ai_jan(self, _widget):
+    try:
+        if fn.path.exists("/usr/bin/jan"):
+            fn.log_subsection("Removing jan...")
+            process = fn.launch_pacman_remove_in_terminal("jan-bin")
+
+            def wait_removal():
+                if process is None:
+                    return
+                process.wait()
+                fn.invalidate_pkg_cache()
+                fn.log_success("jan removed successfully")
+                GLib.idle_add(self.lbl_ai_jan.set_markup, "Jan - Offline desktop AI")
+                GLib.idle_add(self.btn_ai_jan.set_label, "Install")
+                GLib.idle_add(fn.show_in_app_notification, self, "jan removal complete")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "jan removal started")
+        else:
+            fn.log_subsection("Installing jan-bin...")
+            process = fn.launch_pacman_install_in_terminal("jan-bin")
+
+            def wait_install():
+                try:
+                    if process is None:
+                        return
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    error_output = _read_temp_file(process)
+                    if fn.path.exists("/usr/bin/jan"):
+                        fn.log_success("jan installed successfully")
+                        GLib.idle_add(self.lbl_ai_jan.set_markup, "Jan - Offline desktop AI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_jan.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "jan installation complete")
+                    else:
+                        fn.log_warn("jan binary NOT found, installation may have failed")
+                        fn.check_missing_repo_error(self, error_output, "jan-bin")
+                except Exception as e:
+                    fn.log_error(f"Error during jan installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "jan installation started")
+    except Exception as error:
+        fn.log_error(f"Error: {error}")
+
+
+def on_click_ai_aichat(self, _widget):
+    try:
+        if fn.path.exists("/usr/bin/aichat"):
+            fn.log_subsection("Removing aichat...")
+            process = fn.launch_pacman_remove_in_terminal("aichat")
+
+            def wait_removal():
+                if process is None:
+                    return
+                process.wait()
+                fn.invalidate_pkg_cache()
+                fn.log_success("aichat removed successfully")
+                GLib.idle_add(self.lbl_ai_aichat.set_markup, "aichat - All-in-one LLM CLI")
+                GLib.idle_add(self.btn_ai_aichat.set_label, "Install")
+                GLib.idle_add(fn.show_in_app_notification, self, "aichat removal complete")
+
+            fn.threading.Thread(target=wait_removal, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "aichat removal started")
+        else:
+            fn.log_subsection("Installing aichat...")
+            process = fn.launch_pacman_install_in_terminal("aichat")
+
+            def wait_install():
+                try:
+                    if process is None:
+                        return
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    error_output = _read_temp_file(process)
+                    if fn.path.exists("/usr/bin/aichat"):
+                        fn.log_success("aichat installed successfully")
+                        GLib.idle_add(self.lbl_ai_aichat.set_markup, "aichat - All-in-one LLM CLI <b>installed</b>")
+                        GLib.idle_add(self.btn_ai_aichat.set_label, "Remove")
+                        GLib.idle_add(fn.show_in_app_notification, self, "aichat installation complete")
+                    else:
+                        fn.log_warn("aichat binary NOT found, installation may have failed")
+                        fn.check_missing_repo_error(self, error_output, "aichat")
+                except Exception as e:
+                    fn.log_error(f"Error during aichat installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+            GLib.idle_add(fn.show_in_app_notification, self, "aichat installation started")
     except Exception as error:
         fn.log_error(f"Error: {error}")
 
@@ -637,6 +731,14 @@ def on_click_ai_ollama_link(self, _widget):
 
 def on_click_ai_webui_link(self, _widget):
     open_url_in_browser(self, URL_WEBUI)
+
+
+def on_click_ai_jan_link(self, _widget):
+    open_url_in_browser(self, URL_JAN)
+
+
+def on_click_ai_aichat_link(self, _widget):
+    open_url_in_browser(self, URL_AICHAT)
 
 
 def on_click_ai_claude_link(self, _widget):

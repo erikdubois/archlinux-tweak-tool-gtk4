@@ -12,6 +12,7 @@ import fastfetch
 import performance
 import sddm
 import icons
+import iso
 import themes
 import themer
 import user
@@ -20,6 +21,7 @@ import zsh_theme
 # =============GUI=================
 import btrfs_gui
 import icons_gui
+import iso_gui
 import themes_gui
 import autostart
 import desktopr_gui
@@ -118,6 +120,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_maintenance = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_shells = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_icons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_iso = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_packages = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_performance = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_kernels = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -162,6 +165,12 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         icons_gui.gui(self, Gtk, GdkPixbuf, vboxstack_icons, icons, fn, base_dir)
 
     _defer_tab(vboxstack_icons, _build_icons)
+
+    # ==========================================================
+    #                 ISO
+    # ==========================================================
+
+    _defer_tab(vboxstack_iso, lambda: iso_gui.gui(self, Gtk, GdkPixbuf, vboxstack_iso, iso, fn, base_dir))
 
     # ==========================================================
     #                THEMES
@@ -364,6 +373,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_fastfetch, "stack4", "Fastfetch")  # fastfetch config
 
     stack.add_titled(vboxstack_icons, "stack25", "Icons")  # Icons and themes
+
+    stack.add_titled(vboxstack_iso, "stack_iso", "ISO")  # Kiro ISO Builder showcase
 
     stack.add_titled(vboxstack_kernels, "stack28", "Kernels")  # kernel manager
 

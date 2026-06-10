@@ -10,7 +10,7 @@ ArchLinux Tweak Tool (ATT) is a GTK4-based Python application for managing Arch-
 - **GUI Framework**: GTK4 (4.6+)
 - **Entry Point**: `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
 - **Desktop Launcher**: `usr/share/applications/archlinux-tweak-tool.desktop`
-- **Tab count**: 26 active tabs (AI Tools, Autostart, Desktop, Fastfetch, Icons, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, Support, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 Kiro-only Streamline page (shown only on Kiro, alphabetically between Software and Support) + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Autostart and Desktop)
+- **Tab count**: 27 active tabs (AI Tools, Autostart, Desktop, Fastfetch, Icons, ISO, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, Support, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 Kiro-only Streamline page (shown only on Kiro, alphabetically between Software and Support) + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Autostart and Desktop)
 
 ## Requirements
 

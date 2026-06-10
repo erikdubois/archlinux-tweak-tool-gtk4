@@ -5,6 +5,7 @@
   "Desktop": ["environment", "de", "wm", "window manager", "tiling", "kde", "i3"],
   "Fastfetch": ["neofetch", "system info", "fetch", "terminal logo"],
   "Icons": ["icon theme", "sardi", "surfn", "candy"],
+  "ISO": ["iso", "kiro iso builder", "kib", "build iso", "image", "live", "installer", "archiso", "spin", "distro"],
   "Kernels": ["kernel", "linux-zen", "linux-cachyos", "lts", "initramfs", "mkinitcpio", "dracut", "boot menu"],
   "Locale": ["language", "keyboard", "timezone", "region", "keymap", "clock"],
   "Logging": ["logs", "journal", "journalctl", "investigator", "errors"],

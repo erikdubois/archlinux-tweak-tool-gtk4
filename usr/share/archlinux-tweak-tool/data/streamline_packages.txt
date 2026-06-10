@@ -30,7 +30,6 @@ file-roller
 galculator
 gnome-disk-utility
 gnome-screenshot
-gparted
 meld
 qbittorrent
 sublime-text-4
