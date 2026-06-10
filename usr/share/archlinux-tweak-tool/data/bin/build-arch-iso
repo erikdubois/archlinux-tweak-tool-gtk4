@@ -1,0 +1,73 @@
+#!/bin/bash
+set -euo pipefail
+##################################################################################################################
+# Author    : Erik Dubois
+# Website   : https://kiroproject.be
+# Youtube   : https://youtube.com/erikdubois
+##################################################################################################################
+# Purpose : Build a plain, official Arch Linux installer ISO from archiso's bundled "releng" profile.
+#           archiso is installed first if it is missing; if it cannot be installed, the build does NOT run.
+# Why     : ATT ships on any Arch-based system, so archiso cannot be assumed present.
+##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}================================================================${RESET}"; }
+header()    { separator; echo "${CYAN}  $1${RESET}"; separator; }
+success()   { echo "${GREEN}[OK]  $1${RESET}"; }
+info()      { echo "${CYAN}[>>]  $1${RESET}"; }
+warn()      { echo "${YELLOW}[!!]  $1${RESET}"; }
+error()     { echo "${RED}[XX]  $1${RESET}"; }
+trap 'error "Command failed at line $LINENO"' ERR
+
+BUILD_USER=${1:-$SUDO_USER}
+PROFILE="/usr/share/archiso/configs/releng"
+OUT="/home/$BUILD_USER/ArchISO"
+WORK="$OUT/work"
+
+header "Build a vanilla Arch Linux ISO — output owner: $BUILD_USER"
+
+# ── Gate: ensure archiso is present, else do NOT build ──────────────
+header "Ensuring archiso is installed"
+if ! command -v mkarchiso >/dev/null 2>&1; then
+    warn "archiso not installed — installing it now"
+    if ! pacman -S --needed --noconfirm archiso; then
+        error "archiso could not be installed — cannot build the ISO"
+        read -p "Press Enter to close..."
+        exit 1
+    fi
+fi
+success "archiso is available"
+
+if [ ! -d "$PROFILE" ]; then
+    error "archiso releng profile not found at $PROFILE — cannot build"
+    read -p "Press Enter to close..."
+    exit 1
+fi
+success "Using profile: $PROFILE"
+
+# ── Build ───────────────────────────────────────────────────────────
+header "Preparing output folder: $OUT"
+mkdir -p "$OUT"
+info "Work dir: $WORK"
+
+header "Running mkarchiso (this takes a while)"
+if ! mkarchiso -v -w "$WORK" -o "$OUT" "$PROFILE"; then
+    error "mkarchiso failed — leaving $WORK in place for inspection"
+    read -p "Press Enter to close..."
+    exit 1
+fi
+success "ISO built"
+
+# ── Tidy up + hand ownership back to the user ───────────────────────
+header "Cleaning up and setting ownership"
+rm -rf "$WORK"
+chown -R "$BUILD_USER":"$BUILD_USER" "$OUT"
+success "Done — your ISO is in $OUT"
+info "$(ls -1 "$OUT"/*.iso 2>/dev/null || echo 'no ISO file found')"
+
+read -p "Press Enter to close..."

@@ -5,6 +5,9 @@
 import functions as fn
 
 PACKAGE = "kiro-iso-builder"
+ARCHISO_PACKAGE = "archiso"
+# Resolve relative to this module so it works both from source and when installed.
+BUILD_ARCH_ISO_SCRIPT = fn.path.join(fn.path.dirname(fn.path.abspath(__file__)), "data", "bin", "build-arch-iso")
 
 
 def _refresh_kib_lbl(self):
@@ -80,3 +83,31 @@ def on_launch_kib_clicked(self, _widget):
         stderr=fn.subprocess.STDOUT,
     )
     fn.GLib.idle_add(fn.show_in_app_notification, self, "Kiro ISO Builder launched")
+
+
+def _refresh_archiso_lbl(self):
+    if fn.check_package_installed(ARCHISO_PACKAGE):
+        self.archiso_status_lbl.set_markup(f"{ARCHISO_PACKAGE} is <b>installed</b>")
+    else:
+        self.archiso_status_lbl.set_markup(f"{ARCHISO_PACKAGE} is <b>not installed</b> — it will be installed first")
+
+
+def on_build_arch_iso_clicked(self, _widget):
+    """Build a vanilla Arch ISO via archiso's releng profile, in a terminal."""
+    fn.log_subsection("Building a vanilla Arch ISO...")
+    fn.show_in_app_notification(self, "Opening terminal to build the Arch ISO")
+    process = fn.subprocess.Popen(
+        ["alacritty", "-e", "bash", "-c", f"{BUILD_ARCH_ISO_SCRIPT} {fn.sudo_username}"],
+        shell=False,
+    )
+
+    def wait_and_refresh():
+        try:
+            process.wait()
+            fn.invalidate_pkg_cache()
+            fn.log_success("Arch ISO build terminal closed")
+            fn.GLib.idle_add(_refresh_archiso_lbl, self)
+        except Exception as e:
+            fn.log_error(f"Error during Arch ISO build: {e}")
+
+    fn.threading.Thread(target=wait_and_refresh, daemon=True).start()
