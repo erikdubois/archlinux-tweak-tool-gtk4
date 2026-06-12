@@ -477,7 +477,9 @@ def on_click_system_firmware_remove(self, _widget):
             fn.show_in_app_notification(self, "gnome-firmware is not installed")
             return
         fn.log_subsection("Removing gnome-firmware...")
-        process = fn.launch_pacman_remove_in_terminal("gnome-firmware")
+        # -Rns so fwupd (and its fwupd-refresh.timer) goes too when nothing else
+        # needs it; the timer disable below is the fallback if fwupd was explicit.
+        process = fn.launch_pacman_remove_in_terminal("gnome-firmware", op="-Rns")
         GLib.idle_add(fn.show_in_app_notification, self, "gnome-firmware removal started")
 
         def wait_remove():
