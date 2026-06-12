@@ -1672,10 +1672,7 @@ read -p 'Press Enter to close...'
     return process
 
 
-def launch_pacman_remove_in_terminal(packages, op="-R"):
-    # op defaults to "-R" (plain removal) for every existing caller; pass "-Rns"
-    # to also drop now-orphaned dependencies and their config (safe per pacman(8):
-    # -s skips packages still required or explicitly installed, -n skips .pacsave).
+def launch_pacman_remove_in_terminal(packages):
     import tempfile
 
     if not shutil.which("alacritty"):
@@ -1693,7 +1690,7 @@ def launch_pacman_remove_in_terminal(packages, op="-R"):
 
     script = f"""
 set -o pipefail
-pacman {op} --noconfirm {packages} 2>&1 | tee {temp_path}
+pacman -R --noconfirm {packages} 2>&1 | tee {temp_path}
 RESULT=$?
 
 echo ''

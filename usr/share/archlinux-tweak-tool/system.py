@@ -477,9 +477,7 @@ def on_click_system_firmware_remove(self, _widget):
             fn.show_in_app_notification(self, "gnome-firmware is not installed")
             return
         fn.log_subsection("Removing gnome-firmware...")
-        # -Rns so fwupd (and its fwupd-refresh.timer) goes too when nothing else
-        # needs it; the timer disable below is the fallback if fwupd was explicit.
-        process = fn.launch_pacman_remove_in_terminal("gnome-firmware", op="-Rns")
+        process = fn.launch_pacman_remove_in_terminal("gnome-firmware")
         GLib.idle_add(fn.show_in_app_notification, self, "gnome-firmware removal started")
 
         def wait_remove():
@@ -517,8 +515,10 @@ def _firmware_timer_enabled():
 
 
 def _refresh_firmware_timer_label(self):
-    state = "enabled" if _firmware_timer_enabled() else "disabled"
-    self.lbl_firmware_timer.set_markup(f"Metadata refresh timer (fwupd-refresh.timer) <b>{state}</b>")
+    # Show "enabled" only when the timer is on; otherwise show nothing (mirrors the
+    # firmware label's "installed"/blank) — no stale "disabled" after the package is gone.
+    state = " <b>enabled</b>" if _firmware_timer_enabled() else ""
+    self.lbl_firmware_timer.set_markup(f"Metadata refresh timer (fwupd-refresh.timer){state}")
 
 
 def on_click_system_firmware_timer_enable(self, _widget):
