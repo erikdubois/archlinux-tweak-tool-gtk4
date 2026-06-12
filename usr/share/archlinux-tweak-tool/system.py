@@ -483,6 +483,17 @@ def on_click_system_firmware_remove(self, _widget):
         def wait_remove():
             try:
                 process.wait()
+                # Removing the GUI should not leave the LVFS metadata timer running,
+                # so disable + stop it too (no-op if it was never enabled).
+                if _firmware_timer_enabled():
+                    fn.log_subsection("Disabling fwupd-refresh.timer after removal...")
+                    fn.subprocess.run(
+                        ["systemctl", "disable", "--now", "fwupd-refresh.timer"],
+                        stdout=fn.subprocess.PIPE,
+                        stderr=fn.subprocess.PIPE,
+                    )
+                    fn.log_success("fwupd-refresh.timer disabled")
+                    GLib.idle_add(_refresh_firmware_timer_label, self)
                 GLib.idle_add(_refresh_firmware_label, self)
             except Exception as e:
                 fn.log_error(f"Error waiting for gnome-firmware removal: {e}")
