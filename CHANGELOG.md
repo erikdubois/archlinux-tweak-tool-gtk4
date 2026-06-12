@@ -1,5 +1,57 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.12
+
+### New Accessibility page — assistive tools + X11 keyboard accessibility
+
+**What changed.** Added a new **Accessibility** page, placed **first in the sidebar** (alphabetically, above AI Tools). It makes the standard, already-maintained Linux accessibility tools easy to find on a teaching distro built for newcomers, without ATT building or maintaining anything of its own. Three sections:
+
+- **Assistive tools** — Launch/Install + Remove rows for **Orca** (screen reader), **Onboard** (on-screen keyboard), and **KMag** (screen magnifier), all from Arch `extra`.
+- **High contrast & large text** — installs `gnome-themes-extra` and offers an **Open Themer** button to apply the high-contrast/large-text GTK themes, rather than switching themes live across the 13 supported window managers.
+- **Keyboard accessibility (X11)** — `Gtk.Switch` toggles for **Sticky / Slow / Bounce / Mouse Keys**, applied **live** to the running X session via `xkbset` and **persisted** via an XDG autostart entry so they survive login. Each toggle reports what it did (live + persisted), with a note that pure tiling-WM users should add the equivalent `xkbset` line to their `run.sh`.
+
+**Why.** Accessibility was a gap in both the ISO and ATT. ATT is the post-install control panel where "everything you might want to add lives," so it is the natural home. Fits the manifest stances *"we don't reinvent the wheel"* and *"software should be easy."*
+
+**Technical details.**
+- `accessibility.py` mirrors `office.py` (`ACCESSIBILITY_APPS` registry + `install_or_launch` / `remove`, daemon-thread wait-then-refresh, label attr `lbl_acc_<key>`). Adds AccessX logic: `apply_accessx` (live via `_run_as_user` → `sudo -E -u <user> bash -c`), `read_accessx_state` (parses `xkbset q`, defaults all-off when xkbset absent), `_persist` (rewrites `~/.config/autostart/att-accessx.desktop` from live state; removes it when nothing is enabled), and `ensure_xkbset` (installs the AUR-only `xkbset` via `get_aur_helper()`).
+- `accessibility_gui.py` mirrors `office_gui.py` for the rows and uses the `services_gui.py` `notify::active` + `accessx_initializing` guard idiom for the switches. `_refresh` reads live state and is wired to `map` **and** called at build time (documented deferred-tab refresh bug). If `get_aur_helper()` returns `None` and xkbset is absent, the switches are **disabled with an explanatory tooltip** — no silent no-op on non-Kiro targets.
+- `gui.py` wired via the existing `_defer_tab` pattern; `add_titled(vboxstack_accessibility, "stack_accessibility", "Accessibility")` placed first. `self.att_stack = stack` added so the "Open Themer" button can jump pages.
+- `search_synonyms.json` gains an Accessibility entry (a11y, screen reader, magnifier, sticky keys, on-screen keyboard, high contrast…).
+
+### New Backup page — personal-file backup (Pika Backup / Vorta)
+
+### What Changed
+
+Added a new **Backup** page (sidebar, alphabetically between **Autostart** and **Btrfs**; shown on every distro) dedicated to backing up the user's **personal files** — the things that cannot be reinstalled. The page is informational-first and answers the question most users get wrong: a backup is not the same as a system snapshot.
+
+It has four explanatory sections plus two app rows:
+
+- **Why this page exists** — a backup keeps a versioned, deduplicated, encrypted copy of your files in a separate place.
+- **How this differs from Timeshift and Snapper** — those take system snapshots on the *same disk* to roll the OS back after a bad update (Timeshift even excludes `/home` by default); they die with the disk. A backup is a copy on a *different disk or machine* that survives disk failure, theft, or accidental deletion. The two are complementary.
+- **Keep a copy off-site (cloud)** — both apps are built on **BorgBackup**, which can send the same encrypted backup over SSH to a NAS, a home server, or a remote/cloud host; nudges the **3-2-1 rule** (no specific provider promoted).
+- **Backup apps** — **Pika Backup** and **Vorta** with live installed-state labels and Launch/Install + Remove buttons.
+- **Recommendation** — use either; Pika is the simplest and blends with the desktop, Vorta has more options/scheduling, and because both wrap Borg their archives are interchangeable.
+
+### Why
+
+The research request was "the best, most used, easiest backup system for personal files on Arch." Borg (via Pika or Vorta) is the consensus answer, and Timeshift/Snapper are routinely mistaken for a real backup. ATT already had the system-snapshot story (Btrfs page) but nothing for personal files, so this page closes that gap and teaches the distinction. Shown on all distros — backup applies to everyone and both packages ship in Arch `extra`.
+
+### Technical Details
+
+- `backup.py` mirrors `office.py`: `BACKUP_APPS` registry (two entries) + `install_or_launch` / `remove` reusing `fn.launch_pacman_install_in_terminal`, `fn.launch_pacman_remove_recursive_in_terminal`, `fn.check_package_installed`, `fn.invalidate_pkg_cache`, `fn.show_in_app_notification`, and the daemon-thread `wait`-then-refresh pattern. The unused chaotic-aur `repo` branch from the office model was dropped (both packages are in `extra`).
+- `backup_gui.py` mirrors `office_gui.py` (`_build_row` / `_refresh`, label attr `lbl_backup_<key>`) for the app rows and `btrfs_gui.py` for the info sections (`set_markup("<b>…</b>")` headers, intro/caveat labels). `_refresh` is wired to the `map` signal **and** called at build time (documented deferred-tab refresh bug). No ampersands in markup (verified by a headless build that confirmed every label renders non-empty).
+- Wired in `gui.py` via the existing `_defer_tab` lazy-build pattern; sidebar entry `add_titled(vboxstack_backup, "stack_backup", "Backup")` placed between Autostart and the conditional Btrfs block.
+- `search_synonyms.json` gains a **Backup** entry (borg, borgbackup, pika, vorta, restore, cloud, off-site, deduplicated, 3-2-1, personal files); `search_index.json` regenerated with `gen-search-index.py`.
+
+### Files Modified
+
+- `usr/share/archlinux-tweak-tool/backup.py` (new)
+- `usr/share/archlinux-tweak-tool/backup_gui.py` (new)
+- `usr/share/archlinux-tweak-tool/gui.py` (import + box + `_defer_tab` + `add_titled`)
+- `search_synonyms.json`
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+- `CLAUDE.md` (tab count 27 → 29; Recent Work bullet)
+
 ## 2026.06.10 — New ISO page: Kiro ISO Builder showcase
 
 ### What Changed
@@ -20,7 +72,7 @@ Erik wanted a button in ATT to create a new ISO. ATT is cross-distro and KIB alr
 - Install/Remove reuse `fn.launch_pacman_install_in_terminal` / `_remove_in_terminal`, then `wait()` in a daemon thread → refresh status label + launch-button sensitivity (`wait_and_refresh` pattern).
 - Screenshots converted from the website's `*-kib-*.webp` assets to resized PNG (900px max edge) under `iso_images/` — avoids depending on a webp pixbuf loader cross-distro and trims bundle size. Preview box 820×740 `ContentFit.CONTAIN` to suit the near-square shots.
 - Page wired in `gui.py` via the existing `_defer_tab` lazy-build pattern; `search_index.json` regenerated by `gen-search-index.py`; `search_synonyms.json` gains an `ISO` entry (iso, kib, build iso, image, live, archiso…).
-- **Vanilla Arch build** follows ATT's build-job pattern (`build-yay-git`, `setup-cachyos`): a `data/bin` script run in Alacritty so the user sees every mkarchiso step (Transparency). `iso.on_build_arch_iso_clicked` launches it via `Popen(["alacritty","-e","bash","-c", f"{script} {fn.sudo_username}"])` + a `wait_and_refresh` daemon thread that refreshes the archiso label after close. The **archiso gate lives in the script** (install-then-build, abort on install failure) so it's authoritative regardless of UI state. ATT runs as root, so `mkarchiso`/`pacman` need no extra sudo; the ISO is `chown`ed back to the real user. The script path is resolved relative to `iso.py` (`fn.path.dirname(fn.path.abspath(__file__))`) so it works both from source (`sudo python ./…`) and when installed — not a hardcoded `/usr/share` path. A dim label under the button states the output location (`~/ArchISO`).
+- **Vanilla Arch build** follows ATT's build-job pattern (`build-yay-git`, `setup-cachyos`): a `data/bin` script run in Alacritty so the user sees every mkarchiso step (Transparency). `iso.on_build_arch_iso_clicked` launches it via `Popen(["alacritty","-e","bash","-c", f"{script} {fn.sudo_username}"])` + a `wait_and_refresh` daemon thread that refreshes the archiso label after close. The **archiso gate lives in the script** (install-then-build, abort on install failure) so it's authoritative regardless of UI state. ATT runs as root, so `mkarchiso`/`pacman` need no extra sudo; the ISO is `chown`ed back to the real user. The script path is resolved relative to `iso.py` (`fn.path.dirname(fn.path.abspath(__file__))`) so it works both from source (`sudo python ./…`) and when installed — not a hardcoded `/usr/share` path.
 
 ### Files Modified
 
@@ -32,6 +84,14 @@ Erik wanted a button in ATT to create a new ISO. ATT is cross-distro and KIB alr
 - `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
 - `search_synonyms.json`
 - `CLAUDE.md` (tab count 26 → 27)
+
+### Network page: clarify Samba restart button label
+
+**What Changed** — relabelled the Samba restart button from "Restart Smb" to **"Restart Samba (smb + nmb)"**.
+
+**Why** — the button already restarts both `smb` and (when active) `nmb`, but the old label only mentioned smb, hiding the nmb restart. The new label matches what the handler actually does and the status bar that already shows both services.
+
+**Files Modified** — `usr/share/archlinux-tweak-tool/network_gui.py`
 
 ## 2026.06.09 — AI page: add Jan and aichat
 

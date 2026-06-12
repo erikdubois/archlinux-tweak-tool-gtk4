@@ -5,6 +5,7 @@
 # ============Functions============
 import functions as fn
 
+import backup
 import btrfs
 import desktopr
 import maintenance
@@ -19,6 +20,8 @@ import user
 import zsh_theme
 
 # =============GUI=================
+import accessibility_gui
+import backup_gui
 import btrfs_gui
 import icons_gui
 import iso_gui
@@ -108,6 +111,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack = Gtk.Stack()
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
     stack.set_transition_duration(350)
+    self.att_stack = stack
 
     vboxstack1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_privacy = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -138,6 +142,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_plymouth = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_locale = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_dev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_accessibility = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_backup = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_btrfs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
@@ -183,6 +189,18 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     # ==========================================================
 
     _defer_tab(vboxstack_autostart, lambda: autostart.gui(self, Gtk, vboxstack_autostart, fn))
+
+    # ==========================================================
+    #                ACCESSIBILITY
+    # ==========================================================
+
+    _defer_tab(vboxstack_accessibility, lambda: accessibility_gui.gui(self, Gtk, vboxstack_accessibility, fn))
+
+    # ==========================================================
+    #                BACKUP
+    # ==========================================================
+
+    _defer_tab(vboxstack_backup, lambda: backup_gui.gui(self, Gtk, vboxstack_backup, backup, fn))
 
     # ==========================================================
     #                BTRFS
@@ -361,9 +379,13 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     if fn.DEV:
         stack.add_titled(vboxstack_dev, "stack_dev", "Dev")
 
+    stack.add_titled(vboxstack_accessibility, "stack_accessibility", "Accessibility")  # accessibility tools
+
     stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
 
     stack.add_titled(vboxstack_autostart, "stack13", "Autostart")  # Autostart
+
+    stack.add_titled(vboxstack_backup, "stack_backup", "Backup")  # personal-file backup (Pika / Vorta)
 
     if fn.DEV or btrfs.is_btrfs_root():
         stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)

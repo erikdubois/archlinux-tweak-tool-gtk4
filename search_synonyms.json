@@ -1,7 +1,9 @@
 {
   "_comment": "Hand-authored search aliases, keyed by the EXACT page title shown in the sidebar. Page titles themselves are matched live by the app and need no entry here. Add the words a user would type that do NOT appear in the title. Regenerate search_index.json with gen-search-index.py (runs automatically in up.sh).",
+  "Accessibility": ["a11y", "accessible", "screen reader", "orca", "magnifier", "magnify", "zoom", "on-screen keyboard", "onscreen keyboard", "onboard", "high contrast", "large text", "sticky keys", "slow keys", "bounce keys", "mouse keys", "visually impaired", "disability"],
   "AI Tools": ["ollama", "llm", "chatgpt", "assistant", "model", "agent"],
   "Autostart": ["startup", "boot apps", "login apps", "session"],
+  "Backup": ["borg", "borgbackup", "pika", "pika backup", "vorta", "restore", "cloud", "off-site", "offsite", "deduplicated", "encrypted backup", "3-2-1", "personal files"],
   "Desktop": ["environment", "de", "wm", "window manager", "tiling", "kde", "i3"],
   "Fastfetch": ["neofetch", "system info", "fetch", "terminal logo"],
   "Icons": ["icon theme", "sardi", "surfn", "candy"],

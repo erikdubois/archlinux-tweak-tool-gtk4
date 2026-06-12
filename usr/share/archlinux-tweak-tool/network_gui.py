@@ -313,7 +313,7 @@ if it is not already there\n "
     self.btn_toggle_smb.set_margin_start(10)
     self.btn_toggle_smb.set_margin_end(10)
     hbox_samba_service.append(self.btn_toggle_smb)
-    button_restart_smb = Gtk.Button(label="Restart Smb")
+    button_restart_smb = Gtk.Button(label="Restart Samba (smb + nmb)")
     button_restart_smb.connect("clicked", functools.partial(services.on_click_restart_smb, self))
     button_restart_smb.set_margin_start(10)
     button_restart_smb.set_margin_end(10)
