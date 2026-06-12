@@ -304,8 +304,88 @@ def gui(self, Gtk, vboxstack_system, fn):
     btn_partitionmanager_remove.set_margin_end(10)
     hbox_partitionmanager.append(btn_partitionmanager_remove)
 
+    # ── Firmware section ─────────────────────────────────────────────────
+    hbox_section_firmware = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_section_firmware_lbl = Gtk.Label(xalign=0)
+    hbox_section_firmware_lbl.set_markup("<b>Firmware</b>")
+    hbox_section_firmware_lbl.set_margin_start(10)
+    hbox_section_firmware_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_section_firmware_sep.set_hexpand(True)
+    hbox_section_firmware_sep.set_valign(Gtk.Align.CENTER)
+    hbox_section_firmware.append(hbox_section_firmware_lbl)
+    hbox_section_firmware.append(hbox_section_firmware_sep)
+
+    # Warning — flashing firmware can brick hardware; no warranty.
+    hbox_firmware_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_firmware_warning = Gtk.Label(xalign=0)
+    lbl_firmware_warning.set_markup(
+        '<span foreground="#FFA500"><b>⚠ Firmware updates can permanently brick a device. '
+        "No warranty, no disclaimer — only continue if you know what you are doing.</b></span>"
+    )
+    lbl_firmware_warning.set_wrap(True)
+    lbl_firmware_warning.set_margin_start(10)
+    lbl_firmware_warning.set_margin_end(10)
+    hbox_firmware_warning.append(lbl_firmware_warning)
+
+    # Info — what GNOME Firmware actually does.
+    hbox_firmware_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_firmware_info = Gtk.Label(xalign=0)
+    lbl_firmware_info.set_text(
+        "GNOME Firmware updates BIOS/UEFI, SSDs, docks and more via fwupd/LVFS. "
+        "Only devices your vendor publishes to LVFS will show updates."
+    )
+    lbl_firmware_info.set_wrap(True)
+    lbl_firmware_info.set_margin_start(10)
+    lbl_firmware_info.set_margin_end(10)
+    hbox_firmware_info.append(lbl_firmware_info)
+
+    # GNOME Firmware app row (Launch/Install + Remove)
+    hbox_firmware = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_firmware = Gtk.Label(xalign=0)
+    system._refresh_firmware_label(self)
+    btn_firmware = Gtk.Button(label="Launch/Install")
+    btn_firmware.connect("clicked", functools.partial(system.on_click_system_firmware, self))
+    btn_firmware_remove = Gtk.Button(label="Remove")
+    btn_firmware_remove.connect("clicked", functools.partial(system.on_click_system_firmware_remove, self))
+    self.lbl_firmware.set_margin_start(10)
+    self.lbl_firmware.set_margin_end(10)
+    self.lbl_firmware.set_hexpand(True)
+    hbox_firmware.append(self.lbl_firmware)
+    btn_firmware.set_margin_start(10)
+    btn_firmware.set_margin_end(10)
+    hbox_firmware.append(btn_firmware)
+    btn_firmware_remove.set_margin_start(10)
+    btn_firmware_remove.set_margin_end(10)
+    hbox_firmware.append(btn_firmware_remove)
+
+    # fwupd metadata-refresh timer row (Enable + Disable)
+    hbox_firmware_timer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_firmware_timer = Gtk.Label(xalign=0)
+    system._refresh_firmware_timer_label(self)
+    btn_firmware_timer_enable = Gtk.Button(label="Enable")
+    btn_firmware_timer_enable.connect(
+        "clicked", functools.partial(system.on_click_system_firmware_timer_enable, self)
+    )
+    btn_firmware_timer_disable = Gtk.Button(label="Disable")
+    btn_firmware_timer_disable.connect(
+        "clicked", functools.partial(system.on_click_system_firmware_timer_disable, self)
+    )
+    self.lbl_firmware_timer.set_margin_start(10)
+    self.lbl_firmware_timer.set_margin_end(10)
+    self.lbl_firmware_timer.set_hexpand(True)
+    hbox_firmware_timer.append(self.lbl_firmware_timer)
+    btn_firmware_timer_enable.set_margin_start(10)
+    btn_firmware_timer_enable.set_margin_end(10)
+    hbox_firmware_timer.append(btn_firmware_timer_enable)
+    btn_firmware_timer_disable.set_margin_start(10)
+    btn_firmware_timer_disable.set_margin_end(10)
+    hbox_firmware_timer.append(btn_firmware_timer_disable)
+
     # Section headers
     hbox_section_hardware = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    # Extra top gap: the Firmware block above is an action section, visually
+    # distinct from the inspection sections that follow.
+    hbox_section_hardware.set_margin_top(20)
     hbox_section_hardware_lbl = Gtk.Label(xalign=0)
     hbox_section_hardware_lbl.set_markup("<b>Hardware</b>")
     hbox_section_hardware_lbl.set_margin_start(10)
@@ -352,6 +432,12 @@ def gui(self, Gtk, vboxstack_system, fn):
 
     vboxstack_system.append(hbox_title)
     vboxstack_system.append(hbox_sep)
+
+    vboxstack_system.append(hbox_section_firmware)
+    vboxstack_system.append(hbox_firmware_warning)
+    vboxstack_system.append(hbox_firmware_info)
+    vboxstack_system.append(hbox_firmware)
+    vboxstack_system.append(hbox_firmware_timer)
 
     vboxstack_system.append(hbox_section_hardware)
     vboxstack_system.append(hbox_cpu)

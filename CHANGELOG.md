@@ -2,6 +2,20 @@
 
 ## 2026.06.12
 
+### Firmware section on the System page — GNOME Firmware + fwupd timer
+
+**What changed.** Added a new **Firmware** section at the **top of the System page** (above Hardware). It carries a blunt orange no-warranty warning, then two rows:
+
+- **Update firmware (GNOME Firmware)** — Launch/Install + Remove. Installs `gnome-firmware` (Arch `extra`, pulls `fwupd`), launches it as the real user via polkit, label flips to "installed".
+- **Metadata refresh timer (fwupd-refresh.timer)** — Enable / Disable. Enables/starts the LVFS metadata-refresh timer so "Get updates" inside the app has fresh data.
+
+**Why.** A user asked for `gnome-firmware`. It does not belong on the lean ISO (single-device-class, vendor-coverage-dependent), but ATT is the right opt-in home. Firmware flashing can brick hardware, so the warning is deliberately stark — ATT only ever installs/launches/enables; the real risk stays inside the app behind its own confirmations + reboot.
+
+**Technical details.**
+- `system.py` — `on_click_system_firmware` / `_remove` mirror the existing GParted Launch/Install/Remove handlers; `_launch_firmware` reuses `_partition_tool_launch_cmd("gnome-firmware")` (real-user launch with XDG/DBus/DISPLAY). Timer handlers (`on_click_system_firmware_timer_enable` / `_disable`) call `systemctl enable/disable --now fwupd-refresh.timer` directly in a daemon thread — **not** `fn.enable_service()`/`disable_service()`, which hardcode-append `.service` and would corrupt the timer unit name. `_refresh_firmware_timer_label` reads `systemctl is-enabled` live to avoid the cached `check_service_enabled`.
+- `system_gui.py` — Firmware section (header, orange `#FFA500` warning, info label, two rows) packed first, after the title/separator. Hardware section header gets `set_margin_top(20)` to visually separate the action block from the inspection sections below.
+- `search_synonyms.json` — System entry gains firmware/fwupd/gnome-firmware/bios/uefi/lvfs terms; `search_index.json` regenerated.
+
 ### New Accessibility page — assistive tools + X11 keyboard accessibility
 
 **What changed.** Added a new **Accessibility** page, placed **first in the sidebar** (alphabetically, above AI Tools). It makes the standard, already-maintained Linux accessibility tools easy to find on a teaching distro built for newcomers, without ATT building or maintaining anything of its own. Three sections:

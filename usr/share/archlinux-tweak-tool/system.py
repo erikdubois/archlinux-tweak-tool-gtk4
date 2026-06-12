@@ -421,3 +421,132 @@ def on_click_system_gparted_remove(self, _widget):
         fn.threading.Thread(target=wait_remove, daemon=True).start()
     except Exception as error:
         fn.log_error(f"Error removing gparted: {error}")
+
+
+# ── Firmware (GNOME Firmware + fwupd) ────────────────────────────────────────
+
+
+def _refresh_firmware_label(self):
+    self.lbl_firmware.set_markup(
+        "Update firmware (GNOME Firmware)"
+        + (" <b>installed</b>" if fn.path.exists("/usr/bin/gnome-firmware") else "")
+    )
+
+
+def _launch_firmware(self):
+    fn.log_subsection("Launching gnome-firmware...")
+    # polkit inside the app handles the privilege escalation to the fwupd daemon,
+    # so launch it as the real user (never as root) like the partition tools.
+    _run_cmd(_partition_tool_launch_cmd("gnome-firmware"))
+    GLib.idle_add(fn.show_in_app_notification, self, "GNOME Firmware launched")
+
+
+def on_click_system_firmware(self, _widget):
+    """Launch GNOME Firmware or install it (pulls fwupd) if not present."""
+    try:
+        if fn.path.exists("/usr/bin/gnome-firmware"):
+            _launch_firmware(self)
+            return
+        fn.log_subsection("Installing gnome-firmware...")
+        process = fn.launch_pacman_install_in_terminal("gnome-firmware")
+        GLib.idle_add(fn.show_in_app_notification, self, "gnome-firmware installation started")
+
+        def wait_install():
+            try:
+                process.wait()
+                if fn.path.exists("/usr/bin/gnome-firmware"):
+                    fn.log_success("gnome-firmware installed successfully")
+                    GLib.idle_add(fn.show_in_app_notification, self, "gnome-firmware installed")
+                    GLib.idle_add(_refresh_firmware_label, self)
+                    _launch_firmware(self)
+                else:
+                    fn.log_warn("gnome-firmware binary NOT found, installation may have failed")
+            except Exception as e:
+                fn.log_error(f"Error during gnome-firmware installation: {e}")
+
+        fn.threading.Thread(target=wait_install, daemon=True).start()
+    except Exception as error:
+        fn.log_error(f"Error with gnome-firmware: {error}")
+
+
+def on_click_system_firmware_remove(self, _widget):
+    """Remove the gnome-firmware package."""
+    try:
+        if not fn.path.exists("/usr/bin/gnome-firmware"):
+            fn.log_info("gnome-firmware is not installed")
+            fn.show_in_app_notification(self, "gnome-firmware is not installed")
+            return
+        fn.log_subsection("Removing gnome-firmware...")
+        process = fn.launch_pacman_remove_in_terminal("gnome-firmware")
+        GLib.idle_add(fn.show_in_app_notification, self, "gnome-firmware removal started")
+
+        def wait_remove():
+            try:
+                process.wait()
+                GLib.idle_add(_refresh_firmware_label, self)
+            except Exception as e:
+                fn.log_error(f"Error waiting for gnome-firmware removal: {e}")
+
+        fn.threading.Thread(target=wait_remove, daemon=True).start()
+    except Exception as error:
+        fn.log_error(f"Error removing gnome-firmware: {error}")
+
+
+def _firmware_timer_enabled():
+    # Read live (not via the cached fn.check_service_enabled) so the label is
+    # accurate right after the user toggles it.
+    result = fn.subprocess.run(
+        ["systemctl", "is-enabled", "fwupd-refresh.timer"],
+        stdout=fn.subprocess.PIPE,
+        stderr=fn.subprocess.PIPE,
+    )
+    return result.stdout.decode().strip() == "enabled"
+
+
+def _refresh_firmware_timer_label(self):
+    state = "enabled" if _firmware_timer_enabled() else "disabled"
+    self.lbl_firmware_timer.set_markup(f"Metadata refresh timer (fwupd-refresh.timer) <b>{state}</b>")
+
+
+def on_click_system_firmware_timer_enable(self, _widget):
+    """Enable and start fwupd-refresh.timer (periodic LVFS metadata refresh)."""
+    # fn.enable_service() hardcode-appends ".service", so it cannot drive a timer
+    # unit — call systemctl directly here.
+    fn.log_subsection("Enabling fwupd-refresh.timer...")
+    GLib.idle_add(fn.show_in_app_notification, self, "Enabling firmware metadata timer...")
+
+    def worker():
+        try:
+            fn.subprocess.run(
+                ["systemctl", "enable", "--now", "fwupd-refresh.timer"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success("fwupd-refresh.timer enabled")
+            GLib.idle_add(_refresh_firmware_timer_label, self)
+            GLib.idle_add(fn.show_in_app_notification, self, "Firmware metadata timer enabled")
+        except Exception as e:
+            fn.log_error(f"Error enabling fwupd-refresh.timer: {e}")
+
+    fn.threading.Thread(target=worker, daemon=True).start()
+
+
+def on_click_system_firmware_timer_disable(self, _widget):
+    """Stop and disable fwupd-refresh.timer."""
+    fn.log_subsection("Disabling fwupd-refresh.timer...")
+    GLib.idle_add(fn.show_in_app_notification, self, "Disabling firmware metadata timer...")
+
+    def worker():
+        try:
+            fn.subprocess.run(
+                ["systemctl", "disable", "--now", "fwupd-refresh.timer"],
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.PIPE,
+            )
+            fn.log_success("fwupd-refresh.timer disabled")
+            GLib.idle_add(_refresh_firmware_timer_label, self)
+            GLib.idle_add(fn.show_in_app_notification, self, "Firmware metadata timer disabled")
+        except Exception as e:
+            fn.log_error(f"Error disabling fwupd-refresh.timer: {e}")
+
+    fn.threading.Thread(target=worker, daemon=True).start()
