@@ -1,5 +1,13 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.13
+
+### Don't write nemesis_repo back as unsigned
+- `functions.py` defined the `nemesis_repo` block it writes to `/etc/pacman.conf` with a hardcoded `SigLevel = Never`. With Kiro now signing `nemesis_repo` packages (key shipped + trusted via `kiro-keyring`; repos inherit the global `SigLevel = Required DatabaseOptional`), any ATT action that rewrote that block silently turned signature verification back off. Removed the per-repo `SigLevel` line from the `nemesis_repo` string (and the now-redundant `Required DatabaseOptional` from the `chaotic_aur_repo` string) so both inherit the global setting like everything else.
+
+### Files Modified
+- `usr/share/archlinux-tweak-tool/functions.py`
+
 ## 2026.06.12
 
 ### Firmware section on the System page — GNOME Firmware + fwupd timer

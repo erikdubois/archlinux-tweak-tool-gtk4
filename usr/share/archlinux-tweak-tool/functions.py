@@ -335,11 +335,9 @@ leftwm_config_theme = home + "/.config/leftwm/themes/"
 leftwm_config_theme_current = home + "/.config/leftwm/themes/current"
 
 nemesis_repo = "[nemesis_repo]\n\
-SigLevel = Never\n\
 Server = https://erikdubois.github.io/$repo/$arch"
 
 chaotic_aur_repo = "[chaotic-aur]\n\
-SigLevel = Required DatabaseOptional\n\
 Include = /etc/pacman.d/chaotic-mirrorlist"
 
 cachyos_repo = "[cachyos]\n\

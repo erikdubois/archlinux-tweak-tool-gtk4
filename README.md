@@ -12,9 +12,12 @@ Add the nemesis_repo to your /etc/pacman.conf and update your system.
 
 ```
 [nemesis_repo]
-SigLevel = Never
 Server = https://erikdubois.github.io/$repo/$arch
 ```
+
+> `nemesis_repo` is PGP-signed by the Kiro key (trusted via `kiro-keyring`); it
+> inherits your global `SigLevel`. Adding it by hand before the keyring is present?
+> Use `SigLevel = Optional` for the repo until then.
 
 or you can use this script download it and run it
 

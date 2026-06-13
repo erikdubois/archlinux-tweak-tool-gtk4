@@ -26,7 +26,7 @@ copy here.**
 | `.bashrc` | `edu-shells:etc/skel/.bashrc-latest` (note the `-latest` suffix) | 6 lines |
 | `.zshrc` | `edu-shells:etc/skel/.zshrc` | 8 lines |
 | `fastfetch/config.jsonc` | `edu-dot-files:etc/skel/.config/fastfetch/config.jsonc` | 1 line |
-| `gpg.conf` | `edu-dot-files:usr/local/share/kiro/gpg.conf` | 2 lines |
+| `gpg.conf` | `edu-system-files:usr/local/share/kiro/gpg.conf` | 2 lines |
 | `variety/variety.conf` | `edu-variety-config:etc/skel/.config/variety/variety.conf` | 2 lines |
 
 #### PENDING — source unresolved
