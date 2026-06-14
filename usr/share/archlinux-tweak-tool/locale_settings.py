@@ -10,6 +10,11 @@ import subprocess
 import functions as fn
 from gi.repository import GLib, Gtk
 
+# Per-category locale overrides exposed in the UI. Each can follow LANG (unset)
+# or carry its own generated locale, e.g. English system + European formatting.
+LC_SENTINEL = "Use LANG (default)"
+LC_CATEGORIES = ["LC_NUMERIC", "LC_MONETARY", "LC_TIME"]
+
 
 def _fetch(cmd):
     return subprocess.run(cmd, capture_output=True, text=True).stdout.strip().splitlines()
@@ -35,6 +40,37 @@ def _parse_localectl():
             key, _, val = line.partition(":")
             data[key.strip()] = val.strip()
     return data
+
+
+def _read_locale_conf():
+    """Parse /etc/locale.conf into a dict of LOCALE variables (authoritative source)."""
+    conf = {}
+    try:
+        with open("/etc/locale.conf") as f:
+            for line in f:
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or "=" not in stripped:
+                    continue
+                key, _, val = stripped.partition("=")
+                conf[key.strip()] = val.strip().strip('"')
+    except OSError:
+        pass
+    return conf
+
+
+def _apply_locale_vars(self, conf, summary):
+    """Re-send the complete locale set; localectl set-locale replaces /etc/locale.conf wholesale."""
+    assignments = [f"{k}={v}" for k, v in conf.items() if v]
+    if not assignments:
+        fn.log_warn("No locale variables to set")
+        return
+    try:
+        subprocess.run(["localectl", "set-locale", *assignments], check=True)
+        fn.log_success(summary)
+        GLib.idle_add(fn.show_in_app_notification, self, summary)
+    except subprocess.CalledProcessError as e:
+        fn.log_error(f"Failed to set locale: {e}")
+    refresh_status(self)
 
 
 def get_x11_variants(layout):
@@ -81,12 +117,18 @@ def populate_dropdowns(self):
         variants = get_x11_variants(current_x11_layout) if current_x11_layout else [""]
         x11_display = current_x11_layout + (f" ({current_x11_variant})" if current_x11_variant else "")
 
+        conf = _read_locale_conf()
+        lc_items = [LC_SENTINEL] + locales
+        lc_current = {cat: conf.get(cat, "") for cat in LC_CATEGORIES}
+
         def _populate():
             _set_dropdown(self.locale_dropdown, locales, current_locale)
             _set_dropdown(self.keymap_dropdown, keymaps, current_keymap)
             _set_dropdown(self.timezone_dropdown, timezones, current_tz)
             _set_dropdown(self.x11_layout_dropdown, x11_layouts, current_x11_layout)
             _set_dropdown(self.x11_variant_dropdown, variants, current_x11_variant)
+            for cat in LC_CATEGORIES:
+                _set_dropdown(self.lc_dropdowns[cat], lc_items, lc_current[cat] or LC_SENTINEL)
             self._locale_populating[0] = False
             self.lbl_locale_current.set_text(current_locale or "—")
             self.lbl_keymap_current.set_text(current_keymap or "—")
@@ -104,18 +146,52 @@ def on_apply_locale(self, _widget):
     if obj is None:
         return
     locale_val = obj.get_string()
-    fn.log_info(f"Setting LANG={locale_val}")
+    fn.log_info(f"Setting LANG={locale_val} (preserving per-category LC_* overrides)")
 
     def _apply():
-        try:
-            subprocess.run(["localectl", "set-locale", f"LANG={locale_val}"], check=True)
-            fn.log_success(f"System locale set to {locale_val}")
-            GLib.idle_add(fn.show_in_app_notification, self, f"Locale set to {locale_val}")
-        except subprocess.CalledProcessError as e:
-            fn.log_error(f"Failed to set locale: {e}")
-        refresh_status(self)
+        conf = _read_locale_conf()
+        conf["LANG"] = locale_val
+        _apply_locale_vars(self, conf, f"System locale set to {locale_val}")
 
     threading.Thread(target=_apply, daemon=True).start()
+
+
+def on_apply_lc(self, category, _widget):
+    fn.log_subsection(f"Locale - Apply {category}")
+    dropdown = self.lc_dropdowns.get(category)
+    if dropdown is None:
+        return
+    obj = dropdown.get_selected_item()
+    if obj is None:
+        return
+    choice = obj.get_string()
+
+    def _apply():
+        conf = _read_locale_conf()
+        if choice == LC_SENTINEL:
+            conf.pop(category, None)
+            summary = f"{category} reset to follow LANG"
+        else:
+            conf[category] = choice
+            summary = f"{category} set to {choice}"
+        fn.log_info(summary)
+        _apply_locale_vars(self, conf, summary)
+
+    threading.Thread(target=_apply, daemon=True).start()
+
+
+def on_reset_lc(self, _widget):
+    fn.log_subsection("Locale - Reset per-category overrides to LANG")
+
+    def _reset():
+        conf = _read_locale_conf()
+        for category in LC_CATEGORIES:
+            conf.pop(category, None)
+        _apply_locale_vars(self, conf, "Per-category locale overrides reset to LANG")
+        for dropdown in self.lc_dropdowns.values():
+            GLib.idle_add(dropdown.set_selected, 0)
+
+    threading.Thread(target=_reset, daemon=True).start()
 
 
 def _do_apply_keymap(self, keymap):

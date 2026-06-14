@@ -91,6 +91,56 @@ def gui(self, Gtk, vboxstack_locale, fn):
     hbox_locale_ctrl.append(self.locale_dropdown)
     hbox_locale_ctrl.append(btn_locale_apply)
 
+    # ── Section: Individual Categories (LC_*) ─────────────
+    hbox_lc_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_lc_header = Gtk.Label(xalign=0)
+    lbl_lc_header.set_markup("<b>Individual Categories</b>")
+    lbl_lc_header.set_margin_start(10)
+    lbl_lc_header.set_margin_top(15)
+    lbl_lc_header.set_margin_bottom(5)
+    hbox_lc_header.append(lbl_lc_header)
+
+    hbox_lc_intro = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_lc_intro = Gtk.Label(xalign=0)
+    lbl_lc_intro.set_wrap(True)
+    lbl_lc_intro.set_text(
+        "Override single categories while keeping your system language — for example English "
+        "with European numbers, currency and date formatting. \"Use LANG (default)\" leaves a "
+        "category following your LANG."
+    )
+    lbl_lc_intro.set_margin_start(10)
+    lbl_lc_intro.set_margin_end(10)
+    hbox_lc_intro.append(lbl_lc_intro)
+
+    lc_labels = {
+        "LC_NUMERIC": "Numbers (LC_NUMERIC):",
+        "LC_MONETARY": "Currency (LC_MONETARY):",
+        "LC_TIME": "Date & time (LC_TIME):",
+    }
+    self.lc_dropdowns = {}
+    hbox_lc_rows = []
+    for category in locale.LC_CATEGORIES:
+        hbox_lc_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        lbl_lc_row = Gtk.Label(xalign=0)
+        lbl_lc_row.set_text(lc_labels[category])
+        lbl_lc_row.set_margin_start(10)
+        lbl_lc_row.set_size_request(200, -1)
+        dropdown_lc = Gtk.DropDown.new_from_strings([""])
+        dropdown_lc.set_size_request(260, -1)
+        btn_lc_apply = Gtk.Button(label="Apply")
+        btn_lc_apply.connect("clicked", functools.partial(locale.on_apply_lc, self, category))
+        hbox_lc_row.append(lbl_lc_row)
+        hbox_lc_row.append(dropdown_lc)
+        hbox_lc_row.append(btn_lc_apply)
+        self.lc_dropdowns[category] = dropdown_lc
+        hbox_lc_rows.append(hbox_lc_row)
+
+    hbox_lc_reset = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    btn_lc_reset = Gtk.Button(label="Reset all to LANG")
+    btn_lc_reset.set_margin_start(10)
+    btn_lc_reset.connect("clicked", functools.partial(locale.on_reset_lc, self))
+    hbox_lc_reset.append(btn_lc_reset)
+
     # ── Section: Generate New Locale ──────────────────────
     hbox_gen_locale_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_gen_locale_header = Gtk.Label(xalign=0)
@@ -229,6 +279,11 @@ def gui(self, Gtk, vboxstack_locale, fn):
     vboxstack_locale.append(hbox_tz_status)
     vboxstack_locale.append(hbox_locale_header)
     vboxstack_locale.append(hbox_locale_ctrl)
+    vboxstack_locale.append(hbox_lc_header)
+    vboxstack_locale.append(hbox_lc_intro)
+    for hbox_lc_row in hbox_lc_rows:
+        vboxstack_locale.append(hbox_lc_row)
+    vboxstack_locale.append(hbox_lc_reset)
     vboxstack_locale.append(hbox_gen_locale_header)
     vboxstack_locale.append(hbox_gen_locale_load)
     vboxstack_locale.append(self.btn_available_apply)

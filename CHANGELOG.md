@@ -2,6 +2,20 @@
 
 ## 2026.06.14
 
+### Locale: per-category LC_* overrides (mixed locale)
+
+**What changed.** The Locale page can now run a **mixed locale** — keep an English system language while formatting numbers, currency and dates the European way. A new **Individual Categories** section sits directly under **System Locale** with a dropdown + Apply per `LC_NUMERIC`, `LC_MONETARY`, `LC_TIME`, an explicit **"Use LANG (default)"** entry for the unset state, and a **Reset all to LANG** button. Implements [discussion #51](https://github.com/kirodubes/kiro-discussions/discussions/51) (start with the three high-payoff categories; long tail later).
+
+**Technical details.**
+- `localectl set-locale` **replaces** `/etc/locale.conf` wholesale (confirmed in #51), so every apply re-sends the *complete* variable set, never a single assignment. New `_read_locale_conf()` parses the authoritative file into a dict (not `localectl status`, which hides differing `LC_*` on continuation lines); `_apply_locale_vars()` rebuilds the full `localectl set-locale …` call from that dict.
+- Per-category apply (`on_apply_lc`) reads the current set, sets or drops the one category (dropping = "Use LANG", relying on POSIX fallback), re-sends everything. `on_reset_lc` drops all three exposed categories at once and resets the dropdowns.
+- **Behavior change (flagged):** `on_apply_locale` now routes through the same read-modify-send helper, so applying a new `LANG` **preserves** existing `LC_*` overrides instead of silently wiping them — previously it sent `LANG=` alone, which under replace semantics dropped every other category. Invisible until this feature existed; now correct.
+- Dropdowns populated from `localectl list-locales` (generated locales only) + the sentinel, so an ungenerated locale can't be selected. Same threading + `GLib.idle_add` + notification pattern as the rest of the page.
+
+### Files Modified (locale)
+- `usr/share/archlinux-tweak-tool/locale_settings.py`
+- `usr/share/archlinux-tweak-tool/locale_gui.py`
+
 ### Repo toggle: match 2-line nemesis_repo / chaotic-aur blocks
 
 - `pacman_functions.py` — `spin_on`/`spin_off` (the comment/uncomment helpers used only by the `nemesis` and `chaotics` switches on the Pacman page) commented out three lines per block: the header plus the two lines below it. Both `nemesis_repo` and `chaotic-aur` are now two-line blocks (`[header]` + `Include = …`), so the third line reached into the blank separator and risked touching the next repo's header. Dropped the `i + 2` handling from both functions so they toggle exactly the header + its `Include` line; docstrings updated to match. Note: this assumes the post-06.13 two-line layout — a stale three-line block (`[header]`/`SigLevel`/`Include`) left on disk by the old ATT would have its `Include` left uncommented on disable; the supported/shipped config is two-line, so this is accepted rather than special-cased.
