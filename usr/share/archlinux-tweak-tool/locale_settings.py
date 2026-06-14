@@ -16,6 +16,14 @@ LC_SENTINEL = "Use LANG (default)"
 LC_CATEGORIES = ["LC_NUMERIC", "LC_MONETARY", "LC_TIME"]
 
 
+def set_result(label, message, state="ok"):
+    """Update an inline result label next to an Apply button (pending/ok/fail)."""
+    palette = {"pending": ("#FFA500", ""), "ok": ("#8ec07c", "✓ "), "fail": ("#fb4934", "✗ ")}
+    color, icon = palette[state]
+    markup = f'<span foreground="{color}">{icon}{GLib.markup_escape_text(message)}</span>'
+    GLib.idle_add(label.set_markup, markup)
+
+
 def _fetch(cmd):
     return subprocess.run(cmd, capture_output=True, text=True).stdout.strip().splitlines()
 
@@ -58,18 +66,21 @@ def _read_locale_conf():
     return conf
 
 
-def _apply_locale_vars(self, conf, summary):
+def _apply_locale_vars(self, conf, summary, result_label):
     """Re-send the complete locale set; localectl set-locale replaces /etc/locale.conf wholesale."""
     assignments = [f"{k}={v}" for k, v in conf.items() if v]
     if not assignments:
         fn.log_warn("No locale variables to set")
+        set_result(result_label, "No locale variables to set", "fail")
         return
     try:
         subprocess.run(["localectl", "set-locale", *assignments], check=True)
         fn.log_success(summary)
+        set_result(result_label, summary, "ok")
         GLib.idle_add(fn.show_in_app_notification, self, summary)
     except subprocess.CalledProcessError as e:
         fn.log_error(f"Failed to set locale: {e}")
+        set_result(result_label, f"Failed: {e}", "fail")
     refresh_status(self)
 
 
@@ -147,11 +158,12 @@ def on_apply_locale(self, _widget):
         return
     locale_val = obj.get_string()
     fn.log_info(f"Setting LANG={locale_val} (preserving per-category LC_* overrides)")
+    set_result(self.lbl_locale_result, "Applying…", "pending")
 
     def _apply():
         conf = _read_locale_conf()
         conf["LANG"] = locale_val
-        _apply_locale_vars(self, conf, f"System locale set to {locale_val}")
+        _apply_locale_vars(self, conf, f"System locale set to {locale_val} — log out to apply", self.lbl_locale_result)
 
     threading.Thread(target=_apply, daemon=True).start()
 
@@ -165,6 +177,7 @@ def on_apply_lc(self, category, _widget):
     if obj is None:
         return
     choice = obj.get_string()
+    set_result(self.lbl_lc_result, "Applying…", "pending")
 
     def _apply():
         conf = _read_locale_conf()
@@ -175,19 +188,20 @@ def on_apply_lc(self, category, _widget):
             conf[category] = choice
             summary = f"{category} set to {choice}"
         fn.log_info(summary)
-        _apply_locale_vars(self, conf, summary)
+        _apply_locale_vars(self, conf, summary, self.lbl_lc_result)
 
     threading.Thread(target=_apply, daemon=True).start()
 
 
 def on_reset_lc(self, _widget):
     fn.log_subsection("Locale - Reset per-category overrides to LANG")
+    set_result(self.lbl_lc_result, "Applying…", "pending")
 
     def _reset():
         conf = _read_locale_conf()
         for category in LC_CATEGORIES:
             conf.pop(category, None)
-        _apply_locale_vars(self, conf, "Per-category locale overrides reset to LANG")
+        _apply_locale_vars(self, conf, "Per-category locale overrides reset to LANG", self.lbl_lc_result)
         for dropdown in self.lc_dropdowns.values():
             GLib.idle_add(dropdown.set_selected, 0)
 
@@ -199,9 +213,11 @@ def _do_apply_keymap(self, keymap):
     try:
         subprocess.run(["localectl", "set-keymap", keymap], check=True)
         fn.log_success(f"Console keymap set to {keymap}")
+        set_result(self.lbl_keymap_result, f"Console keymap set to {keymap}", "ok")
         GLib.idle_add(fn.show_in_app_notification, self, f"Console keymap set to {keymap}")
     except subprocess.CalledProcessError as e:
         fn.log_error(f"Failed to set keymap: {e}")
+        set_result(self.lbl_keymap_result, f"Failed: {e}", "fail")
     refresh_status(self)
 
 
@@ -210,21 +226,26 @@ def on_apply_keymap(self, _widget):
     obj = self.keymap_dropdown.get_selected_item()
     if obj is None:
         return
+    set_result(self.lbl_keymap_result, "Applying…", "pending")
     threading.Thread(target=_do_apply_keymap, args=(self, obj.get_string()), daemon=True).start()
 
 
 def on_sync_keymap(self, _widget):
     fn.log_subsection("Locale - Sync TTY keymap from X11 layout")
 
+    set_result(self.lbl_keymap_result, "Syncing…", "pending")
+
     def _sync():
         status = _parse_localectl()
         x11_layout = status.get("X11 Layout", "")
         if not x11_layout:
             fn.log_warn("No X11 layout set, cannot sync")
+            set_result(self.lbl_keymap_result, "No X11 layout set — cannot sync", "fail")
             return
         model = self.keymap_dropdown.get_model()
         if not model:
             fn.log_warn("Keymap list not loaded yet — cannot sync")
+            set_result(self.lbl_keymap_result, "Keymap list not loaded yet — cannot sync", "fail")
             return
         n = model.get_n_items()
         for i in range(n):
@@ -233,6 +254,7 @@ def on_sync_keymap(self, _widget):
                 break
         else:
             fn.log_warn(f"No TTY keymap matching '{x11_layout}' — sync not possible")
+            set_result(self.lbl_keymap_result, f"No TTY keymap matching '{x11_layout}'", "fail")
             return
         _do_apply_keymap(self, x11_layout)
 
@@ -248,6 +270,7 @@ def on_apply_x11(self, _widget):
     variant_obj = self.x11_variant_dropdown.get_selected_item()
     variant = variant_obj.get_string() if variant_obj else ""
     fn.log_info(f"Setting X11 layout: {layout} variant: {variant or '(none)'}")
+    set_result(self.lbl_x11_result, "Applying…", "pending")
 
     def _apply():
         try:
@@ -255,10 +278,13 @@ def on_apply_x11(self, _widget):
             if variant:
                 cmd.append(variant)
             subprocess.run(cmd, check=True)
-            fn.log_success(f"X11 layout set to {layout} {variant}".strip())
+            summary = f"X11 layout set to {layout} {variant}".strip()
+            fn.log_success(summary)
+            set_result(self.lbl_x11_result, summary, "ok")
             GLib.idle_add(fn.show_in_app_notification, self, f"X11 layout set to {layout}")
         except subprocess.CalledProcessError as e:
             fn.log_error(f"Failed to set X11 layout: {e}")
+            set_result(self.lbl_x11_result, f"Failed: {e}", "fail")
         refresh_status(self)
 
     threading.Thread(target=_apply, daemon=True).start()
@@ -343,9 +369,11 @@ def on_apply_generate_locale(self, _widget):
     obj = self.available_locale_dropdown.get_selected_item()
     if obj is None or not obj.get_string():
         fn.log_warn("No locale selected")
+        set_result(self.lbl_gen_locale_result, "No locale selected", "fail")
         return
     locale_val = obj.get_string()
     fn.log_info(f"Generating locale: {locale_val}")
+    set_result(self.lbl_gen_locale_result, f"Generating {locale_val} in terminal…", "pending")
 
     script = f"""#!/bin/bash
 set -euo pipefail
@@ -382,6 +410,7 @@ read -p "Press Enter to close..."
     def _run():
         if not _update_locale_gen(locale_val):
             os.unlink(tmp_path)
+            set_result(self.lbl_gen_locale_result, "Failed to update /etc/locale.gen", "fail")
             return
         proc = subprocess.Popen(
             ["alacritty", "-e", "bash", tmp_path],
@@ -391,7 +420,8 @@ read -p "Press Enter to close..."
         proc.wait()
         os.unlink(tmp_path)
         fn.log_success(f"Locale {locale_val} generated and set")
-        GLib.idle_add(refresh_status, self)
+        set_result(self.lbl_gen_locale_result, f"Locale {locale_val} generated and set — log out to apply", "ok")
+        GLib.idle_add(populate_dropdowns, self)
 
     threading.Thread(target=_run, daemon=True).start()
 
@@ -403,14 +433,17 @@ def on_apply_timezone(self, _widget):
         return
     tz = obj.get_string()
     fn.log_info(f"Setting timezone: {tz}")
+    set_result(self.lbl_tz_result, "Applying…", "pending")
 
     def _apply():
         try:
             subprocess.run(["timedatectl", "set-timezone", tz], check=True)
             fn.log_success(f"Timezone set to {tz}")
+            set_result(self.lbl_tz_result, f"Timezone set to {tz}", "ok")
             GLib.idle_add(fn.show_in_app_notification, self, f"Timezone set to {tz}")
         except subprocess.CalledProcessError as e:
             fn.log_error(f"Failed to set timezone: {e}")
+            set_result(self.lbl_tz_result, f"Failed: {e}", "fail")
         refresh_status(self)
 
     threading.Thread(target=_apply, daemon=True).start()

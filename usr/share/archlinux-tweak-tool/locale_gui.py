@@ -88,8 +88,12 @@ def gui(self, Gtk, vboxstack_locale, fn):
     btn_locale_apply = Gtk.Button(label="Apply")
     btn_locale_apply.set_margin_start(10)
     btn_locale_apply.connect("clicked", functools.partial(locale.on_apply_locale, self))
+    self.lbl_locale_result = Gtk.Label(xalign=0)
+    self.lbl_locale_result.set_margin_start(10)
+    self.lbl_locale_result.set_wrap(True)
     hbox_locale_ctrl.append(self.locale_dropdown)
     hbox_locale_ctrl.append(btn_locale_apply)
+    hbox_locale_ctrl.append(self.lbl_locale_result)
 
     # ── Section: Individual Categories (LC_*) ─────────────
     hbox_lc_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -139,7 +143,11 @@ def gui(self, Gtk, vboxstack_locale, fn):
     btn_lc_reset = Gtk.Button(label="Reset all to LANG")
     btn_lc_reset.set_margin_start(10)
     btn_lc_reset.connect("clicked", functools.partial(locale.on_reset_lc, self))
+    self.lbl_lc_result = Gtk.Label(xalign=0)
+    self.lbl_lc_result.set_margin_start(10)
+    self.lbl_lc_result.set_wrap(True)
     hbox_lc_reset.append(btn_lc_reset)
+    hbox_lc_reset.append(self.lbl_lc_result)
 
     # ── Section: Generate New Locale ──────────────────────
     hbox_gen_locale_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -159,10 +167,16 @@ def gui(self, Gtk, vboxstack_locale, fn):
     hbox_gen_locale_load.append(btn_load_available)
     hbox_gen_locale_load.append(self.available_locale_dropdown)
 
+    hbox_gen_locale_apply = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.btn_available_apply = Gtk.Button(label="Apply")
     self.btn_available_apply.set_margin_start(10)
     self.btn_available_apply.set_sensitive(False)
     self.btn_available_apply.connect("clicked", functools.partial(locale.on_apply_generate_locale, self))
+    self.lbl_gen_locale_result = Gtk.Label(xalign=0)
+    self.lbl_gen_locale_result.set_margin_start(10)
+    self.lbl_gen_locale_result.set_wrap(True)
+    hbox_gen_locale_apply.append(self.btn_available_apply)
+    hbox_gen_locale_apply.append(self.lbl_gen_locale_result)
 
     def _on_load_available(_widget):
         available = locale.get_available_locales()
@@ -195,9 +209,13 @@ def gui(self, Gtk, vboxstack_locale, fn):
     btn_keymap_sync = Gtk.Button(label="Sync from X11")
     btn_keymap_sync.set_margin_start(10)
     btn_keymap_sync.connect("clicked", functools.partial(locale.on_sync_keymap, self))
+    self.lbl_keymap_result = Gtk.Label(xalign=0)
+    self.lbl_keymap_result.set_margin_start(10)
+    self.lbl_keymap_result.set_wrap(True)
     hbox_keymap_ctrl.append(self.keymap_dropdown)
     hbox_keymap_ctrl.append(btn_keymap_apply)
     hbox_keymap_ctrl.append(btn_keymap_sync)
+    hbox_keymap_ctrl.append(self.lbl_keymap_result)
 
     # ── Section: X11 / Wayland Keyboard ───────────────────
     hbox_x11_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -228,9 +246,15 @@ def gui(self, Gtk, vboxstack_locale, fn):
     hbox_x11_variant_ctrl.append(lbl_x11_variant)
     hbox_x11_variant_ctrl.append(self.x11_variant_dropdown)
 
+    hbox_x11_apply = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     btn_x11_apply = Gtk.Button(label="Apply")
     btn_x11_apply.set_margin_start(10)
     btn_x11_apply.connect("clicked", functools.partial(locale.on_apply_x11, self))
+    self.lbl_x11_result = Gtk.Label(xalign=0)
+    self.lbl_x11_result.set_margin_start(10)
+    self.lbl_x11_result.set_wrap(True)
+    hbox_x11_apply.append(btn_x11_apply)
+    hbox_x11_apply.append(self.lbl_x11_result)
 
     # Suppress variant reset while populate_dropdowns sets initial selection
     self._locale_populating = [True]
@@ -266,8 +290,12 @@ def gui(self, Gtk, vboxstack_locale, fn):
     btn_tz_apply = Gtk.Button(label="Apply")
     btn_tz_apply.set_margin_start(10)
     btn_tz_apply.connect("clicked", functools.partial(locale.on_apply_timezone, self))
+    self.lbl_tz_result = Gtk.Label(xalign=0)
+    self.lbl_tz_result.set_margin_start(10)
+    self.lbl_tz_result.set_wrap(True)
     hbox_tz_ctrl.append(self.timezone_dropdown)
     hbox_tz_ctrl.append(btn_tz_apply)
+    hbox_tz_ctrl.append(self.lbl_tz_result)
 
     # ── Assemble page ──────────────────────────────────────
     vboxstack_locale.append(hbox_title)
@@ -286,13 +314,13 @@ def gui(self, Gtk, vboxstack_locale, fn):
     vboxstack_locale.append(hbox_lc_reset)
     vboxstack_locale.append(hbox_gen_locale_header)
     vboxstack_locale.append(hbox_gen_locale_load)
-    vboxstack_locale.append(self.btn_available_apply)
+    vboxstack_locale.append(hbox_gen_locale_apply)
     vboxstack_locale.append(hbox_keymap_header)
     vboxstack_locale.append(hbox_keymap_ctrl)
     vboxstack_locale.append(hbox_x11_header)
     vboxstack_locale.append(hbox_x11_layout_ctrl)
     vboxstack_locale.append(hbox_x11_variant_ctrl)
-    vboxstack_locale.append(btn_x11_apply)
+    vboxstack_locale.append(hbox_x11_apply)
     vboxstack_locale.append(hbox_tz_header)
     vboxstack_locale.append(hbox_tz_ctrl)
 

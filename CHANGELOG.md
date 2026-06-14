@@ -16,6 +16,20 @@
 - `usr/share/archlinux-tweak-tool/locale_settings.py`
 - `usr/share/archlinux-tweak-tool/locale_gui.py`
 
+### Locale: inline per-section result feedback + Generate dropdown refresh fix
+
+**What changed.** Every Apply action on the Locale page now shows an **inline result label** right next to its button, so an apply is never silent. Each action shows **"Applying…"** (orange) on click, then a green **✓ summary** on success or a red **✗ Failed: …** on error — covering the error and early-return paths that previously only logged to the console with no GUI signal. The top-of-window 3-second toast was easy to miss when scrolled down the long page; this keeps the feedback where the user's eyes already are. System-locale and generate-locale results also remind the user to **log out to apply**. Also fixed: after **Generate New Locale**, the System Locale and LC_* dropdowns now refresh to include the newly generated locale (previously only the Current Settings labels updated).
+
+**Technical details.**
+- New `set_result(label, message, state)` helper in `locale_settings.py` — `pending`/`ok`/`fail` map to orange `#FFA500` / green `#8ec07c` / red `#fb4934` with `✓`/`✗` icons; message run through `GLib.markup_escape_text`; update marshalled via `GLib.idle_add` (callbacks run in daemon threads).
+- One result label per section added in `locale_gui.py` (`lbl_locale_result`, `lbl_lc_result`, `lbl_gen_locale_result`, `lbl_keymap_result`, `lbl_x11_result`, `lbl_tz_result`). The Generate and X11 Apply buttons were appended bare to the vertical stack (so they stretched full-width); each is now wrapped in a horizontal box with its result label, which also sizes the button to its content.
+- `_apply_locale_vars` gained a `result_label` param; the keymap/x11/timezone/generate callbacks and the three `on_sync_keymap` early-return warnings now all report through `set_result`.
+- **Bug fix:** `on_apply_generate_locale._run` now calls `populate_dropdowns(self)` instead of `refresh_status(self)` — `populate_dropdowns` re-fetches `localectl list-locales` (which now includes the new locale) and repopulates both the System Locale and LC_* dropdowns plus the status labels, where `refresh_status` only touched the labels.
+
+### Files Modified (locale feedback)
+- `usr/share/archlinux-tweak-tool/locale_settings.py`
+- `usr/share/archlinux-tweak-tool/locale_gui.py`
+
 ### Repo toggle: match 2-line nemesis_repo / chaotic-aur blocks
 
 - `pacman_functions.py` — `spin_on`/`spin_off` (the comment/uncomment helpers used only by the `nemesis` and `chaotics` switches on the Pacman page) commented out three lines per block: the header plus the two lines below it. Both `nemesis_repo` and `chaotic-aur` are now two-line blocks (`[header]` + `Include = …`), so the third line reached into the blank separator and risked touching the next repo's header. Dropped the `i + 2` handling from both functions so they toggle exactly the header + its `Include` line; docstrings updated to match. Note: this assumes the post-06.13 two-line layout — a stale three-line block (`[header]`/`SigLevel`/`Include`) left on disk by the old ATT would have its `Include` left uncommented on disable; the supported/shipped config is two-line, so this is accepted rather than special-cased.
