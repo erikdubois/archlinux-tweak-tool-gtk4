@@ -1,0 +1,43 @@
+#!/bin/bash
+set -euo pipefail
+##################################################################################################################
+# Author    : Erik Dubois
+# Website   : https://kiroproject.be
+# Youtube   : https://youtube.com/erikdubois
+##################################################################################################################
+
+RESET=$(tput sgr0)
+CYAN=$(tput setaf 6)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+separator() { echo "${CYAN}$(printf '─%.0s' {1..72})${RESET}"; }
+header()    { echo; separator; echo "${CYAN}  $*${RESET}"; separator; }
+success()   { echo "${GREEN}  [ok]  $*${RESET}"; }
+info()      { echo "${CYAN}  [..]  $*${RESET}"; }
+warn()      { echo "${YELLOW}  [!!]  $*${RESET}"; }
+error()     { echo "${RED}  [EE]  $*${RESET}"; }
+trap 'error "Command failed at line $LINENO"' ERR
+
+KEYRING=$(find /usr/share/archlinux-tweak-tool/data/nemesis/keyring -name "kiro-keyring-*.pkg.tar.zst" | head -1)
+MIRRORLIST=$(find /usr/share/archlinux-tweak-tool/data/nemesis/mirrorlist -name "kiro-mirrorlist-*.pkg.tar.zst" | head -1)
+
+if [[ -z "$KEYRING" || -z "$MIRRORLIST" ]]; then
+    error "Package file not found in data/nemesis/ — cannot install"
+    read -rp "Press Enter to close..."
+    exit 1
+fi
+
+header "Nemesis Setup"
+
+header "Importing Signing Key"
+pacman-key --recv-key 149ABD0C3A0563EE --keyserver keyserver.ubuntu.com
+pacman-key --lsign-key 149ABD0C3A0563EE
+success "Signing key imported"
+
+header "Installing kiro-keyring and kiro-mirrorlist"
+pacman -U --noconfirm "$KEYRING" "$MIRRORLIST"
+success "Nemesis setup complete"
+
+read -rp "Press Enter to close..."

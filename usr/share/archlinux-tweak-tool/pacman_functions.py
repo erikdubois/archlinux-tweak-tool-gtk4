@@ -106,26 +106,21 @@ def mirror_off(mirror, lines, i, line):
 
 
 def spin_on(repo, lines, i, line):
-    """Uncomment the repo header and the two lines following it."""
+    """Uncomment the repo header and the single Include line below it."""
     if repo in line:
         lines[i] = line.replace("#", "")
         if (i + 1) < len(lines):
             lines[i + 1] = lines[i + 1].replace("#", "")
-        if (i + 2) < len(lines):
-            lines[i + 2] = lines[i + 2].replace("#", "")
 
 
 def spin_off(repo, lines, i, line):
-    """Comment out the repo header and the two lines following it."""
+    """Comment out the repo header and the single Include line below it."""
     if repo in line:
         if "#" not in lines[i]:
             lines[i] = line.replace(lines[i], "#" + lines[i])
         if (i + 1) < len(lines):
             if "#" not in lines[i + 1]:
                 lines[i + 1] = lines[i + 1].replace(lines[i + 1], "#" + lines[i + 1])
-        if (i + 2) < len(lines):
-            if "#" not in lines[i + 2]:
-                lines[i + 2] = lines[i + 2].replace(lines[i + 2], "#" + lines[i + 2])
 
 
 def toggle_test_repos(self, state, widget):
@@ -279,6 +274,30 @@ def install_paru_git(self):
     return fn.subprocess.Popen(
         ["alacritty", "-e", "bash", "-c", f"{build_script} {fn.sudo_username}"],
         shell=False,
+    )
+
+
+def ensure_nemesis_packages(self):
+    """Open setup terminal to install kiro-keyring and kiro-mirrorlist if missing."""
+    has_keyring = True
+    has_mirrorlist = True
+    try:
+        fn.subprocess.check_output(["pacman", "-Q", "kiro-keyring"], stderr=fn.subprocess.DEVNULL)
+    except fn.subprocess.CalledProcessError:
+        has_keyring = False
+    try:
+        fn.subprocess.check_output(["pacman", "-Q", "kiro-mirrorlist"], stderr=fn.subprocess.DEVNULL)
+    except fn.subprocess.CalledProcessError:
+        has_mirrorlist = False
+
+    if has_keyring and has_mirrorlist:
+        return None
+
+    fn.log_subsection("Nemesis: keyring/mirrorlist missing — running setup")
+    fn.show_in_app_notification(self, "Installing Nemesis keyring and mirrorlist...")
+    setup_script = "/usr/share/archlinux-tweak-tool/data/bin/setup-nemesis"
+    return fn.subprocess.Popen(
+        ["alacritty", "-e", "sudo", "bash", setup_script],
     )
 
 

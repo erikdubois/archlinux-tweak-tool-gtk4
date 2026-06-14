@@ -17,8 +17,28 @@ def _sync_if_db_missing(self, repo_name):
 def on_nemesis_toggle(self, widget, active):
     if hasattr(self, "initializing") and self.initializing:
         return
-    from pacman_functions import repo_exist, append_repo, toggle_test_repos
+    from pacman_functions import repo_exist, append_repo, toggle_test_repos, ensure_nemesis_packages
     import desktopr_gui
+
+    if widget.get_active():
+        process = ensure_nemesis_packages(self)
+        if process is not None:
+
+            def _finish_nemesis_setup(proc):
+                proc.wait()
+                fn.log_info("Nemesis setup terminal closed — appending repo")
+                if not repo_exist("[nemesis_repo]"):
+                    append_repo(self, fn.nemesis_repo)
+                    fn.log_info("Nemesis repo added to /etc/pacman.conf")
+                    fn.GLib.idle_add(
+                        fn.show_in_app_notification, self, "Repo has been added to /etc/pacman.conf"
+                    )
+                fn.GLib.idle_add(_sync_if_db_missing, self, "nemesis_repo")
+                fn.GLib.idle_add(desktopr_gui.update_button_state, self, fn)
+                fn.GLib.idle_add(self.refresh_aur_buttons)
+
+            fn.threading.Thread(target=_finish_nemesis_setup, args=(process,), daemon=True).start()
+            return
 
     if not repo_exist("[nemesis_repo]"):
         append_repo(self, fn.nemesis_repo)

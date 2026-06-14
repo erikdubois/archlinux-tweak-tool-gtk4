@@ -335,7 +335,7 @@ leftwm_config_theme = home + "/.config/leftwm/themes/"
 leftwm_config_theme_current = home + "/.config/leftwm/themes/current"
 
 nemesis_repo = "[nemesis_repo]\n\
-Server = https://erikdubois.github.io/$repo/$arch"
+Include = /etc/pacman.d/kiro-mirrorlist"
 
 chaotic_aur_repo = "[chaotic-aur]\n\
 Include = /etc/pacman.d/chaotic-mirrorlist"

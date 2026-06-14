@@ -1,5 +1,31 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.14
+
+### Repo toggle: match 2-line nemesis_repo / chaotic-aur blocks
+
+- `pacman_functions.py` — `spin_on`/`spin_off` (the comment/uncomment helpers used only by the `nemesis` and `chaotics` switches on the Pacman page) commented out three lines per block: the header plus the two lines below it. Both `nemesis_repo` and `chaotic-aur` are now two-line blocks (`[header]` + `Include = …`), so the third line reached into the blank separator and risked touching the next repo's header. Dropped the `i + 2` handling from both functions so they toggle exactly the header + its `Include` line; docstrings updated to match. Note: this assumes the post-06.13 two-line layout — a stale three-line block (`[header]`/`SigLevel`/`Include`) left on disk by the old ATT would have its `Include` left uncommented on disable; the supported/shipped config is two-line, so this is accepted rather than special-cased.
+
+### Nemesis toggle: ensure kiro-keyring + kiro-mirrorlist (cross-distro)
+
+**What changed.** Enabling **nemesis_repo** now installs the Kiro keyring and mirrorlist first, if missing — the same guard chaotic-aur and CachyOS already had. On Kiro both are always pre-installed so nothing changes there; the guard only fires when a non-Kiro Arch user enables nemesis_repo via ATT (ATT is cross-distro), where the repo would otherwise fail signature/mirror resolution.
+
+**Technical details.**
+- Vendored `kiro-keyring` + `kiro-mirrorlist` packages into `data/nemesis/{keyring,mirrorlist}/` (copied from `nemesis_repo/x86_64/`), matching the `data/chaotic/` & `data/cachyos/` layout.
+- New `data/bin/setup-nemesis` (clone of `setup-cachyos`): imports the Kiro Signing Key `149ABD0C3A0563EE` from `keyserver.ubuntu.com`, lsigns it, then `pacman -U` the bundled keyring + mirrorlist. The key is published to `keyserver.ubuntu.com` and `keys.openpgp.org`.
+- New `ensure_nemesis_packages()` in `pacman_functions.py` mirrors `ensure_chaotic_packages`/`ensure_cachyos_packages` — `pacman -Q` checks for `kiro-keyring` + `kiro-mirrorlist`, returns `None` when present, else opens the setup terminal.
+- `on_nemesis_toggle` (`pacman.py`) now calls `ensure_nemesis_packages` on enable and, when a setup terminal is opened, defers the repo append + db sync + button refresh to a daemon thread that waits for the terminal to close — same shape as the chaotic/cachyos toggles.
+
+### Files Modified
+- `usr/share/archlinux-tweak-tool/pacman_functions.py`
+- `usr/share/archlinux-tweak-tool/pacman.py`
+- `usr/share/archlinux-tweak-tool/data/bin/setup-nemesis` (new)
+- `usr/share/archlinux-tweak-tool/data/nemesis/keyring/kiro-keyring-*.pkg.tar.zst` (new)
+- `usr/share/archlinux-tweak-tool/data/nemesis/mirrorlist/kiro-mirrorlist-*.pkg.tar.zst` (new)
+
+### Flagged (separate repo, not changed here)
+- `kiro-system-files/usr/local/share/kiro/pacman.conf:104` ships `nemesis_repo` with `Server = https://erikdubois.github.io/$repo/$arch` — should be `Include = /etc/pacman.d/kiro-mirrorlist` (matches ATT's `fn.nemesis_repo`). Same in `Workshop/pacman.conf`. Fix belongs to a kiro-system-files rebuild.
+
 ## 2026.06.13
 
 ### Don't write nemesis_repo back as unsigned
