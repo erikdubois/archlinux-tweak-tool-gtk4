@@ -66,15 +66,36 @@ def _read_locale_conf():
     return conf
 
 
+def _preserve_language(language):
+    """Re-add the LANGUAGE line that localectl strips when it rewrites /etc/locale.conf."""
+    try:
+        with open("/etc/locale.conf") as f:
+            lines = [ln for ln in f if not ln.strip().startswith("LANGUAGE=")]
+    except OSError:
+        lines = []
+    lines.append(f"LANGUAGE={language}\n")
+    try:
+        with open("/etc/locale.conf", "w") as f:
+            f.writelines(lines)
+        fn.log_info(f"Preserved LANGUAGE={language} in /etc/locale.conf")
+    except OSError as e:
+        fn.log_error(f"Could not preserve LANGUAGE: {e}")
+
+
 def _apply_locale_vars(self, conf, summary, result_label):
-    """Re-send the complete locale set; localectl set-locale replaces /etc/locale.conf wholesale."""
-    assignments = [f"{k}={v}" for k, v in conf.items() if v]
+    """Apply LANG + LC_* via localectl, preserving any LANGUAGE setting separately."""
+    # localectl validates each value as a single locale name and refuses a colon-separated
+    # LANGUAGE list, so LANGUAGE is excluded from the call and re-added to the file afterwards.
+    language = conf.get("LANGUAGE", "")
+    assignments = [f"{k}={v}" for k, v in conf.items() if v and k != "LANGUAGE"]
     if not assignments:
         fn.log_warn("No locale variables to set")
         set_result(result_label, "No locale variables to set", "fail")
         return
     try:
         subprocess.run(["localectl", "set-locale", *assignments], check=True)
+        if language:
+            _preserve_language(language)
         fn.log_success(summary)
         set_result(result_label, summary, "ok")
         GLib.idle_add(fn.show_in_app_notification, self, summary)

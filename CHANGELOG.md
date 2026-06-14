@@ -26,6 +26,15 @@
 - `_apply_locale_vars` gained a `result_label` param; the keymap/x11/timezone/generate callbacks and the three `on_sync_keymap` early-return warnings now all report through `set_result`.
 - **Bug fix:** `on_apply_generate_locale._run` now calls `populate_dropdowns(self)` instead of `refresh_status(self)` — `populate_dropdowns` re-fetches `localectl list-locales` (which now includes the new locale) and repopulates both the System Locale and LC_* dropdowns plus the status labels, where `refresh_status` only touched the labels.
 
+### Locale: fix every Apply bricked by a colon-separated LANGUAGE
+
+**What changed.** A stale `LANGUAGE=fr_BE:fr_FR` in `/etc/locale.conf` (left by an earlier French attempt) made **every** locale Apply fail with *"Locale fr_BE:fr_FR is not valid, refusing"* — System Locale, all LC_* categories, and Reset all. Root cause: the LC_* feature re-sends the whole `locale.conf` through `localectl set-locale`, and `localectl` (systemd 260) refuses any **colon-separated `LANGUAGE`** value — it validates each argument as a single locale name, so the colon list fails (confirmed empirically: `LANGUAGE=fr_BE:en_US` is refused even though both are valid, while single values and even ungenerated/garbage values are accepted — localectl does *not* validate against generated locales). The inline result labels added earlier this session are what surfaced this; the old top-of-window toast had hidden it.
+
+**Technical details.**
+- `_apply_locale_vars` now **excludes `LANGUAGE`** from the `localectl set-locale` call (`assignments` filters out the key) and re-adds it afterwards via new `_preserve_language()`, which rewrites the `LANGUAGE=` line in `/etc/locale.conf` directly. This dodges the colon-rejection while respecting the user's setting instead of silently dropping it (objective 9, non-invasive).
+- Verified on the systemd-260 VM: setting `LANG` alone **clears `LC_*`** (so the existing "re-send all LC_*" approach is correct and necessary), while `LANGUAGE` survives — `_preserve_language` is idempotent there and defensive for any systemd that clears it.
+- LANG/LC_* values still come from generated-only dropdowns, so they always validate; no generation-based sanitizing is needed (localectl ignores generation state anyway).
+
 ### Files Modified (locale feedback)
 - `usr/share/archlinux-tweak-tool/locale_settings.py`
 - `usr/share/archlinux-tweak-tool/locale_gui.py`
