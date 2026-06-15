@@ -204,23 +204,14 @@ def on_apply_locale(self, _widget):
     conf = _read_locale_conf()
     conf["LANG"] = locale_val
 
-    # LANGUAGE overrides LANG for UI translations, so a stale LANGUAGE silently keeps
-    # the old display language. If it would shadow the new locale, offer to align it.
+    # LANGUAGE overrides LANG for UI translations, so a stale LANGUAGE would silently
+    # keep the old display language. When it would shadow the new locale, align it
+    # automatically so the change takes effect (the Current Settings row shows the result).
     new_language = _language_from_locale(locale_val)
     current_language = conf.get("LANGUAGE", "")
     if current_language and not _language_leads_with(current_language, new_language):
-        target = new_language or "none (cleared)"
-        message = (
-            f"Your display language is set by <b>LANGUAGE={current_language}</b>, which "
-            f"overrides the system locale — the interface would stay in that language.\n\n"
-            f"Update LANGUAGE to <b>{target}</b> so <b>{locale_val}</b> takes effect?\n"
-            f"Choose <b>No</b> to change LANG only and keep your current LANGUAGE."
-        )
-        if fn.confirm_dialog(self, "Update display language?", message):
-            conf["LANGUAGE"] = new_language
-            fn.log_info(f"Aligning LANGUAGE to {new_language or '(cleared)'}")
-        else:
-            fn.log_info(f"Keeping LANGUAGE={current_language} (it overrides LANG)")
+        conf["LANGUAGE"] = new_language
+        fn.log_info(f"Aligned LANGUAGE to {new_language or '(cleared)'} so the new locale takes effect")
 
     fn.log_info(f"Setting LANG={locale_val} (preserving per-category LC_* overrides)")
     set_result(self.lbl_locale_result, "Applying…", "pending")
