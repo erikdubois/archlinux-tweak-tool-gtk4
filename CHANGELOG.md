@@ -1,5 +1,24 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.15
+
+### Software page: recursive removal with config backup (`-Rs`)
+
+**What changed.** The Software page's 18 app removals (yay, paru, trizen, pikaur, pacui, flatpak, snapd, appmanager, pacseek, pamac, octopi, bazaar, gnome-software, discover, pachub, bauh, archlinux-logout, kiro-powermenu) now remove **recursively with a `.pacsave` config backup** (`pacman -Rs`) instead of plain `-R`. Plain `-R` left now-orphaned dependencies behind; `-Rs` clears dependencies no longer needed by anything else while keeping a `.pacsave` of each package's config — the safer recursive flag for a newcomer distro (vs `-Rns`, which deletes config outright). This settles the ecosystem removal-flag policy: **`-Rs` is the standard recursive-removal flag** going forward. This pass applies it to the Software page only; the codebase-wide `-R` helper (~43 other call sites) is unchanged, and the Office page keeps its existing `-Rns`.
+
+**Scope (what this does NOT do).** `-Rs`/`-Rns` only address orphaned **dependencies**. Neither flag touches systemd enable-symlinks, so removing a package that enabled a service/timer can still leave a dangling enable-link (that class of issue is handled case-by-case with an explicit `systemctl disable --now`, as the gnome-firmware fix did). This change is strictly the dependency-cleanup flag swap.
+
+**Technical details.**
+- `launch_pacman_remove_recursive_in_terminal(packages, keep_config=False)` in `functions.py` gained a `keep_config` parameter: `True` → `-Rs`, `False` (default) → `-Rns`. The default preserves all 5 existing callers (services/bluedevil, streamline, backup, accessibility, office) byte-for-byte — no behavior change for them. The in-terminal help text now reflects the actual flag used.
+- The 18 `on_click_software_*_remove` handlers in `software.py` repointed from `launch_pacman_remove_in_terminal(pkg)` (plain `-R`) to `launch_pacman_remove_recursive_in_terminal(pkg, keep_config=True)`. The helper still returns the `Popen`, so the existing `wait_remove_and_update` flow is unchanged.
+- No third near-duplicate helper added (objective 17) — the existing recursive helper is parameterized instead.
+
+**Verification.** `pacman -Rsp` (print-only, removes nothing) confirmed `-Rs` is pacman-safe: it refuses on `flatpak` (still required by bazaar/malcontent) rather than over-removing, and on `pamac-aur` it correctly clears the now-unused `libpamac-aur`/`archlinux-appstream-data`/`appstream-glib`. `ruff check` and AST syntax check pass on both files.
+
+### Files Modified (removal flag)
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/software.py`
+
 ## 2026.06.14
 
 ### Locale: per-category LC_* overrides (mixed locale)

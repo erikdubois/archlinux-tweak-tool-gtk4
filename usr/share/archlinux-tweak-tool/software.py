@@ -504,7 +504,7 @@ def on_click_software_yay_remove(self, _widget):
     """Remove the yay-git AUR helper."""
     try:
         fn.log_subsection("Removing yay-git...")
-        process = fn.launch_pacman_remove_in_terminal("yay-git")
+        process = fn.launch_pacman_remove_recursive_in_terminal("yay-git", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "yay-git removal started")
         fn.wait_remove_and_update(
             process,
@@ -522,7 +522,7 @@ def on_click_software_paru_remove(self, _widget):
     """Remove the paru-git AUR helper."""
     try:
         fn.log_subsection("Removing paru-git...")
-        process = fn.launch_pacman_remove_in_terminal("paru-git")
+        process = fn.launch_pacman_remove_recursive_in_terminal("paru-git", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "paru-git removal started")
         fn.wait_remove_and_update(
             process,
@@ -540,7 +540,7 @@ def on_click_software_trizen_remove(self, _widget):
     """Remove the trizen AUR helper."""
     try:
         fn.log_subsection("Removing trizen...")
-        process = fn.launch_pacman_remove_in_terminal("trizen")
+        process = fn.launch_pacman_remove_recursive_in_terminal("trizen", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "trizen removal started")
         fn.wait_remove_and_update(
             process,
@@ -558,7 +558,7 @@ def on_click_software_pikaur_remove(self, _widget):
     """Remove the pikaur-git AUR helper."""
     try:
         fn.log_subsection("Removing pikaur-git...")
-        process = fn.launch_pacman_remove_in_terminal("pikaur-git")
+        process = fn.launch_pacman_remove_recursive_in_terminal("pikaur-git", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "pikaur-git removal started")
         fn.wait_remove_and_update(
             process,
@@ -610,7 +610,7 @@ def on_click_software_pacui_remove(self, _widget):
     """Remove the pacui TUI package manager."""
     try:
         fn.log_subsection("Removing pacui...")
-        process = fn.launch_pacman_remove_in_terminal("pacui")
+        process = fn.launch_pacman_remove_recursive_in_terminal("pacui", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "pacui removal started")
         fn.wait_remove_and_update(
             process,
@@ -702,7 +702,7 @@ def on_click_software_flatpak_remove(self, _widget):
     """Remove the flatpak package."""
     try:
         fn.log_subsection("Removing flatpak...")
-        process = fn.launch_pacman_remove_in_terminal("flatpak")
+        process = fn.launch_pacman_remove_recursive_in_terminal("flatpak", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "flatpak removal started")
         fn.wait_remove_and_update(
             process,
@@ -786,7 +786,7 @@ def on_click_software_snapd_remove(self, _widget):
     """Remove the snapd package."""
     try:
         fn.log_subsection("Removing snapd...")
-        process = fn.launch_pacman_remove_in_terminal("snapd")
+        process = fn.launch_pacman_remove_recursive_in_terminal("snapd", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "snapd removal started")
         fn.wait_remove_and_update(
             process,
@@ -886,7 +886,7 @@ def on_click_software_appimagelauncher_remove(self, _widget):
     """Remove the appmanager package."""
     try:
         fn.log_subsection("Removing appmanager...")
-        process = fn.launch_pacman_remove_in_terminal("appmanager")
+        process = fn.launch_pacman_remove_recursive_in_terminal("appmanager", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "appmanager removal started")
         fn.wait_remove_and_update(
             process,
@@ -937,7 +937,7 @@ def on_click_software_pacseek_remove(self, _widget):
     """Remove the pacseek TUI package searcher."""
     try:
         fn.log_subsection("Removing pacseek...")
-        process = fn.launch_pacman_remove_in_terminal("pacseek")
+        process = fn.launch_pacman_remove_recursive_in_terminal("pacseek", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "pacseek removal started")
         fn.wait_remove_and_update(
             process,
@@ -955,7 +955,7 @@ def on_click_software_pamac_remove(self, _widget):
     """Remove the pamac-aur GUI package manager."""
     try:
         fn.log_subsection("Removing pamac-aur...")
-        process = fn.launch_pacman_remove_in_terminal("pamac-aur")
+        process = fn.launch_pacman_remove_recursive_in_terminal("pamac-aur", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "pamac-aur removal started")
         fn.wait_remove_and_update(
             process,
@@ -973,7 +973,7 @@ def on_click_software_octopi_remove(self, _widget):
     """Remove the octopi Qt GUI package manager."""
     try:
         fn.log_subsection("Removing octopi...")
-        process = fn.launch_pacman_remove_in_terminal("octopi")
+        process = fn.launch_pacman_remove_recursive_in_terminal("octopi", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "octopi removal started")
         fn.wait_remove_and_update(
             process,
@@ -991,7 +991,7 @@ def on_click_software_bazaar_remove(self, _widget):
     """Remove the bazaar package manager."""
     try:
         fn.log_subsection("Removing bazaar...")
-        process = fn.launch_pacman_remove_in_terminal("bazaar")
+        process = fn.launch_pacman_remove_recursive_in_terminal("bazaar", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "bazaar removal started")
         fn.wait_remove_and_update(
             process, "/usr/bin/bazaar", self.lbl_software_bazaar, "Bazaar", self, "bazaar removal complete"
@@ -1004,7 +1004,7 @@ def on_click_software_gnome_remove(self, _widget):
     """Remove the gnome-software GTK software center."""
     try:
         fn.log_subsection("Removing gnome-software...")
-        process = fn.launch_pacman_remove_in_terminal("gnome-software")
+        process = fn.launch_pacman_remove_recursive_in_terminal("gnome-software", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "gnome-software removal started")
         fn.wait_remove_and_update(
             process,
@@ -1022,7 +1022,7 @@ def on_click_software_discover_remove(self, _widget):
     """Remove the KDE Discover software center."""
     try:
         fn.log_subsection("Removing discover...")
-        process = fn.launch_pacman_remove_in_terminal("discover")
+        process = fn.launch_pacman_remove_recursive_in_terminal("discover", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "plasma-discover removal started")
         fn.wait_remove_and_update(
             process,
@@ -1040,7 +1040,7 @@ def on_click_software_pachub_remove(self, _widget):
     """Remove the PacHub package."""
     try:
         fn.log_subsection("Removing pachub...")
-        process = fn.launch_pacman_remove_in_terminal("pachub")
+        process = fn.launch_pacman_remove_recursive_in_terminal("pachub", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "pachub removal started")
         fn.wait_remove_and_update(
             process,
@@ -1058,7 +1058,7 @@ def on_click_software_bauh_remove(self, _widget):
     """Remove the bauh multi-format package manager."""
     try:
         fn.log_subsection("Removing bauh...")
-        process = fn.launch_pacman_remove_in_terminal("bauh")
+        process = fn.launch_pacman_remove_recursive_in_terminal("bauh", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "bauh removal started")
         fn.wait_remove_and_update(
             process,
@@ -1100,7 +1100,7 @@ def on_click_software_archlinux_logout_remove(self, _widget):
     """Remove the archlinux-logout-gtk4 package."""
     try:
         fn.log_subsection("Removing archlinux-logout-gtk4...")
-        process = fn.launch_pacman_remove_in_terminal("archlinux-logout-gtk4")
+        process = fn.launch_pacman_remove_recursive_in_terminal("archlinux-logout-gtk4", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "archlinux-logout-gtk4 removal started")
         fn.wait_remove_and_update(
             process,
@@ -1162,7 +1162,7 @@ def on_click_software_powermenu_remove(self, _widget):
     """Remove the kiro-powermenu package."""
     try:
         fn.log_subsection("Removing kiro-powermenu...")
-        process = fn.launch_pacman_remove_in_terminal("kiro-powermenu")
+        process = fn.launch_pacman_remove_recursive_in_terminal("kiro-powermenu", keep_config=True)
         GLib.idle_add(fn.show_in_app_notification, self, "kiro-powermenu removal started")
         fn.wait_remove_and_update(
             process,

@@ -1912,8 +1912,12 @@ read -p 'Press Enter to close...'
     return process
 
 
-def launch_pacman_remove_recursive_in_terminal(packages):
+def launch_pacman_remove_recursive_in_terminal(packages, keep_config=False):
+    """Recursively remove packages; keep_config=True uses -Rs (.pacsave backup) instead of -Rns."""
     import tempfile
+
+    # -Rs keeps a .pacsave config backup (safer for newcomers); -Rns deletes config outright
+    flag = "-Rs" if keep_config else "-Rns"
 
     if not shutil.which("alacritty"):
         log_info("alacritty not found, installing...")
@@ -1930,7 +1934,7 @@ def launch_pacman_remove_recursive_in_terminal(packages):
 
     script = f"""
 set -o pipefail
-pacman -Rns --noconfirm {packages} 2>&1 | tee {temp_path}
+pacman {flag} --noconfirm {packages} 2>&1 | tee {temp_path}
 RESULT=$?
 
 echo ''
@@ -1945,7 +1949,7 @@ else
         echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
         echo 'SOLUTION:'
         echo '. Check if package is installed: pacman -Q {packages}'
-        echo '. Try manual removal: pacman -Rns {packages}'
+        echo '. Try manual removal: pacman {flag} {packages}'
         echo '. For forced removal: pacman -Rdd {packages}'
         echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     elif grep -qE 'error:|failed' {temp_path}; then
@@ -1955,7 +1959,7 @@ else
         echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
         echo 'SOLUTION:'
         echo '. Check if package is installed: pacman -Q {packages}'
-        echo '. Try manual removal: pacman -Rns {packages}'
+        echo '. Try manual removal: pacman {flag} {packages}'
         echo '. For forced removal: pacman -Rdd {packages}'
         echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     fi
