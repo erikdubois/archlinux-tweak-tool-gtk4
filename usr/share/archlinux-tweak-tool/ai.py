@@ -133,6 +133,16 @@ def on_click_ai_jan(self, _widget):
             fn.threading.Thread(target=wait_removal, daemon=True).start()
             GLib.idle_add(fn.show_in_app_notification, self, "jan removal started")
         else:
+            # jan-bin ships only in the [cachyos] repo, which Kiro disables by default.
+            # Guard up front so we never launch a doomed "target not found" install.
+            if not fn.check_cachyos_repo_active():
+                fn.log_warn("cachyos repo not enabled — jan-bin unavailable")
+                GLib.idle_add(
+                    fn.show_in_app_notification,
+                    self,
+                    "Jan needs the cachyos repo. Enable [cachyos] in pacman.conf first.",
+                )
+                return
             fn.log_subsection("Installing jan-bin...")
             process = fn.launch_pacman_install_in_terminal("jan-bin")
 

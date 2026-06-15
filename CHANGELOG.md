@@ -2,6 +2,42 @@
 
 ## 2026.06.15
 
+### Accessibility: add a Remove button for the xkbset backend
+
+**What changed.** The Keyboard accessibility (X11) section installs `xkbset` lazily on the first Sticky/Slow/Bounce/Mouse Keys toggle but offered no way to remove it. Replaced the static "Requires xkbset" note with one managed status row that reports xkbset's install state and exposes a **Remove** button when it is installed. Removing xkbset also deletes the `att-accessx.desktop` autostart entry so its now-dead xkbset lines don't run at next login, and immediately greys the four toggles (with the existing AUR-helper tooltip).
+
+**Technical details.**
+- `accessibility.py`: new `remove_xkbset(self, ...)` (mirrors `remove()`) — recursive-remove terminal for `XKBSET_PKG`, then removes `_AUTOSTART_DESKTOP` and calls back into `self.refresh_xkbset_state`; new `xkbset_installed()` helper.
+- `accessibility_gui.py`: keyboard section gains the `hbox_xkbset` row + `refresh_xkbset_state()` closure that drives the label text, Remove-button visibility, and all four switches' sensitivity/tooltip in one place. The old inline `xkbset_ready` note block and per-switch sensitivity were removed. `_refresh` (page-map handler) now also calls `refresh_xkbset_state`, so a removal greys the toggles when the page is revisited.
+
+**Verification.** `ruff check` + AST parse pass on both files.
+
+### Files Modified (xkbset remove)
+- `usr/share/archlinux-tweak-tool/accessibility.py`
+- `usr/share/archlinux-tweak-tool/accessibility_gui.py`
+
+### AI Tools: guard Jan install on the cachyos repo being present
+
+**What changed.** Clicking **Install** on "Jan — Offline desktop AI" launched a pacman terminal that immediately died with `target not found: jan-bin` (then a failed yay fallback). Root cause: `jan-bin` ships only in the `[cachyos]` repo, which Kiro disables by default (chaotic-aur is the backstop and doesn't carry it). The install was launched blindly and the missing-repo notice only appeared *after* the doomed run. Added an up-front guard: if `fn.check_cachyos_repo_active()` is false, ATT skips the install and tells the user to enable `[cachyos]` in pacman.conf instead of opening a terminal that can only fail.
+
+### Files Modified (Jan repo guard)
+- `usr/share/archlinux-tweak-tool/ai.py`
+
+### Locale robustness: never crash under a non-UTF-8 system locale
+
+**What changed.** On a system whose locale is latin-1 (e.g. `fr_BE`, which is ISO-8859-1 with no UTF-8 variant generated), ATT crashed with `UnicodeEncodeError: 'latin-1' codec can't encode...`. Two distinct failures: a plain log/`print` of a non-ASCII glyph (em-dash `—`, `✓`/`✗`/`━` in the in-terminal scripts) blew up because **stdout** was latin-1, and `subprocess.Popen([...script...])` blew up because **filesystem/argument encoding** was latin-1. The spawned pacman terminal also showed mojibake (`résolution` → `r�solution`). Root cause: under a non-UTF-8 locale Python derives a latin-1 encoding for both stdout and subprocess args, so any non-ASCII content fails. Fixed by forcing **Python UTF-8 mode** for the whole app (one place, fixes every encode path app-wide) and giving spawned terminals a UTF-8 locale. Separately, ATT's own **Locale page no longer offers non-UTF-8 locales** in either dropdown — it stops handing users the footgun that creates this state.
+
+**Technical details.**
+- `archlinux-tweak-tool.py`: at the very top of the module (before the heavy imports and flag-parsing, so it runs once and survives into the re-exec), a loop-safe guard re-execs the interpreter with `-X utf8` **only when the filesystem encoding is not UTF-8** (`codecs.lookup(sys.getfilesystemencoding()).name != "utf-8"`). Note `sys.flags.utf8_mode` is the wrong signal — it is 0 on a normal `en_US.UTF-8` desktop too, so keying on it would re-exec every launch and hurt startup time (objective 1); keying on the actual encoding leaves healthy systems untouched and re-execs only the broken latin-1 case. UTF-8 mode makes `sys.stdout` and subprocess argument encoding UTF-8 regardless of `LANG`, fixing the entire class of crash across all modules. Imports after the guard carry `# noqa: E402` (intentional — must follow the guard).
+- `archlinux-tweak-tool.py`: after the guard, child terminals inherit a UTF-8 locale — the user's own locale is kept when it is already UTF-8, otherwise `LANG`/`LC_ALL` fall back to `C.UTF-8` so pacman/terminal output renders cleanly instead of mojibake. This covers all 13 alacritty spawns and any captured-output subprocess in one place rather than editing each call site.
+- `locale_settings.py`: new `_is_utf8_locale(name)` helper. The **System Locale** dropdown (`localectl list-locales`) is filtered to UTF-8 names only; the **Generate New Locale** list (`/usr/share/i18n/SUPPORTED`) is filtered by its charset column (`parts[1] == "UTF-8"`). Latin-1 locales like bare `fr_BE` are no longer selectable or generatable through ATT.
+
+**Verification (on a `fr_BE` VM).** Reproduced both original crashes under `fr_BE`; both succeed under the UTF-8-mode guard (`utf8_mode=1`, em-dash `print` + subprocess-glyph-arg OK). Child-locale fallback yields `C.UTF-8`. Both dropdowns drop `fr_BE` (latin-1); confirmed all 327 offered Generate-New names resolve to a UTF-8 charset (zero can emit latin-1, so no name-collision footgun). `ruff check` + AST syntax check pass on both files.
+
+### Files Modified (locale robustness)
+- `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+- `usr/share/archlinux-tweak-tool/locale_settings.py`
+
 ### Software page: recursive removal with config backup (`-Rs`)
 
 **What changed.** The Software page's 18 app removals (yay, paru, trizen, pikaur, pacui, flatpak, snapd, appmanager, pacseek, pamac, octopi, bazaar, gnome-software, discover, pachub, bauh, archlinux-logout, kiro-powermenu) now remove **recursively with a `.pacsave` config backup** (`pacman -Rs`) instead of plain `-R`. Plain `-R` left now-orphaned dependencies behind; `-Rs` clears dependencies no longer needed by anything else while keeping a `.pacsave` of each package's config — the safer recursive flag for a newcomer distro (vs `-Rns`, which deletes config outright). This settles the ecosystem removal-flag policy: **`-Rs` is the standard recursive-removal flag** going forward. This pass applies it to the Software page only; the codebase-wide `-R` helper (~43 other call sites) is unchanged, and the Office page keeps its existing `-Rns`.

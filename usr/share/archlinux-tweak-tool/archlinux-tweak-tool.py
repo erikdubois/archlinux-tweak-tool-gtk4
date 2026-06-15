@@ -6,16 +6,19 @@
 # pylint:disable=C0103,C0115,C0116,C0411,C0413,E1101,E0213,I1101,R0902,R0904,R0912,R0913,R0914,R0915,R0916,R1705,W0613,W0621,W0622,W0702,W0703
 # pylint:disable=C0301,C0302 #line too long
 
-# ── Force Python UTF-8 mode (locale-independent) ──────────────────────────
+# ── Force Python UTF-8 mode on a non-UTF-8 locale ─────────────────────────
 # ATT must never crash on a non-UTF-8 system locale (e.g. latin-1 fr_BE).
 # Under such a locale Python encodes stdout and subprocess arguments with
 # latin-1, so any non-ASCII glyph in a log line or shell script raises
 # UnicodeEncodeError. UTF-8 mode forces UTF-8 for both, regardless of LANG.
-# Re-exec once if we are not already in UTF-8 mode; the guard is loop-safe.
+# Re-exec only when the locale's encoding is not UTF-8 — a normal UTF-8 desktop
+# is left untouched (sys.flags.utf8_mode is 0 there too, so it is the wrong
+# signal). The guard is loop-safe: the re-exec'd process is UTF-8 already.
+import codecs
 import os
 import sys
 
-if not sys.flags.utf8_mode:
+if codecs.lookup(sys.getfilesystemencoding()).name != "utf-8":
     os.environ["PYTHONUTF8"] = "1"
     os.execv(sys.executable, [sys.executable, "-X", "utf8", *sys.argv])
 

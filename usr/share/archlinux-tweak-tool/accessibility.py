@@ -237,6 +237,37 @@ def _persist():
     fn.log_info(f"AccessX persisted to {_AUTOSTART_DESKTOP}")
 
 
+def xkbset_installed():
+    return fn.check_package_installed(XKBSET_PKG)
+
+
+def remove_xkbset(self, _widget=None):
+    """Remove xkbset (the keyboard-accessibility backend) and its autostart entry."""
+    fn.log_subsection("Removing xkbset (keyboard accessibility)...")
+    process = fn.launch_pacman_remove_recursive_in_terminal(XKBSET_PKG)
+    GLib.idle_add(fn.show_in_app_notification, self, "xkbset removal started")
+
+    def wait_remove():
+        if process is None:
+            return
+        process.communicate()
+        fn.invalidate_pkg_cache()
+        if not fn.check_package_installed(XKBSET_PKG):
+            # Drop the autostart entry so its now-dead xkbset lines don't run at next login.
+            if fn.path.isfile(_AUTOSTART_DESKTOP):
+                fn.os.remove(_AUTOSTART_DESKTOP)
+                fn.log_info("AccessX autostart entry removed with xkbset")
+            fn.log_success("xkbset removed")
+            GLib.idle_add(fn.show_in_app_notification, self, "xkbset removed — keyboard accessibility toggles disabled")
+            refresh = getattr(self, "refresh_xkbset_state", None)
+            if refresh:
+                GLib.idle_add(refresh)
+        else:
+            fn.log_warn("xkbset removal did not complete")
+
+    fn.threading.Thread(target=wait_remove, daemon=True).start()
+
+
 def ensure_xkbset(self):
     """Install xkbset via the AUR helper if missing; return True when available."""
     if fn.check_package_installed(XKBSET_PKG):

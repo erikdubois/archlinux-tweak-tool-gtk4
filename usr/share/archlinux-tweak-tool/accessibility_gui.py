@@ -33,6 +33,10 @@ def _refresh(self, fn):
     if refresh_hc:
         refresh_hc()
 
+    refresh_xkbset = getattr(self, "refresh_xkbset_state", None)
+    if refresh_xkbset:
+        refresh_xkbset()
+
     state = accessibility.read_accessx_state()
     for feature in accessibility.ACCESSX:
         switch = getattr(self, f"accessx_switch_{feature['key']}", None)
@@ -160,15 +164,39 @@ def gui(self, Gtk, vboxstack_accessibility, fn):
     # ── Keyboard accessibility (X11) ─────────────────────────────────
     vboxstack_accessibility.append(_section_header(Gtk, "Keyboard accessibility (X11)"))
 
-    xkbset_ready = fn.check_package_installed(accessibility.XKBSET_PKG) or fn.get_aur_helper() is not None
-    if not xkbset_ready:
-        hbox_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        lbl_note = Gtk.Label(xalign=0)
-        lbl_note.set_markup("   Requires <b>xkbset</b> — install an AUR helper (e.g. yay) to enable these toggles.")
-        lbl_note.set_margin_start(10)
-        lbl_note.set_margin_end(10)
-        hbox_note.append(lbl_note)
-        vboxstack_accessibility.append(hbox_note)
+    # xkbset is the AUR backend that powers every toggle below; it is installed lazily
+    # on first toggle. This managed row reports its state and offers a Remove button.
+    hbox_xkbset = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_xkbset.set_margin_top(4)
+    lbl_xkbset = Gtk.Label(xalign=0)
+    lbl_xkbset.set_margin_start(20)
+    lbl_xkbset.set_margin_end(10)
+    lbl_xkbset.set_hexpand(True)
+    btn_xkbset_remove = Gtk.Button(label="Remove")
+    btn_xkbset_remove.connect("clicked", functools.partial(accessibility.remove_xkbset, self))
+    btn_xkbset_remove.set_margin_start(10)
+    btn_xkbset_remove.set_margin_end(10)
+    hbox_xkbset.append(lbl_xkbset)
+    hbox_xkbset.append(btn_xkbset_remove)
+    vboxstack_accessibility.append(hbox_xkbset)
+
+    def refresh_xkbset_state():
+        installed = fn.check_package_installed(accessibility.XKBSET_PKG)
+        ready = installed or fn.get_aur_helper() is not None
+        if installed:
+            lbl_xkbset.set_markup("xkbset <b>installed</b> — backend for the toggles below")
+        elif ready:
+            lbl_xkbset.set_markup("xkbset will be installed automatically on first toggle")
+        else:
+            lbl_xkbset.set_markup("Requires <b>xkbset</b> — install an AUR helper (e.g. yay) to enable these toggles.")
+        btn_xkbset_remove.set_visible(installed)
+        for feature in accessibility.ACCESSX:
+            switch = getattr(self, f"accessx_switch_{feature['key']}", None)
+            if switch:
+                switch.set_sensitive(ready)
+                switch.set_tooltip_text("" if ready else "Requires xkbset (needs an AUR helper such as yay)")
+
+    self.refresh_xkbset_state = refresh_xkbset_state
 
     for feature in accessibility.ACCESSX:
         hbox_feature = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -191,15 +219,14 @@ def gui(self, Gtk, vboxstack_accessibility, fn):
         switch = Gtk.Switch()
         switch.set_valign(Gtk.Align.CENTER)
         switch.set_margin_end(10)
-        switch.set_sensitive(xkbset_ready)
-        if not xkbset_ready:
-            switch.set_tooltip_text("Requires xkbset (needs an AUR helper such as yay)")
         setattr(self, f"accessx_switch_{feature['key']}", switch)
         switch.connect("notify::active", functools.partial(_on_accessx_toggled, self, fn, feature, switch))
 
         hbox_feature.append(vbox_label)
         hbox_feature.append(switch)
         vboxstack_accessibility.append(hbox_feature)
+
+    refresh_xkbset_state()
 
     vboxstack_accessibility.append(_persist_note(Gtk))
     vboxstack_accessibility.append(_legend(Gtk))
