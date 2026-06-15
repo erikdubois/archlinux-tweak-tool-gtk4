@@ -33,6 +33,17 @@ def _is_utf8_locale(name):
     return "utf-8" in name.lower() or "utf8" in name.lower()
 
 
+def _language_from_locale(locale_val):
+    """Map a locale (es_ES.UTF-8) to its LANGUAGE code (es_ES); '' for C/POSIX."""
+    base = locale_val.split(".")[0].split("@")[0]
+    return "" if base in ("C", "POSIX", "") else base
+
+
+def _language_leads_with(language, lang_code):
+    """True if the colon-separated LANGUAGE list already starts with lang_code."""
+    return bool(lang_code) and language.split(":")[0] == lang_code
+
+
 def _set_dropdown(dropdown, items, current):
     model = Gtk.StringList()
     for item in items:
@@ -71,26 +82,27 @@ def _read_locale_conf():
     return conf
 
 
-def _preserve_language(language):
-    """Re-add the LANGUAGE line that localectl strips when it rewrites /etc/locale.conf."""
+def _write_language(language):
+    """Rewrite the LANGUAGE line in /etc/locale.conf, or remove it when empty."""
     try:
         with open("/etc/locale.conf") as f:
             lines = [ln for ln in f if not ln.strip().startswith("LANGUAGE=")]
     except OSError:
         lines = []
-    lines.append(f"LANGUAGE={language}\n")
+    if language:
+        lines.append(f"LANGUAGE={language}\n")
     try:
         with open("/etc/locale.conf", "w") as f:
             f.writelines(lines)
-        fn.log_info(f"Preserved LANGUAGE={language} in /etc/locale.conf")
+        fn.log_info(f"Set LANGUAGE={language} in /etc/locale.conf" if language else "Cleared LANGUAGE in /etc/locale.conf")
     except OSError as e:
-        fn.log_error(f"Could not preserve LANGUAGE: {e}")
+        fn.log_error(f"Could not update LANGUAGE: {e}")
 
 
 def _apply_locale_vars(self, conf, summary, result_label):
-    """Apply LANG + LC_* via localectl, preserving any LANGUAGE setting separately."""
+    """Apply LANG + LC_* via localectl, writing any LANGUAGE setting to the file separately."""
     # localectl validates each value as a single locale name and refuses a colon-separated
-    # LANGUAGE list, so LANGUAGE is excluded from the call and re-added to the file afterwards.
+    # LANGUAGE list, so LANGUAGE is excluded from the call and written to the file afterwards.
     language = conf.get("LANGUAGE", "")
     assignments = [f"{k}={v}" for k, v in conf.items() if v and k != "LANGUAGE"]
     if not assignments:
@@ -99,8 +111,8 @@ def _apply_locale_vars(self, conf, summary, result_label):
         return
     try:
         subprocess.run(["localectl", "set-locale", *assignments], check=True)
-        if language:
-            _preserve_language(language)
+        if "LANGUAGE" in conf:
+            _write_language(language)
         fn.log_success(summary)
         set_result(result_label, summary, "ok")
         GLib.idle_add(fn.show_in_app_notification, self, summary)
@@ -128,8 +140,10 @@ def refresh_status(self):
         ["timedatectl", "show", "--property=Timezone", "--value"], capture_output=True, text=True
     )
     timezone = tz_result.stdout.strip() or "—"
+    language = _read_locale_conf().get("LANGUAGE", "")
 
     GLib.idle_add(self.lbl_locale_current.set_text, lang)
+    GLib.idle_add(self.lbl_language_current.set_text, language or "(not set)")
     GLib.idle_add(self.lbl_keymap_current.set_text, vc_keymap)
     GLib.idle_add(self.lbl_x11_current.set_text, x11_display)
     GLib.idle_add(self.lbl_timezone_current.set_text, timezone)
@@ -170,6 +184,7 @@ def populate_dropdowns(self):
                 _set_dropdown(self.lc_dropdowns[cat], lc_items, lc_current[cat] or LC_SENTINEL)
             self._locale_populating[0] = False
             self.lbl_locale_current.set_text(current_locale or "—")
+            self.lbl_language_current.set_text(conf.get("LANGUAGE", "") or "(not set)")
             self.lbl_keymap_current.set_text(current_keymap or "—")
             self.lbl_x11_current.set_text(x11_display or "—")
             self.lbl_timezone_current.set_text(current_tz or "—")
@@ -185,12 +200,32 @@ def on_apply_locale(self, _widget):
     if obj is None:
         return
     locale_val = obj.get_string()
+
+    conf = _read_locale_conf()
+    conf["LANG"] = locale_val
+
+    # LANGUAGE overrides LANG for UI translations, so a stale LANGUAGE silently keeps
+    # the old display language. If it would shadow the new locale, offer to align it.
+    new_language = _language_from_locale(locale_val)
+    current_language = conf.get("LANGUAGE", "")
+    if current_language and not _language_leads_with(current_language, new_language):
+        target = new_language or "none (cleared)"
+        message = (
+            f"Your display language is set by <b>LANGUAGE={current_language}</b>, which "
+            f"overrides the system locale — the interface would stay in that language.\n\n"
+            f"Update LANGUAGE to <b>{target}</b> so <b>{locale_val}</b> takes effect?\n"
+            f"Choose <b>No</b> to change LANG only and keep your current LANGUAGE."
+        )
+        if fn.confirm_dialog(self, "Update display language?", message):
+            conf["LANGUAGE"] = new_language
+            fn.log_info(f"Aligning LANGUAGE to {new_language or '(cleared)'}")
+        else:
+            fn.log_info(f"Keeping LANGUAGE={current_language} (it overrides LANG)")
+
     fn.log_info(f"Setting LANG={locale_val} (preserving per-category LC_* overrides)")
     set_result(self.lbl_locale_result, "Applying…", "pending")
 
     def _apply():
-        conf = _read_locale_conf()
-        conf["LANG"] = locale_val
         _apply_locale_vars(self, conf, f"System locale set to {locale_val} — log out to apply", self.lbl_locale_result)
 
     threading.Thread(target=_apply, daemon=True).start()

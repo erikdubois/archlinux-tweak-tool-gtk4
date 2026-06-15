@@ -38,6 +38,21 @@
 - `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
 - `usr/share/archlinux-tweak-tool/locale_settings.py`
 
+### Locale page: surface LANGUAGE and align it on System Locale change
+
+**What changed.** Changing System Locale (e.g. to `es_ES.UTF-8`) appeared to do nothing — the desktop stayed in the old language. Cause: a leftover `LANGUAGE=fr_BE:fr_FR` (set at install) **overrides `LANG`** for UI translations (gettext priority: `LANGUAGE` › `LC_ALL` › `LC_MESSAGES` › `LANG`), and ATT only ever changed `LANG`, silently preserving the conflicting `LANGUAGE`. Two changes: (1) the **Current Settings** panel now shows a **Language (LANGUAGE)** row so the override is visible (it was invisible before); (2) when applying a System Locale whose language doesn't match the current `LANGUAGE`, ATT asks whether to **align LANGUAGE** to the new locale so the change actually takes effect — Yes updates/clears it, No changes `LANG` only and keeps the existing `LANGUAGE`. Either way the desktop only flips on next login.
+
+**Technical details.**
+- `locale_gui.py`: new `hbox_language_status` / `self.lbl_language_current` row appended right under the System Locale row in Current Settings.
+- `locale_settings.py`: `lbl_language_current` populated from `_read_locale_conf().get("LANGUAGE")` (authoritative; `localectl status` can't be parsed for it — it's a continuation line) in both `refresh_status` and `populate_dropdowns`. `on_apply_locale` now reads conf + shows the alignment dialog on the **main thread** (via the existing `fn.confirm_dialog`, objective 17) before spawning the apply thread. Helpers `_language_from_locale` (`es_ES.UTF-8` → `es_ES`, `''` for C/POSIX) and `_language_leads_with` decide whether the dialog is needed (no nag when `LANGUAGE` already leads with the new language).
+- `locale_settings.py`: `_preserve_language` renamed `_write_language` and now **removes** the `LANGUAGE` line when passed an empty value (the old version always re-appended, so clearing was impossible). `_apply_locale_vars` guards on `"LANGUAGE" in conf` instead of truthiness so an explicit clear is honored. Corrected the stale comment claiming localectl strips `LANGUAGE` — verified on a VM that it does **not**; `_write_language` is the authoritative rewrite. No regression for the keymap/LC callers (their conf mirrors the file, so the same value is rewritten idempotently).
+
+**Verification (on a `fr_BE`→`es_ES` VM).** Helpers unit-checked; dialog triggers iff `LANGUAGE` mismatches. End-to-end: choosing align produces `LANG=es_ES.UTF-8` + `LANGUAGE=es_ES`; `_write_language("")` removes the line, `_write_language("es_ES")` restores it. `ruff` + AST + codespell pass. GUI row/dialog are logic-verified and mirror existing patterns (live render pending next ATT launch).
+
+### Files Modified (LANGUAGE alignment)
+- `usr/share/archlinux-tweak-tool/locale_gui.py`
+- `usr/share/archlinux-tweak-tool/locale_settings.py`
+
 ### Software page: recursive removal with config backup (`-Rs`)
 
 **What changed.** The Software page's 18 app removals (yay, paru, trizen, pikaur, pacui, flatpak, snapd, appmanager, pacseek, pamac, octopi, bazaar, gnome-software, discover, pachub, bauh, archlinux-logout, kiro-powermenu) now remove **recursively with a `.pacsave` config backup** (`pacman -Rs`) instead of plain `-R`. Plain `-R` left now-orphaned dependencies behind; `-Rs` clears dependencies no longer needed by anything else while keeping a `.pacsave` of each package's config — the safer recursive flag for a newcomer distro (vs `-Rns`, which deletes config outright). This settles the ecosystem removal-flag policy: **`-Rs` is the standard recursive-removal flag** going forward. This pass applies it to the Software page only; the codebase-wide `-R` helper (~43 other call sites) is unchanged, and the Office page keeps its existing `-Rns`.
