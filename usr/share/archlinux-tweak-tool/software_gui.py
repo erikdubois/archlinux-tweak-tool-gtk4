@@ -195,6 +195,19 @@ def gui(self, Gtk, vboxstack_software, fn):
     hbox_section_aur_helpers_label.set_margin_bottom(10)
     hbox_section_aur_helpers.append(hbox_section_aur_helpers_label)
 
+    # AUR safety note
+    hbox_aur_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    lbl_aur_note = Gtk.Label(xalign=0)
+    lbl_aur_note.set_markup(
+        "<i>The AUR is a <b>community</b> repository — packages are submitted by users and are\n"
+        "<b>not reviewed</b> by Arch or Kiro. They build and run code on your system, so install\n"
+        "only what you trust, and reach for the official repositories first.</i>"
+    )
+    lbl_aur_note.set_margin_start(20)
+    lbl_aur_note.set_margin_end(10)
+    lbl_aur_note.set_margin_bottom(5)
+    hbox_aur_note.append(lbl_aur_note)
+
     # Yay-git
     hbox_yay = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.lbl_software_yay = Gtk.Label(xalign=0)
@@ -555,6 +568,7 @@ def gui(self, Gtk, vboxstack_software, fn):
         vboxstack_software.append(hbox_bauh)
     vboxstack_software.append(hbox_pachub)
     vboxstack_software.append(hbox_section_aur_helpers)
+    vboxstack_software.append(hbox_aur_note)
     vboxstack_software.append(hbox_yay)
     vboxstack_software.append(hbox_paru)
     vboxstack_software.append(hbox_trizen)

@@ -19,6 +19,16 @@
 - `usr/share/archlinux-tweak-tool/functions.py`
 - `usr/share/archlinux-tweak-tool/software.py`
 
+### Software page: AUR safety note
+
+**What changed.** Added a short, non-preachy note directly under the **AUR Helpers** section header on the Software Installers page. Kiro ships Pamac with full AUR access and ATT offers the AUR helpers (yay/paru/trizen/pikaur), but a newcomer got no context that AUR packages are community-submitted and unreviewed. The note (one italic `lbl.set_markup(...)` label, matching the Backup-page note style) explains that the AUR is a community repository, packages are not reviewed by Arch or Kiro, they build and run code on the system, so install only what you trust and reach for the official repositories first. Teaching-distro framing ("no black boxes"), not a scare.
+
+**Technical details.**
+- `software_gui.py`: new `hbox_aur_note` / `lbl_aur_note` built right after `hbox_section_aur_helpers`, appended to `vboxstack_software` between the section header and the yay row. Static informational label — no callback, no `fn.distr` guard.
+
+### Files Modified (AUR note)
+- `usr/share/archlinux-tweak-tool/software_gui.py`
+
 ## 2026.06.14
 
 ### Locale: per-category LC_* overrides (mixed locale)
