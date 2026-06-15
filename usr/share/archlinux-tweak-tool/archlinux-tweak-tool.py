@@ -6,11 +6,31 @@
 # pylint:disable=C0103,C0115,C0116,C0411,C0413,E1101,E0213,I1101,R0902,R0904,R0912,R0913,R0914,R0915,R0916,R1705,W0613,W0621,W0622,W0702,W0703
 # pylint:disable=C0301,C0302 #line too long
 
+# ── Force Python UTF-8 mode (locale-independent) ──────────────────────────
+# ATT must never crash on a non-UTF-8 system locale (e.g. latin-1 fr_BE).
+# Under such a locale Python encodes stdout and subprocess arguments with
+# latin-1, so any non-ASCII glyph in a log line or shell script raises
+# UnicodeEncodeError. UTF-8 mode forces UTF-8 for both, regardless of LANG.
+# Re-exec once if we are not already in UTF-8 mode; the guard is loop-safe.
 import os
-import signal
-import time
-import functions as fn
-import gi
+import sys
+
+if not sys.flags.utf8_mode:
+    os.environ["PYTHONUTF8"] = "1"
+    os.execv(sys.executable, [sys.executable, "-X", "utf8", *sys.argv])
+
+# Spawned terminals (pacman, etc.) inherit our locale; if it is not UTF-8 their
+# output renders as mojibake. Keep the user's locale when it is already UTF-8,
+# otherwise fall back to C.UTF-8 so child output stays readable.
+_cur_locale = os.environ.get("LC_ALL") or os.environ.get("LC_CTYPE") or os.environ.get("LANG") or ""
+if "utf-8" not in _cur_locale.lower() and "utf8" not in _cur_locale.lower():
+    os.environ["LANG"] = "C.UTF-8"
+    os.environ["LC_ALL"] = "C.UTF-8"
+
+import signal  # noqa: E402
+import time  # noqa: E402
+import functions as fn  # noqa: E402
+import gi  # noqa: E402
 
 # Heavy modules are imported lazily in `_finish_startup_init()` so the window can
 # appear quickly. These names are populated at runtime.

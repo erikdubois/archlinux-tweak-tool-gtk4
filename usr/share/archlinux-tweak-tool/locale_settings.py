@@ -28,6 +28,11 @@ def _fetch(cmd):
     return subprocess.run(cmd, capture_output=True, text=True).stdout.strip().splitlines()
 
 
+def _is_utf8_locale(name):
+    """Only offer UTF-8 locales; latin-1 ones (e.g. fr_BE) break non-ASCII output."""
+    return "utf-8" in name.lower() or "utf8" in name.lower()
+
+
 def _set_dropdown(dropdown, items, current):
     model = Gtk.StringList()
     for item in items:
@@ -132,7 +137,9 @@ def refresh_status(self):
 
 def populate_dropdowns(self):
     def _run():
-        locales = _fetch(["localectl", "list-locales"]) or ["en_US.UTF-8"]
+        locales = [loc for loc in (_fetch(["localectl", "list-locales"]) or []) if _is_utf8_locale(loc)] or [
+            "en_US.UTF-8"
+        ]
         keymaps = _fetch(["localectl", "list-keymaps"]) or ["us"]
         x11_layouts = _fetch(["localectl", "list-x11-keymap-layouts"]) or ["us"]
         timezones = _fetch(["timedatectl", "list-timezones"]) or ["UTC"]
@@ -323,7 +330,9 @@ def get_available_locales():
         if not line or line.startswith("#"):
             continue
         parts = line.split()
-        if parts:
+        # parts[1] is the charset; only offer UTF-8 so users cannot generate a
+        # latin-1 locale that breaks non-ASCII output (e.g. "fr_BE ISO-8859-1").
+        if len(parts) >= 2 and parts[1].upper() == "UTF-8":
             locales.append(parts[0])
     return sorted(set(locales))
 
