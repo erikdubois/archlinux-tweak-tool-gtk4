@@ -16,6 +16,17 @@
 - `usr/share/archlinux-tweak-tool/accessibility.py`
 - `usr/share/archlinux-tweak-tool/accessibility_gui.py`
 
+### Desktop entry: localize Comment + GenericName
+
+**What changed.** Added a translated `Comment` and a real `GenericName` ("System Configuration Tool")
+in 14 languages (de, fr, nl, es, it, pt_BR, pt, ru, pl, uk, zh_CN, ja, tr, cs). Also fixed the broken
+English `Comment` (`ArchLinux Tweak Tool - graphical tool to set Arch Linux` →
+`Graphical tool to configure and tweak your Arch Linux system`). The redundant `GenericName=Arch Linux Tweak Tool`
+(a copy of `Name`) was replaced with the descriptive value. Brand `Name` and `Keywords` stay English.
+
+### Files Modified (desktop localization)
+- `usr/share/applications/archlinux-tweak-tool.desktop`
+
 ### AI Tools: guard Jan install on the cachyos repo being present
 
 **What changed.** Clicking **Install** on "Jan — Offline desktop AI" launched a pacman terminal that immediately died with `target not found: jan-bin` (then a failed yay fallback). Root cause: `jan-bin` ships only in the `[cachyos]` repo, which Kiro disables by default (chaotic-aur is the backstop and doesn't carry it). The install was launched blindly and the missing-repo notice only appeared *after* the doomed run. Added an up-front guard: if `fn.check_cachyos_repo_active()` is false, ATT skips the install and tells the user to enable `[cachyos]` in pacman.conf instead of opening a terminal that can only fail.
