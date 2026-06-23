@@ -11,6 +11,7 @@
 - `icons.py`: replaced the separate surfn/neocandy functions with one generic engine keyed by `set_key` — `ICON_SETS` (families/checks-attr/base/base_token/prefix/noun), `SURFN_TABS` + `NEOCANDY_TABS`, and generic `set_icon_checkboxes` / `select_icon_family` / `_collect_icon_packages` / `install_icons` / `remove_icons` / `find_icons` + `on_icons_*` callbacks. Base-package removal guard applies to both.
 - `icons_gui.py`: `_build_surfn_tab` → generic `_build_icon_tab(self, …, set_key, family_labels)`; new `_build_icon_page()` builds title + StackSwitcher of sub-tabs; `gui_surfn()` / `gui_neocandy()` are now one-liners over it.
 - `search_synonyms.json` Icons Neo Candy keywords broadened; `search_index.json` regenerated.
+- Added an empty **Surfn-Papirus** placeholder sub-tab to the Icons Surfn page (`SURFN_TABS`); the existing 3 `surfn-papirus-*` themes stay in the core Surfn tab for now. (Neo Candy Tela already exists as a sub-tab.)
 
 ### Files Modified (Neo Candy full family + shared engine)
 - `gen-icons-list.py`

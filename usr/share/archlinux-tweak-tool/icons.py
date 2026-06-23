@@ -53,6 +53,7 @@ ICON_SETS = {
 SURFN_TABS = {
     "Surfn": ["Plasma", "Numix", "Papirus", "Arc / Breeze", "Other"],
     "Surfn-Mint": ["Mint-X", "Mint-Y"],
+    "Surfn-Papirus": [],  # placeholder — to be filled in later
     "Surfn-Tela": ["Tela"],
 }
 NEOCANDY_TABS = {
