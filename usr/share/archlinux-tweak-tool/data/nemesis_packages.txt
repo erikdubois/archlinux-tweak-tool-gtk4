@@ -128,7 +128,7 @@ sardi-orb-colora-variations-icons-git
 sparklines-git
 surfn-arc-breeze-icons-git
 surfn-icons-git
-surfn-mint-y-icons-git
+surfn-mint-y-meta
 surfn-plasma-dark-icons-git
 surfn-plasma-flow-git
 surfn-plasma-light-icons-git
