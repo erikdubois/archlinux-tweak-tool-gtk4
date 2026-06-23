@@ -52,6 +52,18 @@
 - `usr/share/archlinux-tweak-tool/icons_gui.py`
 - `usr/share/archlinux-tweak-tool/images/surfn/*.png` (regenerated)
 
+### Icons page: split Surfn into Surfn / Surfn-Mint / Surfn-Tela tabs
+
+**What changed.** The Surfn tab grew large, so it's split into three tabs inside the Icons page: **Surfn** (Plasma, Numix, Papirus, Arc / Breeze, Other — 28), **Surfn-Mint** (Mint-X, Mint-Y — 23), and **Surfn-Tela** (placeholder, "Coming soon — to be added later", to be filled in later). Each tab has its own All / None / family-filter / Install / Remove / Show-installed actions, scoped to that tab's packages.
+
+**Technical details.**
+- `icons.py`: added `SURFN_TABS` (tab → families) and `_tab_tokens()`. The action helpers/callbacks (`set_all`/`set_none`/`select_surfn_family`/`_collect`/`install`/`remove`/`find` and their `on_click_*` wrappers) now take a `tokens` scope so a tab only acts on its own variants; the base-package removal guard is unchanged.
+- `icons_gui.py`: extracted the per-tab layout into one `_build_surfn_tab(self, …, family_labels)` builder (info → family sections of folder-preview + checkbox rows → All/None → family filters → actions), called once per tab; empty `family_labels` renders the placeholder. All checkboxes still live in the single `self.surfn_checkboxes` dict. Removed the old inline single-tab construction/assembly.
+
+### Files Modified (Surfn tab split)
+- `usr/share/archlinux-tweak-tool/icons.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+
 **Verification.** `ruff` + AST parse pass on all touched files; generator produces 51 variants across 7 families with a thumbnail for every token; GTK4 widget methods (`Gtk.Image.set_from_paintable`, `Gdk.Texture.new_for_pixbuf`) confirmed via introspection. Full GUI render to be confirmed on a graphical session (the headless tool can't open a display).
 
 ### Files Modified / Added (Surfn rewire)

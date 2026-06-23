@@ -97,6 +97,126 @@ def _make_folder_preview(Gtk, GdkPixbuf, Gdk, base_dir, token):
     return img
 
 
+def _build_surfn_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, family_labels):
+    """Build one Surfn sub-tab; its All/None/family/install/remove actions are scoped to its tokens."""
+    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vbox.set_hexpand(True)
+    vbox.set_vexpand(True)
+
+    info = Gtk.Label(xalign=0)
+    info.set_markup(
+        "Select the packages you want to install or remove, then click the appropriate button.\n"
+        'Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
+    )
+    info.set_margin_start(10)
+    info.set_margin_end(10)
+    vbox.append(info)
+
+    present_families = [f for f in family_labels if icons.SURFN_FAMILIES.get(f)]
+    if not present_families:
+        placeholder = Gtk.Label(xalign=0)
+        placeholder.set_markup("<i>Coming soon — to be added later.</i>")
+        placeholder.set_margin_start(10)
+        placeholder.set_margin_top(10)
+        vbox.append(placeholder)
+        return vbox
+
+    vbox_families = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    vbox_families.set_hexpand(True)
+    for family_label in present_families:
+        lbl_family = Gtk.Label(xalign=0)
+        lbl_family.set_markup(f"<b>{family_label}</b>")
+        lbl_family.set_margin_start(10)
+        lbl_family.set_margin_top(6)
+        vbox_families.append(lbl_family)
+
+        flowbox_family = Gtk.FlowBox()
+        flowbox_family.set_valign(Gtk.Align.START)
+        flowbox_family.set_max_children_per_line(4)
+        flowbox_family.set_selection_mode(Gtk.SelectionMode.NONE)
+        flowbox_family.set_column_spacing(4)
+        flowbox_family.set_row_spacing(4)
+        flowbox_family.set_hexpand(True)
+        flowbox_family.set_margin_start(10)
+        flowbox_family.set_margin_end(10)
+
+        for entry in icons.SURFN_FAMILIES[family_label]:
+            token = entry["token"]
+            if token == "surfn":
+                label = "surfn (base)"
+            else:
+                label = token[len("surfn-"):] if token.startswith("surfn-") else token
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            row.append(_make_folder_preview(Gtk, GdkPixbuf, Gdk, base_dir, token))
+            checkbox = Gtk.CheckButton(label=label)
+            self.surfn_checkboxes[token] = checkbox
+            row.append(checkbox)
+            flowbox_family.append(row)
+
+        vbox_families.append(flowbox_family)
+    vbox.append(vbox_families)
+
+    tab_tokens = icons._tab_tokens(present_families)
+
+    hbox_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    lbl_prompt = Gtk.Label()
+    lbl_prompt.set_text("Choose the icon theme(s)")
+    lbl_prompt.set_margin_start(10)
+    lbl_prompt.set_margin_end(10)
+    hbox_select_label.append(lbl_prompt)
+    vbox.append(hbox_select_label)
+
+    hbox_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_select_buttons.set_margin_start(10)
+    hbox_select_buttons.set_margin_end(10)
+    btn_all = Gtk.Button(label="All")
+    btn_all.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_all_selection, self, tab_tokens))
+    btn_none = Gtk.Button(label="None")
+    btn_none.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_none_selection, self, tab_tokens))
+    for btn in (btn_all, btn_none):
+        btn.set_margin_start(10)
+        btn.set_margin_end(10)
+        hbox_select_buttons.append(btn)
+    vbox.append(hbox_select_buttons)
+
+    hbox_family_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    hbox_family_buttons.set_halign(Gtk.Align.CENTER)
+    hbox_family_buttons.set_margin_start(10)
+    hbox_family_buttons.set_margin_end(10)
+    for family_label in present_families:
+        btn_family = Gtk.Button(label=family_label)
+        btn_family.connect(
+            "clicked", functools.partial(icons.on_click_att_surfn_family_selection, self, family_label, tab_tokens)
+        )
+        btn_family.set_margin_start(6)
+        btn_family.set_margin_end(6)
+        hbox_family_buttons.append(btn_family)
+    vbox.append(hbox_family_buttons)
+
+    hbox_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_actions.set_halign(Gtk.Align.CENTER)
+    btn_find = Gtk.Button(label="Show the installed icon themes")
+    btn_find.connect("clicked", functools.partial(icons.on_find_att_surfn_icon_themes_clicked, self, tab_tokens))
+    btn_install = Gtk.Button(label="Install the selected icon themes")
+    btn_install.connect("clicked", functools.partial(icons.on_install_att_surfn_icon_themes_clicked, self, tab_tokens))
+    for btn in (btn_find, btn_install):
+        btn.set_margin_start(10)
+        btn.set_margin_end(10)
+        hbox_actions.append(btn)
+    vbox.append(hbox_actions)
+
+    hbox_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_remove.set_halign(Gtk.Align.CENTER)
+    btn_remove = Gtk.Button(label="Uninstall the selected icon themes")
+    btn_remove.connect("clicked", functools.partial(icons.on_remove_att_surfn_icon_themes_clicked, self, tab_tokens))
+    btn_remove.set_margin_start(10)
+    btn_remove.set_margin_end(10)
+    hbox_remove.append(btn_remove)
+    vbox.append(hbox_remove)
+
+    return vbox
+
+
 def gui(self, Gtk, GdkPixbuf, vboxstack_icons, _att, fn, base_dir):
     from gi.repository import Gdk
 
@@ -117,9 +237,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack_icons, _att, fn, base_dir):
     vbox_sardi_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vbox_sardi_tab.set_hexpand(True)
     vbox_sardi_tab.set_vexpand(True)
-    vbox_surfn_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vbox_surfn_tab.set_hexpand(True)
-    vbox_surfn_tab.set_vexpand(True)
+    # vbox_surfn_tab / mint / tela are created by _build_surfn_tab (see below).
     vbox_neocandy_tab = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vbox_neocandy_tab.set_hexpand(True)
     vbox_neocandy_tab.set_vexpand(True)
@@ -324,103 +442,10 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_remove_sardi_icons.set_margin_end(10)
     hbox_sardi_remove.append(button_remove_sardi_icons)
 
-    hbox_surfn_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    surfn_info_label = Gtk.Label(xalign=0)
-    surfn_info_label.set_markup(
-        'Select the packages you want to install or remove, then click the appropriate button.\n\
-Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab for details.'
-    )
-    surfn_info_label.set_margin_start(10)
-    surfn_info_label.set_margin_end(10)
-    hbox_surfn_info.append(surfn_info_label)
-
     self.surfn_checkboxes = {}
-    vbox_surfn_families = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-    vbox_surfn_families.set_hexpand(True)
-
-    for family_label, family_items in icons.SURFN_FAMILIES.items():
-        lbl_surfn_family = Gtk.Label(xalign=0)
-        lbl_surfn_family.set_markup(f"<b>{family_label}</b>")
-        lbl_surfn_family.set_margin_start(10)
-        lbl_surfn_family.set_margin_top(6)
-        vbox_surfn_families.append(lbl_surfn_family)
-
-        flowbox_surfn_family = Gtk.FlowBox()
-        flowbox_surfn_family.set_valign(Gtk.Align.START)
-        flowbox_surfn_family.set_max_children_per_line(4)
-        flowbox_surfn_family.set_selection_mode(Gtk.SelectionMode.NONE)
-        flowbox_surfn_family.set_column_spacing(4)
-        flowbox_surfn_family.set_row_spacing(4)
-        flowbox_surfn_family.set_hexpand(True)
-        flowbox_surfn_family.set_margin_start(10)
-        flowbox_surfn_family.set_margin_end(10)
-
-        for entry in family_items:
-            token = entry["token"]
-            label = token[len("surfn-"):] if token.startswith("surfn-") and token != "surfn" else token
-            if token == "surfn":
-                label = "surfn (base)"
-            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-            row.append(_make_folder_preview(Gtk, GdkPixbuf, Gdk, base_dir, token))
-            checkbox = Gtk.CheckButton(label=label)
-            self.surfn_checkboxes[token] = checkbox
-            row.append(checkbox)
-            flowbox_surfn_family.append(row)
-
-        vbox_surfn_families.append(flowbox_surfn_family)
-
-    hbox_surfn_select_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    lbl_surfn_select_prompt = Gtk.Label()
-    lbl_surfn_select_prompt.set_text("Choose the icon theme(s)")
-    lbl_surfn_select_prompt.set_margin_start(10)
-    lbl_surfn_select_prompt.set_margin_end(10)
-    hbox_surfn_select_label.append(lbl_surfn_select_prompt)
-
-    hbox_surfn_select_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    btn_all_surfn = Gtk.Button(label="All")
-    btn_all_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_all_selection, self))
-    btn_none_surfn = Gtk.Button(label="None")
-    btn_none_surfn.connect("clicked", functools.partial(icons.on_click_att_surfn_theming_none_selection, self))
-    btn_all_surfn.set_margin_start(10)
-    btn_all_surfn.set_margin_end(10)
-    hbox_surfn_select_buttons.append(btn_all_surfn)
-    btn_none_surfn.set_margin_start(10)
-    btn_none_surfn.set_margin_end(10)
-    hbox_surfn_select_buttons.append(btn_none_surfn)
-
-    hbox_surfn_family_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    hbox_surfn_family_buttons.set_halign(Gtk.Align.CENTER)
-    for family_label in icons.SURFN_FAMILIES:
-        btn_surfn_family = Gtk.Button(label=family_label)
-        btn_surfn_family.connect(
-            "clicked", functools.partial(icons.on_click_att_surfn_family_selection, self, family_label)
-        )
-        btn_surfn_family.set_margin_start(6)
-        btn_surfn_family.set_margin_end(6)
-        hbox_surfn_family_buttons.append(btn_surfn_family)
-
-    hbox_surfn_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_surfn_actions.set_halign(Gtk.Align.CENTER)
-    button_install_surfn_icons = Gtk.Button(label="Install the selected icon themes")
-    button_install_surfn_icons.connect(
-        "clicked", functools.partial(icons.on_install_att_surfn_icon_themes_clicked, self)
-    )
-    button_find_surfn_icons = Gtk.Button(label="Show the installed icon themes")
-    button_find_surfn_icons.connect("clicked", functools.partial(icons.on_find_att_surfn_icon_themes_clicked, self))
-    button_remove_surfn_icons = Gtk.Button(label="Uninstall the selected icon themes")
-    button_remove_surfn_icons.connect("clicked", functools.partial(icons.on_remove_att_surfn_icon_themes_clicked, self))
-    button_find_surfn_icons.set_margin_start(10)
-    button_find_surfn_icons.set_margin_end(10)
-    hbox_surfn_actions.append(button_find_surfn_icons)
-    button_install_surfn_icons.set_margin_start(10)
-    button_install_surfn_icons.set_margin_end(10)
-    hbox_surfn_actions.append(button_install_surfn_icons)
-
-    hbox_surfn_remove = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_surfn_remove.set_halign(Gtk.Align.CENTER)
-    button_remove_surfn_icons.set_margin_start(10)
-    button_remove_surfn_icons.set_margin_end(10)
-    hbox_surfn_remove.append(button_remove_surfn_icons)
+    vbox_surfn_tab = _build_surfn_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, icons.SURFN_TABS["Surfn"])
+    vbox_surfn_mint_tab = _build_surfn_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, icons.SURFN_TABS["Surfn-Mint"])
+    vbox_surfn_tela_tab = _build_surfn_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, icons.SURFN_TABS["Surfn-Tela"])
 
     hbox_neocandy_info = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     neocandy_info_label = Gtk.Label(xalign=0)
@@ -531,22 +556,8 @@ Ensure that the <b>Nemesis repo is enabled</b> — see the "Pacman" tab for deta
     vbox_sardi_tab.append(hbox_sardi_actions)
     vbox_sardi_tab.append(hbox_sardi_remove)
 
-    hbox_surfn_info.set_margin_start(10)
-    hbox_surfn_info.set_margin_end(10)
-    vbox_surfn_tab.append(hbox_surfn_info)
-    vbox_surfn_tab.append(vbox_surfn_families)
-    # Banner preview (surfn.jpg) hidden for now — the per-theme folder thumbnails make it redundant.
-    hbox_surfn_select_label.set_margin_start(10)
-    hbox_surfn_select_label.set_margin_end(10)
-    vbox_surfn_tab.append(hbox_surfn_select_label)
-    hbox_surfn_select_buttons.set_margin_start(10)
-    hbox_surfn_select_buttons.set_margin_end(10)
-    vbox_surfn_tab.append(hbox_surfn_select_buttons)
-    hbox_surfn_family_buttons.set_margin_start(10)
-    hbox_surfn_family_buttons.set_margin_end(10)
-    vbox_surfn_tab.append(hbox_surfn_family_buttons)
-    vbox_surfn_tab.append(hbox_surfn_actions)
-    vbox_surfn_tab.append(hbox_surfn_remove)
+    # Surfn / Surfn-Mint / Surfn-Tela tabs are built ready by _build_surfn_tab above.
+    # Banner preview (surfn.jpg) is intentionally not shown — the per-theme folder thumbnails replace it.
 
     hbox_neocandy_info.set_margin_start(10)
     hbox_neocandy_info.set_margin_end(10)
@@ -569,6 +580,8 @@ Ensure that the <b>Nemesis repo is enabled</b> — see the "Pacman" tab for deta
     stack.add_titled(vbox_neocandy_tab, "stack4", "Neo Candy")
     # Sardi tab hidden — no longer maintained. vbox_sardi_tab is still built but not shown.
     stack.add_titled(vbox_surfn_tab, "stack3", "Surfn")
+    stack.add_titled(vbox_surfn_mint_tab, "stack5", "Surfn-Mint")
+    stack.add_titled(vbox_surfn_tela_tab, "stack6", "Surfn-Tela")
 
     vbox_main.append(stack_switcher)
     stack.set_hexpand(True)
