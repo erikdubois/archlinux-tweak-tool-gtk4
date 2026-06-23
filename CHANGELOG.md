@@ -2,6 +2,28 @@
 
 ## 2026.06.23
 
+### Icons: removed Surfn-Arched and neo-candy-arched variants
+
+**What changed.** Dropped the `surfn-arched` and `neo-candy-arched` colour variants from the
+Icons page (Erik no longer wants those icons). Both source repos and build recipes were
+deleted ecosystem-wide; here the only effect is that `gen-icons-list.py` no longer discovers
+them, so the family tables and thumbnails regenerate without them — Surfn 88 → 87 variants,
+Neo Candy 82 → 81.
+
+**Technical details.**
+- Re-ran `gen-icons-list.py` after the `~/EDU/surfn-arched` and `~/EDU/neo-candy-arched`
+  source dirs were removed; `surfn_families.json` / `neocandy_families.json` rewritten without
+  the `surfn-arched` / `neo-candy-arched` tokens.
+- Deleted the now-orphan thumbnails `images/surfn/surfn-arched.png` and
+  `images/neocandy/neo-candy-arched.png` (the generator writes new thumbnails but does not
+  prune removed ones).
+
+### Files Modified (arched removal)
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json`
+- `usr/share/archlinux-tweak-tool/data/neocandy_families.json`
+- `usr/share/archlinux-tweak-tool/images/surfn/surfn-arched.png` (deleted)
+- `usr/share/archlinux-tweak-tool/images/neocandy/neo-candy-arched.png` (deleted)
+
 ### Icons: Neo Candy expanded to the full 59-variant family (mirrors Surfn) + shared engine
 
 **What changed.** Neo Candy grew from 9 hand-listed packages to the full **59 standalone colour variants** (`~/EDU/neo-candy-*`), the same shape as Surfn. The Icons Neo Candy page now has folder-preview checkboxes grouped into sub-tabs — **Neo Candy** (core) / **Neo Candy Mint** (Mint-X, Mint-Y) / **Neo Candy Tela** — with per-tab All / None / family-filter / install / remove / show-installed, exactly like Icons Surfn. Surfn and Neo Candy now run on one shared engine instead of duplicated code.
