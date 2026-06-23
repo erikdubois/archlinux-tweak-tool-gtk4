@@ -1,0 +1,252 @@
+{
+  "Mint-X": [
+    {
+      "token": "neo-candy-mint-x-aqua",
+      "package": "neo-candy-mint-x-aqua-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-blue",
+      "package": "neo-candy-mint-x-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-brown",
+      "package": "neo-candy-mint-x-brown-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-grey",
+      "package": "neo-candy-mint-x-grey-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-orange",
+      "package": "neo-candy-mint-x-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-pink",
+      "package": "neo-candy-mint-x-pink-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-purple",
+      "package": "neo-candy-mint-x-purple-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-red",
+      "package": "neo-candy-mint-x-red-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-sand",
+      "package": "neo-candy-mint-x-sand-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-teal",
+      "package": "neo-candy-mint-x-teal-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-x-yellow",
+      "package": "neo-candy-mint-x-yellow-icons-git"
+    }
+  ],
+  "Mint-Y": [
+    {
+      "token": "neo-candy-mint-y-aqua",
+      "package": "neo-candy-mint-y-aqua-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-blue",
+      "package": "neo-candy-mint-y-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-cyan",
+      "package": "neo-candy-mint-y-cyan-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-grey",
+      "package": "neo-candy-mint-y-grey-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-navy",
+      "package": "neo-candy-mint-y-navy-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-orange",
+      "package": "neo-candy-mint-y-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-pink",
+      "package": "neo-candy-mint-y-pink-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-purple",
+      "package": "neo-candy-mint-y-purple-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-red",
+      "package": "neo-candy-mint-y-red-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-sand",
+      "package": "neo-candy-mint-y-sand-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-teal",
+      "package": "neo-candy-mint-y-teal-icons-git"
+    },
+    {
+      "token": "neo-candy-mint-y-yaru",
+      "package": "neo-candy-mint-y-yaru-icons-git"
+    }
+  ],
+  "Tela": [
+    {
+      "token": "neo-candy-tela",
+      "package": "neo-candy-tela-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-black",
+      "package": "neo-candy-tela-black-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-blue",
+      "package": "neo-candy-tela-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-brown",
+      "package": "neo-candy-tela-brown-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-dracula",
+      "package": "neo-candy-tela-dracula-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-green",
+      "package": "neo-candy-tela-green-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-grey",
+      "package": "neo-candy-tela-grey-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-manjaro",
+      "package": "neo-candy-tela-manjaro-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-nord",
+      "package": "neo-candy-tela-nord-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-orange",
+      "package": "neo-candy-tela-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-pink",
+      "package": "neo-candy-tela-pink-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-purple",
+      "package": "neo-candy-tela-purple-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-red",
+      "package": "neo-candy-tela-red-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-ubuntu",
+      "package": "neo-candy-tela-ubuntu-icons-git"
+    },
+    {
+      "token": "neo-candy-tela-yellow",
+      "package": "neo-candy-tela-yellow-icons-git"
+    }
+  ],
+  "Numix": [
+    {
+      "token": "neo-candy-numix",
+      "package": "neo-candy-numix-icons-git"
+    },
+    {
+      "token": "neo-candy-numix-misty",
+      "package": "neo-candy-numix-misty-icons-git"
+    },
+    {
+      "token": "neo-candy-numix-polo",
+      "package": "neo-candy-numix-polo-icons-git"
+    },
+    {
+      "token": "neo-candy-numixs",
+      "package": "neo-candy-numixs-icons-git"
+    }
+  ],
+  "Papirus": [
+    {
+      "token": "neo-candy-papirus-blue",
+      "package": "neo-candy-papirus-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-casablanca",
+      "package": "neo-candy-papirus-casablanca-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-grey",
+      "package": "neo-candy-papirus-grey-icons-git"
+    }
+  ],
+  "Arc / Breeze": [
+    {
+      "token": "neo-candy-arc-breeze",
+      "package": "neo-candy-arc-breeze-icons-git"
+    },
+    {
+      "token": "neo-candy-breeze-arc",
+      "package": "neo-candy-breeze-arc-icons-git"
+    },
+    {
+      "token": "neo-candy-breeze-dark",
+      "package": "neo-candy-breeze-dark-icons-git"
+    }
+  ],
+  "Other": [
+    {
+      "token": "neo-candy-arch-blue",
+      "package": "neo-candy-arch-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-arched",
+      "package": "neo-candy-arched-icons-git"
+    },
+    {
+      "token": "neo-candy-dracul",
+      "package": "neo-candy-dracul-icons-git"
+    },
+    {
+      "token": "neo-candy-icons",
+      "package": "neo-candy-icons-git"
+    },
+    {
+      "token": "neo-candy-luv",
+      "package": "neo-candy-luv-icons-git"
+    },
+    {
+      "token": "neo-candy-luv-red",
+      "package": "neo-candy-luv-red-icons-git"
+    },
+    {
+      "token": "neo-candy-majestic",
+      "package": "neo-candy-majestic-icons-git"
+    },
+    {
+      "token": "neo-candy-orange",
+      "package": "neo-candy-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-qogir",
+      "package": "neo-candy-qogir-icons-git"
+    },
+    {
+      "token": "neo-candy-vertexed",
+      "package": "neo-candy-vertexed-icons-git"
+    },
+    {
+      "token": "neo-candy-vimix-black",
+      "package": "neo-candy-vimix-black-icons-git"
+    }
+  ]
+}

@@ -2,6 +2,25 @@
 
 ## 2026.06.23
 
+### Icons: Neo Candy expanded to the full 59-variant family (mirrors Surfn) + shared engine
+
+**What changed.** Neo Candy grew from 9 hand-listed packages to the full **59 standalone colour variants** (`~/EDU/neo-candy-*`), the same shape as Surfn. The Icons Neo Candy page now has folder-preview checkboxes grouped into sub-tabs — **Neo Candy** (core) / **Neo Candy Mint** (Mint-X, Mint-Y) / **Neo Candy Tela** — with per-tab All / None / family-filter / install / remove / show-installed, exactly like Icons Surfn. Surfn and Neo Candy now run on one shared engine instead of duplicated code.
+
+**Technical details.**
+- `gen-icons-list.py`: generalized to a single `_generate_set()` driven by an `ICON_SETS` table; discovers `surfn-*` and `neo-candy-*` from `~/EDU`, reads each `pkgname` (now tries `<token>` / `<token>-icons-git` / `<token>-git` recipe dirs so the base resolves), classifies into families, renders thumbnails. Emits `surfn_families.json` (65) + `neocandy_families.json` (59) and `images/{surfn,neocandy}/<token>.png`. The old flat `neocandy_list.json` + stale 9 thumbnails are removed.
+- `icons.py`: replaced the separate surfn/neocandy functions with one generic engine keyed by `set_key` — `ICON_SETS` (families/checks-attr/base/base_token/prefix/noun), `SURFN_TABS` + `NEOCANDY_TABS`, and generic `set_icon_checkboxes` / `select_icon_family` / `_collect_icon_packages` / `install_icons` / `remove_icons` / `find_icons` + `on_icons_*` callbacks. Base-package removal guard applies to both.
+- `icons_gui.py`: `_build_surfn_tab` → generic `_build_icon_tab(self, …, set_key, family_labels)`; new `_build_icon_page()` builds title + StackSwitcher of sub-tabs; `gui_surfn()` / `gui_neocandy()` are now one-liners over it.
+- `search_synonyms.json` Icons Neo Candy keywords broadened; `search_index.json` regenerated.
+
+### Files Modified (Neo Candy full family + shared engine)
+- `gen-icons-list.py`
+- `usr/share/archlinux-tweak-tool/icons.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `usr/share/archlinux-tweak-tool/data/neocandy_families.json` (new) · `neocandy_list.json` (removed)
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/images/neocandy/*.png` (59, regenerated) · `images/surfn/*.png`
+- `search_synonyms.json` · `usr/share/archlinux-tweak-tool/search_index.json`
+
 ### Sidebar: split the Icons page into "Icons Neo Candy" + "Icons Surfn" pages
 
 **What changed.** The bundled **Icons** sidebar page is replaced by two dedicated sidebar pages: **Icons Neo Candy** and **Icons Surfn** (the latter keeps the Surfn / Surfn-Mint / Surfn-Tela sub-tabs). The unmaintained **Sardi** tab is dropped entirely with the old page.

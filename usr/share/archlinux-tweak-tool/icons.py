@@ -11,63 +11,85 @@ _SARDI_COUNT = 24
 
 _DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 _SURFN_FAMILIES_JSON = os.path.join(_DATA_DIR, "surfn_families.json")
-_NEOCANDY_JSON = os.path.join(_DATA_DIR, "neocandy_list.json")
-# Base package every Surfn variant depends on; never bulk-removed while variants remain.
-_SURFN_BASE_PKG = "surfn-icons-git"
+_NEOCANDY_FAMILIES_JSON = os.path.join(_DATA_DIR, "neocandy_families.json")
 
 
-def _load_json_table(label, json_path, empty):
+def _load_json_table(label, json_path):
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except (OSError, ValueError) as error:
         fn.log_error(f"Could not load {label} table: {error}")
-        return empty
+        return {}
 
 
-SURFN_FAMILIES = _load_json_table("Surfn family", _SURFN_FAMILIES_JSON, {})
-NEOCANDY = _load_json_table("Neo Candy", _NEOCANDY_JSON, [])
+SURFN_FAMILIES = _load_json_table("Surfn family", _SURFN_FAMILIES_JSON)
+NEOCANDY_FAMILIES = _load_json_table("Neo Candy family", _NEOCANDY_FAMILIES_JSON)
 
+# Surfn and Neo Candy are the same kind of thing: colour-variant icon sets grouped into
+# families. One generic engine drives both, keyed by set_key. "checks" is the per-window
+# checkbox dict the GUI builds on self; "base" is the package every variant inherits and is
+# kept out of a bulk removal unless it is the only thing selected.
+ICON_SETS = {
+    "surfn": {
+        "families": SURFN_FAMILIES,
+        "checks": "surfn_checkboxes",
+        "base": "surfn-icons-git",
+        "base_token": "surfn",
+        "prefix": "surfn-",
+        "noun": "Surfn",
+    },
+    "neocandy": {
+        "families": NEOCANDY_FAMILIES,
+        "checks": "neocandy_checkboxes",
+        "base": "neo-candy-icons-git",
+        "base_token": "neo-candy-icons",
+        "prefix": "neo-candy-",
+        "noun": "Neo Candy",
+    },
+}
 
-def _all_surfn_tokens():
-    return [entry["token"] for items in SURFN_FAMILIES.values() for entry in items]
-
-
-# Which families live under each Surfn sub-tab. Surfn-Tela is an intentional placeholder
-# (no families yet) — to be filled in later.
+# Which families live under each sub-tab of the Icons Surfn / Icons Neo Candy pages.
 SURFN_TABS = {
     "Surfn": ["Plasma", "Numix", "Papirus", "Arc / Breeze", "Other"],
     "Surfn-Mint": ["Mint-X", "Mint-Y"],
     "Surfn-Tela": ["Tela"],
 }
+NEOCANDY_TABS = {
+    "Neo Candy": ["Numix", "Papirus", "Arc / Breeze", "Other"],
+    "Neo Candy Mint": ["Mint-X", "Mint-Y"],
+    "Neo Candy Tela": ["Tela"],
+}
 
 
-def _tab_tokens(family_labels):
-    return [entry["token"] for fam in family_labels for entry in SURFN_FAMILIES.get(fam, [])]
+def _icon_families(set_key):
+    return ICON_SETS[set_key]["families"]
 
 
-def _surfn_pkg(token):
-    for items in SURFN_FAMILIES.values():
+def _icon_checks(self, set_key):
+    return getattr(self, ICON_SETS[set_key]["checks"])
+
+
+def _all_icon_tokens(set_key):
+    return [entry["token"] for items in _icon_families(set_key).values() for entry in items]
+
+
+def _icon_tab_tokens(set_key, family_labels):
+    fams = _icon_families(set_key)
+    return [entry["token"] for fam in family_labels for entry in fams.get(fam, [])]
+
+
+def _icon_pkg(set_key, token):
+    for items in _icon_families(set_key).values():
         for entry in items:
             if entry["token"] == token:
                 return entry["package"]
     return token + "-icons-git"
 
 
-def _neocandy_tokens():
-    return [entry["token"] for entry in NEOCANDY]
-
-
-def _neocandy_pkg(token):
-    for entry in NEOCANDY:
-        if entry["token"] == token:
-            return entry["package"]
-    return token
-
-
 def get_available_icon_counts():
     """Return (sardi, surfn, neocandy) installable package counts."""
-    return _SARDI_COUNT, len(_all_surfn_tokens()), len(NEOCANDY)
+    return _SARDI_COUNT, len(_all_icon_tokens("surfn")), len(_all_icon_tokens("neocandy"))
 
 
 def _check_install_repos(self):
@@ -155,51 +177,39 @@ def on_click_att_fam_sardi_icon_theming_sardi_orb_selection(self, _widget):
     set_att_fam_checkboxes_theming_sardi_orb(self)
 
 
-def on_click_att_surfn_theming_all_selection(self, tokens, _widget):
-    fn.log_subsection("All Surfn icons selected")
-    fn.show_in_app_notification(self, "We have selected all surfn icons")
-    set_att_checkboxes_theming_surfn_icons_all(self, tokens)
+def on_icons_all(self, set_key, tokens, _widget):
+    fn.log_subsection(f"All {ICON_SETS[set_key]['noun']} icons selected")
+    fn.show_in_app_notification(self, f"We have selected all {ICON_SETS[set_key]['noun']} icons")
+    set_icon_checkboxes(self, set_key, True, tokens)
 
 
-def on_click_att_surfn_theming_none_selection(self, tokens, _widget):
-    fn.log_subsection("No Surfn icons selected")
-    fn.show_in_app_notification(self, "We have selected no surfn icons")
-    set_att_checkboxes_theming_surfn_icons_none(self, tokens)
+def on_icons_none(self, set_key, tokens, _widget):
+    fn.log_subsection(f"No {ICON_SETS[set_key]['noun']} icons selected")
+    fn.show_in_app_notification(self, f"We have selected no {ICON_SETS[set_key]['noun']} icons")
+    set_icon_checkboxes(self, set_key, False, tokens)
 
 
-def on_click_att_surfn_family_selection(self, family_label, scope_tokens, _widget):
-    """Tick one Surfn family (the filter buttons) and clear the rest within the tab."""
-    fn.log_subsection(f"Select {family_label} Surfn icons")
-    fn.show_in_app_notification(self, f"We have selected the {family_label} Surfn icons")
-    select_surfn_family(self, family_label, scope_tokens)
+def on_icons_family(self, set_key, family_label, scope_tokens, _widget):
+    """Tick one family (a filter button) and clear the rest within the tab."""
+    fn.log_subsection(f"Select {family_label} {ICON_SETS[set_key]['noun']} icons")
+    fn.show_in_app_notification(self, f"We have selected the {family_label} icons")
+    select_icon_family(self, set_key, family_label, scope_tokens)
 
 
-def on_install_neocandy_clicked(self, _widget):
-    fn.log_subsection("Installing selected Neo Candy icon packages...")
-    install_att_neocandy(self)
+def on_icons_install(self, set_key, tokens, _widget):
+    fn.log_subsection(f"Installing selected {ICON_SETS[set_key]['noun']} icon themes...")
+    install_icons(self, set_key, tokens)
 
 
-def on_remove_neocandy_clicked(self, _widget):
-    fn.log_subsection("Removing selected Neo Candy icon packages...")
-    remove_att_neocandy(self)
+def on_icons_remove(self, set_key, tokens, _widget):
+    fn.log_subsection(f"Removing selected {ICON_SETS[set_key]['noun']} icon themes...")
+    remove_icons(self, set_key, tokens)
 
 
-def on_find_neocandy_clicked(self, _widget):
-    fn.log_subsection("Showing installed projects...")
+def on_icons_find(self, set_key, tokens, _widget):
+    fn.log_subsection(f"Showing installed {ICON_SETS[set_key]['noun']} icon themes...")
     fn.show_in_app_notification(self, "We show the installed icon themes")
-    find_att_neocandy(self)
-
-
-def on_click_neocandy_theming_all_selection(self, _widget):
-    fn.log_subsection("All projects selected")
-    fn.show_in_app_notification(self, "We have selected all icon themes")
-    set_att_checkboxes_neocandy_all(self)
-
-
-def on_click_neocandy_theming_none_selection(self, _widget):
-    fn.log_subsection("No projects selected")
-    fn.show_in_app_notification(self, "We have selected none of the icon themes")
-    set_att_checkboxes_neocandy_none(self)
+    find_icons(self, set_key, tokens)
 
 
 def on_install_att_sardi_icon_themes_clicked(self, _widget):
@@ -216,22 +226,6 @@ def on_find_att_sardi_icon_themes_clicked(self, _widget):
     fn.log_subsection("Showing installed Sardi icon themes...")
     fn.show_in_app_notification(self, "We show the installed icon themes")
     find_sardi_icons(self)
-
-
-def on_install_att_surfn_icon_themes_clicked(self, tokens, _widget):
-    fn.log_subsection("Installing selected Surfn icon themes...")
-    install_surfn_icons(self, tokens)
-
-
-def on_remove_att_surfn_icon_themes_clicked(self, tokens, _widget):
-    fn.log_subsection("Removing selected Surfn icon themes...")
-    remove_surfn_icons(self, tokens)
-
-
-def on_find_att_surfn_icon_themes_clicked(self, tokens, _widget):
-    fn.log_subsection("Showing all installed Surfn icon themes...")
-    fn.show_in_app_notification(self, "We show the installed icon themes")
-    find_surfn_icons(self, tokens)
 
 
 def set_att_checkboxes_theming_sardi_icons_all(self):
@@ -651,135 +645,79 @@ def find_sardi_icons(self):
         fn.show_in_app_notification(self, "No Sardi icon packages installed")
 
 
-def set_att_checkboxes_theming_surfn_icons_all(self, tokens=None):
-    for token in tokens if tokens is not None else _all_surfn_tokens():
-        self.surfn_checkboxes[token].set_active(True)
+def set_icon_checkboxes(self, set_key, active, tokens=None):
+    checks = _icon_checks(self, set_key)
+    for token in tokens if tokens is not None else _all_icon_tokens(set_key):
+        checks[token].set_active(active)
 
 
-def set_att_checkboxes_theming_surfn_icons_none(self, tokens=None):
-    for token in tokens if tokens is not None else _all_surfn_tokens():
-        self.surfn_checkboxes[token].set_active(False)
-
-
-def select_surfn_family(self, family_label, scope_tokens=None):
-    """Tick the checkboxes for one Surfn family and clear the rest within scope."""
-    scope = scope_tokens if scope_tokens is not None else _all_surfn_tokens()
-    family_tokens = {entry["token"] for entry in SURFN_FAMILIES.get(family_label, [])}
+def select_icon_family(self, set_key, family_label, scope_tokens=None):
+    """Tick the checkboxes for one family and clear the rest within scope."""
+    checks = _icon_checks(self, set_key)
+    scope = scope_tokens if scope_tokens is not None else _all_icon_tokens(set_key)
+    family_tokens = {entry["token"] for entry in _icon_families(set_key).get(family_label, [])}
     for token in scope:
-        self.surfn_checkboxes[token].set_active(token in family_tokens)
+        checks[token].set_active(token in family_tokens)
 
 
-def _collect_surfn_packages(self, tokens=None):
-    scope = tokens if tokens is not None else _all_surfn_tokens()
-    return [_surfn_pkg(token) for token in scope if self.surfn_checkboxes[token].get_active()]
+def _collect_icon_packages(self, set_key, tokens=None):
+    checks = _icon_checks(self, set_key)
+    scope = tokens if tokens is not None else _all_icon_tokens(set_key)
+    return [_icon_pkg(set_key, token) for token in scope if checks[token].get_active()]
 
 
-def install_surfn_icons(self, tokens=None):
+def install_icons(self, set_key, tokens=None):
     if not _check_install_repos(self):
         return
-    packages = _collect_surfn_packages(self, tokens)
+    noun = ICON_SETS[set_key]["noun"]
+    packages = _collect_icon_packages(self, set_key, tokens)
     if not packages:
-        fn.log_info("No Surfn icons selected for installation")
-        fn.show_in_app_notification(self, "No Surfn icons selected for installation")
+        fn.log_info(f"No {noun} icons selected for installation")
+        fn.show_in_app_notification(self, f"No {noun} icons selected for installation")
         return
-    fn.log_subsection(f"Installing {len(packages)} Surfn icon packages...")
+    fn.log_subsection(f"Installing {len(packages)} {noun} icon packages...")
     fn.log_info(f"  {', '.join(packages)}")
     process = fn.launch_pacman_install_in_terminal(" ".join(packages))
-    fn.show_in_app_notification(self, f"Installing {len(packages)} Surfn icon packages...")
-    fn.wait_and_notify(process, self, "Surfn icons installation complete")
+    fn.show_in_app_notification(self, f"Installing {len(packages)} {noun} icon packages...")
+    fn.wait_and_notify(process, self, f"{noun} icons installation complete")
 
 
-def remove_surfn_icons(self, tokens=None):
-    packages = _collect_surfn_packages(self, tokens)
+def remove_icons(self, set_key, tokens=None):
+    noun = ICON_SETS[set_key]["noun"]
+    base = ICON_SETS[set_key]["base"]
+    packages = _collect_icon_packages(self, set_key, tokens)
     if not packages:
-        fn.log_info("No Surfn icons selected for removal")
-        fn.show_in_app_notification(self, "No Surfn icons selected for removal")
+        fn.log_info(f"No {noun} icons selected for removal")
+        fn.show_in_app_notification(self, f"No {noun} icons selected for removal")
         return
-    # Every variant depends on the base; removing it while variants remain would
-    # cascade them all out, so keep the base unless it is the only thing selected.
-    if _SURFN_BASE_PKG in packages and len(packages) > 1:
-        packages.remove(_SURFN_BASE_PKG)
-        fn.log_warn(f"Keeping {_SURFN_BASE_PKG} — other Surfn variants depend on it")
-        fn.show_in_app_notification(self, f"Kept {_SURFN_BASE_PKG} (variants depend on it)")
-    fn.log_subsection(f"Removing {len(packages)} Surfn icon packages...")
+    # Every variant inherits the base; removing it while variants remain would break them,
+    # so keep the base unless it is the only thing selected.
+    if base in packages and len(packages) > 1:
+        packages.remove(base)
+        fn.log_warn(f"Keeping {base} — other {noun} variants depend on it")
+        fn.show_in_app_notification(self, f"Kept {base} (variants depend on it)")
+    fn.log_subsection(f"Removing {len(packages)} {noun} icon packages...")
     fn.log_info(f"  {', '.join(packages)}")
     process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
-    fn.show_in_app_notification(self, f"Removing {len(packages)} Surfn icon packages...")
-    fn.wait_and_notify(process, self, "Surfn icons removal complete")
+    fn.show_in_app_notification(self, f"Removing {len(packages)} {noun} icon packages...")
+    fn.wait_and_notify(process, self, f"{noun} icons removal complete")
 
 
-def find_surfn_icons(self, tokens=None):
-    scope = tokens if tokens is not None else _all_surfn_tokens()
-    set_att_checkboxes_theming_surfn_icons_none(self, scope)
-    installed_map = fn.check_packages_installed([_surfn_pkg(t) for t in scope])
+def find_icons(self, set_key, tokens=None):
+    noun = ICON_SETS[set_key]["noun"]
+    checks = _icon_checks(self, set_key)
+    scope = tokens if tokens is not None else _all_icon_tokens(set_key)
+    set_icon_checkboxes(self, set_key, False, scope)
+    installed_map = fn.check_packages_installed([_icon_pkg(set_key, t) for t in scope])
     for token in scope:
-        if installed_map.get(_surfn_pkg(token)):
-            self.surfn_checkboxes[token].set_active(True)
+        if installed_map.get(_icon_pkg(set_key, token)):
+            checks[token].set_active(True)
 
-    installed = _collect_surfn_packages(self, scope)
+    installed = _collect_icon_packages(self, set_key, scope)
     if installed:
-        fn.log_subsection(f"Found {len(installed)} Surfn icon packages installed")
+        fn.log_subsection(f"Found {len(installed)} {noun} icon packages installed")
         fn.log_info(f"  {', '.join(installed)}")
-        fn.show_in_app_notification(self, f"{len(installed)} Surfn icon packages installed")
+        fn.show_in_app_notification(self, f"{len(installed)} {noun} icon packages installed")
     else:
-        fn.log_info("No Surfn icon packages installed")
-        fn.show_in_app_notification(self, "No Surfn icon packages installed")
-
-
-def set_att_checkboxes_neocandy_all(self):
-    for token in _neocandy_tokens():
-        self.neocandy_checkboxes[token].set_active(True)
-
-
-def set_att_checkboxes_neocandy_none(self):
-    for token in _neocandy_tokens():
-        self.neocandy_checkboxes[token].set_active(False)
-
-
-def _collect_neocandy_packages(self):
-    return [_neocandy_pkg(token) for token in _neocandy_tokens() if self.neocandy_checkboxes[token].get_active()]
-
-
-def install_att_neocandy(self):
-    if not _check_install_repos(self):
-        return
-    packages = _collect_neocandy_packages(self)
-    if not packages:
-        fn.log_info("No Neo Candy icons selected for installation")
-        fn.show_in_app_notification(self, "No Neo Candy icons selected for installation")
-        return
-    fn.log_subsection(f"Installing {len(packages)} Neo Candy icon packages...")
-    fn.log_info(f"  {', '.join(packages)}")
-    process = fn.launch_pacman_install_in_terminal(" ".join(packages))
-    fn.show_in_app_notification(self, f"Installing {len(packages)} Neo Candy icon packages...")
-    fn.wait_and_notify(process, self, "Neo Candy icons installation complete")
-
-
-def remove_att_neocandy(self):
-    packages = _collect_neocandy_packages(self)
-    if not packages:
-        fn.log_info("No Neo Candy icons selected for removal")
-        fn.show_in_app_notification(self, "No Neo Candy icons selected for removal")
-        return
-    fn.log_subsection(f"Removing {len(packages)} Neo Candy icon packages...")
-    fn.log_info(f"  {', '.join(packages)}")
-    process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
-    fn.show_in_app_notification(self, f"Removing {len(packages)} Neo Candy icon packages...")
-    fn.wait_and_notify(process, self, "Neo Candy icons removal complete")
-
-
-def find_att_neocandy(self):
-    set_att_checkboxes_neocandy_none(self)
-    installed_map = fn.check_packages_installed([_neocandy_pkg(t) for t in _neocandy_tokens()])
-    for token in _neocandy_tokens():
-        if installed_map.get(_neocandy_pkg(token)):
-            self.neocandy_checkboxes[token].set_active(True)
-
-    installed = _collect_neocandy_packages(self)
-    if installed:
-        fn.log_subsection(f"Found {len(installed)} Neo Candy icon packages installed")
-        fn.log_info(f"  {', '.join(installed)}")
-        fn.show_in_app_notification(self, f"{len(installed)} Neo Candy icon packages installed")
-    else:
-        fn.log_info("No Neo Candy icon packages installed")
-        fn.show_in_app_notification(self, "No Neo Candy icon packages installed")
+        fn.log_info(f"No {noun} icon packages installed")
+        fn.show_in_app_notification(self, f"No {noun} icon packages installed")

@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """Generate the Surfn + Neo Candy icon-theme tables and folder thumbnails for the Icons page.
 
-Run automatically by up.sh. Both families show a small folder preview (the theme's real
-folder icon) beside each checkbox, so they stay in sync without hand-editing icons.py.
+Run automatically by up.sh. Both families are standalone colour-variant packages with the
+same shape (sources in ~/EDU/<set>-*, build recipes in ~/KIRO-PKG-BUILD-ICONS); the Icons
+Surfn / Icons Neo Candy pages stay in sync without hand-editing icons.py for every variant.
 
-Surfn ships as ~50 standalone colour-variant packages (sources in ~/EDU/surfn*, recipes in
-~/KIRO-PKG-BUILD-ICONS); each records token / package / family. Neo Candy is a fixed set of 9
-packages whose sources are not all available as repos, so its folder icons are read from the
-installed theme dirs in /usr/share/icons (fallback to ~/EDU sources).
+For each variant this records token / package / family, and renders a small folder preview
+by loading the theme's canonical folder icon (folder.png or folder.svg — PNG, then scalable,
+then largest numbered size, since small numbered folders are often the `currentColor` symbolic
+outline; following index.theme `Inherits=` for sparse overlays) scaled to a PNG via GdkPixbuf.
 
-Folder previews are rendered by loading the theme's canonical folder icon (folder.png or
-folder.svg — PNG, then scalable, then largest numbered size, since small numbered folders are
-often the `currentColor` symbolic outline) and scaling it to a PNG thumbnail via GdkPixbuf.
-
-Outputs:
-  * usr/share/archlinux-tweak-tool/data/surfn_families.json   + images/surfn/<token>.png
-  * usr/share/archlinux-tweak-tool/data/neocandy_list.json    + images/neocandy/<token>.png
+Outputs (one pair per set):
+  * usr/share/archlinux-tweak-tool/data/<set>_families.json
+  * usr/share/archlinux-tweak-tool/images/<set>/<token>.png
 """
 
 import json
@@ -38,35 +35,22 @@ THUMB_SIZE = 28
 HOME = path.expanduser("~")
 SRC_ROOT = os.environ.get("SURFN_SRC_ROOT", path.join(HOME, "EDU"))
 PKG_ROOT = os.environ.get("SURFN_PKG_ROOT", path.join(HOME, "KIRO-PKG-BUILD-ICONS"))
-SYS_ICONS = "/usr/share/icons"
 
-# ── Surfn ────────────────────────────────────────────────────────────────────
 # Display order of the families; tokens within a family are sorted alphabetically.
 FAMILY_ORDER = ["Mint-X", "Mint-Y", "Tela", "Plasma", "Numix", "Papirus", "Arc / Breeze", "Other"]
 ARC_BREEZE = {"arc-breeze", "breeze-arc", "breeze-dark"}
 
-# ── Neo Candy ────────────────────────────────────────────────────────────────
-# Fixed set: (token, package, label, [theme-dir candidates]). Sources aren't all in ~/EDU,
-# so folder icons are taken from the installed theme dir (first candidate that has a folder).
-NEOCANDY = [
-    # neo-candy inherits al-beautyline first, so its folder is the beautyline one.
-    ("neo-candy", "neo-candy-icons-git", "Neo Candy Icons", ["al-beautyline", "or-candy-icons", "candy-icons"]),
-    ("neo-candy-arc", "kiro-neo-candy-arc", "Neo Candy Arc", ["edu-neo-candy-arc"]),
-    ("neo-candy-arc-mint-grey", "kiro-neo-candy-arc-mint-grey", "Neo Candy Arc Mint Grey", ["edu-neo-candy-arc-mint-grey"]),
-    ("neo-candy-arc-mint-red", "kiro-neo-candy-arc-mint-red", "Neo Candy Arc Mint Red", ["edu-neo-candy-arc-mint-red"]),
-    ("neo-candy-tela", "kiro-neo-candy-tela", "Neo Candy Tela", ["edu-neo-candy-tela"]),
-    ("papirus-dark-tela", "kiro-papirus-dark-tela", "Papirus Dark Tela", ["edu-papirus-dark-tela"]),
-    ("papirus-dark-tela-grey", "kiro-papirus-dark-tela-grey", "Papirus Dark Tela Grey", ["edu-papirus-dark-tela-grey"]),
-    # vimix-dark-tela ships Tela folders and is often not installed; fall back to the Tela folder.
-    ("vimix-dark-tela", "kiro-vimix-dark-tela", "Vimix Dark Tela", ["edu-vimix-dark-tela", "Tela"]),
-    ("neo-candy-qogir", "kiro-neo-candy-qogir", "Neo Candy Qogir", ["edu-neo-candy-qogir"]),
+# (label, source prefix, base token, output json, thumbnail subdir)
+ICON_SETS = [
+    ("Surfn", "surfn-", "surfn", "surfn_families.json", "surfn"),
+    ("Neo Candy", "neo-candy-", "neo-candy-icons", "neocandy_families.json", "neocandy"),
 ]
 
 _THEME_DIR_INDEX = {}
 
 
-def _classify(token):
-    rest = token[len("surfn-"):] if token.startswith("surfn-") else token
+def _classify(token, prefix):
+    rest = token[len(prefix):] if token.startswith(prefix) else token
     if rest.startswith("mint-x"):
         return "Mint-X"
     if rest.startswith("mint-y"):
@@ -95,15 +79,17 @@ def _theme_dir(token):
 
 
 def _package_name(token):
-    pkgbuild = path.join(PKG_ROOT, token, "PKGBUILD")
-    try:
-        with open(pkgbuild, "r", encoding="utf-8") as f:
-            for line in f:
-                m = re.match(r"\s*pkgname=\(?\s*['\"]?([^'\"()\s]+)", line)
-                if m:
-                    return m.group(1)
-    except OSError:
-        pass
+    # Variant recipe dirs are named <token>; the base recipe dir is <token>-icons-git / <token>-git.
+    for recipe in (token, token + "-icons-git", token + "-git"):
+        pkgbuild = path.join(PKG_ROOT, recipe, "PKGBUILD")
+        try:
+            with open(pkgbuild, "r", encoding="utf-8") as f:
+                for line in f:
+                    m = re.match(r"\s*pkgname=\(?\s*['\"]?([^'\"()\s]+)", line)
+                    if m:
+                        return m.group(1)
+        except OSError:
+            continue
     return token + "-icons-git"
 
 
@@ -126,13 +112,12 @@ def _folder_in_root(theme_root):
                 hits.append(path.join(dirpath, fname))
     if not hits:
         return None
-    # Prefer PNG, then the largest/scalable size for a crisp, full-colour thumbnail.
     hits.sort(key=lambda p: (p.endswith(".png"), _icon_size(p)), reverse=True)
     return hits[0]
 
 
 def _canonical_folder(token, theme_dir, _seen=None):
-    """Surfn folder icon, following index.theme Inherits to a parent surfn theme when absent."""
+    """Folder icon for a theme, following index.theme Inherits to a sibling theme when absent."""
     if _seen is None:
         _seen = set()
     if theme_dir in _seen:
@@ -160,17 +145,6 @@ def _canonical_folder(token, theme_dir, _seen=None):
     return None
 
 
-def _discover_surfn_tokens():
-    tokens = []
-    for name in sorted(os.listdir(SRC_ROOT)):
-        if name != "surfn" and not name.startswith("surfn-"):
-            continue
-        if not path.isdir(path.join(SRC_ROOT, name, "usr/share/icons")):
-            continue
-        tokens.append(name)
-    return tokens
-
-
 def _write_thumbnail(folder_path, thumb_dir, token):
     out = path.join(thumb_dir, token + ".png")
     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(folder_path, THUMB_SIZE, THUMB_SIZE)
@@ -178,15 +152,18 @@ def _write_thumbnail(folder_path, thumb_dir, token):
     return out
 
 
-def _generate_surfn():
-    if not path.isdir(SRC_ROOT):
-        print(f"[surfn] source root not found: {SRC_ROOT} — skipping", file=sys.stderr)
-        return
-    thumb_dir = path.join(IMAGES_DIR, "surfn")
-    data_out = path.join(DATA_DIR, "surfn_families.json")
+def _generate_set(label, prefix, base_token, data_filename, thumb_subdir):
+    thumb_dir = path.join(IMAGES_DIR, thumb_subdir)
+    data_out = path.join(DATA_DIR, data_filename)
     os.makedirs(thumb_dir, exist_ok=True)
 
-    tokens = _discover_surfn_tokens()
+    tokens = [
+        name
+        for name in sorted(os.listdir(SRC_ROOT))
+        if (name == base_token or name.startswith(prefix)) and path.isdir(path.join(SRC_ROOT, name, "usr/share/icons"))
+    ]
+
+    _THEME_DIR_INDEX.clear()
     for token in tokens:
         td = _theme_dir(token)
         if td:
@@ -196,17 +173,17 @@ def _generate_surfn():
     no_thumb = []
     for token in tokens:
         theme_dir = _theme_dir(token)
-        families[_classify(token)].append({"token": token, "package": _package_name(token)})
+        families[_classify(token, prefix)].append({"token": token, "package": _package_name(token)})
 
         folder = _canonical_folder(token, theme_dir) if theme_dir else None
         if not folder:
-            base_dir = _theme_dir("surfn")
+            base_dir = _theme_dir(base_token)
             if base_dir:
-                folder = _canonical_folder("surfn", base_dir)
+                folder = _canonical_folder(base_token, base_dir)
         if folder:
             try:
                 _write_thumbnail(folder, thumb_dir, token)
-            except Exception as error:  # noqa: BLE001 - bad SVG/PNG must not abort the run
+            except Exception as error:  # noqa: BLE001 - a bad SVG/PNG must not abort the run
                 no_thumb.append(f"{token} ({error})")
         else:
             no_thumb.append(token)
@@ -217,54 +194,19 @@ def _generate_surfn():
         f.write("\n")
 
     total = sum(len(v) for v in ordered.values())
-    print(f"[surfn] {total} variants across {len(ordered)} families -> {path.relpath(data_out, SCRIPT_DIR)}")
+    tag = thumb_subdir
+    print(f"[{tag}] {total} variants across {len(ordered)} families -> {path.relpath(data_out, SCRIPT_DIR)}")
     if no_thumb:
-        print(f"[surfn] no folder preview for: {', '.join(no_thumb)}", file=sys.stderr)
-
-
-def _neocandy_folder(theme_dirs):
-    for dir_name in theme_dirs:
-        for root in (path.join(SYS_ICONS, dir_name), path.join(SRC_ROOT, dir_name, "usr/share/icons", dir_name)):
-            found = _folder_in_root(root)
-            if found:
-                return found
-    return None
-
-
-def _generate_neocandy():
-    thumb_dir = path.join(IMAGES_DIR, "neocandy")
-    data_out = path.join(DATA_DIR, "neocandy_list.json")
-    os.makedirs(thumb_dir, exist_ok=True)
-
-    entries = []
-    no_thumb = []
-    for token, package, label, theme_dirs in NEOCANDY:
-        entries.append({"token": token, "package": package, "label": label})
-        folder = _neocandy_folder(theme_dirs)
-        if folder:
-            try:
-                _write_thumbnail(folder, thumb_dir, token)
-            except Exception as error:  # noqa: BLE001 - bad SVG/PNG must not abort the run
-                no_thumb.append(f"{token} ({error})")
-        else:
-            no_thumb.append(token)
-
-    with open(data_out, "w", encoding="utf-8") as f:
-        json.dump(entries, f, indent=2)
-        f.write("\n")
-
-    print(f"[neocandy] {len(entries)} themes -> {path.relpath(data_out, SCRIPT_DIR)}")
-    if no_thumb:
-        print(
-            f"[neocandy] no folder preview for: {', '.join(no_thumb)} (install the theme, then rerun)",
-            file=sys.stderr,
-        )
+        print(f"[{tag}] no folder preview for: {', '.join(no_thumb)}", file=sys.stderr)
 
 
 def main():
+    if not path.isdir(SRC_ROOT):
+        print(f"source root not found: {SRC_ROOT} — skipping", file=sys.stderr)
+        return 0
     os.makedirs(DATA_DIR, exist_ok=True)
-    _generate_surfn()
-    _generate_neocandy()
+    for entry in ICON_SETS:
+        _generate_set(*entry)
     return 0
 
 

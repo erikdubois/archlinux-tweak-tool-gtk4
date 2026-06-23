@@ -822,10 +822,13 @@
         "icon theme",
         "neo candy",
         "candy",
+        "mint",
         "tela",
+        "numix",
         "papirus",
-        "vimix",
-        "qogir"
+        "qogir",
+        "arc",
+        "breeze"
       ],
       "labels": []
     },
