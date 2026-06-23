@@ -49,14 +49,15 @@ ARC_BREEZE = {"arc-breeze", "breeze-arc", "breeze-dark"}
 # Fixed set: (token, package, label, [theme-dir candidates]). Sources aren't all in ~/EDU,
 # so folder icons are taken from the installed theme dir (first candidate that has a folder).
 NEOCANDY = [
-    ("neo-candy", "neo-candy-icons-git", "Neo Candy Icons", ["neo-candy-icons", "al-candy-icons", "candy-icons"]),
+    ("neo-candy", "neo-candy-icons-git", "Neo Candy Icons", ["or-candy-icons", "candy-icons", "al-candy-icons"]),
     ("neo-candy-arc", "kiro-neo-candy-arc", "Neo Candy Arc", ["edu-neo-candy-arc"]),
     ("neo-candy-arc-mint-grey", "kiro-neo-candy-arc-mint-grey", "Neo Candy Arc Mint Grey", ["edu-neo-candy-arc-mint-grey"]),
     ("neo-candy-arc-mint-red", "kiro-neo-candy-arc-mint-red", "Neo Candy Arc Mint Red", ["edu-neo-candy-arc-mint-red"]),
     ("neo-candy-tela", "kiro-neo-candy-tela", "Neo Candy Tela", ["edu-neo-candy-tela"]),
     ("papirus-dark-tela", "kiro-papirus-dark-tela", "Papirus Dark Tela", ["edu-papirus-dark-tela"]),
     ("papirus-dark-tela-grey", "kiro-papirus-dark-tela-grey", "Papirus Dark Tela Grey", ["edu-papirus-dark-tela-grey"]),
-    ("vimix-dark-tela", "kiro-vimix-dark-tela", "Vimix Dark Tela", ["edu-vimix-dark-tela"]),
+    # vimix-dark-tela ships Tela folders and is often not installed; fall back to the Tela folder.
+    ("vimix-dark-tela", "kiro-vimix-dark-tela", "Vimix Dark Tela", ["edu-vimix-dark-tela", "Tela"]),
     ("neo-candy-qogir", "kiro-neo-candy-qogir", "Neo Candy Qogir", ["edu-neo-candy-qogir"]),
 ]
 

@@ -11,6 +11,7 @@
 - `icons.py`: `NEOCANDY` loaded from JSON; Neo Candy all/none/collect/install/remove/find now data-driven over `self.neocandy_checkboxes`; counts use `len(NEOCANDY)`. `SURFN_TABS["Surfn-Tela"]` = `["Tela"]`.
 - `icons_gui.py`: `_make_folder_preview()` takes a `subdir` (`surfn`/`neocandy`); Neo Candy tab rebuilt as folder-preview + checkbox rows from `icons.NEOCANDY`; `neocandy.jpg` banner append removed.
 - `up.sh`: runs `gen-icons-list.py` (was `gen-surfn-list.py`).
+- Folder-source fixes: **Neo Candy Icons** now uses the teal `or-candy-icons` folder (was the plain blue `al-candy-icons`); **Vimix Dark Tela** (not installed here) falls back to the `Tela` folder, since the theme ships Tela folders — so all 9 Neo Candy previews render.
 
 ### Files Modified (Neo Candy previews + Tela routing)
 - `gen-icons-list.py` (renamed from `gen-surfn-list.py`)
