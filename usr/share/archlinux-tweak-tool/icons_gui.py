@@ -535,9 +535,7 @@ Ensure that the <b>Nemesis repo is enabled</b> — see the "Pacman" tab for deta
     hbox_surfn_info.set_margin_end(10)
     vbox_surfn_tab.append(hbox_surfn_info)
     vbox_surfn_tab.append(vbox_surfn_families)
-    vbox_surfn_tab.append(
-        _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, "surfn.jpg", scale=0.8, out_pics=_att_pics)
-    )
+    # Banner preview (surfn.jpg) hidden for now — the per-theme folder thumbnails make it redundant.
     hbox_surfn_select_label.set_margin_start(10)
     hbox_surfn_select_label.set_margin_end(10)
     vbox_surfn_tab.append(hbox_surfn_select_label)

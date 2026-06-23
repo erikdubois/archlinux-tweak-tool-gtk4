@@ -40,6 +40,7 @@
 - **`icons.py`**: replaced the 6 `self.surfn_*` attrs with a `self.surfn_checkboxes[token]` dict driven by the loaded `SURFN_FAMILIES` table; `_all_surfn_tokens()`, `_surfn_pkg(token)`, `select_surfn_family()`, `on_click_att_surfn_family_selection()`; `find_surfn_icons()` now uses one `check_packages_installed()` call; `get_available_icon_counts()` returns the live count. **Removal guard:** `surfn-icons-git` (the base every variant depends on) is kept out of a bulk removal unless it's the only thing selected, to avoid a dependency cascade.
 - **`icons_gui.py`**: `_make_folder_preview(token)` loads `images/surfn/<token>.png`; the Surfn section builds a per-family `<b>header</b>` + flowbox of (folder preview + checkbox) rows, plus a row of family filter buttons. Checkbox labels drop the `surfn-` prefix (base shown as `surfn (base)`).
 - **`up.sh`**: runs `gen-surfn-list.py` alongside the search-index / streamline generators (non-fatal).
+- The large `surfn.jpg` banner preview is hidden for now (the per-theme folder thumbnails make it redundant); the append is commented out, asset retained.
 
 **Verification.** `ruff` + AST parse pass on all touched files; generator produces 51 variants across 7 families with a thumbnail for every token; GTK4 widget methods (`Gtk.Image.set_from_paintable`, `Gdk.Texture.new_for_pixbuf`) confirmed via introspection. Full GUI render to be confirmed on a graphical session (the headless tool can't open a display).
 
