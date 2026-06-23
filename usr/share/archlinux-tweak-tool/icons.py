@@ -51,14 +51,15 @@ ICON_SETS = {
 
 # Which families live under each sub-tab of the Icons Surfn / Icons Neo Candy pages.
 SURFN_TABS = {
-    "Surfn": ["Plasma", "Numix", "Papirus", "Arc / Breeze", "Other"],
+    "Surfn": ["Plasma", "Numix", "Arc / Breeze", "Other"],
     "Surfn-Mint": ["Mint-X", "Mint-Y"],
-    "Surfn-Papirus": [],  # placeholder — to be filled in later
+    "Surfn-Papirus": ["Papirus"],
     "Surfn-Tela": ["Tela"],
 }
 NEOCANDY_TABS = {
-    "Neo Candy": ["Numix", "Papirus", "Arc / Breeze", "Other"],
+    "Neo Candy": ["Numix", "Arc / Breeze", "Other"],
     "Neo Candy Mint": ["Mint-X", "Mint-Y"],
+    "Neo Candy Papirus": ["Papirus"],
     "Neo Candy Tela": ["Tela"],
 }
 

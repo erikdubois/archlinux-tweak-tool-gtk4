@@ -203,16 +203,108 @@
   ],
   "Papirus": [
     {
+      "token": "surfn-papirus-adwaita",
+      "package": "surfn-papirus-adwaita-icons-git"
+    },
+    {
+      "token": "surfn-papirus-black",
+      "package": "surfn-papirus-black-icons-git"
+    },
+    {
       "token": "surfn-papirus-blue",
       "package": "surfn-papirus-blue-icons-git"
+    },
+    {
+      "token": "surfn-papirus-bluegrey",
+      "package": "surfn-papirus-bluegrey-icons-git"
+    },
+    {
+      "token": "surfn-papirus-breeze",
+      "package": "surfn-papirus-breeze-icons-git"
+    },
+    {
+      "token": "surfn-papirus-brown",
+      "package": "surfn-papirus-brown-icons-git"
+    },
+    {
+      "token": "surfn-papirus-carmine",
+      "package": "surfn-papirus-carmine-icons-git"
     },
     {
       "token": "surfn-papirus-casablanca",
       "package": "surfn-papirus-casablanca-icons-git"
     },
     {
+      "token": "surfn-papirus-cyan",
+      "package": "surfn-papirus-cyan-icons-git"
+    },
+    {
+      "token": "surfn-papirus-darkcyan",
+      "package": "surfn-papirus-darkcyan-icons-git"
+    },
+    {
+      "token": "surfn-papirus-deeporange",
+      "package": "surfn-papirus-deeporange-icons-git"
+    },
+    {
+      "token": "surfn-papirus-green",
+      "package": "surfn-papirus-green-icons-git"
+    },
+    {
       "token": "surfn-papirus-grey",
       "package": "surfn-papirus-grey-icons-git"
+    },
+    {
+      "token": "surfn-papirus-indigo",
+      "package": "surfn-papirus-indigo-icons-git"
+    },
+    {
+      "token": "surfn-papirus-magenta",
+      "package": "surfn-papirus-magenta-icons-git"
+    },
+    {
+      "token": "surfn-papirus-nordic",
+      "package": "surfn-papirus-nordic-icons-git"
+    },
+    {
+      "token": "surfn-papirus-orange",
+      "package": "surfn-papirus-orange-icons-git"
+    },
+    {
+      "token": "surfn-papirus-palebrown",
+      "package": "surfn-papirus-palebrown-icons-git"
+    },
+    {
+      "token": "surfn-papirus-paleorange",
+      "package": "surfn-papirus-paleorange-icons-git"
+    },
+    {
+      "token": "surfn-papirus-pink",
+      "package": "surfn-papirus-pink-icons-git"
+    },
+    {
+      "token": "surfn-papirus-red",
+      "package": "surfn-papirus-red-icons-git"
+    },
+    {
+      "token": "surfn-papirus-teal",
+      "package": "surfn-papirus-teal-icons-git"
+    },
+    {
+      "token": "surfn-papirus-violet",
+      "package": "surfn-papirus-violet-icons-git"
+    },
+    {
+      "token": "surfn-papirus-white",
+      "package": "surfn-papirus-white-icons-git"
+    },
+    {
+      "token": "surfn-papirus-yaru",
+      "package": "surfn-papirus-yaru-icons-git"
+    },
+    {
+      "token": "surfn-papirus-yellow",
+      "package": "surfn-papirus-yellow-icons-git"
     }
   ],
   "Arc / Breeze": [

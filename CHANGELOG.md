@@ -12,6 +12,7 @@
 - `icons_gui.py`: `_build_surfn_tab` → generic `_build_icon_tab(self, …, set_key, family_labels)`; new `_build_icon_page()` builds title + StackSwitcher of sub-tabs; `gui_surfn()` / `gui_neocandy()` are now one-liners over it.
 - `search_synonyms.json` Icons Neo Candy keywords broadened; `search_index.json` regenerated.
 - Added an empty **Surfn-Papirus** placeholder sub-tab to the Icons Surfn page (`SURFN_TABS`); the existing 3 `surfn-papirus-*` themes stay in the core Surfn tab for now. (Neo Candy Tela already exists as a sub-tab.)
+- Papirus families expanded to **26 variants each** (`surfn-papirus-*` and `neo-candy-papirus-*`). Gave Papirus its own sub-tab on both pages — `SURFN_TABS["Surfn-Papirus"]` filled with `["Papirus"]` and a new `NEOCANDY_TABS["Neo Candy Papirus"]` — and removed Papirus from the two core tabs. Surfn now 88 variants, Neo Candy 82; thumbnails + family JSON regenerated.
 
 ### Files Modified (Neo Candy full family + shared engine)
 - `gen-icons-list.py`

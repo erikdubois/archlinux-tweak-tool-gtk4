@@ -177,16 +177,108 @@
   ],
   "Papirus": [
     {
+      "token": "neo-candy-papirus-adwaita",
+      "package": "neo-candy-papirus-adwaita-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-black",
+      "package": "neo-candy-papirus-black-icons-git"
+    },
+    {
       "token": "neo-candy-papirus-blue",
       "package": "neo-candy-papirus-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-bluegrey",
+      "package": "neo-candy-papirus-bluegrey-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-breeze",
+      "package": "neo-candy-papirus-breeze-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-brown",
+      "package": "neo-candy-papirus-brown-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-carmine",
+      "package": "neo-candy-papirus-carmine-icons-git"
     },
     {
       "token": "neo-candy-papirus-casablanca",
       "package": "neo-candy-papirus-casablanca-icons-git"
     },
     {
+      "token": "neo-candy-papirus-cyan",
+      "package": "neo-candy-papirus-cyan-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-darkcyan",
+      "package": "neo-candy-papirus-darkcyan-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-deeporange",
+      "package": "neo-candy-papirus-deeporange-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-green",
+      "package": "neo-candy-papirus-green-icons-git"
+    },
+    {
       "token": "neo-candy-papirus-grey",
       "package": "neo-candy-papirus-grey-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-indigo",
+      "package": "neo-candy-papirus-indigo-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-magenta",
+      "package": "neo-candy-papirus-magenta-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-nordic",
+      "package": "neo-candy-papirus-nordic-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-orange",
+      "package": "neo-candy-papirus-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-palebrown",
+      "package": "neo-candy-papirus-palebrown-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-paleorange",
+      "package": "neo-candy-papirus-paleorange-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-pink",
+      "package": "neo-candy-papirus-pink-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-red",
+      "package": "neo-candy-papirus-red-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-teal",
+      "package": "neo-candy-papirus-teal-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-violet",
+      "package": "neo-candy-papirus-violet-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-white",
+      "package": "neo-candy-papirus-white-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-yaru",
+      "package": "neo-candy-papirus-yaru-icons-git"
+    },
+    {
+      "token": "neo-candy-papirus-yellow",
+      "package": "neo-candy-papirus-yellow-icons-git"
     }
   ],
   "Arc / Breeze": [
