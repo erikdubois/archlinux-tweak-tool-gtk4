@@ -1,5 +1,25 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.23
+
+### Theme: follow the Plasma light/dark mode when no GTK_THEME is forced
+
+**What changed.** ATT can now follow the desktop's Plasma theme instead of only obeying a hard-coded `GTK_THEME`. A forced `GTK_THEME` (env or `/etc/environment`) still wins — today's behavior is unchanged when one is set. When none is forced and ATT runs in a Plasma session, it detects Plasma's light/dark mode from the user's `kdeglobals` and applies the matching GTK theme (Breeze / Breeze-Dark), falling back to Adwaita + prefer-dark when `breeze-gtk` isn't installed. Outside Plasma with no `GTK_THEME`, behavior is unchanged (GTK default).
+
+**Technical details.**
+- `archlinux-tweak-tool.py`: four new module-level helpers.
+  - `_is_plasma_session()` — pkexec strips `XDG_CURRENT_DESKTOP`, so the root process checks `pgrep -u <sudo_username> -x plasmashell`; falls back to `XDG_CURRENT_DESKTOP`/`fn.desktop` when launched directly.
+  - `_plasma_prefers_dark()` — reads the real user's `~/.config/kdeglobals`; decides dark by luminance of `[Colors:Window] BackgroundNormal` (`0.299R+0.587G+0.114B < 128`), then a `dark` substring in the `[General] ColorScheme` name, else light (Plasma's Breeze default; empty kdeglobals ⇒ light).
+  - `_pick_gtk_theme_for_mode(prefer_dark)` — `Breeze-Dark`/`Breeze` if `/usr/share/themes/<name>` exists, else `Adwaita` (always present, honors prefer-dark).
+  - `_resolve_effective_theme()` — single resolver returning `(theme_name, prefer_dark, source)`: forced `GTK_THEME` → honor it; else Plasma → follow it; else `(None, …)`.
+- The startup banner and the `on_activate` theme application now both call `_resolve_effective_theme()` (no duplicated parsing); the banner shows `— following Plasma` when that path is taken.
+- Note: the root launcher `usr/bin/archlinux-tweak-tool` (frozen) does not forward `XDG_CURRENT_DESKTOP` through `pkexec env`, which is why session detection uses `plasmashell` rather than the env var.
+
+**Verification.** `ruff check` + `py_compile` pass; luminance/scheme-name detection unit-tested across light, dark, name-only, and empty-kdeglobals cases.
+
+### Files Modified (Plasma theme follow)
+- `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+
 ## 2026.06.15
 
 ### Accessibility: add a Remove button for the xkbset backend

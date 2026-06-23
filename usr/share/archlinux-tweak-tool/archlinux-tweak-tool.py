@@ -101,6 +101,76 @@ def _parse_gtk_theme(raw):
     return (raw[:-5] if is_dark else raw), is_dark
 
 
+def _is_plasma_session():
+    """True when the real user is in a live Plasma session.
+
+    pkexec strips XDG_CURRENT_DESKTOP, so the most reliable signal from the root
+    process is whether plasmashell runs for the user; env/fn.desktop are fallbacks
+    for when ATT is launched directly without pkexec.
+    """
+    try:
+        result = fn.subprocess.run(
+            ["pgrep", "-u", fn.sudo_username, "-x", "plasmashell"],
+            stdout=fn.subprocess.DEVNULL,
+            stderr=fn.subprocess.DEVNULL,
+        )
+        if result.returncode == 0:
+            return True
+    except Exception:
+        pass
+    de = (os.environ.get("XDG_CURRENT_DESKTOP", "") + " " + (fn.desktop or "")).lower()
+    return "kde" in de or "plasma" in de
+
+
+def _plasma_prefers_dark():
+    """True if the user's Plasma colour scheme is dark, judged by window-background luminance."""
+    background = None
+    scheme_name = ""
+    try:
+        section = ""
+        with open(fn.home + "/.config/kdeglobals", "r", encoding="utf-8") as _f:
+            for _line in _f:
+                _line = _line.strip()
+                if _line.startswith("[") and _line.endswith("]"):
+                    section = _line
+                elif section == "[General]" and _line.startswith("ColorScheme="):
+                    scheme_name = _line.split("=", 1)[1]
+                elif section == "[Colors:Window]" and _line.startswith("BackgroundNormal="):
+                    background = _line.split("=", 1)[1]
+    except OSError:
+        return False  # no kdeglobals → Plasma default is Breeze Light
+    if background:
+        try:
+            r, g, b = (int(v) for v in background.split(",")[:3])
+            return (0.299 * r + 0.587 * g + 0.114 * b) < 128
+        except ValueError:
+            pass
+    return "dark" in scheme_name.lower()
+
+
+def _pick_gtk_theme_for_mode(prefer_dark):
+    """Closest GTK theme to Plasma for the given mode; Adwaita fallback when breeze-gtk is absent."""
+    breeze = "Breeze-Dark" if prefer_dark else "Breeze"
+    if fn.path.isdir("/usr/share/themes/" + breeze):
+        return breeze
+    return "Adwaita"  # always present; honours prefer-dark for its dark variant
+
+
+def _resolve_effective_theme():
+    """Resolve (theme_name, prefer_dark, source) ATT should apply at startup.
+
+    A forced GTK_THEME wins; otherwise, on Plasma, follow its light/dark mode.
+    """
+    raw = _read_gtk_theme()
+    if raw:
+        name, dark = _parse_gtk_theme(raw)
+        return name, dark, "GTK_THEME"
+    if _is_plasma_session():
+        dark = _plasma_prefers_dark()
+        return _pick_gtk_theme_for_mode(dark), dark, "Plasma"
+    return None, False, None
+
+
 class Main(Gtk.ApplicationWindow):
     def __init__(self, app):
         print("=" * 75)
@@ -116,10 +186,14 @@ class Main(Gtk.ApplicationWindow):
         print("Support: https://github.com/erikdubois/archlinux-tweak-tool-gtk4")
         print("=" * 75)
 
-        _theme_name, _is_dark = _parse_gtk_theme(_read_gtk_theme())
+        _theme_name, _is_dark, _theme_src = _resolve_effective_theme()
         if _theme_name:
             _dark_str = " (dark mode)" if _is_dark else ""
-            print(f"[System] Distro={fn.distr} | Theme={_theme_name}{_dark_str} | User={fn.sudo_username}", flush=True)
+            _src_str = " — following Plasma" if _theme_src == "Plasma" else ""
+            print(
+                f"[System] Distro={fn.distr} | Theme={_theme_name}{_dark_str}{_src_str} | User={fn.sudo_username}",
+                flush=True,
+            )
             print("=" * 75)
         else:
             print(f"[System] Distro={fn.distr} | Theme=not set | User={fn.sudo_username}", flush=True)
@@ -463,7 +537,7 @@ class ATTApplication(Gtk.Application):
             with open("/tmp/att.pid", "w", encoding="utf-8") as f:
                 f.write(str(fn.getpid()))
 
-            theme_name, prefer_dark = _parse_gtk_theme(_read_gtk_theme())
+            theme_name, prefer_dark, _theme_src = _resolve_effective_theme()
             if theme_name:
                 Gtk.Settings.get_default().set_property("gtk-theme-name", theme_name)
                 Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", prefer_dark)
