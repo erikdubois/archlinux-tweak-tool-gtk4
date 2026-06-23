@@ -1,0 +1,220 @@
+{
+  "Mint-X": [
+    {
+      "token": "surfn-mint-x-aqua",
+      "package": "surfn-mint-x-aqua-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-blue",
+      "package": "surfn-mint-x-blue-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-brown",
+      "package": "surfn-mint-x-brown-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-grey",
+      "package": "surfn-mint-x-grey-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-orange",
+      "package": "surfn-mint-x-orange-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-pink",
+      "package": "surfn-mint-x-pink-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-purple",
+      "package": "surfn-mint-x-purple-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-red",
+      "package": "surfn-mint-x-red-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-sand",
+      "package": "surfn-mint-x-sand-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-teal",
+      "package": "surfn-mint-x-teal-icons-git"
+    },
+    {
+      "token": "surfn-mint-x-yellow",
+      "package": "surfn-mint-x-yellow-icons-git"
+    }
+  ],
+  "Mint-Y": [
+    {
+      "token": "surfn-mint-y-aqua",
+      "package": "surfn-mint-y-aqua-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-blue",
+      "package": "surfn-mint-y-blue-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-cyan",
+      "package": "surfn-mint-y-cyan-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-grey",
+      "package": "surfn-mint-y-grey-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-navy",
+      "package": "surfn-mint-y-navy-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-orange",
+      "package": "surfn-mint-y-orange-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-pink",
+      "package": "surfn-mint-y-pink-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-purple",
+      "package": "surfn-mint-y-purple-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-red",
+      "package": "surfn-mint-y-red-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-sand",
+      "package": "surfn-mint-y-sand-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-teal",
+      "package": "surfn-mint-y-teal-icons-git"
+    },
+    {
+      "token": "surfn-mint-y-yaru",
+      "package": "surfn-mint-y-yaru-icons-git"
+    }
+  ],
+  "Plasma": [
+    {
+      "token": "surfn-plasma-dark",
+      "package": "surfn-plasma-dark-icons-git"
+    },
+    {
+      "token": "surfn-plasma-dark-breeze",
+      "package": "surfn-plasma-dark-breeze-icons-git"
+    },
+    {
+      "token": "surfn-plasma-dark-qogir",
+      "package": "surfn-plasma-dark-qogir-icons-git"
+    },
+    {
+      "token": "surfn-plasma-dark-tela",
+      "package": "surfn-plasma-dark-tela-icons-git"
+    },
+    {
+      "token": "surfn-plasma-flow",
+      "package": "surfn-plasma-flow-git"
+    },
+    {
+      "token": "surfn-plasma-light",
+      "package": "surfn-plasma-light-icons-git"
+    }
+  ],
+  "Numix": [
+    {
+      "token": "surfn-numix",
+      "package": "surfn-numix-icons-git"
+    },
+    {
+      "token": "surfn-numix-misty",
+      "package": "surfn-numix-misty-icons-git"
+    },
+    {
+      "token": "surfn-numix-polo",
+      "package": "surfn-numix-polo-icons-git"
+    },
+    {
+      "token": "surfn-numixs",
+      "package": "surfn-numixs-icons-git"
+    }
+  ],
+  "Papirus": [
+    {
+      "token": "surfn-papirus-blue",
+      "package": "surfn-papirus-blue-icons-git"
+    },
+    {
+      "token": "surfn-papirus-casablanca",
+      "package": "surfn-papirus-casablanca-icons-git"
+    },
+    {
+      "token": "surfn-papirus-grey",
+      "package": "surfn-papirus-grey-icons-git"
+    }
+  ],
+  "Arc / Breeze": [
+    {
+      "token": "surfn-arc-breeze",
+      "package": "surfn-arc-breeze-icons-git"
+    },
+    {
+      "token": "surfn-breeze-arc",
+      "package": "surfn-breeze-arc-icons-git"
+    },
+    {
+      "token": "surfn-breeze-dark",
+      "package": "surfn-breeze-dark-icons-git"
+    }
+  ],
+  "Other": [
+    {
+      "token": "surfn",
+      "package": "surfn-icons-git"
+    },
+    {
+      "token": "surfn-arch-blue",
+      "package": "surfn-arch-blue-icons-git"
+    },
+    {
+      "token": "surfn-arched",
+      "package": "surfn-arched-icons-git"
+    },
+    {
+      "token": "surfn-dracul",
+      "package": "surfn-dracul-icons-git"
+    },
+    {
+      "token": "surfn-luv",
+      "package": "surfn-luv-icons-git"
+    },
+    {
+      "token": "surfn-luv-red",
+      "package": "surfn-luv-red-icons-git"
+    },
+    {
+      "token": "surfn-majestic",
+      "package": "surfn-majestic-icons-git"
+    },
+    {
+      "token": "surfn-orange",
+      "package": "surfn-orange-icons-git"
+    },
+    {
+      "token": "surfn-qogir",
+      "package": "surfn-qogir-icons-git"
+    },
+    {
+      "token": "surfn-tela",
+      "package": "surfn-tela-icons-git"
+    },
+    {
+      "token": "surfn-vertexed",
+      "package": "surfn-vertexed-icons-git"
+    },
+    {
+      "token": "surfn-vimix-black",
+      "package": "surfn-vimix-black-icons-git"
+    }
+  ]
+}

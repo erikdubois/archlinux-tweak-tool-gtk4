@@ -2,6 +2,17 @@
 
 ## 2026.06.23
 
+### Icons: Surfn Mint-Y checkbox installs the per-colour meta
+
+**What changed.** The Surfn icons section's "Mint-Y" checkbox previously installed the monolithic `surfn-mint-y-icons-git`, which has been split upstream into one package per colour. The checkbox now installs `surfn-mint-y-meta` (pulls all 12 Surfn Mint-Y colour themes), so it keeps working after the combined package is retired from `nemesis_repo`.
+
+**Technical details.**
+- `icons.py`: `_collect_surfn_packages` maps the checkbox to `surfn-mint-y-meta`; `find_surfn_icons` checks `surfn-mint-y-meta` for the installed state. Widget attribute name kept (`surfn_mint_y_icons_git`) to avoid churn.
+- `icons_gui.py`: checkbox label updated to `surfn-mint-y (all colours)`.
+- `data/nemesis_packages.txt`: `surfn-mint-y-icons-git` → `surfn-mint-y-meta` (regenerated wholesale on next `up.sh` once the new packages land in the repo).
+
+**Files modified.** `usr/share/archlinux-tweak-tool/icons.py`, `usr/share/archlinux-tweak-tool/icons_gui.py`, `usr/share/archlinux-tweak-tool/data/nemesis_packages.txt`.
+
 ### Theme: follow the Plasma light/dark mode when no GTK_THEME is forced
 
 **What changed.** ATT can now follow the desktop's Plasma theme instead of only obeying a hard-coded `GTK_THEME`. A forced `GTK_THEME` (env or `/etc/environment`) still wins — today's behavior is unchanged when one is set. When none is forced and ATT runs in a Plasma session, it detects Plasma's light/dark mode from the user's `kdeglobals` and applies the matching GTK theme (Breeze / Breeze-Dark), falling back to Adwaita + prefer-dark when `breeze-gtk` isn't installed. Outside Plasma with no `GTK_THEME`, behavior is unchanged (GTK default).
@@ -19,6 +30,26 @@
 
 ### Files Modified (Plasma theme follow)
 - `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+
+### Icons → Surfn tab: data-driven rewrite with folder previews + family filters
+
+**What changed.** The Surfn tab (inside the Icons page) was 6 hard-coded checkboxes; Surfn now ships ~51 standalone colour-variant packages (sources in `~/EDU/surfn*`, recipes in `~/KIRO-PKG-BUILD-ICONS`). Rebuilt it the way the Themes page works — fully data-driven from a generated table — with a **small folder preview** (the theme's real folder icon) beside each checkbox, grouped into families that double as **filter buttons**: Mint-X, Mint-Y, Plasma, Numix, Papirus, Arc / Breeze, Other (plus All / None / Show installed). A new generator keeps it in sync so new variants need no code edits.
+
+**Technical details.**
+- New **`gen-surfn-list.py`** (run by `up.sh`): discovers each `surfn*` source, reads `pkgname` from its build recipe's PKGBUILD (fallback `<token>-icons-git`), classifies it into a family, and renders the theme's canonical `folder.png`/`folder.svg` (following `index.theme` `Inherits=`, base-Surfn last resort) to a 28px PNG via GdkPixbuf. Emits `data/surfn_families.json` + `images/surfn/<token>.png`.
+- **`icons.py`**: replaced the 6 `self.surfn_*` attrs with a `self.surfn_checkboxes[token]` dict driven by the loaded `SURFN_FAMILIES` table; `_all_surfn_tokens()`, `_surfn_pkg(token)`, `select_surfn_family()`, `on_click_att_surfn_family_selection()`; `find_surfn_icons()` now uses one `check_packages_installed()` call; `get_available_icon_counts()` returns the live count. **Removal guard:** `surfn-icons-git` (the base every variant depends on) is kept out of a bulk removal unless it's the only thing selected, to avoid a dependency cascade.
+- **`icons_gui.py`**: `_make_folder_preview(token)` loads `images/surfn/<token>.png`; the Surfn section builds a per-family `<b>header</b>` + flowbox of (folder preview + checkbox) rows, plus a row of family filter buttons. Checkbox labels drop the `surfn-` prefix (base shown as `surfn (base)`).
+- **`up.sh`**: runs `gen-surfn-list.py` alongside the search-index / streamline generators (non-fatal).
+
+**Verification.** `ruff` + AST parse pass on all touched files; generator produces 51 variants across 7 families with a thumbnail for every token; GTK4 widget methods (`Gtk.Image.set_from_paintable`, `Gdk.Texture.new_for_pixbuf`) confirmed via introspection. Full GUI render to be confirmed on a graphical session (the headless tool can't open a display).
+
+### Files Modified / Added (Surfn rewire)
+- `gen-surfn-list.py` (new)
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json` (generated)
+- `usr/share/archlinux-tweak-tool/images/surfn/*.png` (generated, 51)
+- `usr/share/archlinux-tweak-tool/icons.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `up.sh`
 
 ## 2026.06.15
 

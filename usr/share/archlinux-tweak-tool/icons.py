@@ -2,16 +2,47 @@
 # Authors: Brad Heffernan - Erik Dubois - Cameron Percival
 # ============================================================
 
+import json
+import os
+
 import functions as fn
 
 _SARDI_COUNT = 24
-_SURFN_COUNT = 6
 _NEOCANDY_COUNT = 9
+
+_SURFN_FAMILIES_JSON = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "surfn_families.json")
+# Base package every Surfn variant depends on; never bulk-removed while variants remain.
+_SURFN_BASE_PKG = "surfn-icons-git"
+
+
+def _load_surfn_families():
+    """Load the generated Surfn family table ({family: [{token, package}, …]})."""
+    try:
+        with open(_SURFN_FAMILIES_JSON, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError) as error:
+        fn.log_error(f"Could not load Surfn family table: {error}")
+        return {}
+
+
+SURFN_FAMILIES = _load_surfn_families()
+
+
+def _all_surfn_tokens():
+    return [entry["token"] for items in SURFN_FAMILIES.values() for entry in items]
+
+
+def _surfn_pkg(token):
+    for items in SURFN_FAMILIES.values():
+        for entry in items:
+            if entry["token"] == token:
+                return entry["package"]
+    return token + "-icons-git"
 
 
 def get_available_icon_counts():
     """Return (sardi, surfn, neocandy) installable package counts."""
-    return _SARDI_COUNT, _SURFN_COUNT, _NEOCANDY_COUNT
+    return _SARDI_COUNT, len(_all_surfn_tokens()), _NEOCANDY_COUNT
 
 
 def _check_install_repos(self):
@@ -109,6 +140,13 @@ def on_click_att_surfn_theming_none_selection(self, _widget):
     fn.log_subsection("No Surfn icons selected")
     fn.show_in_app_notification(self, "We have selected no surfn icons")
     set_att_checkboxes_theming_surfn_icons_none(self)
+
+
+def on_click_att_surfn_family_selection(self, family_label, _widget):
+    """Tick one Surfn family (the filter buttons) and clear the rest."""
+    fn.log_subsection(f"Select {family_label} Surfn icons")
+    fn.show_in_app_notification(self, f"We have selected the {family_label} Surfn icons")
+    select_surfn_family(self, family_label)
 
 
 def on_install_neocandy_clicked(self, _widget):
@@ -589,33 +627,24 @@ def find_sardi_icons(self):
 
 
 def set_att_checkboxes_theming_surfn_icons_all(self):
-    self.surfn_icons_git_att.set_active(True)
-    self.surfn_arc_breeze_icons_git.set_active(True)
-    self.surfn_mint_y_icons_git.set_active(True)
-    self.surfn_plasma_dark.set_active(True)
-    self.surfn_plasma_light.set_active(True)
-    self.surfn_plasma_flow.set_active(True)
+    for token in _all_surfn_tokens():
+        self.surfn_checkboxes[token].set_active(True)
 
 
 def set_att_checkboxes_theming_surfn_icons_none(self):
-    self.surfn_icons_git_att.set_active(False)
-    self.surfn_arc_breeze_icons_git.set_active(False)
-    self.surfn_mint_y_icons_git.set_active(False)
-    self.surfn_plasma_dark.set_active(False)
-    self.surfn_plasma_light.set_active(False)
-    self.surfn_plasma_flow.set_active(False)
+    for token in _all_surfn_tokens():
+        self.surfn_checkboxes[token].set_active(False)
+
+
+def select_surfn_family(self, family_label):
+    """Tick the checkboxes for one Surfn family and clear the rest."""
+    family_tokens = {entry["token"] for entry in SURFN_FAMILIES.get(family_label, [])}
+    for token in _all_surfn_tokens():
+        self.surfn_checkboxes[token].set_active(token in family_tokens)
 
 
 def _collect_surfn_packages(self):
-    pairs = [
-        (self.surfn_icons_git_att, "surfn-icons-git"),
-        (self.surfn_arc_breeze_icons_git, "surfn-arc-breeze-icons-git"),
-        (self.surfn_mint_y_icons_git, "surfn-mint-y-icons-git"),
-        (self.surfn_plasma_dark, "surfn-plasma-dark-icons-git"),
-        (self.surfn_plasma_light, "surfn-plasma-light-icons-git"),
-        (self.surfn_plasma_flow, "surfn-plasma-flow-git"),
-    ]
-    return [pkg for cb, pkg in pairs if cb.get_active()]
+    return [_surfn_pkg(token) for token in _all_surfn_tokens() if self.surfn_checkboxes[token].get_active()]
 
 
 def install_surfn_icons(self):
@@ -639,6 +668,12 @@ def remove_surfn_icons(self):
         fn.log_info("No Surfn icons selected for removal")
         fn.show_in_app_notification(self, "No Surfn icons selected for removal")
         return
+    # Every variant depends on the base; removing it while variants remain would
+    # cascade them all out, so keep the base unless it is the only thing selected.
+    if _SURFN_BASE_PKG in packages and len(packages) > 1:
+        packages.remove(_SURFN_BASE_PKG)
+        fn.log_warn(f"Keeping {_SURFN_BASE_PKG} — other Surfn variants depend on it")
+        fn.show_in_app_notification(self, f"Kept {_SURFN_BASE_PKG} (variants depend on it)")
     fn.log_subsection(f"Removing {len(packages)} Surfn icon packages...")
     fn.log_info(f"  {', '.join(packages)}")
     process = fn.launch_pacman_remove_in_terminal(" ".join(packages))
@@ -648,19 +683,10 @@ def remove_surfn_icons(self):
 
 def find_surfn_icons(self):
     set_att_checkboxes_theming_surfn_icons_none(self)
-
-    if fn.check_package_installed("surfn-arc-breeze-icons-git"):
-        self.surfn_arc_breeze_icons_git.set_active(True)
-    if fn.check_package_installed("surfn-mint-y-icons-git"):
-        self.surfn_mint_y_icons_git.set_active(True)
-    if fn.check_package_installed("surfn-plasma-light-icons-git"):
-        self.surfn_plasma_light.set_active(True)
-    if fn.check_package_installed("surfn-plasma-flow-git"):
-        self.surfn_plasma_flow.set_active(True)
-    if fn.check_package_installed("surfn-plasma-dark-icons-git"):
-        self.surfn_plasma_dark.set_active(True)
-    if fn.check_package_installed("surfn-icons-git"):
-        self.surfn_icons_git_att.set_active(True)
+    installed_map = fn.check_packages_installed([_surfn_pkg(t) for t in _all_surfn_tokens()])
+    for token in _all_surfn_tokens():
+        if installed_map.get(_surfn_pkg(token)):
+            self.surfn_checkboxes[token].set_active(True)
 
     installed = _collect_surfn_packages(self)
     if installed:

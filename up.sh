@@ -171,6 +171,12 @@ main() {
         python3 "${SCRIPT_DIR}/gen-streamline-list.py" || log_warn "streamline list generation failed — continuing"
     fi
 
+    if [[ -f "${SCRIPT_DIR}/gen-surfn-list.py" ]]; then
+        log_section "Regenerating Surfn icon table + folder thumbnails"
+        # Non-fatal: a stale table must not block the commit/push.
+        python3 "${SCRIPT_DIR}/gen-surfn-list.py" || log_warn "surfn list generation failed — continuing"
+    fi
+
     git_commit_and_push
 
     log_success "$(basename "$0") done"
