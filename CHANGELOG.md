@@ -2,6 +2,22 @@
 
 ## 2026.06.23
 
+### Sidebar: split the Icons page into "Icons Neo Candy" + "Icons Surfn" pages
+
+**What changed.** The bundled **Icons** sidebar page is replaced by two dedicated sidebar pages: **Icons Neo Candy** and **Icons Surfn** (the latter keeps the Surfn / Surfn-Mint / Surfn-Tela sub-tabs). The unmaintained **Sardi** tab is dropped entirely with the old page.
+
+**Technical details.**
+- `icons_gui.py`: removed the monolithic `gui()` (and all Sardi GUI code) plus the now-unused `_att_preview_picture` helper and `desktopr_gui` import. Added `gui_neocandy()` and `gui_surfn()` page builders sharing a small `_page_scaffold()` (title + separator); `gui_surfn()` builds the three Surfn tabs via the existing `_build_surfn_tab()`.
+- `gui.py`: `vboxstack_icons` → `vboxstack_icons_neocandy` + `vboxstack_icons_surfn`, each lazily built by its own `_defer_tab` builder; the single `add_titled(…, "Icons")` is replaced by `"Icons Neo Candy"` (stack_icons_neocandy) and `"Icons Surfn"` (stack_icons_surfn).
+- `search_synonyms.json`: the `Icons` entry split into `Icons Neo Candy` / `Icons Surfn` (sardi keyword dropped); `search_index.json` regenerated (33 pages).
+- The Sardi *logic* in `icons.py` is now unused (left in place; candidate for a follow-up purge).
+
+### Files Modified (Icons page split)
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `search_synonyms.json`
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+
 ### Icons → Neo Candy: folder previews + Surfn-Tela tab filled; generator generalized
 
 **What changed.** The Neo Candy tab now shows the same per-theme **folder preview** as Surfn (its banner `neocandy.jpg` is hidden). The thumbnail generator was generalized from Surfn-only to both families and renamed `gen-surfn-list.py` → **`gen-icons-list.py`**. Separately, the new `~/EDU/surfn-tela-*` projects are now classified into a **Tela** family and routed to the previously-empty **Surfn-Tela** tab (15 themes).

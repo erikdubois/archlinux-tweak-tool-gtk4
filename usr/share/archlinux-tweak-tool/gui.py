@@ -123,7 +123,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_user = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_maintenance = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_shells = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack_icons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_icons_neocandy = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_icons_surfn = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_iso = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_packages = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_performance = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -164,13 +165,19 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     #                 ICONS
     # ==========================================================
 
-    def _build_icons():
-        sardi, surfn, extras = icons.get_available_icon_counts()
-        total = sardi + surfn + extras
-        fn.log_info(f"Icons available to install: {total} total — Sardi: {sardi}, Surfn: {surfn}, Neo Candy: {extras}")
-        icons_gui.gui(self, Gtk, GdkPixbuf, vboxstack_icons, icons, fn, base_dir)
+    def _build_icons_neocandy():
+        _, _, extras = icons.get_available_icon_counts()
+        fn.log_info(f"Neo Candy icons available to install: {extras}")
+        icons_gui.gui_neocandy(self, Gtk, GdkPixbuf, vboxstack_icons_neocandy, icons, fn, base_dir)
 
-    _defer_tab(vboxstack_icons, _build_icons)
+    _defer_tab(vboxstack_icons_neocandy, _build_icons_neocandy)
+
+    def _build_icons_surfn():
+        _, surfn, _ = icons.get_available_icon_counts()
+        fn.log_info(f"Surfn icons available to install: {surfn}")
+        icons_gui.gui_surfn(self, Gtk, GdkPixbuf, vboxstack_icons_surfn, icons, fn, base_dir)
+
+    _defer_tab(vboxstack_icons_surfn, _build_icons_surfn)
 
     # ==========================================================
     #                 ISO
@@ -394,7 +401,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     stack.add_titled(vboxstack_fastfetch, "stack4", "Fastfetch")  # fastfetch config
 
-    stack.add_titled(vboxstack_icons, "stack25", "Icons")  # Icons and themes
+    stack.add_titled(vboxstack_icons_neocandy, "stack_icons_neocandy", "Icons Neo Candy")  # Neo Candy icon themes
+    stack.add_titled(vboxstack_icons_surfn, "stack_icons_surfn", "Icons Surfn")  # Surfn icon themes
 
     stack.add_titled(vboxstack_iso, "stack_iso", "ISO")  # Kiro ISO Builder showcase
 
