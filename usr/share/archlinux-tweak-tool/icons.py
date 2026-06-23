@@ -8,24 +8,25 @@ import os
 import functions as fn
 
 _SARDI_COUNT = 24
-_NEOCANDY_COUNT = 9
 
-_SURFN_FAMILIES_JSON = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "surfn_families.json")
+_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+_SURFN_FAMILIES_JSON = os.path.join(_DATA_DIR, "surfn_families.json")
+_NEOCANDY_JSON = os.path.join(_DATA_DIR, "neocandy_list.json")
 # Base package every Surfn variant depends on; never bulk-removed while variants remain.
 _SURFN_BASE_PKG = "surfn-icons-git"
 
 
-def _load_surfn_families():
-    """Load the generated Surfn family table ({family: [{token, package}, …]})."""
+def _load_json_table(label, json_path, empty):
     try:
-        with open(_SURFN_FAMILIES_JSON, "r", encoding="utf-8") as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except (OSError, ValueError) as error:
-        fn.log_error(f"Could not load Surfn family table: {error}")
-        return {}
+        fn.log_error(f"Could not load {label} table: {error}")
+        return empty
 
 
-SURFN_FAMILIES = _load_surfn_families()
+SURFN_FAMILIES = _load_json_table("Surfn family", _SURFN_FAMILIES_JSON, {})
+NEOCANDY = _load_json_table("Neo Candy", _NEOCANDY_JSON, [])
 
 
 def _all_surfn_tokens():
@@ -37,7 +38,7 @@ def _all_surfn_tokens():
 SURFN_TABS = {
     "Surfn": ["Plasma", "Numix", "Papirus", "Arc / Breeze", "Other"],
     "Surfn-Mint": ["Mint-X", "Mint-Y"],
-    "Surfn-Tela": [],
+    "Surfn-Tela": ["Tela"],
 }
 
 
@@ -53,9 +54,20 @@ def _surfn_pkg(token):
     return token + "-icons-git"
 
 
+def _neocandy_tokens():
+    return [entry["token"] for entry in NEOCANDY]
+
+
+def _neocandy_pkg(token):
+    for entry in NEOCANDY:
+        if entry["token"] == token:
+            return entry["package"]
+    return token
+
+
 def get_available_icon_counts():
     """Return (sardi, surfn, neocandy) installable package counts."""
-    return _SARDI_COUNT, len(_all_surfn_tokens()), _NEOCANDY_COUNT
+    return _SARDI_COUNT, len(_all_surfn_tokens()), len(NEOCANDY)
 
 
 def _check_install_repos(self):
@@ -715,42 +727,17 @@ def find_surfn_icons(self, tokens=None):
 
 
 def set_att_checkboxes_neocandy_all(self):
-    self.att_candy_beauty.set_active(True)
-    self.edu_candy_beauty_arc.set_active(True)
-    self.edu_candy_beauty_arc_mint_grey.set_active(True)
-    self.edu_candy_beauty_arc_mint_red.set_active(True)
-    self.edu_candy_beauty_tela.set_active(True)
-    self.edu_papirus_dark_tela.set_active(True)
-    self.edu_papirus_dark_tela_grey.set_active(True)
-    self.edu_vimix_dark_tela.set_active(True)
-    self.edu_neo_candy_qogir.set_active(True)
+    for token in _neocandy_tokens():
+        self.neocandy_checkboxes[token].set_active(True)
 
 
 def set_att_checkboxes_neocandy_none(self):
-    self.att_candy_beauty.set_active(False)
-    self.edu_candy_beauty_arc.set_active(False)
-    self.edu_candy_beauty_arc_mint_grey.set_active(False)
-    self.edu_candy_beauty_arc_mint_red.set_active(False)
-    self.edu_candy_beauty_tela.set_active(False)
-    self.edu_papirus_dark_tela.set_active(False)
-    self.edu_papirus_dark_tela_grey.set_active(False)
-    self.edu_vimix_dark_tela.set_active(False)
-    self.edu_neo_candy_qogir.set_active(False)
+    for token in _neocandy_tokens():
+        self.neocandy_checkboxes[token].set_active(False)
 
 
 def _collect_neocandy_packages(self):
-    pairs = [
-        (self.att_candy_beauty, "neo-candy-icons-git"),
-        (self.edu_candy_beauty_arc, "kiro-neo-candy-arc"),
-        (self.edu_candy_beauty_arc_mint_grey, "kiro-neo-candy-arc-mint-grey"),
-        (self.edu_candy_beauty_arc_mint_red, "kiro-neo-candy-arc-mint-red"),
-        (self.edu_candy_beauty_tela, "kiro-neo-candy-tela"),
-        (self.edu_papirus_dark_tela, "kiro-papirus-dark-tela"),
-        (self.edu_papirus_dark_tela_grey, "kiro-papirus-dark-tela-grey"),
-        (self.edu_vimix_dark_tela, "kiro-vimix-dark-tela"),
-        (self.edu_neo_candy_qogir, "kiro-neo-candy-qogir"),
-    ]
-    return [pkg for cb, pkg in pairs if cb.get_active()]
+    return [_neocandy_pkg(token) for token in _neocandy_tokens() if self.neocandy_checkboxes[token].get_active()]
 
 
 def install_att_neocandy(self):
@@ -783,25 +770,10 @@ def remove_att_neocandy(self):
 
 def find_att_neocandy(self):
     set_att_checkboxes_neocandy_none(self)
-
-    if fn.check_package_installed("neo-candy-icons-git"):
-        self.att_candy_beauty.set_active(True)
-    if fn.check_package_installed("kiro-neo-candy-arc"):
-        self.edu_candy_beauty_arc.set_active(True)
-    if fn.check_package_installed("kiro-neo-candy-arc-mint-grey"):
-        self.edu_candy_beauty_arc_mint_grey.set_active(True)
-    if fn.check_package_installed("kiro-neo-candy-arc-mint-red"):
-        self.edu_candy_beauty_arc_mint_red.set_active(True)
-    if fn.check_package_installed("kiro-neo-candy-tela"):
-        self.edu_candy_beauty_tela.set_active(True)
-    if fn.check_package_installed("kiro-papirus-dark-tela"):
-        self.edu_papirus_dark_tela.set_active(True)
-    if fn.check_package_installed("kiro-papirus-dark-tela-grey"):
-        self.edu_papirus_dark_tela_grey.set_active(True)
-    if fn.check_package_installed("kiro-vimix-dark-tela"):
-        self.edu_vimix_dark_tela.set_active(True)
-    if fn.check_package_installed("kiro-neo-candy-qogir"):
-        self.edu_neo_candy_qogir.set_active(True)
+    installed_map = fn.check_packages_installed([_neocandy_pkg(t) for t in _neocandy_tokens()])
+    for token in _neocandy_tokens():
+        if installed_map.get(_neocandy_pkg(token)):
+            self.neocandy_checkboxes[token].set_active(True)
 
     installed = _collect_neocandy_packages(self)
     if installed:

@@ -171,10 +171,10 @@ main() {
         python3 "${SCRIPT_DIR}/gen-streamline-list.py" || log_warn "streamline list generation failed — continuing"
     fi
 
-    if [[ -f "${SCRIPT_DIR}/gen-surfn-list.py" ]]; then
-        log_section "Regenerating Surfn icon table + folder thumbnails"
+    if [[ -f "${SCRIPT_DIR}/gen-icons-list.py" ]]; then
+        log_section "Regenerating Surfn + Neo Candy icon tables + folder thumbnails"
         # Non-fatal: a stale table must not block the commit/push.
-        python3 "${SCRIPT_DIR}/gen-surfn-list.py" || log_warn "surfn list generation failed — continuing"
+        python3 "${SCRIPT_DIR}/gen-icons-list.py" || log_warn "icon list generation failed — continuing"
     fi
 
     git_commit_and_push

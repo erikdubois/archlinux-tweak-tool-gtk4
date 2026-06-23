@@ -2,6 +2,26 @@
 
 ## 2026.06.23
 
+### Icons → Neo Candy: folder previews + Surfn-Tela tab filled; generator generalized
+
+**What changed.** The Neo Candy tab now shows the same per-theme **folder preview** as Surfn (its banner `neocandy.jpg` is hidden). The thumbnail generator was generalized from Surfn-only to both families and renamed `gen-surfn-list.py` → **`gen-icons-list.py`**. Separately, the new `~/EDU/surfn-tela-*` projects are now classified into a **Tela** family and routed to the previously-empty **Surfn-Tela** tab (15 themes).
+
+**Technical details.**
+- `gen-icons-list.py`: emits `data/neocandy_list.json` (token/package/label for the 9 fixed Neo Candy packages) + `images/neocandy/<token>.png`, reading folder icons from the installed `/usr/share/icons/<dir>` theme dirs (sources aren't all repos; `vimix-dark-tela` has no preview until installed). Added a **Tela** family (`tela*` tokens) to `FAMILY_ORDER`/`_classify`. Shared the folder-finding via `_folder_in_root()`.
+- `icons.py`: `NEOCANDY` loaded from JSON; Neo Candy all/none/collect/install/remove/find now data-driven over `self.neocandy_checkboxes`; counts use `len(NEOCANDY)`. `SURFN_TABS["Surfn-Tela"]` = `["Tela"]`.
+- `icons_gui.py`: `_make_folder_preview()` takes a `subdir` (`surfn`/`neocandy`); Neo Candy tab rebuilt as folder-preview + checkbox rows from `icons.NEOCANDY`; `neocandy.jpg` banner append removed.
+- `up.sh`: runs `gen-icons-list.py` (was `gen-surfn-list.py`).
+
+### Files Modified (Neo Candy previews + Tela routing)
+- `gen-icons-list.py` (renamed from `gen-surfn-list.py`)
+- `usr/share/archlinux-tweak-tool/icons.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `usr/share/archlinux-tweak-tool/data/neocandy_list.json` (new, generated)
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json` (regenerated — Tela family + new variants)
+- `usr/share/archlinux-tweak-tool/images/neocandy/*.png` (generated)
+- `usr/share/archlinux-tweak-tool/images/surfn/*.png` (regenerated)
+- `up.sh`
+
 ### Icons: Surfn Mint-Y checkbox installs the per-colour meta
 
 **What changed.** The Surfn icons section's "Mint-Y" checkbox previously installed the monolithic `surfn-mint-y-icons-git`, which has been split upstream into one package per colour. The checkbox now installs `surfn-mint-y-meta` (pulls all 12 Surfn Mint-Y colour themes), so it keeps working after the combined package is retired from `nemesis_repo`.

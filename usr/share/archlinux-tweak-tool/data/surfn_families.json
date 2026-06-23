@@ -95,6 +95,68 @@
       "package": "surfn-mint-y-yaru-icons-git"
     }
   ],
+  "Tela": [
+    {
+      "token": "surfn-tela",
+      "package": "surfn-tela-icons-git"
+    },
+    {
+      "token": "surfn-tela-black",
+      "package": "surfn-tela-black-icons-git"
+    },
+    {
+      "token": "surfn-tela-blue",
+      "package": "surfn-tela-blue-icons-git"
+    },
+    {
+      "token": "surfn-tela-brown",
+      "package": "surfn-tela-brown-icons-git"
+    },
+    {
+      "token": "surfn-tela-dracula",
+      "package": "surfn-tela-dracula-icons-git"
+    },
+    {
+      "token": "surfn-tela-green",
+      "package": "surfn-tela-green-icons-git"
+    },
+    {
+      "token": "surfn-tela-grey",
+      "package": "surfn-tela-grey-icons-git"
+    },
+    {
+      "token": "surfn-tela-manjaro",
+      "package": "surfn-tela-manjaro-icons-git"
+    },
+    {
+      "token": "surfn-tela-nord",
+      "package": "surfn-tela-nord-icons-git"
+    },
+    {
+      "token": "surfn-tela-orange",
+      "package": "surfn-tela-orange-icons-git"
+    },
+    {
+      "token": "surfn-tela-pink",
+      "package": "surfn-tela-pink-icons-git"
+    },
+    {
+      "token": "surfn-tela-purple",
+      "package": "surfn-tela-purple-icons-git"
+    },
+    {
+      "token": "surfn-tela-red",
+      "package": "surfn-tela-red-icons-git"
+    },
+    {
+      "token": "surfn-tela-ubuntu",
+      "package": "surfn-tela-ubuntu-icons-git"
+    },
+    {
+      "token": "surfn-tela-yellow",
+      "package": "surfn-tela-yellow-icons-git"
+    }
+  ],
   "Plasma": [
     {
       "token": "surfn-plasma-dark",
@@ -203,10 +265,6 @@
     {
       "token": "surfn-qogir",
       "package": "surfn-qogir-icons-git"
-    },
-    {
-      "token": "surfn-tela",
-      "package": "surfn-tela-icons-git"
     },
     {
       "token": "surfn-vertexed",

@@ -1,0 +1,47 @@
+[
+  {
+    "token": "neo-candy",
+    "package": "neo-candy-icons-git",
+    "label": "Neo Candy Icons"
+  },
+  {
+    "token": "neo-candy-arc",
+    "package": "kiro-neo-candy-arc",
+    "label": "Neo Candy Arc"
+  },
+  {
+    "token": "neo-candy-arc-mint-grey",
+    "package": "kiro-neo-candy-arc-mint-grey",
+    "label": "Neo Candy Arc Mint Grey"
+  },
+  {
+    "token": "neo-candy-arc-mint-red",
+    "package": "kiro-neo-candy-arc-mint-red",
+    "label": "Neo Candy Arc Mint Red"
+  },
+  {
+    "token": "neo-candy-tela",
+    "package": "kiro-neo-candy-tela",
+    "label": "Neo Candy Tela"
+  },
+  {
+    "token": "papirus-dark-tela",
+    "package": "kiro-papirus-dark-tela",
+    "label": "Papirus Dark Tela"
+  },
+  {
+    "token": "papirus-dark-tela-grey",
+    "package": "kiro-papirus-dark-tela-grey",
+    "label": "Papirus Dark Tela Grey"
+  },
+  {
+    "token": "vimix-dark-tela",
+    "package": "kiro-vimix-dark-tela",
+    "label": "Vimix Dark Tela"
+  },
+  {
+    "token": "neo-candy-qogir",
+    "package": "kiro-neo-candy-qogir",
+    "label": "Neo Candy Qogir"
+  }
+]
