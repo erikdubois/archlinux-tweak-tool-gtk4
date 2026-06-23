@@ -567,7 +567,7 @@ Ensure that the <b>Nemesis repo is enabled</b> — see the "Pacman" tab for deta
     vbox_neocandy_tab.append(hbox_neocandy_remove)
 
     stack.add_titled(vbox_neocandy_tab, "stack4", "Neo Candy")
-    stack.add_titled(vbox_sardi_tab, "stack2", "Sardi")
+    # Sardi tab hidden — no longer maintained. vbox_sardi_tab is still built but not shown.
     stack.add_titled(vbox_surfn_tab, "stack3", "Surfn")
 
     vbox_main.append(stack_switcher)

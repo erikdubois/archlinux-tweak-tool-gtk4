@@ -41,6 +41,16 @@
 - **`icons_gui.py`**: `_make_folder_preview(token)` loads `images/surfn/<token>.png`; the Surfn section builds a per-family `<b>header</b>` + flowbox of (folder preview + checkbox) rows, plus a row of family filter buttons. Checkbox labels drop the `surfn-` prefix (base shown as `surfn (base)`).
 - **`up.sh`**: runs `gen-surfn-list.py` alongside the search-index / streamline generators (non-fatal).
 - The large `surfn.jpg` banner preview is hidden for now (the per-theme folder thumbnails make it redundant); the append is commented out, asset retained.
+- Folder-icon ranking fixed: the generator now prefers PNG, then the `scalable` vector, then the largest numbered size. Small numbered folders are often the `currentColor` symbolic variant (renders as a monochrome outline — e.g. `surfn-plasma-dark-tela`, `surfn-tela`); scalable gives the proper coloured folder.
+
+### Icons page: hide the Sardi tab
+
+**What changed.** The Sardi tab (inside the Icons page) is no longer maintained, so it's hidden — its `stack.add_titled(...)` is commented out. `vbox_sardi_tab` is still built but not shown (zero-risk hide; easy to restore). Neo Candy and Surfn remain.
+
+### Files Modified (Surfn preview fix + Sardi hide)
+- `gen-surfn-list.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `usr/share/archlinux-tweak-tool/images/surfn/*.png` (regenerated)
 
 **Verification.** `ruff` + AST parse pass on all touched files; generator produces 51 variants across 7 families with a thumbnail for every token; GTK4 widget methods (`Gtk.Image.set_from_paintable`, `Gdk.Texture.new_for_pixbuf`) confirmed via introspection. Full GUI render to be confirmed on a graphical session (the headless tool can't open a display).
 

@@ -86,8 +86,15 @@ def _package_name(token):
     return token + "-icons-git"
 
 
-def _size_of(p):
-    m = re.search(r"(\d+)", p)
+def _icon_size(p):
+    """Sort weight for a folder icon path: scalable (full-colour vector) beats numbered sizes.
+
+    Small numbered folders are often the `currentColor` symbolic variant, which renders as a
+    monochrome outline; the scalable / largest source gives the proper coloured folder.
+    """
+    if "scalable" in p.lower():
+        return 10000
+    m = re.search(r"/(\d+)(?:@\d+x)?/", p)
     return int(m.group(1)) if m else 0
 
 
@@ -107,7 +114,7 @@ def _canonical_folder(token, theme_dir, _seen=None):
                 hits.append(path.join(dirpath, fname))
     if hits:
         # Prefer PNG, then the largest size dir for a crisp thumbnail.
-        hits.sort(key=lambda p: (p.endswith(".png"), _size_of(p)), reverse=True)
+        hits.sort(key=lambda p: (p.endswith(".png"), _icon_size(p)), reverse=True)
         return hits[0]
 
     # Sparse overlay (e.g. plasma-flow): follow index.theme Inherits to a parent surfn theme.
