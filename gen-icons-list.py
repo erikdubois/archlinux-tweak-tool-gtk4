@@ -49,7 +49,8 @@ ARC_BREEZE = {"arc-breeze", "breeze-arc", "breeze-dark"}
 # Fixed set: (token, package, label, [theme-dir candidates]). Sources aren't all in ~/EDU,
 # so folder icons are taken from the installed theme dir (first candidate that has a folder).
 NEOCANDY = [
-    ("neo-candy", "neo-candy-icons-git", "Neo Candy Icons", ["or-candy-icons", "candy-icons", "al-candy-icons"]),
+    # neo-candy inherits al-beautyline first, so its folder is the beautyline one.
+    ("neo-candy", "neo-candy-icons-git", "Neo Candy Icons", ["al-beautyline", "or-candy-icons", "candy-icons"]),
     ("neo-candy-arc", "kiro-neo-candy-arc", "Neo Candy Arc", ["edu-neo-candy-arc"]),
     ("neo-candy-arc-mint-grey", "kiro-neo-candy-arc-mint-grey", "Neo Candy Arc Mint Grey", ["edu-neo-candy-arc-mint-grey"]),
     ("neo-candy-arc-mint-red", "kiro-neo-candy-arc-mint-red", "Neo Candy Arc Mint Red", ["edu-neo-candy-arc-mint-red"]),
