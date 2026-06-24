@@ -26,12 +26,17 @@ is the single entry point to the funding channels.
   are appended to `bar_actions`. Removed the old sidebar brand block (`vbox_brand`/`lbl_app_name`),
   the dead `lbl_os_label`/`hbox_os_label`, and the bottom `hbox_restart_att`/`hbox_quit_att` rows.
 - `icons.css`: added `.support-button` (pink `#e0567a`, hover tint), matching FTT's Support button.
-- **Browser launch fix (Plasma/X11):** funding links (and every other URL ATT opens as the user)
-  silently opened nothing on Plasma while working on chadwm and Hyprland. Root cause: `get_terminal_env`
-  captured the session env but **not `XAUTHORITY`**, and `user_session_env_assignments` never forwarded
-  it through `sudo -u`. Tiling WMs use the default `~/.Xauthority` (no var needed); Plasma via SDDM puts
-  the cookie at a non-default path, so the browser couldn't authenticate to X and opened nothing. Added
-  `XAUTHORITY` to both. Fix is in `functions.py`, so it benefits all of ATT's URL-opening, not just Support.
+- **Browser launch fix (Plasma):** funding links (and every other URL ATT opens as the user) silently
+  opened nothing on Plasma while working on chadwm and Hyprland. **Two bugs in `functions.py`, both fixed:**
+  (1) `get_terminal_env()` broke at the *first* process whose `LOGNAME` matched the user — on Plasma that's
+  often a non-graphical user process (systemd --user / the pkexec chain) with no `DISPLAY`/`WAYLAND_DISPLAY`,
+  so it captured none of the session vars and stopped (confirmed live on riker: the resolved env was just
+  `HOME` + `XDG_RUNTIME_DIR`). It now skips processes that lack a display var, selecting the real graphical
+  session (e.g. `plasmashell`). On tiling WMs the first match happened to carry `DISPLAY`, which is why it
+  worked there. (2) `XAUTHORITY` was never captured or forwarded — needed because Brave/Chromium runs via
+  XWayland on `DISPLAY=:1` (Plasma Wayland) or a non-default-path cookie (Plasma X11) and can't reach the
+  display without it. Added `XAUTHORITY` to both the capture set and the forwarded `sudo -u` assignments.
+  Fix is in the shared helper, so it benefits all of ATT's URL-opening, not just Support.
 - **Support page removal:** dropped its `gui.py` wiring (`import funding_gui`, `vboxstack_funding`,
   the `_defer_tab`, and the `add_titled(..., "stack_funding", "Support")`), deleted `funding_gui.py`,
   removed the `"Support"` seed from `search_synonyms.json`, and regenerated `search_index.json`

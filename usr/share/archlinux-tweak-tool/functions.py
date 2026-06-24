@@ -1203,6 +1203,14 @@ def get_terminal_env():
                     entries = dict(e.split(b"=", 1) for e in f.read().split(b"\x00") if b"=" in e)
                 if entries.get(b"LOGNAME", b"").decode() != sudo_username:
                     continue
+                # Only trust a real graphical-session process. Many user-owned
+                # processes (systemd --user, sshd, the pkexec chain) share LOGNAME
+                # but have no DISPLAY/WAYLAND_DISPLAY/XAUTHORITY; matching one of
+                # those first (it varies by /proc order — common on Plasma, rare on
+                # tiling WMs) left the env without the display vars, so a browser
+                # launched as the user had no display to draw on and silently no-opped.
+                if not (entries.get(b"DISPLAY") or entries.get(b"WAYLAND_DISPLAY")):
+                    continue
                 for k in session_keys:
                     val = entries.get(k, b"").decode()
                     if val:
