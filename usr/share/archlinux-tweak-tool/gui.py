@@ -123,6 +123,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_user = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_maintenance = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_shells = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_icons_horst = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_icons_neocandy = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_icons_surfn = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_iso = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -178,6 +179,11 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         icons_gui.gui_surfn(self, Gtk, GdkPixbuf, vboxstack_icons_surfn, icons, fn, base_dir)
 
     _defer_tab(vboxstack_icons_surfn, _build_icons_surfn)
+
+    def _build_icons_horst():
+        icons_gui.gui_horst(self, Gtk, GdkPixbuf, vboxstack_icons_horst, icons, fn, base_dir)
+
+    _defer_tab(vboxstack_icons_horst, _build_icons_horst)
 
     # ==========================================================
     #                 ISO
@@ -401,6 +407,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     stack.add_titled(vboxstack_fastfetch, "stack4", "Fastfetch")  # fastfetch config
 
+    stack.add_titled(vboxstack_icons_horst, "stack_icons_horst", "Icons Horst")  # Horst colour-folder icons (both sets)
     stack.add_titled(vboxstack_icons_neocandy, "stack_icons_neocandy", "Icons Neo Candy")  # Neo Candy icon themes
     stack.add_titled(vboxstack_icons_surfn, "stack_icons_surfn", "Icons Surfn")  # Surfn icon themes
 

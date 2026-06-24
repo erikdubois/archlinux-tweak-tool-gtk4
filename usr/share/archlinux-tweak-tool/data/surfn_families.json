@@ -321,6 +321,68 @@
       "package": "surfn-breeze-dark-icons-git"
     }
   ],
+  "Horst": [
+    {
+      "token": "surfn-horst-aqua",
+      "package": "surfn-horst-aqua-icons-git"
+    },
+    {
+      "token": "surfn-horst-blue",
+      "package": "surfn-horst-blue-icons-git"
+    },
+    {
+      "token": "surfn-horst-brown",
+      "package": "surfn-horst-brown-icons-git"
+    },
+    {
+      "token": "surfn-horst-casablanca",
+      "package": "surfn-horst-casablanca-icons-git"
+    },
+    {
+      "token": "surfn-horst-dark-blue",
+      "package": "surfn-horst-dark-blue-icons-git"
+    },
+    {
+      "token": "surfn-horst-green",
+      "package": "surfn-horst-green-icons-git"
+    },
+    {
+      "token": "surfn-horst-grey",
+      "package": "surfn-horst-grey-icons-git"
+    },
+    {
+      "token": "surfn-horst-lilac",
+      "package": "surfn-horst-lilac-icons-git"
+    },
+    {
+      "token": "surfn-horst-orange",
+      "package": "surfn-horst-orange-icons-git"
+    },
+    {
+      "token": "surfn-horst-pink",
+      "package": "surfn-horst-pink-icons-git"
+    },
+    {
+      "token": "surfn-horst-purple",
+      "package": "surfn-horst-purple-icons-git"
+    },
+    {
+      "token": "surfn-horst-red",
+      "package": "surfn-horst-red-icons-git"
+    },
+    {
+      "token": "surfn-horst-sand",
+      "package": "surfn-horst-sand-icons-git"
+    },
+    {
+      "token": "surfn-horst-teal",
+      "package": "surfn-horst-teal-icons-git"
+    },
+    {
+      "token": "surfn-horst-yellow",
+      "package": "surfn-horst-yellow-icons-git"
+    }
+  ],
   "Other": [
     {
       "token": "surfn",

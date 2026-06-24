@@ -63,6 +63,12 @@ NEOCANDY_TABS = {
     "Neo Candy Tela": ["Tela"],
 }
 
+# The Icons Horst page mixes both sets: each sub-tab is (title, set_key, [families]).
+HORST_TABS = [
+    ("Surfn Horst", "surfn", ["Horst"]),
+    ("Neo Candy Horst", "neocandy", ["Horst"]),
+]
+
 
 def _icon_families(set_key):
     return ICON_SETS[set_key]["families"]

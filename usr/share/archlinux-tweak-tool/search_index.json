@@ -816,6 +816,21 @@
       ]
     },
     {
+      "title": "Icons Horst",
+      "child": "stack_icons_horst",
+      "keywords": [
+        "icon theme",
+        "horst",
+        "folder",
+        "colour folders",
+        "color folders",
+        "mint-y",
+        "surfn",
+        "neo candy"
+      ],
+      "labels": []
+    },
+    {
       "title": "Icons Neo Candy",
       "child": "stack_icons_neocandy",
       "keywords": [

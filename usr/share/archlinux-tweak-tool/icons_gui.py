@@ -148,8 +148,8 @@ def _build_icon_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, set_key, family_labels)
     return vbox
 
 
-def _build_icon_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, set_key, title, tabs):
-    """Build a full Icons page: title + separator + a StackSwitcher of family sub-tabs."""
+def _new_icon_stack(Gtk, title):
+    """Return (hbox_title, hbox_separator, vbox_main, stack, stack_switcher) for an Icons page."""
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
     lbl_title.set_text(title)
@@ -178,10 +178,42 @@ def _build_icon_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, set_key, ti
     stack_switcher.set_orientation(Gtk.Orientation.HORIZONTAL)
     stack_switcher.set_stack(stack)
 
-    setattr(self, icons.ICON_SETS[set_key]["checks"], {})
+    return hbox_title, hbox_separator, vbox_main, stack, stack_switcher
+
+
+def _init_checks(self, set_key):
+    # A token only ever appears on one page, so pages can share a set's checkbox dict —
+    # initialise it once (the Horst page and the per-set page both feed the same dict).
+    if not hasattr(self, icons.ICON_SETS[set_key]["checks"]):
+        setattr(self, icons.ICON_SETS[set_key]["checks"], {})
+
+
+def _build_icon_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, set_key, title, tabs):
+    """Build a full Icons page: title + separator + a StackSwitcher of family sub-tabs."""
+    hbox_title, hbox_separator, vbox_main, stack, stack_switcher = _new_icon_stack(Gtk, title)
+
+    _init_checks(self, set_key)
     for index, (tab_title, family_labels) in enumerate(tabs.items()):
         child = _build_icon_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, set_key, family_labels)
         stack.add_titled(child, f"{set_key}_{index}", tab_title)
+
+    vbox_main.append(stack_switcher)
+    vbox_main.append(stack)
+
+    vboxstack.append(hbox_title)
+    vboxstack.append(hbox_separator)
+    vboxstack.append(vbox_main)
+
+
+def _build_horst_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, title, tabs):
+    """Build the mixed Icons Horst page: one sub-tab per (title, set_key, families) spec."""
+    hbox_title, hbox_separator, vbox_main, stack, stack_switcher = _new_icon_stack(Gtk, title)
+
+    for _tab_title, set_key, _family_labels in tabs:
+        _init_checks(self, set_key)
+    for index, (tab_title, set_key, family_labels) in enumerate(tabs):
+        child = _build_icon_tab(self, Gtk, GdkPixbuf, Gdk, base_dir, set_key, family_labels)
+        stack.add_titled(child, f"horst_{set_key}_{index}", tab_title)
 
     vbox_main.append(stack_switcher)
     vbox_main.append(stack)
@@ -203,3 +235,11 @@ def gui_neocandy(self, Gtk, GdkPixbuf, vboxstack, _att, fn, base_dir):
     from gi.repository import Gdk
 
     _build_icon_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, "neocandy", "Neo Candy", icons.NEOCANDY_TABS)
+
+
+def gui_horst(self, Gtk, GdkPixbuf, vboxstack, _att, fn, base_dir):
+    """Build the Icons Horst page: Surfn Horst + Neo Candy Horst sub-tabs (both colour sets)."""
+    from gi.repository import Gdk
+
+    fn.log_info("Building Icons Horst page (Surfn + Neo Candy Horst folder variants)")
+    _build_horst_page(self, Gtk, GdkPixbuf, Gdk, vboxstack, base_dir, "Horst", icons.HORST_TABS)

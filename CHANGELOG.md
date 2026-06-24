@@ -1,5 +1,62 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.24
+
+### Added "casablanca" colour variant (Horst + Papirus, both sets)
+
+**What changed.** New `casablanca` colour repos appeared in `~/EDU` for both icon sets and both
+families — `surfn-horst-casablanca`, `neo-candy-horst-casablanca`, `surfn-papirus-casablanca`,
+`neo-candy-papirus-casablanca`. No code change needed: the prefix classifier already routes
+`horst-*` → Horst and `papirus-*` → Papirus. Re-ran `gen-icons-list.py` to pick them up — Surfn
+101 → 102 variants, Neo Candy 95 → 96 (Horst 14 → 15 per set; Papirus +1 per set) — and to render
+their folder thumbnails.
+
+### Files Modified (casablanca)
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/data/neocandy_families.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/images/surfn/surfn-horst-casablanca.png`,
+  `surfn-papirus-casablanca.png` (new)
+- `usr/share/archlinux-tweak-tool/images/neocandy/neo-candy-horst-casablanca.png`,
+  `neo-candy-papirus-casablanca.png` (new)
+
+### New "Icons Horst" page (Surfn + Neo Candy)
+
+**What changed.** Added a single new sidebar page **Icons Horst**, placed in its **alphabetical**
+slot (between Fastfetch and Icons Neo Candy), exposing the new Horst colour-folder icon collection
+for **both** sets via two sub-tabs: **Surfn Horst** and **Neo Candy Horst**. The 14 `surfn-horst-*`
+and 14 `neo-candy-horst-*` source repos (folder/places icons extracted from Mint-Y, in `~/EDU`) are
+now classified into a dedicated **Horst** family and surfaced on their own page instead of being
+lumped into "Other". The existing Icons Surfn / Icons Neo Candy pages are unchanged apart from the
+Horst variants leaving "Other".
+
+**Technical details.**
+- `gen-icons-list.py`: added `"Horst"` to `FAMILY_ORDER` and a `rest.startswith("horst")` branch in
+  `_classify()`.
+- `icons.py`: added `HORST_TABS` — a list of `(title, set_key, [families])` tuples, since this page
+  mixes both `set_key`s in one page (the per-set pages use a `{title: families}` dict for a single set).
+- `icons_gui.py`: extracted `_new_icon_stack()` (shared title/separator/stack scaffold) and
+  `_init_checks()` (hasattr-guarded, replacing the old unconditional checkbox-dict reset). A token only
+  ever appears on one page, so the Horst page and the per-set page can safely **share** a set's checkbox
+  dict. Added `_build_horst_page()` and `gui_horst()`.
+- `gui.py`: added `vboxstack_icons_horst`, a deferred `_build_icons_horst()` builder, and the
+  `add_titled(...)` registration between Fastfetch and Icons Neo Candy (alphabetical).
+- `search_synonyms.json`: added an Icons Horst entry; re-ran `gen-icons-list.py` and `gen-search-index.py`
+  to regenerate `surfn_families.json` (14 Horst), `neocandy_families.json` (14 Horst), the thumbnails,
+  and `search_index.json` (34 pages).
+
+### Files Modified (Icons Horst)
+- `gen-icons-list.py`
+- `usr/share/archlinux-tweak-tool/icons.py`
+- `usr/share/archlinux-tweak-tool/icons_gui.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `search_synonyms.json`
+- `usr/share/archlinux-tweak-tool/data/surfn_families.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/data/neocandy_families.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+- `usr/share/archlinux-tweak-tool/images/surfn/surfn-horst-*.png` (28 new thumbnails)
+- `usr/share/archlinux-tweak-tool/images/neocandy/neo-candy-horst-*.png` (new thumbnails)
+- `CLAUDE.md` (tab count + Recent Work)
+
 ## 2026.06.23
 
 ### Icons: removed Surfn-Arched and neo-candy-arched variants

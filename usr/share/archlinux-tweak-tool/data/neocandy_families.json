@@ -295,6 +295,68 @@
       "package": "neo-candy-breeze-dark-icons-git"
     }
   ],
+  "Horst": [
+    {
+      "token": "neo-candy-horst-aqua",
+      "package": "neo-candy-horst-aqua-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-blue",
+      "package": "neo-candy-horst-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-brown",
+      "package": "neo-candy-horst-brown-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-casablanca",
+      "package": "neo-candy-horst-casablanca-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-dark-blue",
+      "package": "neo-candy-horst-dark-blue-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-green",
+      "package": "neo-candy-horst-green-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-grey",
+      "package": "neo-candy-horst-grey-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-lilac",
+      "package": "neo-candy-horst-lilac-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-orange",
+      "package": "neo-candy-horst-orange-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-pink",
+      "package": "neo-candy-horst-pink-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-purple",
+      "package": "neo-candy-horst-purple-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-red",
+      "package": "neo-candy-horst-red-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-sand",
+      "package": "neo-candy-horst-sand-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-teal",
+      "package": "neo-candy-horst-teal-icons-git"
+    },
+    {
+      "token": "neo-candy-horst-yellow",
+      "package": "neo-candy-horst-yellow-icons-git"
+    }
+  ],
   "Other": [
     {
       "token": "neo-candy-arch-blue",
