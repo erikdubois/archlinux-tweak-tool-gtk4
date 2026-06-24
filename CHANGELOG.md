@@ -15,9 +15,11 @@ unchanged. The dedicated **Support sidebar page was removed** (now redundant) �
 is the single entry point to the funding channels.
 
 **Technical details.**
-- `funding.py`: added `show_support_dialog(self)` — a modal `Gtk.Window` (`transient_for` the main
-  window) reusing the existing `SOURCES` list (single source of truth). Each row reuses
-  `on_click_open` via `functools.partial`. Added the `gi`/`Gtk` + `functools` imports.
+- `funding.py`: added `show_support_dialog(self)` — a **non-modal** `Gtk.Window` (`transient_for` the
+  main window) reusing the existing `SOURCES` list (single source of truth). Each row reuses
+  `on_click_open` via `functools.partial`. Added the `gi`/`Gtk` + `functools` imports. (Non-modal on
+  purpose: a modal dialog stays pinned over ATT, so the browser opened by a funding link appears
+  behind it and the user never sees the page — the symptom that made the links look broken.)
 - `gui.py`: built `header_bars` (a vertical box of `bar_title` + `bar_actions` + a separator) in the
   CONTAINER block and inserted it into the top-level `vbox` between the notification bar and the
   `[ sidebar | content ]` `hbox`. The `♥ Support`, `Quit ATT`, and (hidden) `Restart ATT` buttons

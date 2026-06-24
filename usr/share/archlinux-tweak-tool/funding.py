@@ -29,14 +29,18 @@ def on_click_open(self, url, _widget):
 
 
 def show_support_dialog(self):
-    """Open a modal dialog listing the project's funding channels (shown beside Quit)."""
+    """Open a dialog listing the project's funding channels (shown beside Quit).
+
+    Deliberately NOT modal: a modal window stays pinned on top of ATT, so the browser
+    opened by a funding link appears behind it and the user never sees the page.
+    """
     is_kiro = fn.get_distro_label() == "Kiro"
     project_name = "Kiro" if is_kiro else "ATT"
     title_text = "Support Kiro" if is_kiro else "Support the ATT"
 
     fn.log_info(f"Opening Support dialog ({project_name})")
 
-    dialog = Gtk.Window(title=title_text, transient_for=self, modal=True)
+    dialog = Gtk.Window(title=title_text, transient_for=self, modal=False)
     dialog.set_default_size(460, -1)
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
