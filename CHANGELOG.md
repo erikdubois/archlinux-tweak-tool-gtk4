@@ -2,6 +2,50 @@
 
 ## 2026.06.24
 
+### Two-bar top header + Support button
+
+**What changed.** Replaced the cramped two-line orange brand block that sat above the sidebar with
+a proper **two-bar header across the top** of the window (the FTT layout). **Bar 1** is the app
+title `Arch Linux Tweak Tool`; **Bar 2** is the action strip — `on <distro>` on the left, and
+`♥ Support` + `Quit ATT` on the right (kept together so the support prompt sits right where the eye
+goes to leave). The `♥ Support` button opens a modal dialog listing every funding channel (GitHub
+Sponsors, Patreon, YouTube Membership, Ko-fi, PayPal), wording adapting to the distro. This fills
+the previously empty/awkward top area; the left sidebar menu, search, and page content are
+unchanged. The dedicated **Support sidebar page was removed** (now redundant) — the header button
+is the single entry point to the funding channels.
+
+**Technical details.**
+- `funding.py`: added `show_support_dialog(self)` — a modal `Gtk.Window` (`transient_for` the main
+  window) reusing the existing `SOURCES` list (single source of truth). Each row reuses
+  `on_click_open` via `functools.partial`. Added the `gi`/`Gtk` + `functools` imports.
+- `gui.py`: built `header_bars` (a vertical box of `bar_title` + `bar_actions` + a separator) in the
+  CONTAINER block and inserted it into the top-level `vbox` between the notification bar and the
+  `[ sidebar | content ]` `hbox`. The `♥ Support`, `Quit ATT`, and (hidden) `Restart ATT` buttons
+  are appended to `bar_actions`. Removed the old sidebar brand block (`vbox_brand`/`lbl_app_name`),
+  the dead `lbl_os_label`/`hbox_os_label`, and the bottom `hbox_restart_att`/`hbox_quit_att` rows.
+- `icons.css`: added `.support-button` (pink `#e0567a`, hover tint), matching FTT's Support button.
+- **Support page removal:** dropped its `gui.py` wiring (`import funding_gui`, `vboxstack_funding`,
+  the `_defer_tab`, and the `add_titled(..., "stack_funding", "Support")`), deleted `funding_gui.py`,
+  removed the `"Support"` seed from `search_synonyms.json`, and regenerated `search_index.json`
+  (34 → 33 pages). `funding.py` stays — it backs the header dialog. Tab count 30 → 29.
+- **Conditional HeaderBar (DE vs tiling WM):** on a full desktop (XFCE, Plasma, GNOME, Cinnamon,
+  MATE, LXQt, Budgie) the window now installs an FTT-style `Gtk.HeaderBar` titlebar; on tiling/minimal
+  WMs (chadwm/dwm, i3, bspwm, Hyprland, sway, …) it installs none, keeping the clean look the WM
+  expects. Added `_is_full_desktop()` in `archlinux-tweak-tool.py` — allow-list of DE session
+  processes probed with `pgrep -u <real user> -x <proc>` (works under pkexec, which strips
+  `XDG_CURRENT_DESKTOP`, mirroring `_is_plasma_session`); unknown WMs default to no bar. `Main.__init__`
+  calls `self.set_titlebar(Gtk.HeaderBar())` only when it returns True.
+
+### Files Modified (two-bar header + Support-page removal + conditional HeaderBar)
+- `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+- `usr/share/archlinux-tweak-tool/funding.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/icons.css`
+- `usr/share/archlinux-tweak-tool/funding_gui.py` (deleted)
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+- `search_synonyms.json`
+- `CLAUDE.md` (tab count 30 → 29)
+
 ### Added "casablanca" colour variant (Horst + Papirus, both sets)
 
 **What changed.** New `casablanca` colour repos appeared in `~/EDU` for both icon sets and both

@@ -46,7 +46,7 @@ import office_gui
 import system_gui
 import software_gui
 import streamline_gui
-import funding_gui
+import funding
 import packages_gui
 import wallpaper
 import wallpaper_gui
@@ -101,7 +101,41 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     hbox.set_hexpand(True)
     hbox.set_vexpand(True)
+
+    # ==========================================================
+    #              TOP HEADER — two stacked bars
+    # ==========================================================
+    # Bar 1 = app title; Bar 2 = "on <distro>" label + Support/Quit
+    # actions. The action buttons are created further down (with the
+    # quit handler) and appended to bar_actions there — this is their home.
+    header_bars = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
+    bar_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+    bar_title.set_margin_start(12)
+    bar_title.set_margin_end(12)
+    bar_title.set_margin_top(8)
+    bar_title.set_margin_bottom(2)
+    lbl_app_title = Gtk.Label(xalign=0)
+    lbl_app_title.set_markup('<span foreground="#FFA500"><b>Arch Linux Tweak Tool</b></span>')
+    lbl_app_title.set_name("title")
+    lbl_app_title.set_hexpand(True)
+    bar_title.append(lbl_app_title)
+
+    bar_actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    bar_actions.set_margin_start(12)
+    bar_actions.set_margin_end(12)
+    bar_actions.set_margin_bottom(8)
+    lbl_header_distro = Gtk.Label(xalign=0)
+    lbl_header_distro.set_markup("on " + fn.get_distro_label())
+    lbl_header_distro.set_hexpand(True)
+    bar_actions.append(lbl_header_distro)
+
+    header_bars.append(bar_title)
+    header_bars.append(bar_actions)
+    header_bars.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
     vbox.append(hbox_notification)
+    vbox.append(header_bars)
     vbox.append(hbox)
     self.set_child(vbox)
 
@@ -138,7 +172,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_office = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_software = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_streamline = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-    vboxstack_funding = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_wallpaper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_plymouth = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -372,8 +405,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     _defer_tab(vboxstack_streamline, lambda: streamline_gui.gui(self, Gtk, vboxstack_streamline, fn))
 
-    _defer_tab(vboxstack_funding, lambda: funding_gui.gui(self, Gtk, vboxstack_funding, fn))
-
     def _build_wallpaper():
         wallpaper_gui.gui(self, Gtk, Pango, vboxstack_wallpaper, wallpaper, fn, base_dir)
 
@@ -450,8 +481,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         # Kiro-only: the category list is sourced from the Kiro ISO package set.
         stack.add_titled(vboxstack_streamline, "stack_streamline", "Streamline")  # remove optional apps by category
 
-    stack.add_titled(vboxstack_funding, "stack_funding", "Support")  # funding / support the project
-
     stack.add_titled(vboxstack_system, "stack_system", "System")  # system inspector
 
     stack.add_titled(vboxstack_themer, "stack11", "Themer")  # Themer
@@ -483,8 +512,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
         fn.debug_print("Report issues to make it even better")
         fn.debug_print("=" * 75)
 
-    lbl_os_label = Gtk.Label(xalign=0)
-    lbl_os_label.set_markup("OS: " + fn.get_distro_label())
     btn_restart_att = Gtk.Button(label="Restart ATT")
     btn_restart_att.set_size_request(100, 30)
     btn_restart_att.set_visible(False)
@@ -492,33 +519,16 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     btn_quit_att = Gtk.Button(label="Quit ATT")
     btn_quit_att.set_size_request(100, 30)
     btn_quit_att.connect("clicked", on_quit)
+    btn_support_att = Gtk.Button(label="♥ Support")
+    btn_support_att.set_size_request(100, 30)
+    btn_support_att.add_css_class("support-button")
+    btn_support_att.set_tooltip_text("Support the project")
+    btn_support_att.connect("clicked", lambda _w: funding.show_support_dialog(self))
 
-    # =====================================================
-    #                      PACKS
-    # =====================================================
-
-    hbox_restart_att = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-    hbox_quit_att = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-    hbox_os_label = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-    hbox_os_label.append(lbl_os_label)
-    hbox_restart_att.append(btn_restart_att)
-    hbox_quit_att.append(btn_quit_att)
-
-    # ── Brand ──────────────────────────────────────────────
-    vbox_brand = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-    vbox_brand.set_halign(Gtk.Align.CENTER)
-    vbox_brand.set_margin_top(10)
-    vbox_brand.set_margin_bottom(6)
-    lbl_app_name = Gtk.Label()
-    lbl_app_name.set_markup('<span foreground="#FFA500"><b>ArchLinux\nTweak Tool</b></span>')
-    lbl_app_name.set_justify(Gtk.Justification.CENTER)
-    lbl_on_distro = Gtk.Label()
-    lbl_on_distro.set_markup("on " + fn.get_distro_label())
-    lbl_on_distro.set_justify(Gtk.Justification.CENTER)
-    vbox_brand.append(lbl_app_name)
-    vbox_brand.append(lbl_on_distro)
-    ivbox.append(vbox_brand)
+    # Action buttons live in the second header bar (built in the CONTAINER block).
+    bar_actions.append(btn_restart_att)
+    bar_actions.append(btn_support_att)
+    bar_actions.append(btn_quit_att)
 
     # ── Page search ────────────────────────────────────────
     # Titles are matched live off the stack; aliases come from the generated
@@ -585,9 +595,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack_switcher.set_hexpand(False)
     stack_switcher.set_vexpand(True)
     ivbox.append(stack_switcher)
-
-    ivbox.append(hbox_restart_att)
-    ivbox.append(hbox_quit_att)
 
     stack.set_hexpand(True)
     stack.set_vexpand(True)

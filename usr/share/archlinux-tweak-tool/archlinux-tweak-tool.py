@@ -122,6 +122,37 @@ def _is_plasma_session():
     return "kde" in de or "plasma" in de
 
 
+def _is_full_desktop():
+    """True under a full desktop environment, False under a tiling/minimal WM.
+
+    Full desktops get an FTT-style HeaderBar titlebar; tiling WMs (dwm/chadwm, i3, bspwm,
+    Hyprland, sway, …) get none. Allow-list based, so an unrecognised WM defaults to no bar.
+    Uses pgrep -u <real user> so it works under pkexec (which strips XDG_CURRENT_DESKTOP),
+    mirroring _is_plasma_session().
+    """
+    de_processes = (
+        "plasmashell",    # KDE Plasma
+        "xfce4-session",  # XFCE
+        "gnome-shell",    # GNOME
+        "cinnamon",       # Cinnamon
+        "mate-session",   # MATE
+        "lxqt-session",   # LXQt
+        "budgie-daemon",  # Budgie
+    )
+    for proc in de_processes:
+        try:
+            result = fn.subprocess.run(
+                ["pgrep", "-u", fn.sudo_username, "-x", proc],
+                stdout=fn.subprocess.DEVNULL,
+                stderr=fn.subprocess.DEVNULL,
+            )
+            if result.returncode == 0:
+                return True
+        except Exception:
+            continue
+    return False
+
+
 def _plasma_prefers_dark():
     """True if the user's Plasma colour scheme is dark, judged by window-background luminance."""
     background = None
@@ -210,6 +241,16 @@ class Main(Gtk.ApplicationWindow):
         super().__init__(application=app, title="Arch Linux Tweak Tool")
         self.connect("close-request", self.on_close)
         self.set_default_size(1100, 920)
+
+        # Full desktops (XFCE, Plasma, …) get an FTT-style HeaderBar titlebar; tiling WMs
+        # get none, so the window stays clean and the WM manages it.
+        if _is_full_desktop():
+            headerbar = Gtk.HeaderBar()
+            headerbar.set_show_title_buttons(True)
+            self.set_titlebar(headerbar)
+            fn.log_info("Full desktop detected — using HeaderBar titlebar")
+        else:
+            fn.log_info("Tiling/minimal WM detected — no HeaderBar titlebar")
 
         self.opened = True
         self.firstrun = True

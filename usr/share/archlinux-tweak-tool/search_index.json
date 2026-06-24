@@ -2170,40 +2170,6 @@
       ]
     },
     {
-      "title": "Support",
-      "child": "stack_funding",
-      "keywords": [
-        "donate",
-        "funding",
-        "patreon",
-        "ko-fi",
-        "kofi",
-        "sponsor",
-        "support project"
-      ],
-      "labels": [
-        "access",
-        "donation",
-        "early",
-        "fees",
-        "github",
-        "low",
-        "member",
-        "membership",
-        "most",
-        "one",
-        "only",
-        "paypal",
-        "perks",
-        "project",
-        "reaches",
-        "recurring",
-        "sponsors",
-        "tiers",
-        "youtube"
-      ]
-    },
-    {
       "title": "System",
       "child": "stack_system",
       "keywords": [

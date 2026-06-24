@@ -27,6 +27,14 @@ label#title {
     font-weight: 600;
 }
 
+.support-button {
+    color: #e0567a;
+}
+
+.support-button:hover {
+    background-color: alpha(#e0567a, 0.18);
+}
+
 /* GTK4: style both the textview node and the text subnode for dark log area */
 #textview_log {
     background-color: #232627;
