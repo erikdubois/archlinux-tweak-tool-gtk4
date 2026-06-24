@@ -26,6 +26,12 @@ is the single entry point to the funding channels.
   are appended to `bar_actions`. Removed the old sidebar brand block (`vbox_brand`/`lbl_app_name`),
   the dead `lbl_os_label`/`hbox_os_label`, and the bottom `hbox_restart_att`/`hbox_quit_att` rows.
 - `icons.css`: added `.support-button` (pink `#e0567a`, hover tint), matching FTT's Support button.
+- **Browser launch fix (Plasma/X11):** funding links (and every other URL ATT opens as the user)
+  silently opened nothing on Plasma while working on chadwm and Hyprland. Root cause: `get_terminal_env`
+  captured the session env but **not `XAUTHORITY`**, and `user_session_env_assignments` never forwarded
+  it through `sudo -u`. Tiling WMs use the default `~/.Xauthority` (no var needed); Plasma via SDDM puts
+  the cookie at a non-default path, so the browser couldn't authenticate to X and opened nothing. Added
+  `XAUTHORITY` to both. Fix is in `functions.py`, so it benefits all of ATT's URL-opening, not just Support.
 - **Support page removal:** dropped its `gui.py` wiring (`import funding_gui`, `vboxstack_funding`,
   the `_defer_tab`, and the `add_titled(..., "stack_funding", "Support")`), deleted `funding_gui.py`,
   removed the `"Support"` seed from `search_synonyms.json`, and regenerated `search_index.json`
@@ -38,8 +44,9 @@ is the single entry point to the funding channels.
   `XDG_CURRENT_DESKTOP`, mirroring `_is_plasma_session`); unknown WMs default to no bar. `Main.__init__`
   calls `self.set_titlebar(Gtk.HeaderBar())` only when it returns True.
 
-### Files Modified (two-bar header + Support-page removal + conditional HeaderBar)
+### Files Modified (two-bar header + Support-page removal + conditional HeaderBar + browser fix)
 - `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
+- `usr/share/archlinux-tweak-tool/functions.py`
 - `usr/share/archlinux-tweak-tool/funding.py`
 - `usr/share/archlinux-tweak-tool/gui.py`
 - `usr/share/archlinux-tweak-tool/icons.css`
