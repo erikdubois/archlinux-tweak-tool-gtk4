@@ -1192,6 +1192,7 @@ def get_terminal_env():
             b"DBUS_SESSION_BUS_ADDRESS",
             b"XDG_SESSION_TYPE",
             b"XDG_CURRENT_DESKTOP",
+            b"XAUTHORITY",
         }
         for pid in os.listdir("/proc"):
             env_file = f"/proc/{pid}/environ"
@@ -1244,13 +1245,16 @@ def user_session_env_assignments():
     opener (which reads mimeapps.list / a hardcoded browser list and tends to open
     Firefox) instead of the desktop-native opener (kde-open/gio) that honours the
     user's real default browser.
+    XAUTHORITY is essential on X11 desktops (e.g. Plasma via SDDM) where the X cookie
+    lives at a non-default path: without it the browser can't authenticate to the X
+    server and silently opens nothing. Tiling WMs using ~/.Xauthority don't need it.
     """
     env = get_terminal_env()
     assignments = [
         f"HOME={env['HOME']}",
         f"XDG_RUNTIME_DIR={env['XDG_RUNTIME_DIR']}",
     ]
-    for key in ("DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP"):
+    for key in ("DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP"):
         val = env.get(key)
         if val:
             assignments.append(f"{key}={val}")
