@@ -14,8 +14,9 @@ set -euo pipefail
 #   their source repos lives in data-sources.tsv.
 #
 # Why:
-#   ATT carries copies of configs owned by other repos (edu-shells,
-#   edu-dot-files, kiro-iso, edu-variety-config) and writes them onto the
+#   ATT carries copies of configs owned by other repos (kiro-bash-config,
+#   kiro-zsh-config, kiro-fish-config, edu-dot-files, kiro-iso,
+#   edu-variety-config) and writes them onto the
 #   user's system. With no sync those copies silently drift from what a real
 #   Kiro install ships. This pulls the canonical version every time, so the
 #   single source of truth stays in the source repo, not in ATT's tree.

@@ -13,6 +13,32 @@ they appear in ATT's package tooling. `kiro-shells` is retained.
 - `usr/share/archlinux-tweak-tool/data/nemesis_packages.txt`: inserted `kiro-bash-config`,
   `kiro-fish-config`, `kiro-zsh-config` in alphabetical position.
 
+### Repoint shell-config mirror sources to the split repos
+
+**What Changed.** ATT mirrors the three shell dotfiles (`data/.bashrc`, `data/.zshrc`,
+`data/config.fish`) from their owning repo via `fetch-configs.sh`. With the upstream split,
+those configs no longer live in `erikdubois/edu-shells` — they now live in the three new
+`kirodubes` repos. Repointed the mirror manifest so `fetch-configs.sh` pulls the canonical
+versions from the correct source. Re-ran the fetch: all three resolve (0 failed) and
+`config.fish` picked up its new content — the new Kiro `config.fish` is a thin user stub that
+`source`s the package-owned `/usr/share/kiro/fish/kiro-config.fish` (overwritten on upgrade),
+keeping user settings separate from Kiro defaults. `.bashrc`/`.zshrc` came back byte-identical
+(the split repos carry the same content, full inline dotfiles under a `### KIRO-SHELLS` header).
+
+**Technical Details.**
+- `data-sources.tsv`: `config.fish` → `kirodubes/kiro-fish-config`, `.bashrc` →
+  `kirodubes/kiro-bash-config`, `.zshrc` → `kirodubes/kiro-zsh-config` (paths unchanged).
+- `fetch-configs.sh` / `CONFIG_SOURCES.md`: updated the prose references from `edu-shells`
+  to the three `kiro-*-config` repos.
+- `usr/share/archlinux-tweak-tool/data/config.fish`: refreshed from `kiro-fish-config`
+  (now a source-the-package stub).
+
+**Files Modified.**
+- `data-sources.tsv`
+- `fetch-configs.sh`
+- `CONFIG_SOURCES.md`
+- `usr/share/archlinux-tweak-tool/data/config.fish`
+
 ### Add Shelly to Software Installers
 
 **What Changed.** Added **Shelly** ("A Modern Arch Package Manager", package `shelly` in

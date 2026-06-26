@@ -2,7 +2,8 @@
 
 ATT ships a tree of config files under
 `usr/share/archlinux-tweak-tool/data/`. Some of those files are **copies of
-configs owned by another repo** (edu-shells, edu-dot-files, kiro-iso, …). Those
+configs owned by another repo** (kiro-bash-config, kiro-zsh-config,
+kiro-fish-config, edu-dot-files, kiro-iso, …). Those
 copies have no automated sync, so they silently drift from what a real Kiro
 system ships — and ATT actively *writes its copies onto the user's system* (e.g.
 the "Install the ATT config.fish" button in `shell.py`), so the drift is
@@ -22,9 +23,9 @@ copy here.**
 
 | `data/` path | Canonical source | Drift @ 2026-05-25 |
 |---|---|---|
-| `config.fish` | `edu-shells:etc/skel/.config/fish/config.fish` | 49 lines |
-| `.bashrc` | `edu-shells:etc/skel/.bashrc-latest` (note the `-latest` suffix) | 6 lines |
-| `.zshrc` | `edu-shells:etc/skel/.zshrc` | 8 lines |
+| `config.fish` | `kiro-fish-config:etc/skel/.config/fish/config.fish` | 49 lines |
+| `.bashrc` | `kiro-bash-config:etc/skel/.bashrc-latest` (note the `-latest` suffix) | 6 lines |
+| `.zshrc` | `kiro-zsh-config:etc/skel/.zshrc` | 8 lines |
 | `fastfetch/config.jsonc` | `edu-dot-files:etc/skel/.config/fastfetch/config.jsonc` | 1 line |
 | `gpg.conf` | `edu-system-files:usr/local/share/kiro/gpg.conf` | 2 lines |
 | `variety/variety.conf` | `edu-variety-config:etc/skel/.config/variety/variety.conf` | 2 lines |
@@ -74,7 +75,7 @@ on every invocation. Upstream endpoints are constants at the top of the script
 — that is the place to look if a refresh ever fails.
 
 ## Source-repo layouts differ
-Most MIRROR sources are skel/package paths in **edu-shells / edu-dot-files**, but
+Most MIRROR sources are skel/package paths in the **kiro-*-config / edu-dot-files** repos, but
 `nanorc` + the two sddm files live **directly in kiro-iso** (ISO-native, no
 separate package). A fetch script must handle both repo layouts.
 
