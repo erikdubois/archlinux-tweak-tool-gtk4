@@ -114,3 +114,60 @@ function cleanup --description 'Remove orphaned packages'
         echo "No orphaned packages to remove."
     end
 end
+
+# Categorised overview of everything this Kiro fish config ships — helper
+# functions, aliases (grouped by their section dividers), and keybindings.
+# Parses the live parts/*.fish so it never drifts from what is actually loaded.
+function fish-help --description 'Overview of Kiro fish functions, aliases & keybindings'
+    set -l parts /usr/share/kiro/fish/parts
+    if not test -d $parts
+        echo "fish-help: parts not found at $parts (package not installed?)" >&2
+        return 1
+    end
+
+    set -l hdr ''; set -l rst ''
+    if isatty stdout
+        set hdr (set_color -o cyan); set rst (set_color normal)
+    end
+
+    echo $hdr"Kiro fish config — overview"$rst
+    echo "Source: $parts/*.fish   ·   live lookups: functions NAME · type NAME · alias"
+    echo
+
+    # ── Functions ─────────────────────────────────────────────────────────────
+    echo $hdr"FUNCTIONS"$rst" (30-functions.fish)"
+    for line in (cat $parts/30-functions.fish)
+        string match -qr '^function ' -- $line; or continue
+        set -l name (string replace -r '^function ([^ ]+).*' '$1' -- $line)
+        set -l desc (string replace -r ".*--description ['\"]([^'\"]+)['\"].*" '$1' -- $line)
+        test "$desc" = "$line"; and set desc ''
+        printf "  %-18s %s\n" $name $desc
+    end
+    echo
+
+    # ── Aliases (grouped by their section dividers) ───────────────────────────
+    # The header is held in $pending and only printed once an alias appears under
+    # it, so empty sections (e.g. the commented-out personal block) are dropped.
+    echo $hdr"ALIASES"$rst" (40-aliases.fish)"
+    set -l pending ''
+    for line in (cat $parts/40-aliases.fish)
+        if string match -qr '^#\s*──' -- $line
+            set pending (string replace -r '^#\s*──\s*(.*?)\s*─.*$' '$1' -- $line)
+        else if string match -qr '^\s*alias ' -- $line
+            if test -n "$pending"
+                printf "\n  %s%s%s\n" $hdr $pending $rst
+                set pending ''
+            end
+            set -l name (string replace -r '^\s*alias ([A-Za-z0-9_.+-]+)=.*' '$1' -- $line)
+            set -l cmt ''
+            string match -qr '#' -- $line; and set cmt (string replace -r '^[^#]*#\s*' '' -- $line)
+            printf "    %-22s %s\n" $name $cmt
+        end
+    end
+    echo
+
+    # ── Keybindings ───────────────────────────────────────────────────────────
+    echo $hdr"KEYBINDINGS"$rst" (20-keybindings.fish)"
+    printf "    %-22s %s\n" "!" "expand to the previous command"
+    printf "    %-22s %s\n" '!$' "expand to the last argument of the previous command"
+end
