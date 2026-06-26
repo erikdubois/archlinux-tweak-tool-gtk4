@@ -96,6 +96,29 @@ def gui(self, Gtk, vboxstack_software, fn):
     self.btn_software_bazaar_remove.set_margin_end(10)
     hbox_bazaar.append(self.btn_software_bazaar_remove)
 
+    # Shelly
+    hbox_shelly = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    self.lbl_software_shelly = Gtk.Label(xalign=0)
+    self.lbl_software_shelly.set_markup(
+        "Shelly - Modern package manager" + (" <b>installed</b>" if fn.path.exists("/usr/bin/shelly-ui") else "")
+    )
+    btn_shelly_launch = Gtk.Button(label="Launch/Install")
+    btn_shelly_launch.connect("clicked", functools.partial(software.on_click_software_shelly, self))
+    self.btn_software_shelly_remove = Gtk.Button(label="Remove")
+    self.btn_software_shelly_remove.connect(
+        "clicked", functools.partial(software.on_click_software_shelly_remove, self)
+    )
+    self.lbl_software_shelly.set_margin_start(20)
+    self.lbl_software_shelly.set_margin_end(10)
+    self.lbl_software_shelly.set_hexpand(True)
+    hbox_shelly.append(self.lbl_software_shelly)
+    btn_shelly_launch.set_margin_start(10)
+    btn_shelly_launch.set_margin_end(5)
+    hbox_shelly.append(btn_shelly_launch)
+    self.btn_software_shelly_remove.set_margin_start(5)
+    self.btn_software_shelly_remove.set_margin_end(10)
+    hbox_shelly.append(self.btn_software_shelly_remove)
+
     # GNOME Software
     hbox_gnome = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     self.lbl_software_gnome = Gtk.Label(xalign=0)
@@ -562,6 +585,7 @@ def gui(self, Gtk, vboxstack_software, fn):
     vboxstack_software.append(hbox_pamac)
     vboxstack_software.append(hbox_octopi)
     vboxstack_software.append(hbox_bazaar)
+    vboxstack_software.append(hbox_shelly)
     vboxstack_software.append(hbox_gnome)
     vboxstack_software.append(hbox_discover)
     if fn.DEV:

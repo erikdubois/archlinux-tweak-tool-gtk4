@@ -1,5 +1,30 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.26
+
+### Add Shelly to Software Installers
+
+**What Changed.** Added **Shelly** ("A Modern Arch Package Manager", package `shelly` in
+chaotic-aur/cachyos) to the **GUI Package Managers** section of the Software Installers page, between
+Bazaar and GNOME Software. It gets the standard Launch/Install + Remove row like the other GUI
+package managers. The GUI binary is `/usr/bin/shelly-ui` (per the `.desktop` Exec) — `/usr/bin/shelly`
+is the CLI and launching it detached as root shows nothing, so launch and presence checks target
+`shelly-ui` while install/remove operate on the `shelly` package.
+
+**Technical Details.**
+- `software.py`: added `on_click_software_shelly` (launch `shelly-ui` if `/usr/bin/shelly-ui` exists,
+  else install the `shelly` package via `launch_pacman_install_in_terminal` then launch) and
+  `on_click_software_shelly_remove` (`launch_pacman_remove_recursive_in_terminal` +
+  `wait_remove_and_update` on `/usr/bin/shelly-ui`) — modelled on the Bazaar handlers, including
+  `env=fn.get_terminal_env()` on the launch Popen.
+- `software_gui.py`: added the Shelly row (`self.lbl_software_shelly` + Launch/Install + Remove
+  buttons) and appended `hbox_shelly` after `hbox_bazaar` in the stack.
+- `search_index.json` is auto-rebuilt by `gen-search-index.py` during up.sh — no manual edit.
+
+**Files Modified.**
+- `usr/share/archlinux-tweak-tool/software.py`
+- `usr/share/archlinux-tweak-tool/software_gui.py`
+
 ## 2026.06.24
 
 ### Two-bar top header + Support button

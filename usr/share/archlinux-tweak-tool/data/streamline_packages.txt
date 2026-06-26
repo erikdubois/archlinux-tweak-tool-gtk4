@@ -99,6 +99,7 @@ downgrade
 expac
 hardcode-fixer-git
 namcap
+pacman-contrib
 pacmanlogviewer
 pacquery
 pamac-aur

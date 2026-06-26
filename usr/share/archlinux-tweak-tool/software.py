@@ -169,6 +169,60 @@ def on_click_software_bazaar(self, _widget):
         fn.log_error(f"Error with bazaar: {error}")
 
 
+def on_click_software_shelly(self, _widget):
+    """Launch shelly or install it if not present."""
+    try:
+        if fn.path.exists("/usr/bin/shelly-ui"):
+            fn.log_subsection("Launching shelly...")
+            fn.subprocess.Popen(
+                "sudo -E -u " + fn.sudo_username + " shelly-ui &",
+                shell=True,
+                stdout=fn.subprocess.PIPE,
+                stderr=fn.subprocess.STDOUT,
+                env=fn.get_terminal_env(),
+            )
+            GLib.idle_add(fn.show_in_app_notification, self, "Shelly launched")
+        else:
+            fn.log_subsection("Installing shelly...")
+            process = fn.launch_pacman_install_in_terminal("shelly")
+            GLib.idle_add(fn.show_in_app_notification, self, "shelly installation started")
+
+            def wait_install():
+                try:
+                    import time
+
+                    fn.debug_print("Waiting for shelly installation to complete...")
+                    process.wait()
+                    fn.invalidate_pkg_cache()
+                    fn.debug_print("Installation process completed")
+                    time.sleep(1)
+                    if fn.path.exists("/usr/bin/shelly-ui"):
+                        fn.log_success("shelly installed successfully")
+                        GLib.idle_add(
+                            self.lbl_software_shelly.set_markup, "Shelly - Modern package manager <b>installed</b>"
+                        )
+                        GLib.idle_add(fn.show_in_app_notification, self, "shelly installed")
+                        time.sleep(1)
+                        fn.log_subsection("Launching shelly...")
+                        fn.subprocess.Popen(
+                            "sudo -E -u " + fn.sudo_username + " shelly-ui &",
+                            shell=True,
+                            stdout=fn.subprocess.PIPE,
+                            stderr=fn.subprocess.STDOUT,
+                            env=fn.get_terminal_env(),
+                        )
+                        GLib.idle_add(fn.show_in_app_notification, self, "Shelly launched")
+                    else:
+                        fn.log_warn("shelly binary NOT found, installation may have failed")
+                        fn.check_missing_repo_error(self, "", "shelly")
+                except Exception as e:
+                    fn.log_error(f"Error during installation: {e}")
+
+            fn.threading.Thread(target=wait_install, daemon=True).start()
+    except Exception as error:
+        fn.log_error(f"Error with shelly: {error}")
+
+
 def on_click_software_gnome(self, _widget):
     """Launch gnome-software or install it if not present."""
     try:
@@ -998,6 +1052,24 @@ def on_click_software_bazaar_remove(self, _widget):
         )
     except Exception as error:
         fn.log_error(f"Error with bazaar removal: {error}")
+
+
+def on_click_software_shelly_remove(self, _widget):
+    """Remove the shelly package manager."""
+    try:
+        fn.log_subsection("Removing shelly...")
+        process = fn.launch_pacman_remove_recursive_in_terminal("shelly", keep_config=True)
+        GLib.idle_add(fn.show_in_app_notification, self, "shelly removal started")
+        fn.wait_remove_and_update(
+            process,
+            "/usr/bin/shelly-ui",
+            self.lbl_software_shelly,
+            "Shelly - Modern package manager",
+            self,
+            "shelly removal complete",
+        )
+    except Exception as error:
+        fn.log_error(f"Error with shelly removal: {error}")
 
 
 def on_click_software_gnome_remove(self, _widget):
