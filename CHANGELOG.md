@@ -2,6 +2,17 @@
 
 ## 2026.06.26
 
+### Register split shell-config packages
+
+**What Changed.** The `kiro-shells` package was split upstream into three per-shell
+packages — `kiro-bash-config`, `kiro-zsh-config`, `kiro-fish-config` (with `kiro-shells`
+itself reduced to a meta-package). Added the three new names to the nemesis package list so
+they appear in ATT's package tooling. `kiro-shells` is retained.
+
+**Technical Details.**
+- `usr/share/archlinux-tweak-tool/data/nemesis_packages.txt`: inserted `kiro-bash-config`,
+  `kiro-fish-config`, `kiro-zsh-config` in alphabetical position.
+
 ### Add Shelly to Software Installers
 
 **What Changed.** Added **Shelly** ("A Modern Arch Package Manager", package `shelly` in

@@ -64,9 +64,11 @@ cpuid
 kiro-arc-dawn
 kiro-arc-kde
 kiro-awesome
+kiro-bash-config
 kiro-bspwm
 kiro-chadwm
 kiro-dot-files
+kiro-fish-config
 hblock
 kiro-i3
 kiro-leftwm
@@ -91,6 +93,7 @@ kiro-system-files
 kiro-variety-config
 kiro-vimix-dark-tela
 kiro-xfce
+kiro-zsh-config
 flameshot-git
 gnome-bluetooth
 hardcode-fixer-git
