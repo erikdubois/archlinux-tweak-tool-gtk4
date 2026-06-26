@@ -39,6 +39,35 @@ keeping user settings separate from Kiro defaults. `.bashrc`/`.zshrc` came back 
 - `CONFIG_SOURCES.md`
 - `usr/share/archlinux-tweak-tool/data/config.fish`
 
+### Mirror the full kiro-fish-config tree (stub + payload)
+
+**What Changed.** The new Kiro `config.fish` is a thin stub that `source`s
+`/usr/share/kiro/fish/kiro-config.fish`, which itself loads six `parts/*.fish`. Mirroring only
+the stub left a broken config on any system without the `kiro-fish-config` package (ATT targets
+all Arch-based distros, not just Kiro). ATT now carries the **whole tree** and, on apply, writes
+the stub to `~/.config/fish/config.fish` plus the `/usr/share/kiro/fish/` payload — the payload
+only when the package is absent, so on Kiro the pacman-owned files are left untouched.
+
+**Technical Details.**
+- `data-sources.tsv`: replaced the single `config.fish` entry with 8 entries under `fish/`
+  (stub + `usr/share/kiro/fish/kiro-config.fish` + 6 `parts/*.fish`), all from
+  `kirodubes/kiro-fish-config`. `fetch-configs.sh` populated them (8 updated, 0 failed).
+- Removed the old flat `data/config.fish`; the stub now lives at `data/fish/config.fish`.
+- `functions.py`: `fish_config_kiro` repointed to `data/fish/config.fish`; added
+  `kiro_fish_payload_src` (`data/fish/usr/share/kiro/fish`) and `kiro_fish_payload_dst`
+  (`/usr/share/kiro/fish`).
+- `shell.py`: new `_install_kiro_fish_payload()` helper — `copytree(dirs_exist_ok=True)` of the
+  payload to `/usr/share/kiro/fish`, guarded by `check_package_installed("kiro-fish-config")`;
+  called from `on_install_att_fish_config_clicked` after the stub copy.
+- `CONFIG_SOURCES.md`: documented the fish tree and the package-absent write guard.
+
+**Files Modified.**
+- `data-sources.tsv`
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/shell.py`
+- `CONFIG_SOURCES.md`
+- `usr/share/archlinux-tweak-tool/data/fish/**` (added; old `data/config.fish` removed)
+
 ### Add Shelly to Software Installers
 
 **What Changed.** Added **Shelly** ("A Modern Arch Package Manager", package `shelly` in

@@ -112,8 +112,27 @@ def on_bash_reset_clicked(self, _widget):
         fn.messagebox(self, "Error", f"Failed to restore bash configuration: {error}")
 
 
+def _install_kiro_fish_payload():
+    """Write the kiro-config.fish loader + parts to /usr/share/kiro/fish when the package is absent.
+
+    The stub config.fish sources /usr/share/kiro/fish/kiro-config.fish. On Kiro that path is
+    owned by the kiro-fish-config package, so we leave it to pacman; on other Arch distros ATT
+    ships the payload itself so the stub's source line resolves.
+    """
+    if fn.check_package_installed("kiro-fish-config"):
+        fn.log_info_concise("  kiro-fish-config installed — leaving /usr/share/kiro/fish to the package")
+        return
+    if not fn.path.isdir(fn.kiro_fish_payload_src):
+        fn.log_warn("Kiro fish payload not found in ATT data — skipping /usr/share/kiro/fish")
+        return
+    fn.log_info_concise(f"  From: {fn.kiro_fish_payload_src}")
+    fn.log_info_concise(f"  To:   {fn.kiro_fish_payload_dst}")
+    fn.shutil.copytree(fn.kiro_fish_payload_src, fn.kiro_fish_payload_dst, dirs_exist_ok=True)
+    fn.log_success("Kiro fish payload written to /usr/share/kiro/fish")
+
+
 def on_install_att_fish_config_clicked(self, _widget):
-    """Copy the ATT config.fish to ~/.config/fish/config.fish."""
+    """Copy the ATT config.fish stub to ~/.config/fish and write the Kiro payload if needed."""
     fn.log_subsection("Apply ATT Fish Configuration")
     fn.debug_print(f"  Source : {fn.fish_config_kiro}")
     fn.debug_print(f"  Target : {fn.fish_config}")
@@ -131,6 +150,7 @@ def on_install_att_fish_config_clicked(self, _widget):
             fn.debug_print("  Result : copied successfully")
             fn.permissions(fn.os.path.dirname(fn.fish_config))
             fn.debug_print(f"  Perms  : permissions set on {fn.os.path.dirname(fn.fish_config)}")
+            _install_kiro_fish_payload()
             fn.log_success("ATT fish configuration applied — log out and back in to apply")
             fn.GLib.idle_add(
                 fn.show_in_app_notification, self, "ATT config.fish applied — log out and back in to apply"

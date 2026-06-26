@@ -23,12 +23,22 @@ copy here.**
 
 | `data/` path | Canonical source | Drift @ 2026-05-25 |
 |---|---|---|
-| `config.fish` | `kiro-fish-config:etc/skel/.config/fish/config.fish` | 49 lines |
+| `fish/config.fish` | `kiro-fish-config:etc/skel/.config/fish/config.fish` (the stub) | — |
+| `fish/usr/share/kiro/fish/kiro-config.fish` | `kiro-fish-config:usr/share/kiro/fish/kiro-config.fish` (loader) | — |
+| `fish/usr/share/kiro/fish/parts/*.fish` | `kiro-fish-config:usr/share/kiro/fish/parts/*.fish` (6 parts) | — |
 | `.bashrc` | `kiro-bash-config:etc/skel/.bashrc-latest` (note the `-latest` suffix) | 6 lines |
 | `.zshrc` | `kiro-zsh-config:etc/skel/.zshrc` | 8 lines |
 | `fastfetch/config.jsonc` | `edu-dot-files:etc/skel/.config/fastfetch/config.jsonc` | 1 line |
 | `gpg.conf` | `edu-system-files:usr/local/share/kiro/gpg.conf` | 2 lines |
 | `variety/variety.conf` | `edu-variety-config:etc/skel/.config/variety/variety.conf` | 2 lines |
+
+The fish config is a **tree**, not one file: `kiro-fish-config` ships a thin
+`config.fish` stub that `source`s `/usr/share/kiro/fish/kiro-config.fish`, which in
+turn loads `parts/*.fish`. ATT mirrors the whole tree under `data/fish/` (dest paths
+mirror the install destinations). On apply, `shell.py` writes the stub to
+`~/.config/fish/config.fish` always, and writes the `/usr/share/kiro/fish/` payload
+**only when the `kiro-fish-config` package is absent** — on Kiro that path is
+package-owned, so ATT leaves it to pacman.
 
 #### PENDING — source unresolved
 `nano/nanorc`, `sddm/sddm.conf`, `sddm.conf.d/kde_settings.conf` exist **only** in

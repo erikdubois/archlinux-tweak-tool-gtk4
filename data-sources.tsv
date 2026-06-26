@@ -11,7 +11,14 @@
 #
 # Files NOT listed here are ATT-OWNED or VENDORED — see CONFIG_SOURCES.md.
 
-config.fish	kirodubes/kiro-fish-config	etc/skel/.config/fish/config.fish
+fish/config.fish	kirodubes/kiro-fish-config	etc/skel/.config/fish/config.fish
+fish/usr/share/kiro/fish/kiro-config.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/kiro-config.fish
+fish/usr/share/kiro/fish/parts/00-env.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/00-env.fish
+fish/usr/share/kiro/fish/parts/10-interactive.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/10-interactive.fish
+fish/usr/share/kiro/fish/parts/20-keybindings.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/20-keybindings.fish
+fish/usr/share/kiro/fish/parts/30-functions.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/30-functions.fish
+fish/usr/share/kiro/fish/parts/40-aliases.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/40-aliases.fish
+fish/usr/share/kiro/fish/parts/50-integrations.fish	kirodubes/kiro-fish-config	usr/share/kiro/fish/parts/50-integrations.fish
 .bashrc	kirodubes/kiro-bash-config	etc/skel/.bashrc-latest
 .zshrc	kirodubes/kiro-zsh-config	etc/skel/.zshrc
 fastfetch/config.jsonc	erikdubois/edu-dot-files	etc/skel/.config/fastfetch/config.jsonc
