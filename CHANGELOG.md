@@ -1,5 +1,26 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.27
+
+### Deep-link to Fish Tweak Tool from Shells → Fish
+
+**What Changed.** The Shells → Fish section now has a "Fish Tweak Tool" subsection —
+install / remove buttons, an installed-status label, a Nemesis-repo note, and a
+**Launch Fish Tweak Tool** button — mirroring the existing alacritty-tweak-tool
+integration. This points users at the standalone fish configurator (themes, prompt,
+plugins, presets) the same way ATT links to alacritty-tweak-tool.
+
+**Technical Details.**
+- `usr/share/archlinux-tweak-tool/shell.py`: added `_refresh_ftt_lbl`,
+  `_refresh_ftt_launch_btn`, `on_install_fish_tweak_tool_clicked`,
+  `on_remove_fish_tweak_tool_clicked`, and `on_click_launch_ftt_from_shells`
+  (clones of the alacritty-tweak-tool handlers; launch drops to the real user via
+  `sudo -E -u <user> env HOME=<home> fish-tweak-tool &` since ATT runs as root).
+- `usr/share/archlinux-tweak-tool/shell_gui.py`: built the subsection and appended it
+  to `vbox_fish`, including a feature blurb ("why install") below the Launch button —
+  presets, prompts, plugins, themes, settings, and the no-black-box transparency.
+  Purely additive — no existing widgets changed.
+
 ## 2026.06.26
 
 ### Register split shell-config packages

@@ -562,6 +562,66 @@ def gui(self, Gtk, vboxstack_shells, zsh_theme, base_dir, GdkPixbuf, fn):
     if not fn.check_package_installed("fish"):
         self.fish_config_section.set_sensitive(False)
 
+    # ── Fish Tweak Tool ───────────────────────────────────────────
+    hbox_ftt_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_ftt_title_lbl = Gtk.Label(xalign=0)
+    hbox_ftt_title_lbl.set_markup("<b>Fish Tweak Tool</b>")
+    hbox_ftt_title_lbl.set_margin_start(10)
+    hbox_ftt_title_sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    hbox_ftt_title_sep.set_hexpand(True)
+    hbox_ftt_title_sep.set_valign(Gtk.Align.CENTER)
+    hbox_ftt_title.append(hbox_ftt_title_lbl)
+    hbox_ftt_title.append(hbox_ftt_title_sep)
+
+    hbox_ftt_status = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    self.ftt_status_lbl = Gtk.Label(xalign=0)
+    shell._refresh_ftt_lbl(self)
+    self.ftt_status_lbl.set_margin_start(10)
+    self.ftt_status_lbl.set_margin_end(10)
+    hbox_ftt_status.append(self.ftt_status_lbl)
+
+    hbox_ftt_btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_ftt_btns.set_margin_start(10)
+    btn_install_ftt = Gtk.Button(label="Install fish-tweak-tool")
+    btn_install_ftt.connect("clicked", functools.partial(shell.on_install_fish_tweak_tool_clicked, self))
+    btn_remove_ftt = Gtk.Button(label="Remove fish-tweak-tool")
+    btn_remove_ftt.connect("clicked", functools.partial(shell.on_remove_fish_tweak_tool_clicked, self))
+    hbox_ftt_btns.append(btn_install_ftt)
+    hbox_ftt_btns.append(btn_remove_ftt)
+
+    hbox_ftt_repo_note = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    if not fn.check_nemesis_repo_active():
+        ftt_repo_note_lbl = Gtk.Label(xalign=0)
+        ftt_repo_note_lbl.set_markup("<i>Enable the Nemesis repo (Pacman page) to install fish-tweak-tool</i>")
+        ftt_repo_note_lbl.set_margin_start(10)
+        ftt_repo_note_lbl.set_margin_end(10)
+        hbox_ftt_repo_note.append(ftt_repo_note_lbl)
+
+    hbox_ftt_launch = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_ftt_launch.set_margin_start(10)
+    self.btn_launch_ftt = Gtk.Button(label="Launch Fish Tweak Tool")
+    self.btn_launch_ftt.set_sensitive(fn.check_package_installed("fish-tweak-tool"))
+    self.btn_launch_ftt.connect("clicked", functools.partial(shell.on_click_launch_ftt_from_shells, self))
+    hbox_ftt_launch.append(self.btn_launch_ftt)
+
+    hbox_ftt_about = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    ftt_about_lbl = Gtk.Label(xalign=0)
+    ftt_about_lbl.set_wrap(True)
+    ftt_about_lbl.set_margin_start(10)
+    ftt_about_lbl.set_margin_end(10)
+    ftt_about_lbl.set_margin_top(6)
+    ftt_about_lbl.set_markup(
+        "<b>Set up your fish shell in clicks — no config files to edit.</b>\n\n"
+        "• <b>Presets</b> — apply a whole look (prompt + plugins + theme + greeting) in one click\n"
+        "• <b>Prompts</b> — install Tide, Hydro or Pure, or pick a built-in style (one active at a time)\n"
+        "• <b>Plugins</b> — toggle the must-haves via fisher: fzf, autopair, sponge, puffer-fish\n"
+        "• <b>Themes</b> — 25 colour themes with a live hover preview and dark / light variants\n"
+        "• <b>Settings</b> — greeting (fastfetch or custom), cursor shape, one-click backup &amp; restore\n"
+        "• <b>No black box</b> — every change runs in a terminal so you see the exact command\n\n"
+        "<i>Your fish config is always backed up before any change.</i>"
+    )
+    hbox_ftt_about.append(ftt_about_lbl)
+
     vbox_fish.append(hbox_fish_title)
     vbox_fish.append(hbox_fish_top_sep)
     vbox_fish.append(hbox_fish_installation_title)
@@ -569,6 +629,12 @@ def gui(self, Gtk, vboxstack_shells, zsh_theme, base_dir, GdkPixbuf, fn):
         vbox_fish.append(hbox_fish_status_lbl)
     vbox_fish.append(hbox_fish_install_btns)
     vbox_fish.append(self.fish_config_section)
+    vbox_fish.append(hbox_ftt_title)
+    vbox_fish.append(hbox_ftt_status)
+    vbox_fish.append(hbox_ftt_btns)
+    vbox_fish.append(hbox_ftt_repo_note)
+    vbox_fish.append(hbox_ftt_launch)
+    vbox_fish.append(hbox_ftt_about)
 
     # ── Extra tools ──────────────────────────────────────────────────
 

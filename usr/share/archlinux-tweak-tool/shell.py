@@ -822,3 +822,78 @@ def on_click_launch_att_from_shells(self, _widget):
     else:
         fn.log_info("alacritty-tweak-tool not installed")
         GLib.idle_add(fn.show_in_app_notification, self, "alacritty-tweak-tool not installed")
+
+
+def _refresh_ftt_lbl(self):
+    if fn.check_package_installed("fish-tweak-tool"):
+        self.ftt_status_lbl.set_markup("fish-tweak-tool is <b>installed</b>")
+    else:
+        self.ftt_status_lbl.set_markup("fish-tweak-tool is <b>not installed</b>")
+
+
+def _refresh_ftt_launch_btn(self):
+    self.btn_launch_ftt.set_sensitive(fn.check_package_installed("fish-tweak-tool"))
+
+
+def on_install_fish_tweak_tool_clicked(self, _widget):
+    """Install fish-tweak-tool from nemesis repo via terminal."""
+    if fn.check_package_installed("fish-tweak-tool"):
+        fn.log_info("fish-tweak-tool is already installed")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "fish-tweak-tool is already installed")
+        return
+    fn.log_subsection("Installing fish-tweak-tool...")
+    process = fn.launch_pacman_install_in_terminal("fish-tweak-tool")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to install fish-tweak-tool")
+
+    def wait_install():
+        try:
+            process.wait()
+            fn.invalidate_pkg_cache()
+            fn.log_success("fish-tweak-tool installed")
+            fn.GLib.idle_add(_refresh_ftt_lbl, self)
+            fn.GLib.idle_add(_refresh_ftt_launch_btn, self)
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "fish-tweak-tool installed")
+        except Exception as e:
+            fn.log_error(f"Error installing fish-tweak-tool: {e}")
+
+    fn.threading.Thread(target=wait_install, daemon=True).start()
+
+
+def on_remove_fish_tweak_tool_clicked(self, _widget):
+    """Remove fish-tweak-tool via terminal."""
+    if not fn.check_package_installed("fish-tweak-tool"):
+        fn.log_info("fish-tweak-tool is not installed — nothing to remove")
+        fn.GLib.idle_add(fn.show_in_app_notification, self, "fish-tweak-tool is not installed")
+        return
+    fn.log_subsection("Removing fish-tweak-tool...")
+    process = fn.launch_pacman_remove_in_terminal("fish-tweak-tool")
+    fn.GLib.idle_add(fn.show_in_app_notification, self, "Opening terminal to remove fish-tweak-tool")
+
+    def wait_remove():
+        try:
+            process.wait()
+            fn.invalidate_pkg_cache()
+            fn.log_success("fish-tweak-tool removed")
+            fn.GLib.idle_add(_refresh_ftt_lbl, self)
+            fn.GLib.idle_add(_refresh_ftt_launch_btn, self)
+            fn.GLib.idle_add(fn.show_in_app_notification, self, "fish-tweak-tool removed")
+        except Exception as e:
+            fn.log_error(f"Error removing fish-tweak-tool: {e}")
+
+    fn.threading.Thread(target=wait_remove, daemon=True).start()
+
+
+def on_click_launch_ftt_from_shells(self, _widget):
+    """Launch Fish Tweak Tool as real user from the Shells page."""
+    if fn.check_package_installed("fish-tweak-tool"):
+        fn.log_subsection("Launching Fish Tweak Tool...")
+        fn.subprocess.Popen(
+            "sudo -E -u " + fn.sudo_username + " env HOME=" + fn.home + " fish-tweak-tool &",
+            shell=True,
+            stdout=fn.subprocess.PIPE,
+            stderr=fn.subprocess.STDOUT,
+        )
+        GLib.idle_add(fn.show_in_app_notification, self, "Fish Tweak Tool launched")
+    else:
+        fn.log_info("fish-tweak-tool not installed")
+        GLib.idle_add(fn.show_in_app_notification, self, "fish-tweak-tool not installed")
