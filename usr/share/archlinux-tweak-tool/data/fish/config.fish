@@ -21,3 +21,8 @@ source /usr/share/kiro/fish/kiro-config.fish
 
 #######################################################################
 
+# >>> fish-tweak-tool managed block >>>
+# Managed by Fish Tweak Tool — edits inside this block are overwritten.
+function fish_greeting; end
+type -q starship; and starship init fish | source
+# <<< fish-tweak-tool managed block <<<
