@@ -29,9 +29,17 @@ WAYLAND_WMS = [
         # Removal targets only Hyprland-SPECIFIC packages. Shared tools the install
         # pulled (waybar, mako, swaybg, rofi, grim, slurp, wl-clipboard, polkit-gnome,
         # network-manager-applet, pavucontrol, playerctl, wireplumber, brightnessctl)
-        # are kept — XFCE/chadwm and other WMs rely on them. hyprland-tweak-tool is a
-        # standalone app and is also left in place.
-        "remove": ["kiro-hyprland", "hyprland", "hyprlock", "hypridle", "hyprpicker", "xdg-desktop-portal-hyprland"],
+        # are kept — XFCE/chadwm and other WMs rely on them. hyprland-tweak-tool MUST be
+        # in the list: it `Depends On: hyprland`, so removing hyprland without it fails.
+        "remove": [
+            "kiro-hyprland",
+            "hyprland-tweak-tool",
+            "hyprland",
+            "hyprlock",
+            "hypridle",
+            "hyprpicker",
+            "xdg-desktop-portal-hyprland",
+        ],
         "proc": "Hyprland",
     },
     {"key": "niri", "label": "niri", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},

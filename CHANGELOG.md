@@ -53,10 +53,11 @@ configs. X11 stays the default — purely additive, opt-in.
   page's "Installed: …" line), scoped to `/usr/share/wayland-sessions` via the new
   `wayland.installed_wayland_sessions()`; refreshes on map and after install/remove.
 - **Remove selected** button alongside Install (parity with the Desktop page). `remove_wayland_selection`
-  removes only the **Hyprland-specific** packages (`kiro-hyprland hyprland hyprlock hypridle hyprpicker
-  xdg-desktop-portal-hyprland`) via plain `pacman -R` — shared tools (waybar, rofi, polkit-gnome,
-  network-manager-applet, pavucontrol, wl-clipboard, grim, wireplumber, …) and `hyprland-tweak-tool`
-  are kept so the rest of the system (XFCE/chadwm) isn't damaged; no `-s` cascade. `~/.config` is left
+  removes only the **Hyprland-specific** packages (`kiro-hyprland hyprland-tweak-tool hyprland hyprlock
+  hypridle hyprpicker xdg-desktop-portal-hyprland`) via plain `pacman -R` — shared tools (waybar, rofi,
+  polkit-gnome, network-manager-applet, pavucontrol, wl-clipboard, grim, wireplumber, …) are kept so
+  the rest of the system (XFCE/chadwm) isn't damaged; no `-s` cascade. `hyprland-tweak-tool` IS in the
+  list because it `Depends On: hyprland` — removing hyprland without it fails. `~/.config` is left
   intact. Guard: refuses to remove a WM whose compositor is the current running session (`pgrep -x`).
   Remove button is sensitive only when an **installed** removable WM is selected.
 - Hyprland preview image: a centered `Gtk.Picture` (loaded at 480px) shows
