@@ -50,6 +50,8 @@ import funding
 import packages_gui
 import wallpaper
 import wallpaper_gui
+import wayland
+import wayland_gui
 import plymouth_gui
 import locale_gui
 import dev_gui
@@ -174,6 +176,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_streamline = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_themes = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_wallpaper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_wayland = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_plymouth = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_locale = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_dev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -410,6 +413,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     _defer_tab(vboxstack_wallpaper, _build_wallpaper)
 
+    _defer_tab(vboxstack_wayland, lambda: wayland_gui.gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir))
+
     _defer_tab(vboxstack_plymouth, lambda: plymouth_gui.gui(self, Gtk, vboxstack_plymouth, fn))
 
     _defer_tab(vboxstack_locale, lambda: locale_gui.gui(self, Gtk, vboxstack_locale, fn))
@@ -434,7 +439,12 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     if fn.DEV or btrfs.is_btrfs_root():
         stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)
 
-    stack.add_titled(vboxstack_desktop, "stack12", "Desktop")  # Desktop installer
+    # Desktop installer (DEs + X11 WMs) and the Wayland WM picker, grouped as an
+    # adjacent pair — the core Kiro selling point. Sidebar shows pages in add-order,
+    # so these sit together. The broad page stays "Desktop" (no X11 claim) because it
+    # also installs Wayland-default DEs like Plasma/GNOME.
+    stack.add_titled(vboxstack_desktop, "stack12", "Desktop")  # DEs + X11 WMs
+    stack.add_titled(vboxstack_wayland, "stack_wayland", "Desktop - Wayland")  # Wayland WM picker
 
     stack.add_titled(vboxstack_fastfetch, "stack4", "Fastfetch")  # fastfetch config
 

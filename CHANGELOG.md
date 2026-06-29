@@ -2,6 +2,69 @@
 
 ## 2026.06.29
 
+### New Wayland WM picker — paired with the Desktop page as "Desktop" / "Desktop - Wayland"
+
+**What Changed.** Added a dedicated Wayland WM picker and grouped it with the existing installer
+as an adjacent pair — **"Desktop"** (DEs + X11 WMs) immediately followed by **"Desktop - Wayland"**
+(the new picker) — instead of the new page being buried at the end of the alphabet. The broad page
+keeps the plain "Desktop" label (no "X11" claim) because it also installs Wayland-default DEs like
+Plasma and GNOME (on Kiro, Plasma is Wayland-only) — labelling it "X11" would be inaccurate. The
+picker lets users multi-select and install Wayland window managers alongside their existing desktop. All seven of the now-coexisting family are listed — hyprland, niri, sway, river,
+wayfire, labwc, dwl. Only **Hyprland** is curated and selectable: installing it pulls the
+`kiro-hyprland` meta (config + full dependency stack) and seeds `~/.config/hypr|waybar|mako` from
+`/etc/skel`. The other five repo WMs are **disabled placeholders** ("no Kiro config yet") and
+**dwl** a disabled "AUR — coming soon" row — visible but not yet selectable, pending curated
+configs. X11 stays the default — purely additive, opt-in.
+
+**Technical Details.**
+- New feature pair `wayland.py` + `wayland_gui.py` (standard `<feature>.py`/`<feature>_gui.py`
+  pattern). `wayland.py` holds the `WAYLAND_WMS` data list and `install_wayland_selection()`,
+  which mirrors `desktopr.install_desktop` for a *set*: unions the selected packages, does the
+  scoped `~/.config-att` backup once, runs **one** `pkexec pacman -S … --needed --noconfirm
+  --ask=4` in alacritty (daemon thread, `process.wait()`), then seeds `/etc/skel` configs home
+  for the curated WMs. Reuses `desktopr.check_desktop`/`copy`, `fn.copy_func`, `fn.permissions`,
+  `fn.makedirs`, `fn.invalidate_pkg_cache` — no duplicated logic (Objective 17).
+- After install it resets `desktopr._xsession_files`/`_wayland_files` so `check_desktop`
+  re-scans `/usr/share/wayland-sessions` and the row flips to "installed" (mirrors
+  `desktopr._after_install`).
+- `wayland_gui.py`: multi-select `Gtk.CheckButton` rows (precedent: `icons_gui.py`), page
+  skeleton mirrors `office_gui.py`, section header via `set_markup("<b>…</b>")`. nemesis_repo
+  guard greys the Install button (with tooltip + orange warning label) when a Hyprland-containing
+  selection is made while nemesis_repo is off (mirrors `desktopr_gui.update_button_state`).
+  `_refresh` runs on map and at build (deferred-tab refresh rule); `fn.log_*` in callbacks.
+- **"Installed Wayland sessions: …"** summary line above the WM rows (parity with the Desktop
+  page's "Installed: …" line), scoped to `/usr/share/wayland-sessions` via the new
+  `wayland.installed_wayland_sessions()`; refreshes on map and after install/remove.
+- **Remove selected** button alongside Install (parity with the Desktop page). `remove_wayland_selection`
+  removes only the **Hyprland-specific** packages (`kiro-hyprland hyprland hyprlock hypridle hyprpicker
+  xdg-desktop-portal-hyprland`) via plain `pacman -R` — shared tools (waybar, rofi, polkit-gnome,
+  network-manager-applet, pavucontrol, wl-clipboard, grim, wireplumber, …) and `hyprland-tweak-tool`
+  are kept so the rest of the system (XFCE/chadwm) isn't damaged; no `-s` cascade. `~/.config` is left
+  intact. Guard: refuses to remove a WM whose compositor is the current running session (`pgrep -x`).
+  Remove button is sensitive only when an **installed** removable WM is selected.
+- Hyprland preview image: a centered `Gtk.Picture` (loaded at 480px) shows
+  `desktop_data/hyprland.jpg` as the page hero, captioned "Hyprland — the curated Kiro Wayland
+  desktop" (it's the only WM with a config/preview for now). `base_dir` is threaded into
+  `wayland_gui.gui()` to locate the asset, same as `desktopr_gui`. The asset was downscaled
+  1920×1079 → 800×450 (149 KB → 35 KB) to match the lighter `desktop_data` previews.
+- `gui.py`: imported `wayland`/`wayland_gui`, added `vboxstack_wayland`, deferred builder, and
+  registered the two desktop pages **adjacently** — `add_titled(…, "stack12", "Desktop")`
+  immediately followed by `add_titled(…, "stack_wayland", "Desktop - Wayland")`. Sidebar order is
+  add-order, so they group together. Stack IDs unchanged, so existing `set_visible_child_name`
+  navigation still works.
+- Rename: `desktopr_gui` page title "Desktop Installer" → "Desktop" (+ its debug log string);
+  `wayland_gui` page title "Wayland" → "Desktop - Wayland". The broad page deliberately is NOT
+  labelled "X11" — it installs Wayland-default DEs (Plasma/GNOME) too.
+- `search_synonyms.json`: new "Wayland" entry (hyprland, sway, niri, river, wayfire, labwc, dwl,
+  compositor, tiling, window manager, wm, wlroots); `search_index.json` regenerated (34 pages).
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py` (new),
+`usr/share/archlinux-tweak-tool/wayland_gui.py` (new),
+`usr/share/archlinux-tweak-tool/gui.py`,
+`usr/share/archlinux-tweak-tool/desktopr_gui.py` (title + log rename),
+`search_synonyms.json`, `usr/share/archlinux-tweak-tool/search_index.json`,
+`usr/share/archlinux-tweak-tool/desktop_data/hyprland.jpg` (added + downscaled).
+
 ### Added to the new "Kiro Apps" menu
 - Appended `X-Kiro-Apps;` to `usr/share/applications/archlinux-tweak-tool.desktop`
   so ATT appears in the new Kiro Apps launcher folder (menu/directory defined in

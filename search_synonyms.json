@@ -4,7 +4,7 @@
   "AI Tools": ["ollama", "llm", "chatgpt", "assistant", "model", "agent"],
   "Autostart": ["startup", "boot apps", "login apps", "session"],
   "Backup": ["borg", "borgbackup", "pika", "pika backup", "vorta", "restore", "cloud", "off-site", "offsite", "deduplicated", "encrypted backup", "3-2-1", "personal files"],
-  "Desktop": ["environment", "de", "wm", "window manager", "tiling", "kde", "i3"],
+  "Desktop": ["environment", "de", "wm", "window manager", "tiling", "kde", "plasma", "gnome", "xfce", "i3", "x11", "xorg"],
   "Fastfetch": ["neofetch", "system info", "fetch", "terminal logo"],
   "Icons Horst": ["icon theme", "horst", "folder", "colour folders", "color folders", "mint-y", "surfn", "neo candy"],
   "Icons Neo Candy": ["icon theme", "neo candy", "candy", "mint", "tela", "numix", "papirus", "qogir", "arc", "breeze"],
@@ -28,5 +28,6 @@
   "Themer": ["customize theme", "color scheme", "gtk theme builder"],
   "Themes": ["gtk theme", "arc", "appearance", "look"],
   "User": ["accounts", "add user", "password", "sudo", "groups"],
-  "Wallpaper": ["background", "desktop background", "wall", "image"]
+  "Wallpaper": ["background", "desktop background", "wall", "image"],
+  "Desktop - Wayland": ["wayland", "desktop", "hyprland", "sway", "niri", "river", "wayfire", "labwc", "dwl", "compositor", "tiling", "window manager", "wm", "wlroots"]
 }

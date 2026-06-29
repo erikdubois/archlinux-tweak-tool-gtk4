@@ -25,7 +25,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack_desktop, desktopr, fn, base_dir):
     dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
 
     lbl_title = Gtk.Label(xalign=0)
-    lbl_title.set_text("Desktop Installer")
+    lbl_title.set_text("Desktop")
     lbl_title.set_name("title")
     hseparator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
     hseparator.set_hexpand(True)
@@ -224,7 +224,7 @@ Remove it yourself if no longer needed\n"
     nemesis_active = fn.check_nemesis_repo_active()
     chaotic_active = fn.check_chaotic_aur_active()
     fn.log_info(
-        f"Desktop Installer — nemesis_repo: {'enabled' if nemesis_active else 'NOT enabled'}, "
+        f"Desktop — nemesis_repo: {'enabled' if nemesis_active else 'NOT enabled'}, "
         f"chaotic-aur: {'enabled' if chaotic_active else 'NOT enabled'}"
     )
 
