@@ -98,6 +98,12 @@ alias lpacman='bat /var/log/pacman.log'        # read the pacman log
 alias lxorg='bat /var/log/Xorg.0.log'          # read the Xorg log
 alias lxorgo='bat /var/log/Xorg.0.log.old'     # read the previous Xorg log
 
+# ── systemd / journal ─────────────────────────────────────────────────────────
+alias sc='systemctl'           # control systemd units (system scope)
+alias scu='systemctl --user'   # control systemd units (user scope)
+alias jr='journalctl'          # read the systemd journal (system scope)
+alias jru='journalctl --user'  # read the systemd journal (user scope)
+
 # ── Mirrors ───────────────────────────────────────────────────────────────────
 alias mirror='sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist'                                    # rank 10 fastest mirrors
 alias mirrord='sudo reflector --latest 30 --number 10 --sort delay --save /etc/pacman.d/mirrorlist'                                # 10 mirrors sorted by delay

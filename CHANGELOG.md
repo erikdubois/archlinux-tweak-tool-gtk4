@@ -1,5 +1,13 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.06.29
+
+### Added to the new "Kiro Apps" menu
+- Appended `X-Kiro-Apps;` to `usr/share/applications/archlinux-tweak-tool.desktop`
+  so ATT appears in the new Kiro Apps launcher folder (menu/directory defined in
+  `kiro-dot-files` + `kiro-system-files`). Non-destructive — ATT still shows under
+  Settings/System on other distros.
+
 ## 2026.06.27
 
 ### Deep-link to Fish Tweak Tool from Shells → Fish
