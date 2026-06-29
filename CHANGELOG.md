@@ -2,6 +2,23 @@
 
 ## 2026.06.29
 
+### Image/asset size reduction — repo 71 MB → 47 MB
+
+**What Changed.** Compressed the shipped JPG assets to shrink the package. **~24 MB saved** with no
+visible quality loss (all changes git-revertable; integrity-checked, 0 corrupt).
+
+**Technical Details** (ImageMagick `mogrify`, downscale-only via the `>` geometry flag + EXIF strip):
+- Previews/UI chrome (−9.8 MB): `images/zsh_previews` (143 files, all 1906×1020) capped at 1280w q82
+  (20→13 MB); `images/` UI + samples capped 1920w q85, incl. `splash-background.jpg` 3428×1928
+  (4.1→2.3 MB); `desktop_data` previews capped 800w q88; `themer_data` recompressed q85.
+- Wallpapers (−14 MB): `walls/` + `wallpapers/` + `data/wallpaper/` capped at **4K (3840×2160) q88** —
+  several shipped at absurd 8K (7680×5120) / 6000×4000 with no display that needs it (14→7.4 MB and
+  13→5.9 MB respectively). 4K keeps full quality on any real monitor.
+- `walls/` and `wallpapers/` confirmed NOT duplicates (same-named files differ in content + size).
+- PNGs (8.6 MB) left untouched — meaningful lossless gains need `pngquant`/`optipng` (not installed).
+
+**Files Modified.** Binary JPGs under `usr/share/archlinux-tweak-tool/{images,images/zsh_previews,desktop_data,themer_data,walls,wallpapers,data/wallpaper}/`.
+
 ### New Wayland WM picker — paired with the Desktop page as "Desktop" / "Desktop - Wayland"
 
 **What Changed.** Added a dedicated Wayland WM picker and grouped it with the existing installer
