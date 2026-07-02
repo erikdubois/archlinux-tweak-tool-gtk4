@@ -12,7 +12,7 @@ def _status_markup(wm, desktopr):
     if wm.get("disabled"):
         return '<span foreground="#888888">AUR — coming soon</span>'
     if not wm["ready"]:
-        return '<span foreground="#888888">no Kiro config yet</span>'
+        return '<span foreground="#888888">install via pacman - consider work in progress</span>'
     return '<span foreground="#888888">curated by Kiro</span>'
 
 
