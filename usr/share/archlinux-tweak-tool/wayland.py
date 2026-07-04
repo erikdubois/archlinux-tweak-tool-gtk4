@@ -43,7 +43,6 @@ WAYLAND_WMS = [
         "proc": "Hyprland",
     },
     {"key": "hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "packages": ["hyprland"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "niri", "label": "Niri", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
     {"key": "ohmyniri", "label": "Ohmyniri", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
     {"key": "niri-noctalia", "label": "Niri Noctalia", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
     {"key": "niri-dank-material-shell", "label": "Niri Dank Material Shell", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
