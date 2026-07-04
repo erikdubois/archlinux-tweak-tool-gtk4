@@ -1,5 +1,21 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.04
+
+### Wayland picker — 3 new placeholder rows (Noctalia / Dank Material Shell)
+
+**What Changed.** Added three window-manager rows to the Desktop - Wayland picker: **Niri Noctalia**,
+**Niri Dank Material Shell**, and **Hyprland Noctalia**. All three ship the same "work in progress"
+placeholder look as the existing Niri row — visible but not selectable — pending curated Kiro configs.
+
+**Technical Details.** Three new `WAYLAND_WMS` entries with `ready=False`, so `_build_row` greys the
+checkbox (`set_sensitive(False)`) and `_status_markup` shows the "install via pacman - consider work
+in progress" text. The two Niri variants use `smithay` (packages `["niri"]`); Hyprland Noctalia uses
+`aquamarine` (packages `["hyprland"]`). All in `extra` for now — the values are cosmetic while the
+rows are non-selectable.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`.
+
 ## 2026.06.29
 
 ### Image/asset size reduction — repo 71 MB → 47 MB
