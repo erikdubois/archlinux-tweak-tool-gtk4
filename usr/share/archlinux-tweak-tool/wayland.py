@@ -8,57 +8,49 @@ from gi.repository import GLib  # noqa
 import functions as fn
 import desktopr
 
-# Wayland window managers offered on the dedicated "Wayland" page.
+# Wayland window managers offered on the dedicated "Desktop - Wayland" page.
 #
-# Only Hyprland is curated: installing it pulls the kiro-hyprland meta (config +
-# full dependency stack) and seeds its config from /etc/skel. The others install
-# the bare upstream package with no Kiro config yet (ready=False). dwl has no repo
-# package — it stays a disabled "coming soon" row until packaged.
+# Every entry is a curated Kiro edition published to nemesis_repo: installing it pulls
+# the kiro-<wm> config package (which `depends` on its compositor + shared tools) and
+# seeds that edition's config from /etc/skel into ~/.config.
 #
-# Status detection is free: desktopr.check_desktop() scans /usr/share/wayland-sessions,
-# so each entry's "key" matches the session .desktop name (hyprland → hyprland.desktop).
+# Fields:
+#   key      row id + desktopr.check_desktop fallback; equals the session .desktop basename
+#            (own-session editions use kiro-<wm>; base editions reuse the upstream session).
+#   pkgname  the single package ATT installs/removes; its deps do the rest.
+#   skel     /etc/skel/.config/* paths seeded home after install.
+#   remove   packages passed to `pacman -R` — the config package ONLY. pacman deletes just
+#            that package's files under /etc/skel and /usr; the user's ~/.config is never
+#            touched, and the compositor + shared tools are kept (other WMs may use them).
+#   proc     compositor process name for the running-session removal guard (pgrep -x).
+#
+# Status detection is package-based (fn.check_package_installed(pkgname)) so a row flips to
+# "not installed" after `pacman -R kiro-<wm>` even when a base edition's upstream session
+# .desktop (owned by the compositor package) remains on disk.
 WAYLAND_WMS = [
-    {
-        "key": "hyprland",
-        "label": "Hyprland",
-        "backend": "aquamarine",
-        "packages": ["kiro-hyprland"],
-        "repo": "nemesis_repo",
-        "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar", "/etc/skel/.config/mako"],
-        "ready": True,
-        # Removal targets only Hyprland-SPECIFIC packages. Shared tools the install
-        # pulled (waybar, mako, swaybg, rofi, grim, slurp, wl-clipboard, polkit-gnome,
-        # network-manager-applet, pavucontrol, playerctl, wireplumber, brightnessctl)
-        # are kept — XFCE/chadwm and other WMs rely on them. hyprland-tweak-tool MUST be
-        # in the list: it `Depends On: hyprland`, so removing hyprland without it fails.
-        "remove": [
-            "kiro-hyprland",
-            "hyprland-tweak-tool",
-            "hyprland",
-            "hyprlock",
-            "hypridle",
-            "hyprpicker",
-            "xdg-desktop-portal-hyprland",
-        ],
-        "proc": "Hyprland",
-    },
-    {"key": "hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "packages": ["hyprland"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "ohmyniri", "label": "Ohmyniri", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "niri-noctalia", "label": "Niri Noctalia", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "niri-dank-material-shell", "label": "Niri Dank Material Shell", "backend": "smithay", "packages": ["niri"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "mango", "label": "Mango", "backend": "wlroots 0.20", "packages": ["sway"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "river", "label": "River", "backend": "wlroots 0.20", "packages": ["river"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "wayfire", "label": "Wayfire", "backend": "wlroots 0.19", "packages": ["wayfire"], "repo": "extra", "skel": [], "ready": False},
-    {"key": "labwc", "label": "Labwc", "backend": "wlroots 0.20", "packages": ["labwc"], "repo": "extra", "skel": [], "ready": False},
-    {
-        "key": "dwl",
-        "label": "Dwl",
-        "backend": "wlroots (AUR)",
-        "packages": [],
-        "repo": "aur",
-        "skel": [],
-        "ready": False,
-    },
+    {"key": "hyprland", "pkgname": "kiro-hyprland", "label": "Hyprland", "backend": "aquamarine", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"]},
+    {"key": "kiro-hyprland-noctalia", "pkgname": "kiro-hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"]},
+    {"key": "kiro-ohmyniri", "pkgname": "kiro-ohmyniri", "label": "Ohmyniri", "backend": "smithay", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/gtklock", "/etc/skel/.config/kiro-ohmyniri", "/etc/skel/.config/waybar"], "ready": True, "proc": "niri", "remove": ["kiro-ohmyniri"]},
+    {"key": "kiro-niri-noctalia", "pkgname": "kiro-niri-noctalia", "label": "Niri Noctalia", "backend": "smithay", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/kiro-niri-noctalia"], "ready": True, "proc": "niri", "remove": ["kiro-niri-noctalia"]},
+    {"key": "kiro-niri-dms", "pkgname": "kiro-niri-dms", "label": "Niri Dank Material Shell", "backend": "smithay", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/kiro-niri-dms"], "ready": True, "proc": "niri", "remove": ["kiro-niri-dms"]},
+    {"key": "kiro-mango", "pkgname": "kiro-mango", "label": "Mango", "backend": "wlroots 0.20", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/mango", "/etc/skel/.config/waybar"], "ready": True, "proc": "mango", "remove": ["kiro-mango"]},
+    {"key": "river", "pkgname": "kiro-river", "label": "River", "backend": "wlroots 0.20", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/river", "/etc/skel/.config/waybar"], "ready": True, "proc": "river", "remove": ["kiro-river"]},
+    {"key": "wayfire", "pkgname": "kiro-wayfire", "label": "Wayfire", "backend": "wlroots 0.19", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/fuzzel", "/etc/skel/.config/nwg-drawer", "/etc/skel/.config/waybar", "/etc/skel/.config/wayfire", "/etc/skel/.config/wayfire.ini"],
+     "ready": True, "proc": "wayfire", "remove": ["kiro-wayfire"]},
+    {"key": "labwc", "pkgname": "kiro-labwc", "label": "Labwc", "backend": "wlroots 0.20", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/labwc", "/etc/skel/.config/waybar"], "ready": True, "proc": "labwc", "remove": ["kiro-labwc"]},
+    {"key": "dwl", "pkgname": "kiro-dwl", "label": "Dwl", "backend": "wlroots", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/dwl"], "ready": True, "proc": "dwl", "remove": ["kiro-dwl"]},
+    {"key": "sway", "pkgname": "kiro-sway", "label": "Sway", "backend": "wlroots (swayfx)", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/sway", "/etc/skel/.config/waybar"], "ready": True, "proc": "sway", "remove": ["kiro-sway"]},
 ]
 
 
@@ -67,8 +59,13 @@ def get_wm(key):
     return next((wm for wm in WAYLAND_WMS if wm["key"] == key), None)
 
 
+def is_installed(wm):
+    """True if this WM's curated Kiro package is installed (the row's 'installed' state)."""
+    return fn.check_package_installed(wm["pkgname"])
+
+
 def selection_needs_nemesis(keys):
-    """True if any selected WM ships from nemesis_repo (currently only Hyprland)."""
+    """True if any selected WM ships from nemesis_repo (every curated Kiro edition does)."""
     return any((wm := get_wm(k)) and wm["repo"] == "nemesis_repo" for k in keys)
 
 
@@ -102,7 +99,7 @@ def install_wayland_selection(self, keys):
     union the packages, scoped-backup the configs about to be overwritten, run one
     pkexec pacman install, then copy /etc/skel configs home for the curated (ready) WMs.
     """
-    selected = [wm for k in keys if (wm := get_wm(k)) and not wm.get("disabled")]
+    selected = [wm for k in keys if (wm := get_wm(k)) and wm.get("ready")]
     if not selected:
         fn.log_warn("install_wayland_selection called with no installable WMs")
         return
@@ -111,7 +108,7 @@ def install_wayland_selection(self, keys):
     fn.log_section(f"Installing Wayland WM(s): {names}")
     fn.show_in_app_notification(self, f"Opening terminal for: {names}")
 
-    packages = [pkg for wm in selected for pkg in wm["packages"]]
+    packages = [wm["pkgname"] for wm in selected]
     skel_dirs = [d for wm in selected if wm["ready"] for d in wm["skel"]]
 
     _backup_overwritten_configs(skel_dirs)
@@ -138,7 +135,7 @@ def install_wayland_selection(self, keys):
         f"&& echo '' && echo '=== Installation Complete ===' "
         f"|| ( echo '' && echo '=== Installation failed — see errors above ===' && echo '' && "
         f'echo "${{RED}}  [EE]  Package(s) not found in enabled repos.${{RESET}}" && '
-        f'echo "${{RED}}  [EE]  Hyprland needs nemesis_repo — enable it in ATT > Pacman tab.${{RESET}}" ); '
+        f'echo "${{RED}}  [EE]  Kiro Wayland editions need nemesis_repo — enable it in ATT > Pacman tab.${{RESET}}" ); '
         f"read -p 'Press Enter to close...' "
         f") 2>&1 | tee {log_path}"
     )
@@ -152,11 +149,12 @@ def install_wayland_selection(self, keys):
 
 
 def remove_wayland_selection(self, keys):
-    """Remove the Hyprland-specific packages for the selected WMs, keeping shared tools.
+    """Remove the selected WMs' Kiro config packages, keeping the compositor and shared tools.
 
-    Runs as a daemon-thread target. Uses plain `pacman -R` (no -s) on an explicit,
-    WM-specific package list so shared utilities and orphaned libs are never cascaded
-    out. Refuses to remove a WM whose compositor is the current running session.
+    Runs as a daemon-thread target. Uses plain `pacman -R` (no -s) on the kiro-<wm> config
+    package(s) only, so pacman deletes just those packages' files under /etc/skel and /usr —
+    the compositor, shared utilities, and the user's ~/.config are never touched. Refuses to
+    remove a WM whose compositor is the current running session.
     """
     selected = [wm for k in keys if (wm := get_wm(k)) and wm.get("remove")]
     if not selected:
@@ -221,7 +219,7 @@ def _seed_and_refresh(self, selected):
     desktopr._xsession_files = None
     desktopr._wayland_files = None
     for wm in selected:
-        if not (wm["ready"] and desktopr.check_desktop(wm["key"])):
+        if not (wm["ready"] and is_installed(wm)):
             continue
         fn.log_info(f"Seeding {wm['label']} config from /etc/skel")
         for src in wm["skel"]:

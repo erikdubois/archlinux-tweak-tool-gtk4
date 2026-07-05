@@ -6,14 +6,10 @@ import functools
 import functions as fn
 
 
-def _status_markup(wm, desktopr):
-    if desktopr.check_desktop(wm["key"]):
-        return '<span foreground="#8FBCBB"><b>installed</b></span>'
-    if wm.get("disabled"):
-        return '<span foreground="#888888">AUR — coming soon</span>'
-    if not wm["ready"]:
-        return '<span foreground="#888888">install via pacman - consider work in progress</span>'
-    return '<span foreground="#888888">curated by Kiro</span>'
+def _status_markup(wm, wayland):
+    if wayland.is_installed(wm):
+        return '<span foreground="#FFA500"><b>Installed</b></span>'
+    return '<span foreground="#888888">Not installed</span>'
 
 
 def _selected_keys(self):
@@ -30,12 +26,12 @@ def _update_button(self, wayland, desktopr, fn):
         self.wayland_install_btn.set_tooltip_text("Select at least one window manager")
     elif needs_nemesis:
         self.wayland_install_btn.set_sensitive(False)
-        self.wayland_install_btn.set_tooltip_text("Enable nemesis_repo in the Pacman tab to install Hyprland (kiro-hyprland)")
+        self.wayland_install_btn.set_tooltip_text("Enable nemesis_repo in the Pacman tab to install these Kiro Wayland editions")
     else:
         self.wayland_install_btn.set_sensitive(True)
         self.wayland_install_btn.set_tooltip_text("")
 
-    removable = [k for k in selected if wayland.get_wm(k).get("remove") and desktopr.check_desktop(k)]
+    removable = [k for k in selected if wayland.get_wm(k).get("remove") and wayland.is_installed(wayland.get_wm(k))]
     self.wayland_remove_btn.set_sensitive(bool(removable))
     self.wayland_remove_btn.set_tooltip_text("" if removable else "Select an installed window manager to remove")
 
@@ -44,7 +40,7 @@ def _refresh(self, wayland, desktopr, fn):
     for wm in wayland.WAYLAND_WMS:
         row = self.wayland_rows.get(wm["key"])
         if row:
-            row["status"].set_markup(_status_markup(wm, desktopr))
+            row["status"].set_markup(_status_markup(wm, wayland))
     sessions = wayland.installed_wayland_sessions()
     text = "Installed Wayland sessions: " + ", ".join(sessions) if sessions else "No Wayland sessions installed yet"
     self.wayland_installed_lbl.set_markup(f'<span foreground="#888888">{text}</span>')
@@ -66,7 +62,7 @@ def _on_install(self, _widget, wayland, desktopr, fn):
 
 
 def _on_remove(self, _widget, wayland, desktopr, fn):
-    selected = [k for k in _selected_keys(self) if wayland.get_wm(k).get("remove") and desktopr.check_desktop(k)]
+    selected = [k for k in _selected_keys(self) if wayland.get_wm(k).get("remove") and wayland.is_installed(wayland.get_wm(k))]
     if not selected:
         return
     labels = ", ".join(wayland.get_wm(k)["label"] for k in selected)
@@ -81,14 +77,11 @@ def _build_row(self, Gtk, wayland, desktopr, wm):
     check = Gtk.CheckButton(label=f"{wm['label']}  ·  {wm['backend']}")
     check.set_margin_start(20)
     check.set_hexpand(True)
-    # Only curated (ready) WMs are selectable; the rest are visible placeholders.
-    if not wm["ready"]:
-        check.set_sensitive(False)
     check.connect("toggled", functools.partial(_on_toggle, self, wayland=wayland, desktopr=desktopr, fn=fn))
 
     status = Gtk.Label(xalign=1)
     status.set_margin_end(20)
-    status.set_markup(_status_markup(wm, desktopr))
+    status.set_markup(_status_markup(wm, wayland))
 
     hbox.append(check)
     hbox.append(status)
@@ -98,8 +91,6 @@ def _build_row(self, Gtk, wayland, desktopr, wm):
 
 def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     """Create the Wayland window-manager picker page."""
-    from gi.repository import Gdk, GdkPixbuf
-
     self.wayland_rows = {}
 
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -114,6 +105,15 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     hseparator.set_hexpand(True)
     hbox_sep.append(hseparator)
 
+    headline = Gtk.Label(xalign=0)
+    headline.set_margin_start(20)
+    headline.set_margin_end(20)
+    headline.set_margin_top(10)
+    headline.set_wrap(True)
+    headline.set_markup(
+        '<span size="x-large" weight="bold">Install them all — they live side by side</span>'
+    )
+
     intro = Gtk.Label(xalign=0)
     intro.set_margin_start(20)
     intro.set_margin_end(20)
@@ -121,24 +121,10 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     intro.set_wrap(True)
     intro.set_markup(
         "Try a Wayland window manager alongside your current desktop — pick one at the login screen afterwards. "
-        "Your current session stays the default. Only Hyprland ships a Kiro config."
+        "Your current session stays the default. Every edition here ships a curated Kiro config. "
+        "You can install as many as you like in one go: each coexists with the others and with your "
+        "existing X11 desktop, so nothing you already run is replaced."
     )
-
-    # Hyprland preview — the flagship curated Wayland desktop; the only WM that
-    # ships a Kiro config and the only one with a preview image for now.
-    preview = Gtk.Picture()
-    preview.set_halign(Gtk.Align.CENTER)
-    preview.set_size_request(480, 270)
-    preview.set_margin_top(10)
-    try:
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(base_dir + "/desktop_data/hyprland.jpg", 480, 480)
-        preview.set_paintable(Gdk.Texture.new_for_pixbuf(pixbuf))
-    except Exception as error:
-        fn.log_warn(f"Wayland page: could not load Hyprland preview: {error}")
-
-    lbl_preview_caption = Gtk.Label(xalign=0.5)
-    lbl_preview_caption.set_halign(Gtk.Align.CENTER)
-    lbl_preview_caption.set_markup('<span foreground="#888888">Hyprland — the curated Kiro Wayland desktop</span>')
 
     hbox_section = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_section = Gtk.Label(xalign=0)
@@ -161,7 +147,7 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     self.wayland_repo_warning.set_margin_top(10)
     self.wayland_repo_warning.set_wrap(True)
     self.wayland_repo_warning.set_markup(
-        '<span foreground="#FFA500"><b>Hyprland needs nemesis_repo — enable it in the Pacman tab first.</b></span>'
+        '<span foreground="#FFA500"><b>These Kiro Wayland editions need nemesis_repo — enable it in the Pacman tab first.</b></span>'
     )
     self.wayland_repo_warning.set_visible(False)
 
@@ -187,9 +173,8 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
 
     vboxstack_wayland.append(hbox_title)
     vboxstack_wayland.append(hbox_sep)
+    vboxstack_wayland.append(headline)
     vboxstack_wayland.append(intro)
-    vboxstack_wayland.append(preview)
-    vboxstack_wayland.append(lbl_preview_caption)
     vboxstack_wayland.append(hbox_section)
     vboxstack_wayland.append(self.wayland_installed_lbl)
     vboxstack_wayland.append(vbox_rows)

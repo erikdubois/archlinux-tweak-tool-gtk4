@@ -1,5 +1,37 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.05
+
+### Desktop - Wayland — all 11 Kiro Wayland editions now installable
+
+**What Changed.** The Desktop - Wayland picker went from "only Hyprland selectable" to **all 11
+curated Kiro Wayland editions installable**: Hyprland, Hyprland Noctalia, Ohmyniri, Niri Noctalia,
+Niri Dank Material Shell, Mango, River, Wayfire, Labwc, Dwl, Sway. The greyed "work in progress"
+placeholders (and their stale/wrong package data — e.g. `mango → ["sway"]`, `river → ["river"]`)
+are gone; every row is selectable, installs its real `kiro-<wm>` package from nemesis_repo, and
+seeds that edition's config from `/etc/skel` into `~/.config`.
+
+**Technical Details.**
+- `WAYLAND_WMS` rewritten: each entry now carries `pkgname` (the single package ATT installs/
+  removes; its `depends` pull the compositor + shared tools), `skel` (the exact
+  `/etc/skel/.config/*` paths the package ships — cross-checked against the built `.pkg.tar.zst`),
+  `proc` (compositor name for the running-session removal guard), `ready=True`, and `remove=[pkgname]`.
+- **Detection is now package-based** (`fn.check_package_installed(pkgname)` via new `is_installed`
+  helper) instead of session-file based. This flips a row to "not installed" after
+  `pacman -R kiro-<wm>` even for the base editions (Hyprland/River/Sway/Wayfire/Labwc) whose session
+  `.desktop` is owned by the upstream compositor package, not by `kiro-<wm>`.
+- **Removal never touches the user's home.** `remove` is the config package only (plain `pacman -R`,
+  no `-s`): pacman deletes just that package's files under `/etc/skel` and `/usr`; the compositor and
+  shared tools are kept, and the seeded `~/.config/<wm>` is left intact for the user to keep/delete.
+- All editions ship from nemesis_repo, so `selection_needs_nemesis` now trips for any selection —
+  the existing nemesis warning/guard covers every WM. No new repo plumbing.
+- GUI: `_status_markup` reduced to two states (installed / curated by Kiro); `_build_row` no longer
+  greys any row; intro/warning/tooltip copy de-Hyprland-ised.
+- Absorbed the two earlier fixes (dwl `disabled` key, dead line-105 guard): dwl is a normal
+  installable entry; the install filter now keys on `wm.get("ready")`.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`, `usr/share/archlinux-tweak-tool/wayland_gui.py`.
+
 ## 2026.07.04
 
 ### Wayland picker — 3 new placeholder rows (Noctalia / Dank Material Shell)
