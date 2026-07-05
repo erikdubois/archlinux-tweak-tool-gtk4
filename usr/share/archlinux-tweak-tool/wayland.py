@@ -82,14 +82,6 @@ def selection_needs_nemesis(keys):
     return any((wm := get_wm(k)) and wm["repo"] == "nemesis_repo" for k in keys)
 
 
-def installed_wayland_sessions():
-    """Return sorted names of installed /usr/share/wayland-sessions entries (sans .desktop)."""
-    wayland_dir = "/usr/share/wayland-sessions"
-    if not fn.path.exists(wayland_dir):
-        return []
-    return sorted(f[:-8] for f in fn.listdir(wayland_dir) if f.endswith(".desktop"))
-
-
 def _backup_overwritten_configs(skel_dirs):
     to_backup = [fn.path.basename(p) for p in skel_dirs if fn.path.exists(fn.home + "/.config/" + fn.path.basename(p))]
     if not to_backup:

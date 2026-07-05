@@ -41,14 +41,19 @@ def _refresh(self, wayland, desktopr, fn):
         row = self.wayland_rows.get(wm["key"])
         if row:
             row["status"].set_markup(_status_markup(wm, wayland))
-    sessions = wayland.installed_wayland_sessions()
-    text = "Installed Wayland sessions: " + ", ".join(sessions) if sessions else "No Wayland sessions installed yet"
-    self.wayland_installed_lbl.set_markup(f'<span foreground="#888888">{text}</span>')
     _update_button(self, wayland, desktopr, fn)
     return False
 
 
 def _on_toggle(self, _widget, wayland, desktopr, fn):
+    _update_button(self, wayland, desktopr, fn)
+
+
+def _on_select_all(self, _widget, active, wayland, desktopr, fn):
+    fn.log_info(f"Wayland page: {'select' if active else 'deselect'} all window managers")
+    for row in self.wayland_rows.values():
+        if row["check"].get_sensitive():
+            row["check"].set_active(active)
     _update_button(self, wayland, desktopr, fn)
 
 
@@ -157,12 +162,21 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     lbl_section.set_markup("<b>Available Wayland window managers</b>")
     lbl_section.set_margin_start(20)
     lbl_section.set_margin_top(12)
+    lbl_section.set_hexpand(True)
     hbox_section.append(lbl_section)
 
-    self.wayland_installed_lbl = Gtk.Label(xalign=0)
-    self.wayland_installed_lbl.set_margin_start(20)
-    self.wayland_installed_lbl.set_margin_top(2)
-    self.wayland_installed_lbl.set_wrap(True)
+    btn_select_all = Gtk.Button(label="Select all")
+    btn_select_all.set_css_classes(["flat"])
+    btn_select_all.set_valign(Gtk.Align.CENTER)
+    btn_select_all.connect("clicked", functools.partial(_on_select_all, self, active=True, wayland=wayland, desktopr=desktopr, fn=fn))
+    hbox_section.append(btn_select_all)
+
+    btn_deselect_all = Gtk.Button(label="Deselect all")
+    btn_deselect_all.set_css_classes(["flat"])
+    btn_deselect_all.set_valign(Gtk.Align.CENTER)
+    btn_deselect_all.set_margin_end(20)
+    btn_deselect_all.connect("clicked", functools.partial(_on_select_all, self, active=False, wayland=wayland, desktopr=desktopr, fn=fn))
+    hbox_section.append(btn_deselect_all)
 
     vbox_rows = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     for wm in wayland.WAYLAND_WMS:
@@ -202,7 +216,6 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     vboxstack_wayland.append(headline)
     vboxstack_wayland.append(intro)
     vboxstack_wayland.append(hbox_section)
-    vboxstack_wayland.append(self.wayland_installed_lbl)
     vboxstack_wayland.append(vbox_rows)
     vboxstack_wayland.append(self.wayland_repo_warning)
     vboxstack_wayland.append(buttonbox)

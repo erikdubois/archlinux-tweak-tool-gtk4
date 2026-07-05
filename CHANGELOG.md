@@ -2,6 +2,21 @@
 
 ## 2026.07.05
 
+### Desktop - Wayland — Select all / Deselect all
+
+**What Changed.** The Desktop - Wayland picker header gained **Select all** and **Deselect all**
+flat buttons (right-aligned on the "Available Wayland window managers" section row), so the user
+can toggle every editable window manager at once instead of clicking each checkbox — handy given
+all 11 editions are now selectable.
+
+**Technical Details.**
+- `wayland_gui.py`: new `_on_select_all` helper sets every sensitive checkbox active/inactive and
+  re-runs `_update_button`; it logs the action via `fn.log_info`. The section label now `hexpand`s
+  so the two buttons sit at the right edge. Only sensitive checks are toggled, matching the
+  `_selected_keys` guard.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland_gui.py`.
+
 ### Desktop - Wayland — upstream link per window manager
 
 **What Changed.** Each row in the Desktop - Wayland picker now carries a clickable upstream link in
