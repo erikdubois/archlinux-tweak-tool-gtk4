@@ -70,6 +70,28 @@ def _on_remove(self, _widget, wayland, desktopr, fn):
     fn.threading.Thread(target=wayland.remove_wayland_selection, args=(self, selected), daemon=True).start()
 
 
+def _link_kind(url):
+    """Short label describing where the upstream link points."""
+    if "wiki." in url:
+        return "wiki"
+    if "codeberg.org" in url:
+        return "codeberg"
+    return "github"
+
+
+def _build_link_button(self, Gtk, url):
+    button = Gtk.Button()
+    button.set_valign(Gtk.Align.CENTER)
+    button.set_css_classes(["flat"])
+    button.set_tooltip_text(url)
+    label = Gtk.Label()
+    label.set_markup(f'<i>{_link_kind(url)}</i>')
+    button.set_child(label)
+    button.connect("clicked", lambda _w, u=url: fn.open_url_as_user(u))
+    fn.attach_link_context_menu(self, button, url)
+    return button
+
+
 def _build_row(self, Gtk, wayland, desktopr, wm):
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox.set_margin_top(4)
@@ -79,11 +101,15 @@ def _build_row(self, Gtk, wayland, desktopr, wm):
     check.set_hexpand(True)
     check.connect("toggled", functools.partial(_on_toggle, self, wayland=wayland, desktopr=desktopr, fn=fn))
 
+    link = _build_link_button(self, Gtk, wm["link"])
+
     status = Gtk.Label(xalign=1)
     status.set_margin_end(20)
+    status.set_size_request(110, -1)
     status.set_markup(_status_markup(wm, wayland))
 
     hbox.append(check)
+    hbox.append(link)
     hbox.append(status)
     self.wayland_rows[wm["key"]] = {"check": check, "status": status}
     return hbox

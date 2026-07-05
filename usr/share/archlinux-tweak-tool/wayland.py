@@ -23,34 +23,47 @@ import desktopr
 #            that package's files under /etc/skel and /usr; the user's ~/.config is never
 #            touched, and the compositor + shared tools are kept (other WMs may use them).
 #   proc     compositor process name for the running-session removal guard (pgrep -x).
+#   link     upstream project page (wiki/github/codeberg). For shell-variant editions this
+#            points at the distinguishing shell (Noctalia/DMS), not the shared compositor,
+#            since the base compositor already has its own row and link.
 #
 # Status detection is package-based (fn.check_package_installed(pkgname)) so a row flips to
 # "not installed" after `pacman -R kiro-<wm>` even when a base edition's upstream session
 # .desktop (owned by the compositor package) remains on disk.
 WAYLAND_WMS = [
     {"key": "hyprland", "pkgname": "kiro-hyprland", "label": "Hyprland", "backend": "aquamarine", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"]},
+     "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
+     "link": "https://wiki.hyprland.org/"},
     {"key": "kiro-hyprland-noctalia", "pkgname": "kiro-hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"]},
+     "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"],
+     "link": "https://github.com/noctalia-dev/noctalia"},
     {"key": "kiro-ohmyniri", "pkgname": "kiro-ohmyniri", "label": "Ohmyniri", "backend": "smithay", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/gtklock", "/etc/skel/.config/kiro-ohmyniri", "/etc/skel/.config/waybar"], "ready": True, "proc": "niri", "remove": ["kiro-ohmyniri"]},
+     "skel": ["/etc/skel/.config/gtklock", "/etc/skel/.config/kiro-ohmyniri", "/etc/skel/.config/waybar"], "ready": True, "proc": "niri", "remove": ["kiro-ohmyniri"],
+     "link": "https://github.com/YaLTeR/niri"},
     {"key": "kiro-niri-noctalia", "pkgname": "kiro-niri-noctalia", "label": "Niri Noctalia", "backend": "smithay", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-niri-noctalia"], "ready": True, "proc": "niri", "remove": ["kiro-niri-noctalia"]},
+     "skel": ["/etc/skel/.config/kiro-niri-noctalia"], "ready": True, "proc": "niri", "remove": ["kiro-niri-noctalia"],
+     "link": "https://github.com/noctalia-dev/noctalia"},
     {"key": "kiro-niri-dms", "pkgname": "kiro-niri-dms", "label": "Niri Dank Material Shell", "backend": "smithay", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-niri-dms"], "ready": True, "proc": "niri", "remove": ["kiro-niri-dms"]},
+     "skel": ["/etc/skel/.config/kiro-niri-dms"], "ready": True, "proc": "niri", "remove": ["kiro-niri-dms"],
+     "link": "https://github.com/AvengeMedia/DankMaterialShell"},
     {"key": "kiro-mango", "pkgname": "kiro-mango", "label": "Mango", "backend": "wlroots 0.20", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/mango", "/etc/skel/.config/waybar"], "ready": True, "proc": "mango", "remove": ["kiro-mango"]},
+     "skel": ["/etc/skel/.config/mango", "/etc/skel/.config/waybar"], "ready": True, "proc": "mango", "remove": ["kiro-mango"],
+     "link": "https://github.com/DreamMaoMao/mango"},
     {"key": "river", "pkgname": "kiro-river", "label": "River", "backend": "wlroots 0.20", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/river", "/etc/skel/.config/waybar"], "ready": True, "proc": "river", "remove": ["kiro-river"]},
+     "skel": ["/etc/skel/.config/river", "/etc/skel/.config/waybar"], "ready": True, "proc": "river", "remove": ["kiro-river"],
+     "link": "https://codeberg.org/river/river"},
     {"key": "wayfire", "pkgname": "kiro-wayfire", "label": "Wayfire", "backend": "wlroots 0.19", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/fuzzel", "/etc/skel/.config/nwg-drawer", "/etc/skel/.config/waybar", "/etc/skel/.config/wayfire", "/etc/skel/.config/wayfire.ini"],
-     "ready": True, "proc": "wayfire", "remove": ["kiro-wayfire"]},
+     "ready": True, "proc": "wayfire", "remove": ["kiro-wayfire"], "link": "https://github.com/WayfireWM/wayfire"},
     {"key": "labwc", "pkgname": "kiro-labwc", "label": "Labwc", "backend": "wlroots 0.20", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/labwc", "/etc/skel/.config/waybar"], "ready": True, "proc": "labwc", "remove": ["kiro-labwc"]},
+     "skel": ["/etc/skel/.config/labwc", "/etc/skel/.config/waybar"], "ready": True, "proc": "labwc", "remove": ["kiro-labwc"],
+     "link": "https://github.com/labwc/labwc"},
     {"key": "dwl", "pkgname": "kiro-dwl", "label": "Dwl", "backend": "wlroots", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/dwl"], "ready": True, "proc": "dwl", "remove": ["kiro-dwl"]},
+     "skel": ["/etc/skel/.config/dwl"], "ready": True, "proc": "dwl", "remove": ["kiro-dwl"],
+     "link": "https://codeberg.org/dwl/dwl"},
     {"key": "sway", "pkgname": "kiro-sway", "label": "Sway", "backend": "wlroots (swayfx)", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/sway", "/etc/skel/.config/waybar"], "ready": True, "proc": "sway", "remove": ["kiro-sway"]},
+     "skel": ["/etc/skel/.config/sway", "/etc/skel/.config/waybar"], "ready": True, "proc": "sway", "remove": ["kiro-sway"],
+     "link": "https://github.com/WillPower3309/swayfx"},
 ]
 
 

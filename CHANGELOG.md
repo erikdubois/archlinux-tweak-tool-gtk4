@@ -2,6 +2,27 @@
 
 ## 2026.07.05
 
+### Desktop - Wayland — upstream link per window manager
+
+**What Changed.** Each row in the Desktop - Wayland picker now carries a clickable upstream link in
+the previously empty column between the checkbox and the install status. It points at the project's
+own page — Hyprland's wiki, and the github/codeberg repo for every other compositor. For the three
+shell-variant editions the link points at the **distinguishing shell** (Noctalia / Dank Material
+Shell), not the shared compositor, since the base Hyprland/Niri rows already link the compositor.
+
+**Technical Details.**
+- `WAYLAND_WMS` entries gain a `link` field: Hyprland → `wiki.hyprland.org`; Niri → `YaLTeR/niri`;
+  Noctalia rows → `noctalia-dev/noctalia`; DMS → `AvengeMedia/DankMaterialShell`; Mango, Wayfire,
+  Labwc, swayfx → their github repos; River, Dwl → their codeberg repos. URLs were taken from the
+  git remotes of the reference upstream clones in `~/Public/*-upstream`.
+- `wayland_gui.py`: new `_build_link_button` creates a flat `Gtk.Button` (the same pattern as the
+  AI Tools page) that opens the URL via `fn.open_url_as_user` (browser launches as the real user,
+  not root) and gets `fn.attach_link_context_menu` for right-click copy. `_link_kind` labels each
+  link `wiki` / `github` / `codeberg` from its host. The status label gets a fixed 110px width so
+  the link column lines up across rows.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`, `usr/share/archlinux-tweak-tool/wayland_gui.py`.
+
 ### Desktop - Wayland — all 11 Kiro Wayland editions now installable
 
 **What Changed.** The Desktop - Wayland picker went from "only Hyprland selectable" to **all 11
