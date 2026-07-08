@@ -2,6 +2,22 @@
 
 ## 2026.07.05
 
+### Desktop - Wayland — drop the "Installed Wayland sessions" line
+
+**What Changed.** Removed the "Installed Wayland sessions: …" summary label from the Desktop -
+Wayland page. It listed every `/usr/share/wayland-sessions/*.desktop` on disk, which was confusing:
+`Remove selected` only removes the `kiro-<wm>` config package and keeps the compositor (and its
+session `.desktop`), so the line kept showing a WM after its row had already flipped to "Not
+installed". The per-row status now tells the whole story.
+
+**Technical Details.**
+- `wayland_gui.py`: removed `self.wayland_installed_lbl` (creation, append, and the markup update in
+  `_refresh`). `_refresh` now just re-reads each row's status and updates the buttons.
+- `wayland.py`: removed the now-unused `installed_wayland_sessions()` helper (the label was its only
+  caller).
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland_gui.py`, `usr/share/archlinux-tweak-tool/wayland.py`.
+
 ### Desktop - Wayland — Select all / Deselect all
 
 **What Changed.** The Desktop - Wayland picker header gained **Select all** and **Deselect all**
