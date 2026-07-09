@@ -26,6 +26,12 @@ import desktopr
 #   link     upstream project page (wiki/github/codeberg). For shell-variant editions this
 #            points at the distinguishing shell (Noctalia/DMS), not the shared compositor,
 #            since the base compositor already has its own row and link.
+#   shell    optional Quickshell-family tag ("dms" / "noctalia" / "noctura"). Two selected
+#            editions whose shell tags differ CANNOT coexist — DMS editions pull the modern
+#            upstream Quickshell while Noctalia editions pull noctalia-qs (a pinned fork that
+#            Provides+Conflicts quickshell), and Noctura ships its own ~/.config/noctalia so it
+#            Conflicts kiro-noctalia. Editions without a shell tag conflict with nothing.
+#            selection_conflicts() reads this to warn before the pacman install fails.
 #
 # Status detection is package-based (fn.check_package_installed(pkgname)) so a row flips to
 # "not installed" after `pacman -R kiro-<wm>` even when a base edition's upstream session
@@ -35,16 +41,22 @@ WAYLAND_WMS = [
      "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
      "link": "https://wiki.hyprland.org/"},
     {"key": "kiro-hyprland-noctalia", "pkgname": "kiro-hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"],
+     "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"], "shell": "noctalia",
      "link": "https://github.com/noctalia-dev/noctalia"},
+    {"key": "kiro-hyprland-noctura", "pkgname": "kiro-hyprland-noctura", "label": "Hyprland Noctura", "backend": "aquamarine", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/kiro-hyprland-noctura", "/etc/skel/.config/noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctura"], "shell": "noctura",
+     "link": "https://github.com/noctalia-dev/noctalia"},
+    {"key": "kiro-hyprland-dms", "pkgname": "kiro-hyprland-dms", "label": "Hyprland Dank Material Shell", "backend": "aquamarine", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/kiro-hyprland-dms"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-dms"], "shell": "dms",
+     "link": "https://github.com/AvengeMedia/DankMaterialShell"},
     {"key": "kiro-ohmyniri", "pkgname": "kiro-ohmyniri", "label": "Ohmyniri", "backend": "smithay", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/gtklock", "/etc/skel/.config/kiro-ohmyniri", "/etc/skel/.config/waybar"], "ready": True, "proc": "niri", "remove": ["kiro-ohmyniri"],
      "link": "https://github.com/YaLTeR/niri"},
     {"key": "kiro-niri-noctalia", "pkgname": "kiro-niri-noctalia", "label": "Niri Noctalia", "backend": "smithay", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-niri-noctalia"], "ready": True, "proc": "niri", "remove": ["kiro-niri-noctalia"],
+     "skel": ["/etc/skel/.config/kiro-niri-noctalia"], "ready": True, "proc": "niri", "remove": ["kiro-niri-noctalia"], "shell": "noctalia",
      "link": "https://github.com/noctalia-dev/noctalia"},
     {"key": "kiro-niri-dms", "pkgname": "kiro-niri-dms", "label": "Niri Dank Material Shell", "backend": "smithay", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-niri-dms"], "ready": True, "proc": "niri", "remove": ["kiro-niri-dms"],
+     "skel": ["/etc/skel/.config/kiro-niri-dms"], "ready": True, "proc": "niri", "remove": ["kiro-niri-dms"], "shell": "dms",
      "link": "https://github.com/AvengeMedia/DankMaterialShell"},
     {"key": "kiro-mango", "pkgname": "kiro-mango", "label": "Mango", "backend": "wlroots 0.20", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/mango", "/etc/skel/.config/waybar"], "ready": True, "proc": "mango", "remove": ["kiro-mango"],
@@ -80,6 +92,28 @@ def is_installed(wm):
 def selection_needs_nemesis(keys):
     """True if any selected WM ships from nemesis_repo (every curated Kiro edition does)."""
     return any((wm := get_wm(k)) and wm["repo"] == "nemesis_repo" for k in keys)
+
+
+# Human-readable names for the mutually-exclusive Quickshell shell families (the "shell" field).
+SHELL_NAMES = {
+    "dms": "Dank Material Shell (Quickshell)",
+    "noctalia": "Noctalia",
+    "noctura": "Noctura",
+}
+
+
+def selection_conflicts(keys):
+    """Return (label_a, label_b) pairs in the selection that cannot be installed together.
+
+    Two editions clash when both carry a "shell" tag and the tags differ: DMS pulls the
+    modern upstream Quickshell, while Noctalia/Noctura pull noctalia-qs (a fork that
+    Provides+Conflicts quickshell), and Noctura additionally Conflicts kiro-noctalia — so
+    pacman refuses any cross-family pair. Same-tag picks (two DMS, two Noctalia) coexist.
+    """
+    tagged = [wm for k in keys if (wm := get_wm(k)) and wm.get("shell")]
+    return [(a["label"], b["label"])
+            for i, a in enumerate(tagged) for b in tagged[i + 1:]
+            if a["shell"] != b["shell"]]
 
 
 def _backup_overwritten_configs(skel_dirs):

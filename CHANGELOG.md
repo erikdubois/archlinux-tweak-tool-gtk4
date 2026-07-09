@@ -1,5 +1,34 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.09
+
+### Desktop - Wayland — two new Hyprland editions + conflict warnings
+
+**What Changed.** Added two curated Hyprland editions to the Desktop - Wayland picker:
+**Hyprland Dank Material Shell** (`kiro-hyprland-dms`) and **Hyprland Noctura** (`kiro-hyprland-noctura`),
+both grouped with the other Hyprland rows. Alongside them, the page now **tells the user which picks
+conflict before they install**: selecting editions from two different Quickshell shell families shows an
+amber warning listing every clashing pair (e.g. *Hyprland Dank Material Shell ✕ Hyprland Noctalia*) and
+greys out **Install selected** until the conflict is resolved — instead of letting the `pacman` install
+fail with an opaque "unresolvable package conflicts" error.
+
+**Technical Details.**
+- Root cause of the conflict: DankMaterialShell editions pull the modern upstream `quickshell`, while
+  Noctalia/Noctura editions pull `noctalia-qs` (a pinned Quickshell fork that `Provides`+`Conflicts`
+  `quickshell`); Noctura additionally ships its own `~/.config/noctalia` and so `Conflicts kiro-noctalia`.
+  pacman therefore refuses any cross-family pair.
+- `wayland.py`: each shell-variant entry gains a `shell` tag (`"dms"` / `"noctalia"` / `"noctura"`) —
+  added to the two new rows and back-filled onto `kiro-hyprland-noctalia`, `kiro-niri-noctalia`,
+  `kiro-niri-dms`. New `selection_conflicts(keys)` returns the `(label_a, label_b)` pairs whose shell
+  tags differ (same-tag picks coexist; untagged editions conflict with nothing) plus a `SHELL_NAMES`
+  map. Noctura's `skel` includes `/etc/skel/.config/noctalia` (it owns that config, unlike the
+  `kiro-noctalia`-backed Noctalia editions). Fields doc block updated with the `shell` field.
+- `wayland_gui.py`: new `self.wayland_conflict_warning` label; `_update_button` computes
+  `selection_conflicts`, renders the clashing pairs, and disables Install (with an explanatory tooltip)
+  whenever a conflict is present. Gated in the GUI only, mirroring the existing nemesis_repo guard.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`, `usr/share/archlinux-tweak-tool/wayland_gui.py`.
+
 ## 2026.07.05
 
 ### Desktop - Wayland — drop the "Installed Wayland sessions" line

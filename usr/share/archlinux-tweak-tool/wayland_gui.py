@@ -21,12 +21,25 @@ def _update_button(self, wayland, desktopr, fn):
     needs_nemesis = wayland.selection_needs_nemesis(selected) and not fn.check_nemesis_repo_active()
     self.wayland_repo_warning.set_visible(needs_nemesis)
 
+    conflicts = wayland.selection_conflicts(selected)
+    if conflicts:
+        pairs = "\n".join(f"  • {a}  ✕  {b}" for a, b in conflicts)
+        self.wayland_conflict_warning.set_markup(
+            '<span foreground="#FFA500"><b>These picks can’t be installed together — choose one shell family:</b></span>\n'
+            f'<span foreground="#FFA500">{pairs}</span>\n'
+            '<span foreground="#888888">DankMaterialShell editions use Quickshell; Noctalia and Noctura use a conflicting Quickshell fork (noctalia-qs).</span>'
+        )
+    self.wayland_conflict_warning.set_visible(bool(conflicts))
+
     if not selected:
         self.wayland_install_btn.set_sensitive(False)
         self.wayland_install_btn.set_tooltip_text("Select at least one window manager")
     elif needs_nemesis:
         self.wayland_install_btn.set_sensitive(False)
         self.wayland_install_btn.set_tooltip_text("Enable nemesis_repo in the Pacman tab to install these Kiro Wayland editions")
+    elif conflicts:
+        self.wayland_install_btn.set_sensitive(False)
+        self.wayland_install_btn.set_tooltip_text("Selected editions conflict — they use incompatible Quickshell builds; deselect one family")
     else:
         self.wayland_install_btn.set_sensitive(True)
         self.wayland_install_btn.set_tooltip_text("")
@@ -191,6 +204,13 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     )
     self.wayland_repo_warning.set_visible(False)
 
+    self.wayland_conflict_warning = Gtk.Label(xalign=0)
+    self.wayland_conflict_warning.set_margin_start(20)
+    self.wayland_conflict_warning.set_margin_end(20)
+    self.wayland_conflict_warning.set_margin_top(10)
+    self.wayland_conflict_warning.set_wrap(True)
+    self.wayland_conflict_warning.set_visible(False)
+
     buttonbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     buttonbox.set_halign(Gtk.Align.CENTER)
     buttonbox.set_margin_top(14)
@@ -218,6 +238,7 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     vboxstack_wayland.append(hbox_section)
     vboxstack_wayland.append(vbox_rows)
     vboxstack_wayland.append(self.wayland_repo_warning)
+    vboxstack_wayland.append(self.wayland_conflict_warning)
     vboxstack_wayland.append(buttonbox)
     vboxstack_wayland.append(lbl_backup_note)
 
