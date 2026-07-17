@@ -579,9 +579,12 @@ class ATTApplication(Gtk.Application):
                 f.write(str(fn.getpid()))
 
             theme_name, prefer_dark, _theme_src = _resolve_effective_theme()
-            if theme_name:
-                Gtk.Settings.get_default().set_property("gtk-theme-name", theme_name)
-                Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", prefer_dark)
+            settings = Gtk.Settings.get_default()
+            if settings is None:
+                fn.log_warn("No GTK display connection — skipping theme setup (launch via the proper launcher / att-dev)")
+            elif theme_name:
+                settings.set_property("gtk-theme-name", theme_name)
+                settings.set_property("gtk-application-prefer-dark-theme", prefer_dark)
 
             style_provider = Gtk.CssProvider()
             style_provider.load_from_path(base_dir + "/icons.css")

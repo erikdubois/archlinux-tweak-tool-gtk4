@@ -38,7 +38,7 @@ import desktopr
 # .desktop (owned by the compositor package) remains on disk.
 WAYLAND_WMS = [
     {"key": "hyprland", "pkgname": "kiro-hyprland", "label": "Hyprland", "backend": "aquamarine", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/hypr", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
+     "skel": ["/etc/skel/.config/kiro-hyprland"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
      "link": "https://wiki.hyprland.org/"},
     {"key": "kiro-hyprland-noctalia", "pkgname": "kiro-hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"], "shell": "noctalia",
@@ -61,6 +61,9 @@ WAYLAND_WMS = [
     {"key": "kiro-mango", "pkgname": "kiro-mango", "label": "Mango", "backend": "wlroots 0.20", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/mango", "/etc/skel/.config/waybar"], "ready": True, "proc": "mango", "remove": ["kiro-mango"],
      "link": "https://github.com/DreamMaoMao/mango"},
+    {"key": "miracle-wm", "pkgname": "kiro-miracle", "label": "Miracle", "backend": "Mir", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/miracle-wm", "/etc/skel/.config/waybar"], "ready": True, "proc": "miracle-wm", "remove": ["kiro-miracle"],
+     "link": "https://github.com/mattkae/miracle-wm"},
     {"key": "river", "pkgname": "kiro-river", "label": "River", "backend": "wlroots 0.20", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/river", "/etc/skel/.config/waybar"], "ready": True, "proc": "river", "remove": ["kiro-river"],
      "link": "https://codeberg.org/river/river"},
@@ -76,6 +79,9 @@ WAYLAND_WMS = [
     {"key": "sway", "pkgname": "kiro-sway", "label": "Sway", "backend": "wlroots (swayfx)", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/sway", "/etc/skel/.config/waybar"], "ready": True, "proc": "sway", "remove": ["kiro-sway"],
      "link": "https://github.com/WillPower3309/swayfx"},
+    {"key": "scroll", "pkgname": "kiro-scroll", "label": "Scroll", "backend": "wlroots (sway fork)", "repo": "nemesis_repo",
+     "skel": ["/etc/skel/.config/scroll", "/etc/skel/.config/waybar"], "ready": True, "proc": "scroll", "remove": ["kiro-scroll"],
+     "link": "https://github.com/dawsers/scroll"},
 ]
 
 

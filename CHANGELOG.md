@@ -1,5 +1,30 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.17
+
+### Desktop - Wayland — sync picker with shipped packages (Miracle + Scroll added, base Hyprland skel fixed)
+
+**What Changed.** Brought the Desktop - Wayland picker back in sync with what nemesis_repo actually
+ships. Added two new base editions — **Miracle** (`kiro-miracle`, Mir-based tiler) and **Scroll**
+(`kiro-scroll`, sway-fork scrollable tiling) — and fixed the base **Hyprland** row, whose skel paths
+were stale.
+
+**Technical Details.**
+- Base `kiro-hyprland` was migrated to the namespaced-config layout (session launches via
+  `--config ~/.config/kiro-hyprland/hyprland.lua`), but ATT still listed `skel` as
+  `~/.config/hypr` + `~/.config/waybar`. Those paths no longer exist in the package, so an ATT install
+  seeded **nothing** and — worse — `_backup_overwritten_configs` needlessly backed up the user's own
+  `~/.config/hypr` and `~/.config/waybar`. Corrected to the single `/etc/skel/.config/kiro-hyprland`.
+- `kiro-miracle` and `kiro-scroll` are **base editions**: they reuse the upstream compositor's
+  `wayland-sessions` entry (no own `.desktop`), so `key` is the upstream session basename
+  (`miracle-wm`, `scroll`) and `proc` is the compositor process for the running-session removal guard.
+  Both ship a native config dir (`~/.config/miracle-wm`, `~/.config/scroll`) plus a differently-named
+  file under the shared `~/.config/waybar` — same pattern as sway/mango/river. Neither uses Quickshell,
+  so no `shell` conflict tag.
+- Placement: Miracle after Mango (tilers), Scroll after Sway (it is a sway fork).
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`.
+
 ## 2026.07.09
 
 ### Desktop - Wayland — two new Hyprland editions + conflict warnings
@@ -28,6 +53,19 @@ fail with an opaque "unresolvable package conflicts" error.
   whenever a conflict is present. Gated in the GUI only, mirroring the existing nemesis_repo guard.
 
 **Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`, `usr/share/archlinux-tweak-tool/wayland_gui.py`.
+
+### Startup — guard against a null Gtk.Settings
+
+**What Changed.** `on_activate` no longer hard-crashes with `AttributeError: 'NoneType' object has no
+attribute 'set_property'` when GTK has no display connection (e.g. launched as root without the Wayland
+socket / X auth). It now checks `Gtk.Settings.get_default()` for `None`, logs a warning pointing at the
+proper launcher, and skips theme setup instead of tracebacking.
+
+**Technical Details.** The two `Gtk.Settings.get_default()` calls are collapsed into one `settings`
+local; `if settings is None:` logs via `fn.log_warn` and falls through, `elif theme_name:` keeps the
+original behaviour.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`.
 
 ## 2026.07.05
 
