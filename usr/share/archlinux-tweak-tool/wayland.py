@@ -180,7 +180,7 @@ def install_wayland_selection(self, keys):
         f"&& echo '' && echo '=== Installation Complete ===' "
         f"|| ( echo '' && echo '=== Installation failed — see errors above ===' && echo '' && "
         f'echo "${{RED}}  [EE]  Package(s) not found in enabled repos.${{RESET}}" && '
-        f'echo "${{RED}}  [EE]  Kiro Wayland editions need nemesis_repo — enable it in ATT > Pacman tab.${{RESET}}" ); '
+        f'echo "${{RED}}  [EE]  Kiro Wayland editions need an extra repo (nemesis_repo, chaotic-aur or cachyos) — enable one in ATT > Pacman tab.${{RESET}}" ); '
         f"read -p 'Press Enter to close...' "
         f") 2>&1 | tee {log_path}"
     )

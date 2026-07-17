@@ -18,8 +18,13 @@ def _selected_keys(self):
 
 def _update_button(self, wayland, desktopr, fn):
     selected = _selected_keys(self)
-    needs_nemesis = wayland.selection_needs_nemesis(selected) and not fn.check_nemesis_repo_active()
-    self.wayland_repo_warning.set_visible(needs_nemesis)
+    has_extra_repo = (
+        fn.check_nemesis_repo_active()
+        or fn.check_chaotic_aur_active()
+        or fn.check_cachyos_repo_active()
+    )
+    needs_repo = wayland.selection_needs_nemesis(selected) and not has_extra_repo
+    self.wayland_repo_warning.set_visible(needs_repo)
 
     conflicts = wayland.selection_conflicts(selected)
     if conflicts:
@@ -34,9 +39,11 @@ def _update_button(self, wayland, desktopr, fn):
     if not selected:
         self.wayland_install_btn.set_sensitive(False)
         self.wayland_install_btn.set_tooltip_text("Select at least one window manager")
-    elif needs_nemesis:
+    elif needs_repo:
         self.wayland_install_btn.set_sensitive(False)
-        self.wayland_install_btn.set_tooltip_text("Enable nemesis_repo in the Pacman tab to install these Kiro Wayland editions")
+        self.wayland_install_btn.set_tooltip_text(
+            "Enable an extra repo (nemesis_repo, chaotic-aur or cachyos) in the Pacman tab to install these Kiro Wayland editions"
+        )
     elif conflicts:
         self.wayland_install_btn.set_sensitive(False)
         self.wayland_install_btn.set_tooltip_text("Selected editions conflict — they use incompatible Quickshell builds; deselect one family")
@@ -200,7 +207,7 @@ def gui(self, Gtk, vboxstack_wayland, wayland, desktopr, fn, base_dir):
     self.wayland_repo_warning.set_margin_top(10)
     self.wayland_repo_warning.set_wrap(True)
     self.wayland_repo_warning.set_markup(
-        '<span foreground="#FFA500"><b>These Kiro Wayland editions need nemesis_repo — enable it in the Pacman tab first.</b></span>'
+        '<span foreground="#FFA500"><b>These Kiro Wayland editions need an extra repo (nemesis_repo, chaotic-aur or cachyos) — enable one in the Pacman tab first.</b></span>'
     )
     self.wayland_repo_warning.set_visible(False)
 
