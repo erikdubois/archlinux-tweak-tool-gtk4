@@ -38,7 +38,7 @@ import desktopr
 # .desktop (owned by the compositor package) remains on disk.
 WAYLAND_WMS = [
     {"key": "hyprland", "pkgname": "kiro-hyprland", "label": "Hyprland", "backend": "aquamarine", "repo": "nemesis_repo",
-     "skel": ["/etc/skel/.config/kiro-hyprland"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
+     "skel": ["/etc/skel/.config/kiro-hyprland", "/etc/skel/.config/waybar"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland"],
      "link": "https://wiki.hyprland.org/"},
     {"key": "kiro-hyprland-noctalia", "pkgname": "kiro-hyprland-noctalia", "label": "Hyprland Noctalia", "backend": "aquamarine", "repo": "nemesis_repo",
      "skel": ["/etc/skel/.config/kiro-hyprland-noctalia"], "ready": True, "proc": "Hyprland", "remove": ["kiro-hyprland-noctalia"], "shell": "noctalia",

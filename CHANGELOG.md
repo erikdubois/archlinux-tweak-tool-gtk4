@@ -11,10 +11,14 @@ were stale.
 
 **Technical Details.**
 - Base `kiro-hyprland` was migrated to the namespaced-config layout (session launches via
-  `--config ~/.config/kiro-hyprland/hyprland.lua`), but ATT still listed `skel` as
-  `~/.config/hypr` + `~/.config/waybar`. Those paths no longer exist in the package, so an ATT install
-  seeded **nothing** and — worse — `_backup_overwritten_configs` needlessly backed up the user's own
-  `~/.config/hypr` and `~/.config/waybar`. Corrected to the single `/etc/skel/.config/kiro-hyprland`.
+  `--config ~/.config/kiro-hyprland/hyprland.lua`), but ATT still listed `skel` as the old
+  `~/.config/hypr` + `~/.config/waybar`. The `hypr` path no longer exists in the package, so an ATT
+  install seeded the config from the wrong place and `_backup_overwritten_configs` needlessly backed
+  up the user's own `~/.config/hypr`. Corrected to `/etc/skel/.config/kiro-hyprland` +
+  `/etc/skel/.config/waybar` (the waybar config is shared, same as every other bar edition).
+- Related packaging fix in `kiro-hyprland`: the namespacing-rename commit had accidentally dropped
+  `etc/skel/.config/waybar/config-hyprland.jsonc`, the bar config `hyprland.lua` launches — restored
+  from git history so base Hyprland's waybar starts again.
 - `kiro-miracle` and `kiro-scroll` are **base editions**: they reuse the upstream compositor's
   `wayland-sessions` entry (no own `.desktop`), so `key` is the upstream session basename
   (`miracle-wm`, `scroll`) and `proc` is the compositor process for the running-session removal guard.
