@@ -2,6 +2,27 @@
 
 ## 2026.07.18
 
+### Desktop (X11) — add herbstluftwm (hlwm) edition
+
+**What Changed.** Added **herbstluftwm** (hlwm — a runtime-configured X11 manual tiling WM) as a
+selectable entry on the **Desktop** page, backed by the `kiro-hlwm` nemesis_repo package. It appears
+in the desktop dropdown (as `hlwm`, so the preview loads `desktop_data/hlwm.jpg`), installs like the
+other TWMs (package set + skel copy of `~/.config/herbstluftwm`), and participates in install-all /
+remove-all and shared-package-aware removal.
+
+**Technical Details.**
+- `desktopr.py` — seven coordinated additions mirroring the dusk pattern: (1) `"hlwm"` in the
+  `desktops` dropdown list (between `gnome` and `i3`); (2) an `hlwm` package list (from `kiro-hlwm`'s
+  dependency stack — herbstluftwm + polybar + pamixer/playerctl — plus the standard shared TWM extras);
+  (3) `"hlwm": hlwm` in `_get_desktop_packages()`; (4) an `elif desktop == "hlwm"` branch in
+  `install_desktop` that sets `twm = True` and seeds `/etc/skel/.config/herbstluftwm` (note: the config
+  dir is `herbstluftwm`, not `hlwm`, since herbstluftwm reads its upstream default path); (5)–(7) `hlwm`
+  added to `INSTALL_ORDER`, `TWM_INSTALL_ORDER`, and `REMOVE_ORDER` in the correct TWM positions.
+- **Pending:** `desktop_data/hlwm.jpg` preview screenshot still needs to be captured on a live
+  herbstluftwm boot and dropped in — the loader falls back to a blank preview until then (no crash).
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/desktopr.py`.
+
 ### Desktop (X11) — add dusk edition
 
 **What Changed.** Added **dusk** (a dwm fork, runtime-configured X11 tiling WM) as a selectable entry

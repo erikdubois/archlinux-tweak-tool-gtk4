@@ -54,6 +54,7 @@ desktops = [
     "chadwm",
     "dusk",
     "gnome",
+    "hlwm",
     "i3",
     "leftwm",
     "mate",
@@ -186,6 +187,45 @@ if fn.distr:
         "ttf-hack",
         "ttf-jetbrains-mono-nerd",
         "volctl",
+        "xclip",
+        "xfce4-notifyd",
+        "xfce4-power-manager",
+        "xfce4-screenshooter",
+        "xfce4-settings",
+        "xfce4-taskmanager",
+        "xfce4-terminal",
+    ]
+    hlwm = [
+        "alacritty",
+        "archlinux-logout-gtk4",
+        "kiro-hlwm",
+        "kiro-keybindings",
+        "kiro-polybar",
+        "kiro-rofi",
+        "kiro-rofi-themes",
+        "kiro-xfce",
+        "herbstluftwm",
+        "polybar",
+        "betterlockscreen",
+        "brightnessctl",
+        "dmenu",
+        "feh",
+        "flameshot",
+        "fastcompmgr-git",
+        "lxappearance",
+        "maim",
+        "network-manager-applet",
+        "numlockx",
+        "pamixer",
+        "pavucontrol",
+        "playerctl",
+        "polkit-gnome",
+        "rofi",
+        "thunar",
+        "thunar-archive-plugin",
+        "thunar-volman",
+        "ttf-hack",
+        "ttf-jetbrains-mono-nerd",
         "xclip",
         "xfce4-notifyd",
         "xfce4-power-manager",
@@ -395,6 +435,7 @@ def _get_desktop_packages():
             "chadwm": chadwm,
             "dusk": dusk,
             "gnome": gnome,
+            "hlwm": hlwm,
             "i3": i3,
             "leftwm": leftwm,
             "mate": mate,
@@ -538,6 +579,11 @@ def install_desktop(self, desktop, on_complete=None):
     elif desktop == "dusk":
         command = dusk + default_app
         src.append("/etc/skel/.config/dusk")
+        twm = True
+    elif desktop == "hlwm":
+        command = hlwm + default_app
+        src.append("/etc/skel/.config/herbstluftwm")
+        src.append("/etc/skel/.config/polybar")
         twm = True
     elif desktop == "cinnamon":
         command = cinnamon
@@ -1115,6 +1161,7 @@ INSTALL_ORDER = [
     "chadwm",
     "ohmychadwm",
     "dusk",
+    "hlwm",
     "xfce",
     "mate",
     "cinnamon",
@@ -1133,6 +1180,7 @@ TWM_INSTALL_ORDER = [
     "chadwm",
     "ohmychadwm",
     "dusk",
+    "hlwm",
 ]
 
 # Remove most exclusive/large DEs first; tiling WMs last (heavily shared packages, protected until final removal).
@@ -1144,6 +1192,7 @@ REMOVE_ORDER = [
     "mate",
     "xfce",
     "dusk",
+    "hlwm",
     "qtile",
     "leftwm",
     "ohmychadwm",
