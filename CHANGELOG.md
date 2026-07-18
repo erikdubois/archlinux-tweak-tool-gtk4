@@ -1,6 +1,52 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.18
+
+### Desktop (X11) — add dusk edition
+
+**What Changed.** Added **dusk** (a dwm fork, runtime-configured X11 tiling WM) as a selectable entry
+on the **Desktop** page, backed by the `kiro-dusk` nemesis_repo package. It now appears in the desktop
+dropdown, installs like the other TWMs (package set + skel copy of `~/.config/dusk`), and participates
+in install-all / remove-all and shared-package-aware removal.
+
+**Technical Details.**
+- `desktopr.py` — six coordinated additions, all following the existing chadwm/ohmychadwm pattern:
+  (1) `"dusk"` in the `desktops` dropdown list; (2) a `dusk` package list (built from `kiro-dusk`'s
+  real dependency stack plus the standard shared TWM extras — `kiro-rofi`, `kiro-xfce`, thunar,
+  `xfce4-*`, etc. — so shared packages are correctly protected on removal); (3) `"dusk": dusk` in
+  `_get_desktop_packages()`; (4) an `elif desktop == "dusk"` branch in `install_desktop` that sets
+  `twm = True` and seeds `/etc/skel/.config/dusk`; (5) `dusk` added to `INSTALL_ORDER` and
+  `TWM_INSTALL_ORDER` (after ohmychadwm); (6) `dusk` added to `REMOVE_ORDER` (after xfce).
+  `check_desktop` matches on `dusk.desktop`, which `kiro-dusk` ships in `/usr/share/xsessions/`; the
+  uninstall path's `globals().get("dusk")` resolves without change.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/desktopr.py`.
+
+**Known gap.** No `desktop_data/dusk.jpg` preview screenshot yet — the dropdown works but shows no
+thumbnail for dusk (handled gracefully; `image_DE` paintable set to `None`). Add a screenshot to
+`desktop_data/` to complete it.
+
 ## 2026.07.17
+
+### Desktop - Wayland — generalise the "extra repo" warning + widen its guard
+
+**What Changed.** The Wayland picker's repo warning previously named only `nemesis_repo` — both the
+red terminal error on a failed install and the in-app orange label — and the Install-button guard only
+checked `check_nemesis_repo_active()`. But some Wayland deps (e.g. `scenefx0.5`, `mangowm`) can also
+resolve from **chaotic-aur** or **cachyos**, so the message was misleading and the guard blocked
+installs that would actually have succeeded. Both messages now read "need an extra repo (nemesis_repo,
+chaotic-aur or cachyos) — enable one…", and the guard passes when **any** of the three repos is active.
+
+**Technical Details.**
+- `wayland.py` — terminal `[EE]` failure message generalised.
+- `wayland_gui.py` — `_update_button` now computes `has_extra_repo = nemesis OR chaotic-aur OR cachyos`
+  (via the existing `check_chaotic_aur_active()` / `check_cachyos_repo_active()` helpers); local var
+  `needs_nemesis` renamed to `needs_repo`; orange warning label and Install-button tooltip both widened.
+  The `wayland.selection_needs_nemesis()` helper name is kept (it answers "does this selection need any
+  extra repo at all").
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/wayland.py`,
+`usr/share/archlinux-tweak-tool/wayland_gui.py`.
 
 ### Desktop - Wayland — sync picker with shipped packages (Miracle + Scroll added, base Hyprland skel fixed)
 
