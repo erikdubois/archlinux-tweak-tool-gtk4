@@ -17,7 +17,7 @@ alias updqte='sudo pacman -Syyu'  # typo guard: misspelled "update"
 
 # ── Listing ───────────────────────────────────────────────────────────────────
 alias la='ls -a'                       # list including hidden files
-alias ll='ls -alFh'                    # long list, human sizes, all files
+alias ll='ls -alhF'                    # long list, human sizes, all files
 alias l='ls'                           # short alias for ls
 alias l.="ls -A | grep -E '^\\.'"      # list only the hidden dotfiles
 alias listdir='ls -d */ > list'        # write the folder names to a file named "list"

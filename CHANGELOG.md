@@ -1,5 +1,18 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.19
+
+### Bundled fish config — fix `ll` erroring under eza
+
+**What Changed.** Fixed the bundled fish `ll` alias erroring with
+`invalid value 'h' for '--classify [<WHEN>]'`. `ll` expands to `ls -alFh`, and since fish aliases
+`ls`→`eza`, this became `eza -alFh`; eza 0.23+ makes `-F`/`--classify` take an optional `WHEN` value,
+so the bundled `h` after `-F` was consumed as that value. Reordered to `-alhF` (F last) — parses under
+both eza and GNU `ls`. Mirrors the same fix in the `kiro-fish-config` source package.
+
+**Files Modified.**
+- `usr/share/archlinux-tweak-tool/data/fish/usr/share/kiro/fish/parts/40-aliases.fish`
+
 ## 2026.07.18
 
 ### Desktop (X11) — add herbstluftwm (hlwm) edition
