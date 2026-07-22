@@ -23,6 +23,7 @@ import zsh_theme
 import accessibility_gui
 import backup_gui
 import btrfs_gui
+import celestial_gui
 import icons_gui
 import iso_gui
 import themes_gui
@@ -183,6 +184,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     vboxstack_accessibility = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_backup = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     vboxstack_btrfs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    vboxstack_celestial = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
     # ==========================================================
     #                 LAZY TAB BUILDER
@@ -232,6 +234,12 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     # ==========================================================
 
     _defer_tab(vboxstack_themes, lambda: themes_gui.gui(self, Gtk, GdkPixbuf, vboxstack_themes, themes, fn, base_dir))
+
+    # ==========================================================
+    #                CELESTIAL
+    # ==========================================================
+
+    _defer_tab(vboxstack_celestial, lambda: celestial_gui.gui(self, Gtk, vboxstack_celestial, fn))
 
     # ==========================================================
     #                AUTOSTART
@@ -438,6 +446,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     if fn.DEV or btrfs.is_btrfs_root():
         stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)
+
+    stack.add_titled(vboxstack_celestial, "stack_celestial", "Celestial")  # celestial GTK themes
 
     # Desktop installer (DEs + X11 WMs) and the Wayland WM picker, grouped as an
     # adjacent pair — the core Kiro selling point. Sidebar shows pages in add-order,

@@ -10,7 +10,7 @@ ArchLinux Tweak Tool (ATT) is a GTK4-based Python application for managing Arch-
 - **GUI Framework**: GTK4 (4.6+)
 - **Entry Point**: `usr/share/archlinux-tweak-tool/archlinux-tweak-tool.py`
 - **Desktop Launcher**: `usr/share/applications/archlinux-tweak-tool.desktop`
-- **Tab count**: 30 active tabs (Accessibility, AI Tools, Autostart, Backup, Desktop, Desktop - Wayland, Fastfetch, Icons Horst, Icons Neo Candy, Icons Surfn, ISO, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 Kiro-only Streamline page (shown only on Kiro, alphabetically after Software) + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Backup and Desktop). Support is no longer a page — the funding channels are reached via the `♥ Support` button in the top header bar (`funding.show_support_dialog`).
+- **Tab count**: 31 active tabs (Accessibility, AI Tools, Autostart, Backup, Celestial, Desktop, Desktop - Wayland, Fastfetch, Icons Horst, Icons Neo Candy, Icons Surfn, ISO, Kernels, Locale, Logging, Maintenance, Network, Office, Packages, Pacman, Plymouth, Privacy, Performance, Sddm, Services, Shells, Software, System, Themer, Themes, User, Wallpaper) + 1 hidden Dev tab + 1 Kiro-only Streamline page (shown only on Kiro, alphabetically after Software) + 1 conditional Btrfs page (shown only on a btrfs root, alphabetically between Backup and Desktop). Support is no longer a page — the funding channels are reached via the `♥ Support` button in the top header bar (`funding.show_support_dialog`).
 
 ## Requirements
 
@@ -111,7 +111,8 @@ usr/share/archlinux-tweak-tool/
 | **gui.py**                              | Main GUI container; imports and instantiates all *_gui modules                                                                             |
 | **accessibility.py / accessibility_gui.py** | Assistive tools (Orca/Onboard/KMag), high-contrast themes, live X11 AccessX toggles (sticky/slow/bounce/mouse keys via xkbset)         |
 | **icons.py / icons_gui.py**             | Icon theme management                                                                                                                      |
-| **themes.py / themes_gui.py**           | GTK theme management                                                                                                                       |
+| **themes.py / themes_gui.py**           | GTK theme management; also owns the shared `/etc/environment` helpers (`apply_env_theme_from`, `build_env_theme_row`, `make_swatch`)       |
+| **celestial.py / celestial_gui.py**     | Celestial GTK theme packages from nemesis_repo, grouped by colour family with accent swatches                                               |
 | **desktopr.py / desktopr_gui.py**       | Desktop/wallpaper configuration                                                                                                            |
 | **sddm.py / sddm_gui.py**               | SDDM login manager configuration                                                                                                           |
 | **maintenance.py / maintenance_gui.py** | System cleanup, orphan packages, mirrors                                                                                                   |

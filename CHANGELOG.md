@@ -1,5 +1,69 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.22
+
+### New Celestial page — 65 celestial GTK themes grouped by colour family
+
+**What Changed.** Added a **Celestial** page, modelled on the Themes page, listing all 65
+`celestial-*` GTK theme packages shipped in `nemesis_repo` (the `celestial-theme-forge` generator
+package is deliberately excluded — it builds themes, it is not one). Each theme gets an accent
+swatch and a checkbox, grouped into eight colour families: Blues 20, Indigos 4, Purples 9,
+Greens 7, Reds 7, Oranges 8, Pinks 5, Greys 5. The page carries the Themes page's generic
+"set the system-wide GTK theme in `/etc/environment`" dropdown (which is how an installed
+Celestial theme actually gets applied) but **not** the arc-specific `Arc-Dawn-Dark` or Plasma
+Qt-override toggles, which would be misleading here. The page sits alphabetically between Btrfs
+and Desktop in the sidebar (`stack_celestial`).
+
+**Technical Details.**
+- **Accents are not hand-typed.** Every hex in `CELESTIAL_FAMILIES` was extracted from the shipped
+  packages themselves — `@define-color theme_selected_bg_color` in each package's
+  `gtk-3.0/gtk.css` — so a swatch always matches what the theme actually paints.
+- **No `is_dark` flag** (the arc table has one). Every celestial package ships a base, a `-Dark`
+  and a `-Light` variant in three DPI tiers, so a "select the dark ones" preset is meaningless;
+  the entries are 2-tuples and the Dark preset is omitted. All / None + one button per family remain.
+- **`azul` is the one token whose hex differs from the arc palette** — celestial `#3498db`
+  (sky blue) vs arc `#3551b7` (indigo) — so celestial azul is filed under Blues, not Indigos.
+  A diff of the 56 shared tokens confirmed no other drift. Nine tokens are celestial-only:
+  `aliz, denim, jasmine, mandarin, neon-blue, night-owl, pueril, sea, slateblue`.
+- **`jasmine` (`#fcde83`)** is the set's only true yellow; folded into Oranges (the warm family,
+  alongside casablanca/numix/tacao) rather than opening a one-member Yellows group.
+- **Shared helpers instead of copies** (objective 17): `themes_gui._make_swatch` was made public as
+  `make_swatch`; the `/etc/environment` label+dropdown+Apply row was extracted into
+  `themes_gui.build_env_theme_row()`, which stores its widgets on `self` under caller-supplied
+  attribute names so the two pages get independent dropdowns; `themes.on_click_apply_env_theme`
+  was split into a reusable `themes.apply_env_theme_from(self, dropdown, theme_names)` plus a thin
+  per-page wrapper. The Themes page now consumes the same helpers — behaviour unchanged.
+- **No preview image.** The Themes page appends `images/arcthemes.jpg`; there is no celestial
+  equivalent, so the preview frame is omitted rather than silently rendering an empty frame.
+- **celestial-theme-forge section.** A separate block at the bottom of the page explains that the
+  forge is the *generator*, not a theme — it rebuilds the Celestial theme in any accent colour, ships
+  the `celestial-theme-forge` and `theme-forge-picker` commands (GTK4 picker with an xcolor/hyprpicker
+  eyedropper), remembers user colours in `custom-colors.def`, needs build tools plus a checkout of the
+  celestial sources, and produces a theme folder the user installs themselves. Install / Remove buttons
+  sit next to a live "installed / not installed" status label. Removal is a **plain `-R`**, not `-Rns`:
+  the dependencies (git, python, sassc, inkscape, imagemagick) are general-purpose tools worth keeping.
+- **Real nemesis_repo guard** (not just the advisory sentence the Themes page shows). Every celestial
+  package is nemesis-only, so `celestial.repo_available()` wraps `fn.check_nemesis_repo_active()` and
+  `_refresh_repo_state()` shows an orange warning label and desensitises *both* Install buttons with an
+  explaining tooltip while the repo is off. Uninstall stays enabled — removing an installed package
+  never needs the repo. Following the documented deferred-tab rule, the refresh is called immediately
+  at build time **and** connected to the page's `map` signal, so toggling the repo on the Pacman page
+  updates this page without a restart. `install_themes()` and `on_install_forge_clicked()` re-check in
+  the logic layer too, so a stale enabled button still cannot fire a doomed pacman call.
+- Verified by building the page headlessly against GTK4 and screenshotting it: 65 checkboxes
+  constructed, dropdown populated, and the repo guard exercised in both directions (repo on → warning
+  hidden, buttons live; repo stubbed off → warning shown, both Install buttons greyed).
+
+**Files Modified.**
+- `usr/share/archlinux-tweak-tool/celestial.py` (new)
+- `usr/share/archlinux-tweak-tool/celestial_gui.py` (new)
+- `usr/share/archlinux-tweak-tool/themes.py`
+- `usr/share/archlinux-tweak-tool/themes_gui.py`
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+- `search_synonyms.json`
+- `CLAUDE.md`
+
 ## 2026.07.19
 
 ### Bundled fish config — fix `ll` erroring under eza

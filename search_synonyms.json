@@ -4,6 +4,7 @@
   "AI Tools": ["ollama", "llm", "chatgpt", "assistant", "model", "agent"],
   "Autostart": ["startup", "boot apps", "login apps", "session"],
   "Backup": ["borg", "borgbackup", "pika", "pika backup", "vorta", "restore", "cloud", "off-site", "offsite", "deduplicated", "encrypted backup", "3-2-1", "personal files"],
+  "Celestial": ["celestial", "gtk theme", "appearance", "look", "colour", "color", "swatch", "palette", "dark", "light", "accent"],
   "Desktop": ["environment", "de", "wm", "window manager", "tiling", "kde", "plasma", "gnome", "xfce", "i3", "x11", "xorg"],
   "Fastfetch": ["neofetch", "system info", "fetch", "terminal logo"],
   "Icons Horst": ["icon theme", "horst", "folder", "colour folders", "color folders", "mint-y", "surfn", "neo candy"],

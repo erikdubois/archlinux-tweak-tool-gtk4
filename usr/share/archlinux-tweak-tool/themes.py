@@ -562,10 +562,10 @@ def set_env_gtk_theme(self, theme):
     return {"state": new_state, "changes": changes}
 
 
-def on_click_apply_env_theme(self, _widget):
-    """Apply the dropdown-selected GTK theme to /etc/environment, or clear it when 'None' is chosen."""
-    selected = self.env_theme_dropdown.get_selected()
-    theme = None if selected == 0 else self._env_gtk_theme_names[selected - 1]
+def apply_env_theme_from(self, dropdown, theme_names):
+    """Apply the theme picked in an /etc/environment dropdown, or clear it when 'None' is chosen."""
+    selected = dropdown.get_selected()
+    theme = None if selected == 0 else theme_names[selected - 1]
     result = set_env_gtk_theme(self, theme)
     if result["state"] == "absent":
         return
@@ -584,3 +584,8 @@ def on_click_apply_env_theme(self, _widget):
         fn.log_success(f"Cleared the system-wide GTK_THEME in {ENV_FILE}")
         fn.log_info("Your per-user theme takes over again. LOG OUT and LOG BACK IN to apply.")
         fn.show_in_app_notification(self, "System-wide GTK theme cleared — log out and back in")
+
+
+def on_click_apply_env_theme(self, _widget):
+    """Apply the Themes-page dropdown selection to /etc/environment."""
+    apply_env_theme_from(self, self.env_theme_dropdown, self._env_gtk_theme_names)

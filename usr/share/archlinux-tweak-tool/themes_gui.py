@@ -43,8 +43,8 @@ def _att_preview_picture(Gtk, GdkPixbuf, Gdk, base_dir, filename, scale=1.0, out
     return frame
 
 
-def _make_swatch(Gtk, hex_color):
-    """Return a small DrawingArea filled with the theme's accent colour."""
+def make_swatch(Gtk, hex_color):
+    """Return a small DrawingArea filled with the theme's accent colour; shared with the Celestial page."""
     r = int(hex_color[0:2], 16) / 255
     g = int(hex_color[2:4], 16) / 255
     b = int(hex_color[4:6], 16) / 255
@@ -65,6 +65,50 @@ def _make_swatch(Gtk, hex_color):
     area.set_valign(Gtk.Align.CENTER)
     area.set_draw_func(_draw)
     return area
+
+
+def build_env_theme_row(Gtk, self, names_attr, dropdown_attr, on_apply):
+    """Build the /etc/environment GTK-theme row (label, dropdown, Apply) and store its widgets on self."""
+    hbox_env_dropdown = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    hbox_env_dropdown.set_halign(Gtk.Align.CENTER)
+    hbox_env_dropdown.set_margin_start(10)
+    hbox_env_dropdown.set_margin_end(10)
+    hbox_env_dropdown.set_margin_bottom(10)
+
+    lbl_env_dropdown = Gtk.Label()
+    lbl_env_dropdown.set_markup(
+        '<span foreground="#FFA500">Set the system-wide GTK theme in /etc/environment</span>'
+    )
+    lbl_env_dropdown.set_margin_start(10)
+    lbl_env_dropdown.set_margin_end(10)
+    hbox_env_dropdown.append(lbl_env_dropdown)
+
+    theme_names = themes.list_system_gtk_themes()
+    current_env_theme = themes.current_env_gtk_theme()
+    # If a GTK_THEME is already set but isn't an installed /usr/share/themes folder (e.g. a
+    # ~/.themes name or a typo), still list it so "None" can't be preselected over a real value —
+    # Apply on an unchanged dropdown would otherwise silently clear that theme.
+    if current_env_theme and current_env_theme not in theme_names:
+        theme_names = [current_env_theme] + theme_names
+    setattr(self, names_attr, theme_names)
+
+    dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + theme_names)
+    if current_env_theme and current_env_theme in theme_names:
+        dropdown.set_selected(theme_names.index(current_env_theme) + 1)
+    else:
+        dropdown.set_selected(0)
+    setattr(self, dropdown_attr, dropdown)
+    dropdown.set_margin_start(10)
+    dropdown.set_margin_end(10)
+    hbox_env_dropdown.append(dropdown)
+
+    button_apply_env_theme = Gtk.Button(label="Apply")
+    button_apply_env_theme.connect("clicked", functools.partial(on_apply, self))
+    button_apply_env_theme.set_margin_start(10)
+    button_apply_env_theme.set_margin_end(10)
+    hbox_env_dropdown.append(button_apply_env_theme)
+
+    return hbox_env_dropdown
 
 
 def gui(self, Gtk, GdkPixbuf, vboxstack_themes, _themes_module, fn, base_dir):
@@ -143,35 +187,9 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
     button_edit_env.set_margin_end(10)
     hbox_env_edit.append(button_edit_env)
 
-    hbox_env_dropdown = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    hbox_env_dropdown.set_halign(Gtk.Align.CENTER)
-    lbl_env_dropdown = Gtk.Label()
-    lbl_env_dropdown.set_markup(
-        '<span foreground="#FFA500">Set the system-wide GTK theme in /etc/environment</span>'
+    hbox_env_dropdown = build_env_theme_row(
+        Gtk, self, "_env_gtk_theme_names", "env_theme_dropdown", themes.on_click_apply_env_theme
     )
-    self._env_gtk_theme_names = themes.list_system_gtk_themes()
-    current_env_theme = themes.current_env_gtk_theme()
-    # If a GTK_THEME is already set but isn't an installed /usr/share/themes folder (e.g. a
-    # ~/.themes name or a typo), still list it so "None" can't be preselected over a real value —
-    # Apply on an unchanged dropdown would otherwise silently clear that theme.
-    if current_env_theme and current_env_theme not in self._env_gtk_theme_names:
-        self._env_gtk_theme_names = [current_env_theme] + self._env_gtk_theme_names
-    self.env_theme_dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + self._env_gtk_theme_names)
-    if current_env_theme and current_env_theme in self._env_gtk_theme_names:
-        self.env_theme_dropdown.set_selected(self._env_gtk_theme_names.index(current_env_theme) + 1)
-    else:
-        self.env_theme_dropdown.set_selected(0)
-    button_apply_env_theme = Gtk.Button(label="Apply")
-    button_apply_env_theme.connect("clicked", functools.partial(themes.on_click_apply_env_theme, self))
-    lbl_env_dropdown.set_margin_start(10)
-    lbl_env_dropdown.set_margin_end(10)
-    hbox_env_dropdown.append(lbl_env_dropdown)
-    self.env_theme_dropdown.set_margin_start(10)
-    self.env_theme_dropdown.set_margin_end(10)
-    hbox_env_dropdown.append(self.env_theme_dropdown)
-    button_apply_env_theme.set_margin_start(10)
-    button_apply_env_theme.set_margin_end(10)
-    hbox_env_dropdown.append(button_apply_env_theme)
 
     hbox_plasma_warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     if is_plasma:
@@ -203,7 +221,7 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
 
         for token, hex_color, _is_dark in family_themes:
             row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-            row.append(_make_swatch(Gtk, hex_color))
+            row.append(make_swatch(Gtk, hex_color))
             checkbox = Gtk.CheckButton(label="kiro-arc-" + token)
             self.arc_checkboxes[token] = checkbox
             row.append(checkbox)
@@ -292,9 +310,6 @@ Ensure that the <b>Nemesis repository is enabled</b> — see the "Pacman" tab fo
         hbox_env_reminder.set_margin_bottom(10)
         vboxstack_themes.append(hbox_env_reminder)
 
-    hbox_env_dropdown.set_margin_start(10)
-    hbox_env_dropdown.set_margin_end(10)
-    hbox_env_dropdown.set_margin_bottom(10)
     vboxstack_themes.append(hbox_env_dropdown)
 
     # Manual escape hatch on every distro — if the automated write misbehaves, edit the file by hand.
