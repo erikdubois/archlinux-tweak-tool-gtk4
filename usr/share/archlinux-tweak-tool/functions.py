@@ -2895,7 +2895,7 @@ def wait_remove_and_update(process, binary_path, label_widget, plain_markup, sel
     threading.Thread(target=_wait, daemon=True).start()
 
 
-def wait_and_notify(process, self_ref, notification):
+def wait_and_notify(process, self_ref, notification, on_done=None):
     def _wait():
         try:
             process.communicate()
@@ -2908,6 +2908,9 @@ def wait_and_notify(process, self_ref, notification):
                     pass
             log_success(notification)
             GLib.idle_add(show_in_app_notification, self_ref, notification)
+            # on_done touches widgets, so it must run on the main loop, not on this thread.
+            if on_done is not None:
+                GLib.idle_add(on_done)
         except Exception as e:
             log_error(f"Exception in wait_and_notify: {e}")
 

@@ -143,7 +143,13 @@ def install_themes(self):
     fn.log_info(f"Installing {len(themes_to_install)} Celestial theme(s): {', '.join(themes_to_install)}")
     process = fn.launch_pacman_install_in_terminal(packages_str)
     fn.show_in_app_notification(self, f"Installing {len(themes_to_install)} themes...")
-    fn.wait_and_notify(process, self, "Celestial themes installation complete")
+    # The new theme folders only exist once pacman is done, so the dropdown is rebuilt from here.
+    fn.wait_and_notify(
+        process,
+        self,
+        "Celestial themes installation complete",
+        on_done=lambda: themes.refresh_env_theme_dropdowns(self),
+    )
 
 
 def remove_themes(self):
@@ -159,7 +165,12 @@ def remove_themes(self):
     fn.log_info(f"Removing {len(themes_to_remove)} Celestial theme(s): {', '.join(themes_to_remove)}")
     process = fn.launch_pacman_remove_in_terminal(packages_str)
     fn.show_in_app_notification(self, f"Removing {len(themes_to_remove)} themes...")
-    fn.wait_and_notify(process, self, "Celestial themes removal complete")
+    fn.wait_and_notify(
+        process,
+        self,
+        "Celestial themes removal complete",
+        on_done=lambda: themes.refresh_env_theme_dropdowns(self),
+    )
 
 
 def find_themes(self):

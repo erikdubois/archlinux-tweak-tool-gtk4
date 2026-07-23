@@ -83,21 +83,9 @@ def build_env_theme_row(Gtk, self, names_attr, dropdown_attr, on_apply):
     lbl_env_dropdown.set_margin_end(10)
     hbox_env_dropdown.append(lbl_env_dropdown)
 
-    theme_names = themes.list_system_gtk_themes()
-    current_env_theme = themes.current_env_gtk_theme()
-    # If a GTK_THEME is already set but isn't an installed /usr/share/themes folder (e.g. a
-    # ~/.themes name or a typo), still list it so "None" can't be preselected over a real value —
-    # Apply on an unchanged dropdown would otherwise silently clear that theme.
-    if current_env_theme and current_env_theme not in theme_names:
-        theme_names = [current_env_theme] + theme_names
-    setattr(self, names_attr, theme_names)
-
-    dropdown = Gtk.DropDown.new_from_strings(["None — no system-wide theme"] + theme_names)
-    if current_env_theme and current_env_theme in theme_names:
-        dropdown.set_selected(theme_names.index(current_env_theme) + 1)
-    else:
-        dropdown.set_selected(0)
+    dropdown = Gtk.DropDown.new_from_strings([themes.ENV_NONE_LABEL])
     setattr(self, dropdown_attr, dropdown)
+    themes.refresh_env_theme_row(self, names_attr, dropdown_attr)
     dropdown.set_margin_start(10)
     dropdown.set_margin_end(10)
     hbox_env_dropdown.append(dropdown)

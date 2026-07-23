@@ -455,6 +455,7 @@ def on_click_toggle_plasma_qt(self, _widget):
 # ── Set any system GTK theme via a dropdown (/etc/environment) ─────────
 
 THEMES_ROOT = "/usr/share/themes"
+ENV_NONE_LABEL = "None — no system-wide theme"
 
 
 def list_system_gtk_themes():
@@ -560,6 +561,45 @@ def set_env_gtk_theme(self, theme):
     for from_line, to_line in changes:
         fn.log_info(f"Changed:  {from_line}  ->  {to_line}")
     return {"state": new_state, "changes": changes}
+
+
+def refresh_env_theme_row(self, names_attr, dropdown_attr):
+    """Repopulate one /etc/environment theme dropdown from /usr/share/themes, keeping its selection."""
+    from gi.repository import Gtk
+
+    dropdown = getattr(self, dropdown_attr, None)
+    if dropdown is None:
+        return
+
+    # names_attr only exists once the row has been populated, which separates the initial
+    # build (preselect what /etc/environment says) from a rebuild (keep what the user picked).
+    previous_names = getattr(self, names_attr, None)
+    is_rebuild = previous_names is not None
+    selected = dropdown.get_selected() if is_rebuild else 0
+    keep = previous_names[selected - 1] if is_rebuild and 0 < selected <= len(previous_names) else None
+
+    theme_names = list_system_gtk_themes()
+    current_env_theme = current_env_gtk_theme()
+    # If a GTK_THEME is already set but isn't an installed /usr/share/themes folder (e.g. a
+    # ~/.themes name or a typo), still list it so "None" can't be preselected over a real value —
+    # Apply on an unchanged dropdown would otherwise silently clear that theme.
+    if current_env_theme and current_env_theme not in theme_names:
+        theme_names = [current_env_theme] + theme_names
+    # A theme that was picked but not applied yet stays listed even after it was uninstalled,
+    # so a rebuild never quietly moves the selection onto a different theme.
+    if keep and keep not in theme_names:
+        theme_names = [keep] + theme_names
+    setattr(self, names_attr, theme_names)
+
+    dropdown.set_model(Gtk.StringList.new([ENV_NONE_LABEL] + theme_names))
+    target = keep if is_rebuild else current_env_theme
+    dropdown.set_selected(theme_names.index(target) + 1 if target in theme_names else 0)
+
+
+def refresh_env_theme_dropdowns(self):
+    """Resync every /etc/environment theme dropdown — call after themes were installed or removed."""
+    refresh_env_theme_row(self, "_env_gtk_theme_names", "env_theme_dropdown")
+    refresh_env_theme_row(self, "_celestial_env_theme_names", "celestial_env_dropdown")
 
 
 def apply_env_theme_from(self, dropdown, theme_names):

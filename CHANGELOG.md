@@ -1,5 +1,45 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.23
+
+### The /etc/environment theme dropdown now refreshes after a Celestial install or removal
+
+**What Changed.** Installing celestial themes on the Celestial page left the
+"Set the system-wide GTK theme in /etc/environment" dropdown at the top of the page showing the
+list as it was when the page was built — the theme you just installed was not in it, so you had to
+restart ATT before you could select and apply it. The dropdown is now repopulated from
+`/usr/share/themes` the moment the install terminal closes. Removal does the same, so an
+uninstalled theme leaves the list instead of lingering as a dead entry.
+
+**Technical Details.**
+- **`themes.refresh_env_theme_row(self, names_attr, dropdown_attr)`** rebuilds one dropdown's
+  `Gtk.StringList` model in place. It is now also the single code path that *populates* the row:
+  `themes_gui.build_env_theme_row()` creates the dropdown with only the "None" entry and calls it.
+  That removed the duplicated list/preselect logic and guarantees the initial build and every
+  rebuild agree on what is listed and what is selected.
+- **Initial build vs rebuild are distinguished by the presence of `names_attr` on `self`.** On the
+  initial build the row preselects the theme named in `/etc/environment`; on a rebuild it keeps
+  exactly what the user had selected, including a deliberate "None" — which `target = keep or current`
+  would have silently snapped back to the env theme.
+- **A picked-but-not-applied theme stays listed even after it is uninstalled**, alongside the
+  existing rule that an unknown `GTK_THEME` value stays listed. Both exist so a rebuild can never
+  move the selection onto a *different* theme — Apply on an untouched dropdown must not write
+  something the user did not choose.
+- **`themes.refresh_env_theme_dropdowns(self)`** refreshes the Themes-page and Celestial-page rows
+  together (mirroring `fn.refresh_all_cursor_dropdowns`). Installing on one page updates the other,
+  and it no-ops on a page that has not been built yet — the deferred page reads `/usr/share/themes`
+  fresh when it is built.
+- **`fn.wait_and_notify()` gained an optional `on_done` callback**, dispatched through
+  `GLib.idle_add` so it touches widgets on the main loop. It fires after `process.communicate()`
+  returns, and `process` is the alacritty terminal — so pacman has finished and the new theme
+  folders are on disk before the directory is re-read.
+
+**Files Modified.**
+- `usr/share/archlinux-tweak-tool/themes.py`
+- `usr/share/archlinux-tweak-tool/themes_gui.py`
+- `usr/share/archlinux-tweak-tool/celestial.py`
+- `usr/share/archlinux-tweak-tool/functions.py`
+
 ## 2026.07.22
 
 ### New Celestial page — 65 celestial GTK themes grouped by colour family
@@ -39,9 +79,22 @@ and Desktop in the sidebar (`stack_celestial`).
   forge is the *generator*, not a theme — it rebuilds the Celestial theme in any accent colour, ships
   the `celestial-theme-forge` and `theme-forge-picker` commands (GTK4 picker with an xcolor/hyprpicker
   eyedropper), remembers user colours in `custom-colors.def`, needs build tools plus a checkout of the
-  celestial sources, and produces a theme folder the user installs themselves. Install / Remove buttons
-  sit next to a live "installed / not installed" status label. Removal is a **plain `-R`**, not `-Rns`:
-  the dependencies (git, python, sassc, inkscape, imagemagick) are general-purpose tools worth keeping.
+  celestial sources, and produces a theme folder the user installs themselves. Removal is a
+  **plain `-R`**, not `-Rns`: the dependencies (git, python, sassc, inkscape, imagemagick) are
+  general-purpose tools worth keeping.
+- **One Install/Launch button** (the `office.py` pattern): while the generator is missing the button
+  reads "Install the generator"; once installed it becomes "Launch theme-forge-picker" and starts the
+  GTK4 picker as the **real user** (`sudo -E -u`), never as root. `celestial.refresh_forge_state()`
+  owns the button label, both buttons' sensitivity and the status label, and is re-run after the
+  install and remove threads finish, so the row flips without a restart. Remove is greyed with a
+  tooltip while the generator is absent. Deliberately **not** gated on the repo once installed —
+  launching needs no repo, so with nemesis off the Launch button stays live while the theme Install
+  button greys out.
+- **Upstream credit link** — a `Gtk.LinkButton` to <https://github.com/zquestz/celestial-gtk-theme>
+  (zquestz's Celestial GTK theme, the sources every `celestial-*` package is recoloured from), placed
+  in the forge block next to the sentence about needing a checkout. Its `activate-link` handler returns
+  `True` to suppress GTK's default `xdg-open` — ATT runs as root, where that fails — and calls
+  `fn.open_url_as_user()` instead, the same approach `dev_gui.py` uses for its glossary link.
 - **Real nemesis_repo guard** (not just the advisory sentence the Themes page shows). Every celestial
   package is nemesis-only, so `celestial.repo_available()` wraps `fn.check_nemesis_repo_active()` and
   `_refresh_repo_state()` shows an orange warning label and desensitises *both* Install buttons with an
@@ -51,8 +104,10 @@ and Desktop in the sidebar (`stack_celestial`).
   updates this page without a restart. `install_themes()` and `on_install_forge_clicked()` re-check in
   the logic layer too, so a stale enabled button still cannot fire a doomed pacman call.
 - Verified by building the page headlessly against GTK4 and screenshotting it: 65 checkboxes
-  constructed, dropdown populated, and the repo guard exercised in both directions (repo on → warning
-  hidden, buttons live; repo stubbed off → warning shown, both Install buttons greyed).
+  constructed, dropdown populated, and all three forge/repo combinations exercised — (a) forge
+  installed + repo on → no warning, button reads "Launch theme-forge-picker"; (b) forge absent +
+  repo off → warning shown, theme Install and forge Install both greyed, Remove greyed; (c) forge
+  installed + repo off → warning shown and theme Install greyed, but Launch and Remove stay live.
 
 **Files Modified.**
 - `usr/share/archlinux-tweak-tool/celestial.py` (new)
