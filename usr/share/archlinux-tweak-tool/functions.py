@@ -881,6 +881,8 @@ def get_distro_label():
             content = f.read()
         if "IMAGE_ID=kiro" in content:
             return "Kiro"
+        if "IMAGE_ID=Helwan-Linux-Dev-LTS" in content:
+            return "Helwan"
         if "ID=cachyos" in content:
             return "CachyOS"
         if 'NAME="Nyarch Linux"' in content:
