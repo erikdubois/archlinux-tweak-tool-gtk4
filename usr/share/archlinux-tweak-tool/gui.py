@@ -440,6 +440,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     stack.add_titled(vboxstack_ai, "stack_ai", "AI Tools")  # AI tools
 
+    stack.add_titled(vboxstack_themes, "stack_themes", "Arc themes")  # arc themes
+
     stack.add_titled(vboxstack_autostart, "stack13", "Autostart")  # Autostart
 
     stack.add_titled(vboxstack_backup, "stack_backup", "Backup")  # personal-file backup (Pika / Vorta)
@@ -447,7 +449,7 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     if fn.DEV or btrfs.is_btrfs_root():
         stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)
 
-    stack.add_titled(vboxstack_celestial, "stack_celestial", "Celestial")  # celestial GTK themes
+    stack.add_titled(vboxstack_celestial, "stack_celestial", "Celestial themes")  # celestial GTK themes
 
     # Desktop installer (DEs + X11 WMs) and the Wayland WM picker, grouped as an
     # adjacent pair — the core Kiro selling point. Sidebar shows pages in add-order,
@@ -504,8 +506,6 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_system, "stack_system", "System")  # system inspector
 
     stack.add_titled(vboxstack_themer, "stack11", "Themer")  # Themer
-
-    stack.add_titled(vboxstack_themes, "stack_themes", "Themes")  # arc themes
 
     stack.add_titled(vboxstack_user, "stack18", "User")  # user
 

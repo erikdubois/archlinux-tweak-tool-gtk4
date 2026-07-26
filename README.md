@@ -44,7 +44,7 @@ sudo pacman -S archlinux-tweak-tool-gtk4-git.
 | ![Plymouth](images/att13.png) | ![Privacy](images/att14.png)  | ![Performance](images/att15.png) |
 | ![Sddm](images/att16.png)     | ![Services](images/att17.png) | ![Shells](images/att18.png)      |
 | ![Software](images/att19.png) | ![System](images/att20.png)   | ![Themer](images/att21.png)      |
-| ![Themes](images/att22.png)   | ![User](images/att23.png)     | ![Wallpaper](images/att24.png)   |
+| ![Arc themes](images/att22.png) | ![User](images/att23.png)   | ![Wallpaper](images/att24.png)   |
 
 ## Overview
 
@@ -192,6 +192,7 @@ ATT currently has **24 tabs** (sidebar pages):
 | Tab             | Contents                                                                            |
 |-----------------|-------------------------------------------------------------------------------------|
 | **AI Tools**    | Claude AI integration for system assistance                                         |
+| **Arc themes**  | Standalone Arc GTK and Plasma theme management                                       |
 | **Autostart**   | Manage applications that launch at login                                            |
 | **Desktop**     | Install and switch desktop environments (KDE, GNOME, XFCE, Hyprland, dwm, and more) |
 | **Fastfetch**   | Configure fastfetch system-info display and presets                                 |
@@ -212,7 +213,6 @@ ATT currently has **24 tabs** (sidebar pages):
 | **Software**    | Curated software installers for common applications                                 |
 | **System**      | System inspector — hardware info, running services, journal overview                |
 | **Themer**      | Apply coordinated desktop theme sets (GTK + icons + cursor + wallpaper)             |
-| **Themes**      | Standalone GTK and Plasma theme management                                          |
 | **User**        | Create and configure user accounts                                                  |
 | **Wallpaper**   | Browse folders and set desktop wallpapers across all supported DEs/WMs              |
 

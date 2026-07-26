@@ -26,7 +26,7 @@ TABS=(
     "Software"
     "System"
     "Themer"
-    "Themes"
+    "Arc themes"
     "User"
     "Wallpaper"
 )

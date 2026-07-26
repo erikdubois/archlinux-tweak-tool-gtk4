@@ -1,5 +1,41 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.07.26
+
+### Renamed two pages: "Themes" → "Arc themes", "Celestial" → "Celestial themes"
+
+**What Changed.** The two GTK-theme pages had names that did not say what they hold. "Themes" only
+ever managed the **Arc** family (plus the Plasma Qt-override toggles), and "Celestial" read like a
+concept rather than a theme collection. They are now **Arc themes** and **Celestial themes**, in
+both the sidebar and the page heading. Because the sidebar renders pages in add-order to keep an
+alphabetical list, **Arc themes** moved from the bottom (between Themer and User) up to just after
+AI Tools; **Celestial themes** keeps its slot between Btrfs and Desktop.
+
+**Technical Details.**
+- Sidebar labels are the third argument of `stack.add_titled()` in `gui.py`; the **stack child IDs
+  are unchanged** (`stack_themes`, `stack_celestial`), so nothing that navigates by child ID —
+  including the search index and the Accessibility page's "Open Themer" jump — needed touching.
+- The `add_titled(vboxstack_themes, …)` call was **moved**, not just re-labelled, since the sidebar
+  has no sort of its own. Safe because every `vboxstack_*` is constructed earlier (line ~178) and
+  only added to the stack in this block, so add-order is free.
+- `search_synonyms.json` is keyed by the **exact** page title, so both keys were renamed. The
+  now-redundant `"arc"` and `"celestial"` aliases were dropped — page titles are matched live by the
+  app, and the file's own comment says to list only words that are *not* in the title.
+  `gen-search-index.py` reported no synonym drift, confirming the keys still resolve to real pages.
+- `take-att-screenshot.sh`'s `TABS` list is positional (index → `attN.png`), so the entry was
+  renamed **in place** rather than reordered — moving it would have re-mapped the existing
+  screenshots.
+
+**Files Modified.**
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/themes_gui.py`
+- `usr/share/archlinux-tweak-tool/celestial_gui.py`
+- `search_synonyms.json`
+- `usr/share/archlinux-tweak-tool/search_index.json` (regenerated)
+- `take-att-screenshot.sh`
+- `README.md`
+- `CLAUDE.md`
+
 ## 2026.07.23
 
 ### The /etc/environment theme dropdown now refreshes after a Celestial install or removal

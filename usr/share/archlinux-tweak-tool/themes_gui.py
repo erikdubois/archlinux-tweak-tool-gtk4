@@ -107,7 +107,7 @@ def gui(self, Gtk, GdkPixbuf, vboxstack_themes, _themes_module, fn, base_dir):
 
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
-    lbl_title.set_text("Themes")
+    lbl_title.set_text("Arc themes")
     lbl_title.set_name("title")
     hbox_title.append(lbl_title)
 

@@ -27,7 +27,7 @@ def gui(self, Gtk, vboxstack_celestial, fn):
 
     hbox_title = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     lbl_title = Gtk.Label(xalign=0)
-    lbl_title.set_text("Celestial")
+    lbl_title.set_text("Celestial themes")
     lbl_title.set_name("title")
     hbox_title.append(lbl_title)
 
