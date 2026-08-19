@@ -1,5 +1,28 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.08.19
+
+### Force `TERM` instead of `setdefault` in `_run_cmd`
+
+**What Changed.** `system.py`'s `_run_cmd` guarded the child environment with
+`env.setdefault("TERM", "xterm-256color")`, which only fires when `TERM` is **absent**. A desktop
+launcher can hand a GUI app a `TERM` that is present but invalid (`unknown`, `dumb`), and
+`setdefault` leaves that untouched — so any child running under `set -euo pipefail` that calls
+`tput` aborts. The line now assigns unconditionally.
+
+**Technical Details.** This is the same defect class @rcraig57 diagnosed in
+[kiro-iso-builder#1](https://github.com/kirodubes/kiro-iso-builder/issues/1), fixed there on
+2026-06-27 by the same unconditional-assignment change. ATT retained the flawed pattern. Impact
+here is lower — `_run_cmd`'s callers launch through `alacritty`, which sets its own `TERM` — so
+this is removing a latent trap rather than fixing a live failure. A blocklist test against
+`("", "unknown", "dumb")` was rejected for the same reason as in the builder: we control this
+environment, so inheriting the caller's `TERM` is never correct, and a blocklist would miss the
+next junk value a launcher invents.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/system.py`, `CHANGELOG.md`.
+
+---
+
 ## 2026.07.26
 
 ### Renamed two pages: "Themes" → "Arc themes", "Celestial" → "Celestial themes"

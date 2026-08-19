@@ -11,7 +11,10 @@ from gi.repository import GLib
 
 def _run_cmd(cmd):
     env = fn.get_terminal_env()
-    env.setdefault("TERM", "xterm-256color")
+    # Force a known-good terminal type rather than setdefault: a desktop launcher can hand us TERM
+    # unset OR set to junk ("unknown"/"dumb"), and setdefault only covers the unset case — which lets
+    # tput abort any child running under `set -e`. See kirodubes/kiro-iso-builder#1.
+    env["TERM"] = "xterm-256color"
     env["SYSTEMD_COLORS"] = "1"
     fn.debug_print(f"Terminal cmd: {cmd}")
     fn.threading.Thread(
