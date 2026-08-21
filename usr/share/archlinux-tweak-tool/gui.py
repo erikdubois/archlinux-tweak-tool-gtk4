@@ -58,6 +58,7 @@ import locale_gui
 import dev_gui
 
 _SDDM_HIDDEN_DISTROS = {"prismlinux"}
+_ISO_HIDDEN_DISTROS = {"mylastarch"}
 
 
 def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
@@ -464,7 +465,8 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
     stack.add_titled(vboxstack_icons_neocandy, "stack_icons_neocandy", "Icons Neo Candy")  # Neo Candy icon themes
     stack.add_titled(vboxstack_icons_surfn, "stack_icons_surfn", "Icons Surfn")  # Surfn icon themes
 
-    stack.add_titled(vboxstack_iso, "stack_iso", "ISO")  # Kiro ISO Builder showcase
+    if fn.distr not in _ISO_HIDDEN_DISTROS:
+        stack.add_titled(vboxstack_iso, "stack_iso", "ISO")  # Kiro ISO Builder showcase
 
     stack.add_titled(vboxstack_kernels, "stack28", "Kernels")  # kernel manager
 

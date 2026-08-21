@@ -1,5 +1,23 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.08.21
+
+### Hide the ISO page on MyLastArch
+
+**What Changed.** The ISO page advertises and launches the Kiro ISO Builder — content that is
+Kiro-specific and has no place on MyLastArch. The page is now skipped when `/etc/os-release`
+reports `ID=mylastarch`; every other distro keeps it.
+
+**Technical Details.** Followed the existing per-distro tab-hiding pattern in `gui.py`: a
+module-level `_ISO_HIDDEN_DISTROS` set next to `_SDDM_HIDDEN_DISTROS`, tested against `fn.distr`
+(which is `id()` from `/etc/os-release`) around the `stack.add_titled(vboxstack_iso, ...)` call.
+Guarding `add_titled` is enough — the page body is built lazily by `_defer_tab`, so a page never
+added to the stack is never constructed.
+
+**Files Modified.** `usr/share/archlinux-tweak-tool/gui.py`, `CHANGELOG.md`.
+
+---
+
 ## 2026.08.19
 
 ### Force `TERM` instead of `setdefault` in `_run_cmd`
