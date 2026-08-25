@@ -1,5 +1,33 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.08.25
+
+### Btrfs snapshots: correct the rollback caveat, which assumed systemd-boot
+
+**What Changed.** Both places where the btrfs snapshot feature explains rollback claimed
+"Kiro uses systemd-boot, so there is no boot-menu snapshot picker." That was true when written
+but Kiro also installs with GRUB, so the sentence is now wrong for a real and growing share of
+installs — confirmed on a v26.08.25 VM installed with GRUB 2.14 + LUKS + btrfs, where the
+message still told the user their bootloader was systemd-boot.
+
+The text is now bootloader-neutral and states the situation honestly: this setup adds no
+boot-menu picker, rollback is from the running system or the live ISO, and a GRUB user can add
+a picker themselves with `grub-btrfs` while systemd-boot has no equivalent.
+
+**Technical Details.** Text-only change in two places — the Alacritty terminal output at the
+end of the setup script embedded in `functions.py`, and the GTK caveat label in `btrfs_gui.py`.
+No behaviour change: the feature is deliberately **not** made bootloader-aware, so nothing is
+detected and no packages were added to the setup. Everything else about the snapshot stack was
+verified working on the same VM — `@snapshots` correctly remounted as the store,
+`TIMELINE_CREATE=no`, cleanup timer on, timeline timer off, btrfsmaintenance scrub/balance
+timers scheduled, the "Kiro baseline" snapshot present, and snap-pac demonstrably creating a
+real pre/post pair around a live pacman transaction.
+
+**Files Modified**
+
+- `usr/share/archlinux-tweak-tool/functions.py`
+- `usr/share/archlinux-tweak-tool/btrfs_gui.py`
+
 ## 2026.08.21
 
 ### Hide the ISO page on MyLastArch

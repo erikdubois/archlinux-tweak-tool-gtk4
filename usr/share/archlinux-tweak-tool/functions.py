@@ -1843,8 +1843,9 @@ snapper -c root list
 
 echo ''
 echo 'snap-pac now creates a pre/post snapshot pair on every pacman action.'
-echo 'Note: Kiro uses systemd-boot — rollback is from the running system or the'
-echo 'live ISO (snapper rollback); there is no boot-menu snapshot picker.'
+echo 'Note: this setup does not add a boot-menu snapshot picker. Rollback is from'
+echo 'the running system or the live ISO (snapper rollback). If you installed with'
+echo 'GRUB you can add a picker yourself with grub-btrfs; systemd-boot has none.'
 
 echo ''
 echo '=== Operation Finished ==='

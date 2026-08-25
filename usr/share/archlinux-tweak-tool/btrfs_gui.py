@@ -153,8 +153,10 @@ def gui(self, Gtk, vboxstack_btrfs, btrfs, fn):
     hbox_caveat = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     caveat_label = Gtk.Label(xalign=0)
     caveat_label.set_markup(
-        "<i>Kiro uses systemd-boot, so there is no boot-menu snapshot picker. Rollback is done\n"
-        "from the running system or the live ISO with snapper — Btrfs Assistant makes this easy.</i>"
+        "<i>This setup does not add a boot-menu snapshot picker. Rollback is done from the\n"
+        "running system or the live ISO with snapper — Btrfs Assistant makes this easy.\n"
+        "If you installed with GRUB you can add a picker yourself with grub-btrfs;\n"
+        "systemd-boot has no equivalent.</i>"
     )
     caveat_label.set_margin_start(20)
     caveat_label.set_margin_end(10)
