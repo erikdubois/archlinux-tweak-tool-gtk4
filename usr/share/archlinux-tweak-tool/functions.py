@@ -1810,17 +1810,17 @@ else
 fi
 
 echo ''
-echo '━━━ 3/5  Applying Kiro policy (no hourly timeline) ━━━'
+echo '━━━ 3/5  Applying snapshot policy (no hourly timeline) ━━━'
 snapper -c root set-config TIMELINE_CREATE=no
 echo 'TIMELINE_CREATE=no  — snapshots happen on pacman actions via snap-pac'
 
 echo ''
 echo '━━━ 4/5  Enabling timers ━━━'
 systemctl enable --now snapper-cleanup.timer
-# snapper create-config silently enables snapper-timeline.timer; Kiro policy is
+# snapper create-config silently enables snapper-timeline.timer; our policy is
 # no hourly timeline (TIMELINE_CREATE=no already blocks the snapshots), so disable it.
 systemctl disable --now snapper-timeline.timer 2>/dev/null || true
-echo 'snapper-timeline.timer disabled (Kiro policy: no hourly timeline)'
+echo 'snapper-timeline.timer disabled (policy: no hourly timeline)'
 if systemctl list-unit-files btrfsmaintenance-refresh.path >/dev/null 2>&1; then
     systemctl enable --now btrfsmaintenance-refresh.path
     # The .path unit only refreshes on a config change; run the service once so the
@@ -1834,10 +1834,10 @@ fi
 
 echo ''
 echo '━━━ 5/5  Baseline snapshot ━━━'
-if snapper -c root list | grep -q 'Kiro baseline'; then
-    echo 'Kiro baseline snapshot already exists — skipping'
+if snapper -c root list | grep -qE 'ATT baseline|Kiro baseline'; then
+    echo 'Baseline snapshot already exists — skipping'
 else
-    snapper -c root create --description 'Kiro baseline'
+    snapper -c root create --description 'ATT baseline'
 fi
 snapper -c root list
 

@@ -447,8 +447,9 @@ def gui(self, Gtk, Gdk, GdkPixbuf, base_dir, os, Pango, GLib):
 
     stack.add_titled(vboxstack_backup, "stack_backup", "Backup")  # personal-file backup (Pika / Vorta)
 
-    if fn.DEV or btrfs.is_btrfs_root():
-        stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots (btrfs root, or --dev)
+    # Always listed, even off btrfs: the page then renders disabled with Status
+    # explaining why, so the sidebar is identical on every machine (docs/videos).
+    stack.add_titled(vboxstack_btrfs, "stack_btrfs", "Btrfs")  # btrfs snapshots
 
     stack.add_titled(vboxstack_celestial, "stack_celestial", "Celestial themes")  # celestial GTK themes
 

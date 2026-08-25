@@ -28,6 +28,41 @@ real pre/post pair around a live pacman transaction.
 - `usr/share/archlinux-tweak-tool/functions.py`
 - `usr/share/archlinux-tweak-tool/btrfs_gui.py`
 
+### Btrfs tab is always shown, and inert off btrfs
+
+**What Changed.** The Btrfs page used to be added to the sidebar only when the root was btrfs
+(or `--dev`), so the tab list differed between machines — a recurring problem for tutorial
+videos and documentation, where a tab visible on the recording is missing for the viewer. The
+page is now always listed. On a non-btrfs root it renders in full but every action is disabled,
+and Status says plainly why: the actual root filesystem is named, with a note that the
+filesystem is chosen at install time and cannot be switched afterwards.
+
+**Also: removed the product name from this page's user-visible text.** ATT runs on other
+distros, and now that the tab appears on every install rather than only on btrfs systems, that
+text reaches users of those distros. One of the strings was outright wrong for them — the intro
+asserted the root carried "the Kiro subvolume layout", which is only true where the installer
+pre-stages it. Buttons are now "Enable snapshots" / "Disable snapshots", the intro describes
+what the tools do without naming a distro, and the setup script's step headings say "snapshot
+policy" rather than naming one.
+
+**Technical Details.** `gui.py` drops the visibility guard. `btrfs_gui.gui()` computes
+`self.btrfs_available` once (`is_btrfs_root() or fn.DEV`) and branches the intro text;
+`refresh()` gains an early `_refresh_unavailable()` path so a later refresh cannot repaint the
+page with package/timer state that is meaningless off btrfs. `btn_enable` is now stored as
+`self.btn_btrfs_enable` so the unavailable path can disable it. `--dev` still gets the fully
+live page, so the feature can be exercised off a btrfs box.
+
+The baseline snapshot description changed from `Kiro baseline` to `ATT baseline`. That string is
+a **data value** the idempotency guard greps for, so the guard now matches either — without
+that, an existing system would get a second baseline snapshot created on the next run.
+
+**Files Modified**
+
+- `usr/share/archlinux-tweak-tool/gui.py`
+- `usr/share/archlinux-tweak-tool/btrfs_gui.py`
+- `usr/share/archlinux-tweak-tool/btrfs.py`
+- `usr/share/archlinux-tweak-tool/functions.py`
+
 ## 2026.08.21
 
 ### Hide the ISO page on MyLastArch

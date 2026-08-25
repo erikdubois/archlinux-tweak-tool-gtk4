@@ -56,7 +56,7 @@ def on_click_install_tool(self, package, _widget):
 
 def on_click_enable_snapshots(self, _widget):
     """Install any missing tools and configure snapshots in a visible terminal."""
-    fn.log_subsection("Enabling Kiro btrfs snapshots")
+    fn.log_subsection("Enabling btrfs snapshots")
     fn.show_in_app_notification(self, "Opening terminal to install and configure snapshots...")
     process = fn.launch_btrfs_setup_in_terminal()
 
@@ -78,14 +78,14 @@ def on_click_disable_snapshots(self, _widget):
         "• removes the snapper <b>root</b> config\n"
         "• removes snapper, snap-pac, btrfs-assistant and btrfsmaintenance\n\n"
         "Your <b>snapshots are kept</b> on disk — the @snapshots subvolume is untouched. "
-        "Use Btrfs Assistant to view or delete them. Re-running <b>Enable Kiro snapshots</b> "
+        "Use Btrfs Assistant to view or delete them. Re-running <b>Enable snapshots</b> "
         "sets everything up again."
     )
     if not fn.confirm_dialog(self, "Remove snapshot stack?", message):
         fn.log_info("Btrfs snapshot teardown cancelled")
         return
 
-    fn.log_subsection("Removing Kiro btrfs snapshot stack")
+    fn.log_subsection("Removing the btrfs snapshot stack")
     fn.show_in_app_notification(self, "Opening terminal to remove the snapshot stack...")
     process = fn.launch_btrfs_teardown_in_terminal()
 
