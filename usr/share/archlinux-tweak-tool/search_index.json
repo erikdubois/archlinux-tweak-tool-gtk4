@@ -483,6 +483,7 @@
       "keywords": [],
       "labels": [
         "action",
+        "add",
         "already",
         "assistant",
         "automatically",
@@ -491,12 +492,16 @@
         "browse",
         "btrfs",
         "btrfsmaintenance",
+        "can",
         "cleanup",
         "creates",
+        "does",
         "done",
         "easy",
+        "equivalent",
         "every",
         "filesystem",
+        "grub",
         "gui",
         "here",
         "hourly",
@@ -533,12 +538,11 @@
         "taken",
         "them",
         "then",
-        "there",
         "these",
         "timeline",
         "tools",
         "trim",
-        "uses"
+        "yourself"
       ]
     },
     {
