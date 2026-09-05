@@ -453,6 +453,12 @@ def desktop_needs_nemesis(desktop_name):
     return any(p in nemesis_pkgs or p.endswith("-git") for p in pkgs)
 
 
+# Desktops whose session .desktop basename differs from the combo entry.
+SESSION_FILE_ALIASES = {
+    "hlwm": "herbstluftwm",
+}
+
+
 def check_desktop(desktop):
     global _xsession_files, _wayland_files
 
@@ -463,7 +469,7 @@ def check_desktop(desktop):
         wayland_dir = "/usr/share/wayland-sessions"
         _wayland_files = sorted(fn.listdir(wayland_dir + "/")) if fn.path.exists(wayland_dir) else []
 
-    target = desktop + ".desktop"
+    target = SESSION_FILE_ALIASES.get(desktop, desktop) + ".desktop"
     if target in _xsession_files or target in _wayland_files:
         fn.debug_print(f"[check_desktop] found:     {target}")
         return True

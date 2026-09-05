@@ -1,5 +1,40 @@
 # Arch Linux Tweak Tool — Changelog
 
+## 2026.09.05
+
+### hlwm install reported "ERROR DETECTED" even though it installed fine
+
+**What Changed.** Installing the hlwm desktop from the Desktop tab always ended with the
+`ERROR DETECTED / hlwm installation failed` banner and a "This desktop is NOT installed" status,
+even when all 39 packages installed cleanly and herbstluftwm was fully usable. Confirmed on a
+real-metal test box: the log showed the failure banner with no `Not installed (...)` follow-up,
+i.e. every package was in fact present.
+
+The cause is a name mismatch. `check_desktop()` decides success by looking for
+`<desktop>.desktop` in `/usr/share/xsessions` and `/usr/share/wayland-sessions`, but
+herbstluftwm ships `herbstluftwm.desktop`, not `hlwm.desktop`. hlwm is the only entry in the
+`desktops` list whose session-file basename differs from its combo entry; every other desktop
+happens to match.
+
+Besides the false failure verdict, the same mismatch also broke the three other paths that gate
+on `check_desktop()` for hlwm: the installed/not-installed status label, Uninstall (refused with
+"hlwm is not installed"), and Set as default (refused for the same reason).
+
+**Technical Details.** Added a small `SESSION_FILE_ALIASES` map in `desktopr.py` and resolved
+the lookup name through it in `check_desktop()`. Deliberately kept as a lookup alias rather than
+renaming the combo entry, so the user-facing desktop name, the package lists, the preview image
+filename and the install/remove order tables all stay untouched. Only hlwm is aliased today —
+all other desktop names were checked against their real session files and match.
+
+The "Installed:" label under the combo is unchanged: it still lists raw session-file basenames
+(so it shows `herbstluftwm`, alongside sessions like `hyprland-uwsm` that have no combo entry at
+all). That listing is a raw view of what is on disk by design.
+
+**Files Modified**
+
+- `usr/share/archlinux-tweak-tool/desktopr.py`
+
+
 ## 2026.08.25
 
 ### Btrfs snapshots: correct the rollback caveat, which assumed systemd-boot
